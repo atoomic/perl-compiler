@@ -369,7 +369,7 @@ our %all_bc_deps = map {$_=>1}
 
 my ($prev_op, $package_pv, @package_pv); # global stash for methods since 5.13
 my (%symtable, %cvforward, %lexwarnsym);
-my (%strtable, %hektable, %gptable);
+my (%strtable, %stashtable, %hektable, %gptable);
 my (%xsub, %init2_remap);
 my ($warn_undefined_syms, $swash_init, $swash_ToCf);
 my ($staticxs, $outfile);
@@ -718,6 +718,21 @@ sub strlen_flags {
   return (cstring($s), $len, $flags);
 }
 
+sub savestash_flags {
+  my ($pv, $len, $flags) = @_;
+  return $stashtable{$pv} if defined $stashtable{$pv};
+  $flags = $flags ? "$flags|GV_ADD" : "GV_ADD";
+  my $sym = "hv$hv_index";
+  $decl->add("Static HV *hv$hv_index;");
+  $init->add( sprintf( "%s = gv_stashpvn(%s, %u, %s);", $sym, $pv, $len, $flags));
+  $hv_index++;
+  return $stashtable{$pv} = $sym;
+}
+
+sub savestashpv {
+  return savestash_flags(strlen_flags(shift));
+}
+
 sub savere {
   my $re = shift;
   my $flags = shift || 0;
@@ -966,7 +981,7 @@ sub gv_fetchpvn {
     if ($isutf8) {
       my $uname = $name;
       $len = utf8::upgrade($uname);
-      $flags .= length($flags) ? " | SVf_UTF8" : "SVf_UTF8";
+      $flags .= length($flags) ? "|SVf_UTF8" : "SVf_UTF8";
     } else {
       $len = length($name);
     }
@@ -1933,23 +1948,19 @@ sub B::COP::save {
   if (!$B::C::optimize_cop) {
     if (!$ITHREADS) {
       if ($B::C::const_strings) {
-        $init->add(sprintf( "CopSTASHPV_set(&cop_list[%d], %s);",
-                            $ix, constpv($op->stashpv) ),
-                   sprintf( "CopFILE_set(&cop_list[%d], %s);",
-                            $ix, constpv($file) ));
+        my ($pv, $len, $flags) = strlen_flags($op->stashpv);
+        my $stash = savestash_flags(constpv($op->stashpv), $len, $flags);
+        $init->add(sprintf( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash ),
+                   sprintf( "CopFILE_set(&cop_list[%d], %s);", $ix, constpv($file) ));
       } else {
-        $init->add(sprintf( "CopSTASHPV_set(&cop_list[%d], %s);",
-                            $ix, cstring($op->stashpv) ),
-                   sprintf( "CopFILE_set(&cop_list[%d], %s);",
-                            $ix, cstring($file) ));
+        my $stash = savestashpv($op->stashpv);
+        $init->add(sprintf( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash),
+                   sprintf( "CopFILE_set(&cop_list[%d], %s);", $ix, cstring($file) ));
       }
     } else { # cv_undef e.g. in bproto.t and many more core tests with threads
-      my $stlen = "";
-      if ($] >= 5.016 and $] <= 5.017) { # 5.16 special-case API
-        $stlen = ", ".length($op->stashpv);
-      }
-      $init->add(sprintf( "CopSTASHPV_set(&cop_list[$ix], %s);", cstring($op->stashpv).$stlen ));
-      $init->add(sprintf( "CopFILE_set(&cop_list[$ix], %s);", cstring($file) ));
+      my $stash = savestashpv($op->stashpv);
+      $init->add(sprintf( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash ),
+                 sprintf( "CopFILE_set(&cop_list[$ix], %s);", cstring($file) ));
     }
   }
 
@@ -4786,22 +4797,12 @@ sub B::HV::save {
     # a trashed op but we look at the trashed op_type and segfault.
     #my $adpmroot = ${$hv->PMROOT}; # XXX When was this fixed?
     my $adpmroot = 0;
-    $decl->add("Static HV *hv$hv_index;");
-
-    my $cname = cstring($name);
-    my $len = length(pack "a*", $name); # not yet 0-byte safe. HEK len really
-    # TODO utf8 stashes
-    if ($name eq 'main') {
-      $init->add(qq[hv$hv_index = gv_stashpvn($cname, $len, 0);\t/* get main:: stash */]);
-    } else {
-      $init->add(qq[hv$hv_index = gv_stashpvn($cname, $len, GV_ADD);\t/* stash */]);
-    }
+    $sym = savestashpv($name);
+    savesym( $hv, $sym );
     if ($adpmroot) {
       $init->add(sprintf( "HvPMROOT(hv$hv_index) = (PMOP*)s\\_%x;",
 			  $adpmroot ) );
     }
-    $sym = savesym( $hv, "hv$hv_index" );
-    $hv_index++;
 
     # issue 79, test 46: save stashes to check for packages.
     # and via B::STASHGV we only save stashes for stashes.
