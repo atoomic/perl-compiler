@@ -1,0 +1,45 @@
+From 7bd9719ba1207a30141be2bf0e43f6b064341e74 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:49 -0500
+Subject: [PATCH 147/389] B::C patch for op/closure.t
+
+---
+ t/CORE/op/closure.t | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/op/closure.t b/t/CORE/op/closure.t
+index 42453f4..6b3ed5a 100644
+--- a/t/CORE/op/closure.t
++++ b/t/CORE/op/closure.t
+@@ -7,9 +7,7 @@
+ #   Run with -debug for debugging output.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require 't/CORE/test.pl';
+ }
+ 
+ use Config;
+@@ -241,7 +239,7 @@ END_MARK_TWO
+     print "not ok: got unexpected warning \$msg\\n";
+ } }
+ 
+-require './test.pl';
++require 't/CORE/test.pl';
+ curr_test($test);
+ 
+ # some of the variables which the closure will access
+@@ -717,7 +715,7 @@ $r = \$x
+ 
+ # [perl #113812] Closure prototypes with no CvOUTSIDE (crash caused by the
+ #                fix for #89544)
+-do "./op/closure_test.pl" or die $@||$!;
++do "./t/CORE/op/closure_test.pl" or die $@||$!;
+ is $closure_test::s2->()(), '10 cubes',
+   'cloning closure proto with no CvOUTSIDE';
+ 
+-- 
+2.3.8 (Apple Git-58)
+

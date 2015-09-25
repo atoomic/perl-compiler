@@ -1,0 +1,29 @@
+From c5e2df2bfc86ff15f108e9fc12fcc62e5606c542 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:35 -0500
+Subject: [PATCH 007/389] B::C patch for comp/parser.t
+
+---
+ t/CORE/comp/parser.t | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/t/CORE/comp/parser.t b/t/CORE/comp/parser.t
+index 50f601c..9ec9c76 100644
+--- a/t/CORE/comp/parser.t
++++ b/t/CORE/comp/parser.t
+@@ -3,11 +3,7 @@
+ # Checks if the parser behaves correctly in edge cases
+ # (including weird syntax errors)
+ 
+-BEGIN {
+-    @INC = qw(. ../lib);
+-    chdir 't' if -d 't';
+-}
+-
++chdir 't/CORE';
+ print "1..173\n";
+ 
+ sub failed {
+-- 
+2.3.8 (Apple Git-58)
+

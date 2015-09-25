@@ -1,0 +1,35 @@
+From ca71f289946bf83be2acac8d185a05f54dd06581 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:51 -0500
+Subject: [PATCH 176/389] B::C patch for op/filetest.t
+
+---
+ t/CORE/op/filetest.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/filetest.t b/t/CORE/op/filetest.t
+index 8883381..9adeeee 100644
+--- a/t/CORE/op/filetest.t
++++ b/t/CORE/op/filetest.t
+@@ -4,9 +4,7 @@
+ # See pod/perlport.pod for details.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc(qw '../lib ../cpan/Perl-OSType/lib');
++    require 't/CORE/test.pl';
+ }
+ 
+ plan(tests => 53 + 27*14);
+@@ -15,6 +13,7 @@ if ($^O =~ /MSWin32|cygwin|msys/ && !is_miniperl) {
+   require Win32; # for IsAdminUser()
+ }
+ 
++chdir 't/CORE';
+ # Tests presume we are in t/op directory and that file 'TEST' is found
+ # therein.
+ is(-d 'op', 1, "-d: directory correctly identified");
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,26 @@
+From a8dcdcec979f1e10a63c27725c388c3f1c212958 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:09 -0500
+Subject: [PATCH 385/389] B::C patch for uni/tr_utf8.t
+
+---
+ t/CORE/uni/tr_utf8.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/tr_utf8.t b/t/CORE/uni/tr_utf8.t
+index 59782f1..54ea0d2 100644
+--- a/t/CORE/uni/tr_utf8.t
++++ b/t/CORE/uni/tr_utf8.t
+@@ -5,8 +5,7 @@
+ # -- dankogai
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+     skip_all_without_dynamic_extension('Encode');
+     skip_all("no encoding pragma in EBCDIC") if $::IS_EBCDIC;
+     skip_all_without_perlio();
+-- 
+2.3.8 (Apple Git-58)
+

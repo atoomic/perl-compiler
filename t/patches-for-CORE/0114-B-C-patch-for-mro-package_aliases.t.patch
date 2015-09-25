@@ -1,0 +1,30 @@
+From 26d2815d45a5e1c3294e58a24436ee424de8d50a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:46 -0500
+Subject: [PATCH 114/389] B::C patch for mro/package_aliases.t
+
+---
+ t/CORE/mro/package_aliases.t | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/t/CORE/mro/package_aliases.t b/t/CORE/mro/package_aliases.t
+index 6998a89..d5b7990 100644
+--- a/t/CORE/mro/package_aliases.t
++++ b/t/CORE/mro/package_aliases.t
+@@ -1,12 +1,6 @@
+ #!./perl
+ 
+-BEGIN {
+-    unless (-d 'blib') {
+-        chdir 't' if -d 't';
+-        @INC = '../lib';
+-    }
+-    require q(./test.pl);
+-}
++BEGIN { require 't/CORE/test.pl' }
+ 
+ use strict;
+ use warnings;
+-- 
+2.3.8 (Apple Git-58)
+

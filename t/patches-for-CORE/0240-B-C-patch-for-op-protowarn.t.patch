@@ -1,0 +1,36 @@
+From 5144bbd9991bd96b77be02183fb540f95909d7a0 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:57 -0500
+Subject: [PATCH 240/389] B::C patch for op/protowarn.t
+
+---
+ t/CORE/op/protowarn.t | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/t/CORE/op/protowarn.t b/t/CORE/op/protowarn.t
+index eb046e5..6aaee9d 100644
+--- a/t/CORE/op/protowarn.t
++++ b/t/CORE/op/protowarn.t
+@@ -1,17 +1,13 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
++    require "t/CORE/test.pl";
+ }
+ 
+ use strict;
+ use warnings;
+ 
+-BEGIN {
+-    require './test.pl';
+-    plan( tests => 12 );
+-}
++plan( tests => 12 );
+ 
+ use vars qw{ @warnings $sub $warn };
+ 
+-- 
+2.3.8 (Apple Git-58)
+

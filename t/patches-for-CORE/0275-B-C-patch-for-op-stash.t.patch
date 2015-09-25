@@ -1,0 +1,30 @@
+From 9f5bb2101a566afcb7f09bcc0a7044930257a0d3 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:00 -0500
+Subject: [PATCH 275/389] B::C patch for op/stash.t
+
+---
+ t/CORE/op/stash.t | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/t/CORE/op/stash.t b/t/CORE/op/stash.t
+index af218ad..28d9329 100644
+--- a/t/CORE/op/stash.t
++++ b/t/CORE/op/stash.t
+@@ -1,12 +1,9 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(../lib);
++    require "t/CORE/test.pl";
+ }
+ 
+-BEGIN { require "./test.pl"; }
+-
+ plan( tests => 51 );
+ 
+ # Used to segfault (bug #15479)
+-- 
+2.3.8 (Apple Git-58)
+

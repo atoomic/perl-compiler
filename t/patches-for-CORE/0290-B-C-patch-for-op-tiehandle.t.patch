@@ -1,0 +1,27 @@
+From 2df12c1c5fcbe0902b8638a75b0ee9fc25b1eb25 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:01 -0500
+Subject: [PATCH 290/389] B::C patch for op/tiehandle.t
+
+---
+ t/CORE/op/tiehandle.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/tiehandle.t b/t/CORE/op/tiehandle.t
+index 21f56fc..eff28e6 100644
+--- a/t/CORE/op/tiehandle.t
++++ b/t/CORE/op/tiehandle.t
+@@ -1,9 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc(qw '../lib ../dist/base/lib');
++    require "t/CORE/test.pl";
+ }
+ 
+ my @expect;
+-- 
+2.3.8 (Apple Git-58)
+

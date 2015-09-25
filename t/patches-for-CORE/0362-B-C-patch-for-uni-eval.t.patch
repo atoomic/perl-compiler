@@ -1,0 +1,26 @@
+From 1feb90c1a5df4c9fecb9610540bffe28ea85d5f5 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 362/389] B::C patch for uni/eval.t
+
+---
+ t/CORE/uni/eval.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/eval.t b/t/CORE/uni/eval.t
+index bd02bdb..20fd5e7 100644
+--- a/t/CORE/uni/eval.t
++++ b/t/CORE/uni/eval.t
+@@ -3,8 +3,7 @@
+ # Check if eval correctly ignores the UTF-8 hint.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ plan (tests => 5);
+-- 
+2.3.8 (Apple Git-58)
+

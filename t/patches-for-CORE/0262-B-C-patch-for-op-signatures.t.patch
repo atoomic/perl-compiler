@@ -1,0 +1,37 @@
+From fd561263f3e273f857d25cd3c1471fd8331510ba Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:59 -0500
+Subject: [PATCH 262/389] B::C patch for op/signatures.t
+
+---
+ t/CORE/op/signatures.t | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/op/signatures.t b/t/CORE/op/signatures.t
+index e1c3140..f5508b7 100644
+--- a/t/CORE/op/signatures.t
++++ b/t/CORE/op/signatures.t
+@@ -1,9 +1,7 @@
+ #!perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++	require "t/CORE/test.pl";
+ }
+ 
+ no warnings "illegalproto";
+@@ -1295,7 +1293,8 @@ is scalar(@{[ t117(333, 444) ]}), 0;
+ is scalar(t117(333, 444)), undef;
+ 
+ use File::Spec::Functions;
+-my $keywords_file = catfile(updir,'regen','keywords.pl');
++chdir(q{t/CORE});
++my $keywords_file = catfile('lib','keywords.pl');
+ open my $kh, $keywords_file
+    or die "$0 cannot open $keywords_file: $!";
+ while(<$kh>) {
+-- 
+2.3.8 (Apple Git-58)
+

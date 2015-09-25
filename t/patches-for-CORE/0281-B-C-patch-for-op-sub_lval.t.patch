@@ -1,0 +1,25 @@
+From eca3e68abe87fe14a13443f81f6650b8a3391b3a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:00 -0500
+Subject: [PATCH 281/389] B::C patch for op/sub_lval.t
+
+---
+ t/CORE/op/sub_lval.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/sub_lval.t b/t/CORE/op/sub_lval.t
+index 9b0ad06..0db3764 100644
+--- a/t/CORE/op/sub_lval.t
++++ b/t/CORE/op/sub_lval.t
+@@ -1,7 +1,5 @@
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++  require "t/CORE/test.pl";
+ }
+ plan tests=>207;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

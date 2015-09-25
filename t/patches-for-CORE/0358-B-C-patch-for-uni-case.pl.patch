@@ -1,0 +1,24 @@
+From 886e0f00d272e598edaeecbf464b9247ec0e1dfd Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 358/389] B::C patch for uni/case.pl
+
+---
+ t/CORE/uni/case.pl | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/case.pl b/t/CORE/uni/case.pl
+index d4bfc07..346b534 100644
+--- a/t/CORE/uni/case.pl
++++ b/t/CORE/uni/case.pl
+@@ -1,6 +1,5 @@
+ BEGIN {
+-    require "test.pl";
+-    set_up_inc(qw(../lib .));
++    require "t/CORE/test.pl";
+     skip_all_without_unicode_tables();
+ }
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

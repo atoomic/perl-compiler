@@ -1,0 +1,48 @@
+From 33fc5b02f62e50f9810536f2f2bd227a0f1d6886 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:50 -0500
+Subject: [PATCH 155/389] B::C patch for op/current_sub.t
+
+---
+ t/CORE/op/current_sub.t | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/t/CORE/op/current_sub.t b/t/CORE/op/current_sub.t
+index 2dcc184..e419513 100644
+--- a/t/CORE/op/current_sub.t
++++ b/t/CORE/op/current_sub.t
+@@ -1,12 +1,11 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(../lib);
+-    require './test.pl';
+-    plan (tests => 22);
++    require 't/CORE/test.pl';    
+ }
+ 
++INIT { plan (tests => 22) }
++
+ is __SUB__, "__SUB__", '__SUB__ is a bareword outside of use feature';
+ 
+ {
+@@ -39,11 +38,13 @@ is $subsubs[2]()(0), 3, '__SUB__ inside closure (3)';
+ 
+ BEGIN {
+     return "begin 1" if @_;
+-    is CORE::__SUB__->(0), "begin 1", 'in BEGIN block'
++    my $x = CORE::__SUB__->(0);
++    INIT { is $x, "begin 1", 'in BEGIN block' }
+ }
+ BEGIN {
+     return "begin 2" if @_;
+-    is &CORE::__SUB__->(0), "begin 2", 'in BEGIN block via & (unoptimised)'
++    my $x = &CORE::__SUB__->(0);
++    INIT { is $x, "begin 2", 'in BEGIN block via & (unoptimised)' }
+ }
+ 
+ sub bar;
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,27 @@
+From 4f125ca8be41655ee83dd642f38797b8419884e2 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:54 -0500
+Subject: [PATCH 210/389] B::C patch for op/lex_assign.t
+
+---
+ t/CORE/op/lex_assign.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/lex_assign.t b/t/CORE/op/lex_assign.t
+index 4ea3f24..974542a 100644
+--- a/t/CORE/op/lex_assign.t
++++ b/t/CORE/op/lex_assign.t
+@@ -4,9 +4,7 @@
+ # and causes no ill side-effects.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++  require "t/CORE/test.pl";  
+ }
+ 
+ $| = 1;
+-- 
+2.3.8 (Apple Git-58)
+

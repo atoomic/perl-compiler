@@ -1,0 +1,26 @@
+From 1cf20351b026c178fcd047dcda31683cf15d6cdd Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:45 -0500
+Subject: [PATCH 098/389] B::C patch for mro/next_NEXT_utf8.t
+
+---
+ t/CORE/mro/next_NEXT_utf8.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/mro/next_NEXT_utf8.t b/t/CORE/mro/next_NEXT_utf8.t
+index c04c85a..131d471 100644
+--- a/t/CORE/mro/next_NEXT_utf8.t
++++ b/t/CORE/mro/next_NEXT_utf8.t
+@@ -6,8 +6,7 @@ use NEXT;
+ use utf8;
+ use open qw( :utf8 :std );
+ 
+-chdir 't' if -d 't';
+-require './test.pl';
++BEGIN { require 't/CORE/test.pl'}
+ plan(tests => 4);
+ 
+ {
+-- 
+2.3.8 (Apple Git-58)
+

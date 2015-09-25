@@ -1,0 +1,27 @@
+From 7ec26bcd3763ad89b617ec664e333781d99c5d80 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:49 -0500
+Subject: [PATCH 145/389] B::C patch for op/chop.t
+
+---
+ t/CORE/op/chop.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/chop.t b/t/CORE/op/chop.t
+index bdeaf0d..56ceb52 100644
+--- a/t/CORE/op/chop.t
++++ b/t/CORE/op/chop.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl'; require './charset_tools.pl';
++    require 't/CORE/test.pl'; require 't/CORE/charset_tools.pl';
+ }
+ 
+ my $tests_count = 148;
+-- 
+2.3.8 (Apple Git-58)
+

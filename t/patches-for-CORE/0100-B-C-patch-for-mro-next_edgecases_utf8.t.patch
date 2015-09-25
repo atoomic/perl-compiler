@@ -1,0 +1,26 @@
+From cf05459c31b455d7802f69fd9490bb6ecd623f8f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:45 -0500
+Subject: [PATCH 100/389] B::C patch for mro/next_edgecases_utf8.t
+
+---
+ t/CORE/mro/next_edgecases_utf8.t | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/t/CORE/mro/next_edgecases_utf8.t b/t/CORE/mro/next_edgecases_utf8.t
+index 3546a70..e1c30b6 100644
+--- a/t/CORE/mro/next_edgecases_utf8.t
++++ b/t/CORE/mro/next_edgecases_utf8.t
+@@ -3,7 +3,8 @@
+ use strict;
+ use warnings;
+ 
+-BEGIN { chdir 't' if -d 't'; require q(./test.pl); @INC = qw "../lib lib" }
++# FIXME: broken on 5.22.0
++BEGIN { require 't/CORE/test.pl' }
+ 
+ use utf8;
+ use open qw( :utf8 :std );
+-- 
+2.3.8 (Apple Git-58)
+

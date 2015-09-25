@@ -1,0 +1,29 @@
+From f92cedfaa8656d199f0f7ec45c3809d1e7d324e5 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:08 -0500
+Subject: [PATCH 373/389] B::C patch for uni/overload.t
+
+---
+ t/CORE/uni/overload.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/uni/overload.t b/t/CORE/uni/overload.t
+index 66cd5b8..2f18392 100644
+--- a/t/CORE/uni/overload.t
++++ b/t/CORE/uni/overload.t
+@@ -1,10 +1,9 @@
+ #!perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+     require Config; import Config;
+-    require './test.pl'; require './charset_tools.pl';
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
+ }
+ 
+ plan(tests => 215);
+-- 
+2.3.8 (Apple Git-58)
+

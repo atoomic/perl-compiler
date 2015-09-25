@@ -1,0 +1,28 @@
+From 1923638f63a91cc008714570f596a6dfa18f16ae Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:06 -0500
+Subject: [PATCH 347/389] B::C patch for re/rt122747.t
+
+---
+ t/CORE/re/rt122747.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/rt122747.t b/t/CORE/re/rt122747.t
+index 27cfe1a..6dc7b2a 100644
+--- a/t/CORE/re/rt122747.t
++++ b/t/CORE/re/rt122747.t
+@@ -6,9 +6,8 @@ $| = 1;
+ 
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = ('../lib','.','../ext/re');
+-    require './test.pl';
++    require "t/CORE/test.pl";
++    unshift @INC, 't/CORE/lib', 't/CORE/ext/re';
+     if (is_miniperl()) {
+         skip_all_if_miniperl("Unicode tables not built yet", 2)
+             unless eval 'require "unicore/Heavy.pl"';
+-- 
+2.3.8 (Apple Git-58)
+

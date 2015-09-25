@@ -1,0 +1,26 @@
+From 9bc2ffd3f48f6f757cb07e0b99e6a11af07c1d8a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:38 -0500
+Subject: [PATCH 026/389] B::C patch for io/inplace.t
+
+---
+ t/CORE/io/inplace.t | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/t/CORE/io/inplace.t b/t/CORE/io/inplace.t
+index 98159e0..efbbbbe 100644
+--- a/t/CORE/io/inplace.t
++++ b/t/CORE/io/inplace.t
+@@ -1,7 +1,8 @@
+ #!./perl
+ use strict;
+ chdir 't' if -d 't';
+-require './test.pl';
++push @INC, "t/CORE/lib";
++require 'test.pl';
+ 
+ $^I = $^O eq 'VMS' ? '_bak' : '.bak';
+ 
+-- 
+2.3.8 (Apple Git-58)
+

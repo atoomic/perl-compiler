@@ -1,0 +1,44 @@
+From bcd5db5ef5ad133495a7d0a4291ffa0c3d3e9faa Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:58 -0500
+Subject: [PATCH 254/389] B::C patch for op/require_errors.t
+
+---
+ t/CORE/op/require_errors.t | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/require_errors.t b/t/CORE/op/require_errors.t
+index 3d3d027..5b53ff4 100644
+--- a/t/CORE/op/require_errors.t
++++ b/t/CORE/op/require_errors.t
+@@ -1,8 +1,7 @@
+ #!perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ use strict;
+@@ -12,7 +11,8 @@ plan(tests => 17);
+ 
+ my $nonfile = tempfile();
+ 
+-@INC = qw(Perl Rules);
++{
++   local @INC = qw(Perl Rules);
+ 
+ # The tests for ' ' and '.h' never did fail, but previously the error reporting
+ # code would read memory before the start of the SV's buffer
+@@ -57,6 +57,7 @@ for my $file ("$nonfile.ph", ".ph") {
+ 
+ eval 'require <foom>';
+ like $@, qr/^<> at require-statement should be quotes at /, 'require <> error';
++} # Local @INC
+ 
+ my $module   = tempfile();
+ my $mod_file = "$module.pm";
+-- 
+2.3.8 (Apple Git-58)
+

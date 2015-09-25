@@ -1,0 +1,30 @@
+From 1188b7dc849a33c90884a8d57c04cab2fe046a91 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:36 -0500
+Subject: [PATCH 013/389] B::C patch for io/bom.t
+
+---
+ t/CORE/io/bom.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/bom.t b/t/CORE/io/bom.t
+index 5f88a7d..bd57fa6 100644
+--- a/t/CORE/io/bom.t
++++ b/t/CORE/io/bom.t
+@@ -1,11 +1,10 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
++	push @INC, "t/CORE/lib", "t/CORE";
+ }
+ 
+-BEGIN { require "./test.pl"; require "./charset_tools.pl"; }
++BEGIN { require "test.pl"; require "charset_tools.pl"; }
+ 
+ plan(tests => 3);
+ 
+-- 
+2.3.8 (Apple Git-58)
+

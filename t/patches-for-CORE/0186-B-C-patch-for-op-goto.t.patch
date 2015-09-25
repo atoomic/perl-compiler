@@ -1,0 +1,28 @@
+From e5f7b047666dcc2b3c357aa19075e9eb201641ed Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:52 -0500
+Subject: [PATCH 186/389] B::C patch for op/goto.t
+
+---
+ t/CORE/op/goto.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/goto.t b/t/CORE/op/goto.t
+index ca48ac0..5f478e9 100644
+--- a/t/CORE/op/goto.t
++++ b/t/CORE/op/goto.t
+@@ -3,9 +3,8 @@
+ # "This IS structured code.  It's just randomly structured."
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require "./test.pl"; require './charset_tools.pl';
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
+ }
+ 
+ use warnings;
+-- 
+2.3.8 (Apple Git-58)
+

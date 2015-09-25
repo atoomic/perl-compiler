@@ -1,0 +1,29 @@
+From d8b46324c8699fb3aae978fb87a4eaadf542fccb Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:58 -0500
+Subject: [PATCH 252/389] B::C patch for op/repeat.t
+
+---
+ t/CORE/op/repeat.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/repeat.t b/t/CORE/op/repeat.t
+index 8df5241..9b0adfa 100644
+--- a/t/CORE/op/repeat.t
++++ b/t/CORE/op/repeat.t
+@@ -1,11 +1,9 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
++	require "t/CORE/test.pl";
+ }
+ 
+-require './test.pl';
+ plan(tests => 47);
+ 
+ # compile time
+-- 
+2.3.8 (Apple Git-58)
+

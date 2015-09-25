@@ -1,0 +1,29 @@
+From d53e421fb059b0ba86700ec8f5a0ef0585059634 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:03 -0500
+Subject: [PATCH 312/389] B::C patch for re/charset.t
+
+---
+ t/CORE/re/charset.t | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/re/charset.t b/t/CORE/re/charset.t
+index 7a5852a..154350e 100644
+--- a/t/CORE/re/charset.t
++++ b/t/CORE/re/charset.t
+@@ -1,10 +1,8 @@
+ # Test the /a, /d, etc regex modifiers
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw '../lib ../dist/if';
+-    require './test.pl';
+-    require './loc_tools.pl';
++    require "t/CORE/test.pl";
++    require "t/CORE/loc_tools.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

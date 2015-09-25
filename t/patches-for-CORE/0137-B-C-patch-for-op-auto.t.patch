@@ -1,0 +1,27 @@
+From d20c63658a931d6a43c9e1f35432bb1afe6760e0 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:48 -0500
+Subject: [PATCH 137/389] B::C patch for op/auto.t
+
+---
+ t/CORE/op/auto.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/auto.t b/t/CORE/op/auto.t
+index 90380ed..4c5fb14 100644
+--- a/t/CORE/op/auto.t
++++ b/t/CORE/op/auto.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require "./test.pl";
++    require 't/CORE/test.pl';
+ }
+ 
+ plan( tests => 47 );
+-- 
+2.3.8 (Apple Git-58)
+

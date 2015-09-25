@@ -1,0 +1,33 @@
+From 4f70b4e352609f44bc1d18e5caf8ed4fbf450ae7 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 363/389] B::C patch for uni/fold.t
+
+---
+ t/CORE/uni/fold.t | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/uni/fold.t b/t/CORE/uni/fold.t
+index 149573a..9ee3711 100644
+--- a/t/CORE/uni/fold.t
++++ b/t/CORE/uni/fold.t
+@@ -5,13 +5,11 @@ use warnings;
+ # This file also tests the fc() keyword.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+     skip_all_without_unicode_tables();
+     require Config; import Config;
+-    require './charset_tools.pl';
+-    require './loc_tools.pl';   # Contains find_utf8_ctype_locale()
++    require "t/CORE/charset_tools.pl";
++    require "t/CORE/loc_tools.pl";
+ }
+ 
+ use feature 'unicode_strings';
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,24 @@
+From b0543aebb0e084f74965a989b25e6437d4153c19 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:09 -0500
+Subject: [PATCH 381/389] B::C patch for uni/title.t
+
+---
+ t/CORE/uni/title.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/title.t b/t/CORE/uni/title.t
+index 35c4f77..7fa6d16 100644
+--- a/t/CORE/uni/title.t
++++ b/t/CORE/uni/title.t
+@@ -1,6 +1,5 @@
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require "uni/case.pl";
++    require "t/CORE/uni/case.pl";
+ }
+ 
+ use feature 'unicode_strings';
+-- 
+2.3.8 (Apple Git-58)
+

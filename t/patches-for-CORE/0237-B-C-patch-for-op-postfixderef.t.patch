@@ -1,0 +1,27 @@
+From 9317d478a2c461966843f3726a9ac6d7a8140e10 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:56 -0500
+Subject: [PATCH 237/389] B::C patch for op/postfixderef.t
+
+---
+ t/CORE/op/postfixderef.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/postfixderef.t b/t/CORE/op/postfixderef.t
+index 79b66de..89c7e22 100644
+--- a/t/CORE/op/postfixderef.t
++++ b/t/CORE/op/postfixderef.t
+@@ -9,9 +9,7 @@ this file contains all dereferencing tests from ref.t but using postfix instead
+ 
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ use strict qw(refs subs);
+-- 
+2.3.8 (Apple Git-58)
+

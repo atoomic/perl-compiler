@@ -1,0 +1,33 @@
+From 338f8a824533b0f7a5996291e33ce98a63a1d147 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:54 -0500
+Subject: [PATCH 206/389] B::C patch for op/lc.t
+
+---
+ t/CORE/op/lc.t | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/op/lc.t b/t/CORE/op/lc.t
+index ffea0ae..c9eec19 100644
+--- a/t/CORE/op/lc.t
++++ b/t/CORE/op/lc.t
+@@ -3,13 +3,11 @@
+ # This file is intentionally encoded in latin-1.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";    
+     require Config; import Config;
+     skip_all_without_unicode_tables();
+-    require './charset_tools.pl';
+-    require './loc_tools.pl';   # Contains find_utf8_ctype_locale()
++    require "t/CORE/charset_tools.pl";
++    require "t/CORE/loc_tools.pl";   # Contains find_utf8_ctype_locale()
+ }
+ 
+ use feature qw( fc );
+-- 
+2.3.8 (Apple Git-58)
+

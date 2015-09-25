@@ -1,0 +1,46 @@
+From ad1065c4eb045ee53a0707405518c88e8e11b3d8 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 366/389] B::C patch for uni/gv.t
+
+---
+ t/CORE/uni/gv.t | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/uni/gv.t b/t/CORE/uni/gv.t
+index 9c48cef..14579b6 100644
+--- a/t/CORE/uni/gv.t
++++ b/t/CORE/uni/gv.t
+@@ -5,9 +5,8 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    push @INC, "t/CORE/lib";
++    require "t/CORE/test.pl";
+     skip_all_without_unicode_tables();
+ }
+ 
+@@ -673,7 +672,7 @@ EOF
+   # glob having been removed from the symbol table, so a stringified form
+   # of it does not work. This checks that sv_2io does not stringify a PVLV.
+   $_ = *quìn;
+-  open *quìn, "test.pl"; # test.pl is as good a file as any
++  open *quìn, "t/CORE/test.pl"; # test.pl is as good a file as any
+   delete $::{quìn};
+   ok eval { open my $zow, "<&", $_ }, 'PVLV: sv_2io stringifieth not'
+    or diag $@;
+@@ -723,7 +722,7 @@ SKIP: {
+   my $pass;
+   ok
+     eval {
+-     open my $quìle, "<", 'test.pl';
++     open my $quìle, "<", 't/CORE/test.pl';
+      $_ = *$quìle;
+      $pass = -T $_;
+      1
+-- 
+2.3.8 (Apple Git-58)
+

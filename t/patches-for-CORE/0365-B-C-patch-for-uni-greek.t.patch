@@ -1,0 +1,26 @@
+From 6c31d2561e10a01cc3bd453507fa7fe194f66eed Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 365/389] B::C patch for uni/greek.t
+
+---
+ t/CORE/uni/greek.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/greek.t b/t/CORE/uni/greek.t
+index 7d73ecb..8cbe727 100644
+--- a/t/CORE/uni/greek.t
++++ b/t/CORE/uni/greek.t
+@@ -1,8 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++	require "t/CORE/test.pl";
+     skip_all_without_dynamic_extension('Encode');
+     skip_all("no encoding pragma in EBCDIC") if $::IS_EBCDIC;
+     skip_all_without_perlio();
+-- 
+2.3.8 (Apple Git-58)
+

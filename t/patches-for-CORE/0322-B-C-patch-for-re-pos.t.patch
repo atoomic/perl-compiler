@@ -1,0 +1,27 @@
+From ba3cbe89d2f86aad180904c239d3806f8d633892 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:04 -0500
+Subject: [PATCH 322/389] B::C patch for re/pos.t
+
+---
+ t/CORE/re/pos.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/pos.t b/t/CORE/re/pos.t
+index 593b44d..f4e7775 100644
+--- a/t/CORE/re/pos.t
++++ b/t/CORE/re/pos.t
+@@ -3,9 +3,7 @@
+ # Make sure pos / resetting pos on failed match works
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++	require "t/CORE/test.pl";
+ }
+ 
+ plan tests => 8;
+-- 
+2.3.8 (Apple Git-58)
+

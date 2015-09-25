@@ -1,0 +1,38 @@
+From 78b20fb24b017e1c8b3043814017cb663da4d406 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:03 -0500
+Subject: [PATCH 316/389] B::C patch for re/pat.t
+
+---
+ t/CORE/re/pat.t | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/t/CORE/re/pat.t b/t/CORE/re/pat.t
+index 64f6487..88ba868 100644
+--- a/t/CORE/re/pat.t
++++ b/t/CORE/re/pat.t
+@@ -14,15 +14,15 @@ $| = 1;
+ 
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = ('../lib','.','../ext/re');
+     require Config; import Config;
+-    require './test.pl'; require './charset_tools.pl';
+-    require './loc_tools.pl';
+-    skip_all('no re module') unless defined &DynaLoader::boot_DynaLoader;
+-    skip_all_without_unicode_tables();
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
++    require "t/CORE/loc_tools.pl";
+ }
+ 
++skip_all('no re module') unless defined &DynaLoader::boot_DynaLoader;
++skip_all_without_unicode_tables();
++
+ plan tests => 774;  # Update this when adding/deleting tests.
+ 
+ run_tests() unless caller;
+-- 
+2.3.8 (Apple Git-58)
+

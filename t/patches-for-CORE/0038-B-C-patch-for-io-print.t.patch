@@ -1,0 +1,28 @@
+From edd10fdb3b356fc362594643c13ee0c8f8daaf7c Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:39 -0500
+Subject: [PATCH 038/389] B::C patch for io/print.t
+
+---
+ t/CORE/io/print.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/print.t b/t/CORE/io/print.t
+index 4336090..7732a2f 100644
+--- a/t/CORE/io/print.t
++++ b/t/CORE/io/print.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 'test.pl';
+     eval 'use Errno';
+     die $@ if $@ and !is_miniperl();
+ }
+-- 
+2.3.8 (Apple Git-58)
+

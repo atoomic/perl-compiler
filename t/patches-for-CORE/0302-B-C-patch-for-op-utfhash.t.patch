@@ -1,0 +1,33 @@
+From c9567a85fc0b783e860594e4144a1c53d867f210 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:02 -0500
+Subject: [PATCH 302/389] B::C patch for op/utfhash.t
+
+---
+ t/CORE/op/utfhash.t | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/op/utfhash.t b/t/CORE/op/utfhash.t
+index 5200c5b..5f8b9c9 100644
+--- a/t/CORE/op/utfhash.t
++++ b/t/CORE/op/utfhash.t
+@@ -1,13 +1,11 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
+-
+-    plan(tests => 99);
++  require "t/CORE/test.pl";
+ }
+ 
++plan(tests => 99);
++
+ use strict;
+ 
+ # Two hashes one with all 8-bit possible keys (initially), other
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,28 @@
+From ed2eaae8a6d087df02c73603c282e355c3486b43 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:39 -0500
+Subject: [PATCH 046/389] B::C patch for io/through.t
+
+---
+ t/CORE/io/through.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/through.t b/t/CORE/io/through.t
+index eaf9bc0..98ebf50 100644
+--- a/t/CORE/io/through.t
++++ b/t/CORE/io/through.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 'test.pl';
+     skip_all("VMS too picky about line endings for record-oriented pipes")
+ 	if $^O eq 'VMS';
+ }
+-- 
+2.3.8 (Apple Git-58)
+

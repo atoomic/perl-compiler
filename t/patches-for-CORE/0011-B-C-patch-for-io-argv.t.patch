@@ -1,0 +1,30 @@
+From 6c8774a9b4dea3e34447613a5f78ba952ab2ed1a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:36 -0500
+Subject: [PATCH 011/389] B::C patch for io/argv.t
+
+---
+ t/CORE/io/argv.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/argv.t b/t/CORE/io/argv.t
+index a9da09f..590608f 100644
+--- a/t/CORE/io/argv.t
++++ b/t/CORE/io/argv.t
+@@ -1,11 +1,10 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
++    push @INC, "t/CORE/lib";
+ }
+ 
+-BEGIN { require "./test.pl"; }
++BEGIN { require "test.pl"; }
+ 
+ plan(tests => 37);
+ 
+-- 
+2.3.8 (Apple Git-58)
+

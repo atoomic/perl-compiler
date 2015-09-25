@@ -1,0 +1,24 @@
+From 4032656aeb1158418d965289fdab7d1b97dd5c37 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:44 -0500
+Subject: [PATCH 088/389] B::C patch for mro/isa_aliases_utf8.t
+
+---
+ t/CORE/mro/isa_aliases_utf8.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/mro/isa_aliases_utf8.t b/t/CORE/mro/isa_aliases_utf8.t
+index 721a491..1d5a74d 100644
+--- a/t/CORE/mro/isa_aliases_utf8.t
++++ b/t/CORE/mro/isa_aliases_utf8.t
+@@ -1,6 +1,6 @@
+ #!./perl
+ 
+-BEGIN { chdir 't' if -d 't'; @INC = '../lib'; require './test.pl' }
++BEGIN { require 't/CORE/test.pl' }
+ 
+ use utf8;
+ use open qw( :utf8 :std );
+-- 
+2.3.8 (Apple Git-58)
+

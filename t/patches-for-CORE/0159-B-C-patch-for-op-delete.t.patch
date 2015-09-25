@@ -1,0 +1,29 @@
+From e0fc5c5d533b61543587780cb2a04bd8d9cf7e49 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:50 -0500
+Subject: [PATCH 159/389] B::C patch for op/delete.t
+
+---
+ t/CORE/op/delete.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/delete.t b/t/CORE/op/delete.t
+index e683327..0e267bd 100644
+--- a/t/CORE/op/delete.t
++++ b/t/CORE/op/delete.t
+@@ -1,11 +1,9 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
++    require 't/CORE/test.pl';
+ }
+ 
+-require "./test.pl";
+ plan( tests => 38 );
+ 
+ # delete() on hash elements
+-- 
+2.3.8 (Apple Git-58)
+

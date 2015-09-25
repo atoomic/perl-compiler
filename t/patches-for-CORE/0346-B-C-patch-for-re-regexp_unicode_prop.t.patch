@@ -1,0 +1,29 @@
+From 69a67098b8387cce7afab8a4d502635cf523f49e Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:06 -0500
+Subject: [PATCH 346/389] B::C patch for re/regexp_unicode_prop.t
+
+---
+ t/CORE/re/regexp_unicode_prop.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/regexp_unicode_prop.t b/t/CORE/re/regexp_unicode_prop.t
+index 8e68ab1..086c68a 100644
+--- a/t/CORE/re/regexp_unicode_prop.t
++++ b/t/CORE/re/regexp_unicode_prop.t
+@@ -9,10 +9,9 @@ use warnings;
+ use 5.010;
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    skip_all_if_miniperl("no dynamic loading on miniperl, no File::Spec (used by charnames)");
++    require "t/CORE/test.pl";    
+ }
++skip_all_if_miniperl("no dynamic loading on miniperl, no File::Spec (used by charnames)");
+ 
+ sub run_tests;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

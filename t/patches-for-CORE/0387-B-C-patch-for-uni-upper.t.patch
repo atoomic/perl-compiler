@@ -1,0 +1,24 @@
+From 4fb1e129f17422f6661f170e5566c83ff94a6a3c Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:09 -0500
+Subject: [PATCH 387/389] B::C patch for uni/upper.t
+
+---
+ t/CORE/uni/upper.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/upper.t b/t/CORE/uni/upper.t
+index 41b235c..0e1047c 100644
+--- a/t/CORE/uni/upper.t
++++ b/t/CORE/uni/upper.t
+@@ -1,6 +1,5 @@
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require "uni/case.pl";
++    require "t/CORE/uni/case.pl";
+ }
+ 
+ use feature 'unicode_strings';
+-- 
+2.3.8 (Apple Git-58)
+

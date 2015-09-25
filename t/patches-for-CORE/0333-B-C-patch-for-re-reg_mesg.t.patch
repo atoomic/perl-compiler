@@ -1,0 +1,31 @@
+From 57dd8dd1433a50a0dd039f06afe2997130503d1a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:05 -0500
+Subject: [PATCH 333/389] B::C patch for re/reg_mesg.t
+
+---
+ t/CORE/re/reg_mesg.t | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/re/reg_mesg.t b/t/CORE/re/reg_mesg.t
+index 452d982..5119d5d 100644
+--- a/t/CORE/re/reg_mesg.t
++++ b/t/CORE/re/reg_mesg.t
+@@ -3,12 +3,10 @@
+ $|=1;   # outherwise things get mixed up in output
+ 
+ BEGIN {
+-	chdir 't' if -d 't';
+-	@INC = qw '../lib ../ext/re';
+-	require './test.pl';
+-	skip_all_without_unicode_tables();
++    require "t/CORE/test.pl";	
+ 	eval 'require Config'; # assume defaults if this fails
+ }
++skip_all_without_unicode_tables();
+ 
+ use strict;
+ use open qw(:utf8 :std);
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,28 @@
+From 54ba30c6955f83788a3124717325801adc372939 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:38 -0500
+Subject: [PATCH 025/389] B::C patch for io/fs.t
+
+---
+ t/CORE/io/fs.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/fs.t b/t/CORE/io/fs.t
+index 6719a0a..6e54342 100644
+--- a/t/CORE/io/fs.t
++++ b/t/CORE/io/fs.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require "./test.pl";
++    push @INC, "t/CORE/lib";
++    require 'test.pl';
+ }
+ 
+ use Config;
+-- 
+2.3.8 (Apple Git-58)
+

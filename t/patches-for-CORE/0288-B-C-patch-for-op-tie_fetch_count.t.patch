@@ -1,0 +1,40 @@
+From 213edecdd307001add57cc85078ebaf729757aa3 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:01 -0500
+Subject: [PATCH 288/389] B::C patch for op/tie_fetch_count.t
+
+---
+ t/CORE/op/tie_fetch_count.t | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/op/tie_fetch_count.t b/t/CORE/op/tie_fetch_count.t
+index 41fef0c..daa0831 100644
+--- a/t/CORE/op/tie_fetch_count.t
++++ b/t/CORE/op/tie_fetch_count.t
+@@ -4,12 +4,10 @@
+ # See Bugs #76814 and #87708.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
+-    plan (tests => 347);
++    require "t/CORE/test.pl";    
+ }
+ 
++plan (tests => 347);
+ use strict;
+ use warnings;
+ 
+@@ -146,7 +144,7 @@ for (split //, 'rwxoRWXOezsfdpSbctugkTBMAC') {
+     check_count "-$_ \\\$tied_glob";
+ }
+ $dummy  = -l $var       ; check_count '-l';
+-$var = "test.pl";
++$var = "t/CORE/test.pl";
+ $dummy  = -e -e -e $var ; check_count '-e -e';
+ 
+ # Matching
+-- 
+2.3.8 (Apple Git-58)
+

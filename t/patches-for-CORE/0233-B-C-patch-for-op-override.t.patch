@@ -1,0 +1,32 @@
+From c5ae6042153b6df77f56a9e89c9adc92a28ac61b Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:56 -0500
+Subject: [PATCH 233/389] B::C patch for op/override.t
+
+---
+ t/CORE/op/override.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/override.t b/t/CORE/op/override.t
+index ff43571..6de32d8 100644
+--- a/t/CORE/op/override.t
++++ b/t/CORE/op/override.t
+@@ -1,13 +1,12 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc(qw '../lib ../cpan/Text-ParseWords/lib');
++    require "t/CORE/test.pl";
+     require Config; # load these before we mess with *CORE::GLOBAL::require
+     require 'Config_heavy.pl'; # since runperl will need them
+ }
+ 
++#FIXME: was cut in cm520
+ plan tests => 37;
+ 
+ #
+-- 
+2.3.8 (Apple Git-58)
+

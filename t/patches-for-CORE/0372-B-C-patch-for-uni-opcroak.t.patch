@@ -1,0 +1,27 @@
+From 9ea03ccc975e57ad72e6359afdc58c9df3eb32f3 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:08 -0500
+Subject: [PATCH 372/389] B::C patch for uni/opcroak.t
+
+---
+ t/CORE/uni/opcroak.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/uni/opcroak.t b/t/CORE/uni/opcroak.t
+index 7bc9024..5b2f9fa 100644
+--- a/t/CORE/uni/opcroak.t
++++ b/t/CORE/uni/opcroak.t
+@@ -5,9 +5,7 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw '../lib ../dist/base/lib';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ use utf8;
+-- 
+2.3.8 (Apple Git-58)
+

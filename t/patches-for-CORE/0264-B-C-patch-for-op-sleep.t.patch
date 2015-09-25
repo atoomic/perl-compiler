@@ -1,0 +1,29 @@
+From 05ad29aecd45ecc199126baf683942a76fbeeccc Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:59 -0500
+Subject: [PATCH 264/389] B::C patch for op/sleep.t
+
+---
+ t/CORE/op/sleep.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/sleep.t b/t/CORE/op/sleep.t
+index 441f76a..df2dca9 100644
+--- a/t/CORE/op/sleep.t
++++ b/t/CORE/op/sleep.t
+@@ -1,11 +1,9 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
++	require "t/CORE/test.pl";
+ }
+ 
+-require "./test.pl";
+ plan( tests => 4 );
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

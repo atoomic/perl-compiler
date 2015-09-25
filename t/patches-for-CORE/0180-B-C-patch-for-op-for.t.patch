@@ -1,0 +1,26 @@
+From 1297632ef383ccbfdd3d26c4289303203869ae2f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:52 -0500
+Subject: [PATCH 180/389] B::C patch for op/for.t
+
+---
+ t/CORE/op/for.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/op/for.t b/t/CORE/op/for.t
+index 1f4cbf3..06973d1 100644
+--- a/t/CORE/op/for.t
++++ b/t/CORE/op/for.t
+@@ -1,8 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require "./test.pl";
++    require "t/CORE/test.pl";
+ }
+ 
+ plan(109);
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,35 @@
+From 39b5fe377db438859d0e4869dbde76f41a823291 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:47 -0500
+Subject: [PATCH 120/389] B::C patch for mro/recursion_dfs.t
+
+---
+ t/CORE/mro/recursion_dfs.t | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/t/CORE/mro/recursion_dfs.t b/t/CORE/mro/recursion_dfs.t
+index 00efe6d..5a4624f 100644
+--- a/t/CORE/mro/recursion_dfs.t
++++ b/t/CORE/mro/recursion_dfs.t
+@@ -1,17 +1,10 @@
+ #!./perl
+ 
+-BEGIN {
+-    unless (-d 'blib') {
+-        chdir 't' if -d 't';
+-        @INC = '../lib';
+-    }
+-}
++BEGIN { require 't/CORE/test.pl' }
+ 
+ use strict;
+ use warnings;
+ 
+-require './test.pl';
+-
+ plan(skip_all => "Your system has no SIGALRM") if !exists $SIG{ALRM};
+ plan(tests => 8);
+ 
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,37 @@
+From 1b27efa6d4d77d35ae389f1e579b613674db2f64 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:49 -0500
+Subject: [PATCH 152/389] B::C patch for op/coresubs.t
+
+---
+ t/CORE/op/coresubs.t | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/op/coresubs.t b/t/CORE/op/coresubs.t
+index 6fec5f4..1b08deb 100644
+--- a/t/CORE/op/coresubs.t
++++ b/t/CORE/op/coresubs.t
+@@ -5,9 +5,7 @@
+ # file, too.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require "./test.pl";
++    require "t/CORE/test.pl";
+     skip_all_without_dynamic_extension('B');
+     $^P |= 0x100;
+ }
+@@ -41,7 +39,8 @@ my %desc = (
+ );
+ 
+ use File::Spec::Functions;
+-my $keywords_file = catfile(updir,'regen','keywords.pl');
++chdir 't/CORE/op';
++my $keywords_file = catfile(updir,'lib','keywords.pl');
+ open my $kh, $keywords_file
+    or die "$0 cannot open $keywords_file: $!";
+ while(<$kh>) {
+-- 
+2.3.8 (Apple Git-58)
+

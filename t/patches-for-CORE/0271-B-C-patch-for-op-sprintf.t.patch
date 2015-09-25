@@ -1,0 +1,32 @@
+From 89eb2718fb40754ad00c11ec267cb8febcb32c0f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:59 -0500
+Subject: [PATCH 271/389] B::C patch for op/sprintf.t
+
+---
+ t/CORE/op/sprintf.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/sprintf.t b/t/CORE/op/sprintf.t
+index 967b5d3..51a0a89 100644
+--- a/t/CORE/op/sprintf.t
++++ b/t/CORE/op/sprintf.t
+@@ -9,14 +9,12 @@
+ # For tests that do not fit this format, use sprintf2.t.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw '../lib ../cpan/version/lib';
++    require "t/CORE/test.pl";
+ }
+ use warnings;
+ use version;
+ use Config;
+ use strict;
+-require './test.pl';
+ 
+ my @tests = ();
+ my ($template, $data, $result, $comment, $w, $x, $evalData, $n, $p);
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,26 @@
+From 69eb1c0c48245761361a2decc27278cfc4481e51 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:09 -0500
+Subject: [PATCH 388/389] B::C patch for uni/variables.t
+
+---
+ t/CORE/uni/variables.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/variables.t b/t/CORE/uni/variables.t
+index 0b73d5f..f8de497 100644
+--- a/t/CORE/uni/variables.t
++++ b/t/CORE/uni/variables.t
+@@ -4,8 +4,7 @@
+ # (including weird syntax errors)
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+     skip_all_if_miniperl("miniperl, no arybase");
+     skip_all_without_unicode_tables();
+ }
+-- 
+2.3.8 (Apple Git-58)
+

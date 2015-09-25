@@ -1,0 +1,28 @@
+From 42de0cd79160fc8773b7144053e6a1f938c0a127 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:52 -0500
+Subject: [PATCH 185/389] B::C patch for op/gmagic.t
+
+---
+ t/CORE/op/gmagic.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/gmagic.t b/t/CORE/op/gmagic.t
+index bcf1322..e6f988c 100644
+--- a/t/CORE/op/gmagic.t
++++ b/t/CORE/op/gmagic.t
+@@ -1,9 +1,8 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

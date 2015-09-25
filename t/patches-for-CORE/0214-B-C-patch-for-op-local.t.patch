@@ -1,0 +1,28 @@
+From 944bbb1f151cdeaaea67faa372f8c3cbc0628236 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:55 -0500
+Subject: [PATCH 214/389] B::C patch for op/local.t
+
+---
+ t/CORE/op/local.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/local.t b/t/CORE/op/local.t
+index 7ff21ab..da9ebdd 100644
+--- a/t/CORE/op/local.t
++++ b/t/CORE/op/local.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require './test.pl';
++    push @INC, qw{t/CORE/lib};
++    require 't/CORE/test.pl';
+ }
+ plan tests => 310;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

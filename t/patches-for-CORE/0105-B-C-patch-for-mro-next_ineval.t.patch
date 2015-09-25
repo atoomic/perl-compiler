@@ -1,0 +1,25 @@
+From 45ee8a347ffab2f47be6826d83fee21c32e034b7 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:45 -0500
+Subject: [PATCH 105/389] B::C patch for mro/next_ineval.t
+
+---
+ t/CORE/mro/next_ineval.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/mro/next_ineval.t b/t/CORE/mro/next_ineval.t
+index f8c13a6..523a890 100644
+--- a/t/CORE/mro/next_ineval.t
++++ b/t/CORE/mro/next_ineval.t
+@@ -3,7 +3,7 @@
+ use strict;
+ use warnings;
+ 
+-require q(./test.pl); plan(tests => 1);
++require 't/CORE/test.pl'; plan(tests => 1);
+ 
+ =pod
+ 
+-- 
+2.3.8 (Apple Git-58)
+

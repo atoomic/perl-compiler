@@ -1,0 +1,38 @@
+From cae4ff6d7fb073f20f1f6299a466259cd4fe1ae1 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:44 -0500
+Subject: [PATCH 096/389] B::C patch for mro/method_caching_utf8.t
+
+---
+ t/CORE/mro/method_caching_utf8.t | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/t/CORE/mro/method_caching_utf8.t b/t/CORE/mro/method_caching_utf8.t
+index ee31869..99d7b0f 100644
+--- a/t/CORE/mro/method_caching_utf8.t
++++ b/t/CORE/mro/method_caching_utf8.t
+@@ -1,11 +1,6 @@
+ #!./perl
+ 
+-BEGIN {
+-    unless (-d 'blib') {
+-        chdir 't' if -d 't';
+-        @INC = '../lib';
+-    }
+-}
++BEGIN { require 't/CORE/test.pl' }
+ 
+ use utf8;
+ use open qw( :utf8 :std );
+@@ -14,8 +9,6 @@ use warnings;
+ no warnings 'redefine'; # we do a lot of this
+ no warnings 'prototype'; # we do a lot of this
+ 
+-require './test.pl';
+-
+ {
+     package MC텟ᵀ::Bࡎᶓ;
+     sub ᕘ { return $_[1]+1 };
+-- 
+2.3.8 (Apple Git-58)
+

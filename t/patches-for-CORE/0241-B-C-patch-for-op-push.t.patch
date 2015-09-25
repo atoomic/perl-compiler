@@ -1,0 +1,27 @@
+From 0a362faa0d592c8917cad716e9aff18ded49054f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:57 -0500
+Subject: [PATCH 241/389] B::C patch for op/push.t
+
+---
+ t/CORE/op/push.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/push.t b/t/CORE/op/push.t
+index f4b034f..02f39d8 100644
+--- a/t/CORE/op/push.t
++++ b/t/CORE/op/push.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+ }
+ 
+ @tests = split(/\n/, <<EOF);
+-- 
+2.3.8 (Apple Git-58)
+

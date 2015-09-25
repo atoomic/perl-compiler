@@ -1,0 +1,27 @@
+From a1e0a096248029a1dea5617472362de4b4025ab6 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:51 -0500
+Subject: [PATCH 169/389] B::C patch for op/eval.t
+
+---
+ t/CORE/op/eval.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/eval.t b/t/CORE/op/eval.t
+index fcfe675..33b4644 100644
+--- a/t/CORE/op/eval.t
++++ b/t/CORE/op/eval.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++  require 't/CORE/test.pl';
+ }
+ 
+ plan(tests => 132);
+-- 
+2.3.8 (Apple Git-58)
+

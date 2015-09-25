@@ -1,0 +1,31 @@
+From 5254c2a5d872f395e4408130dd5a7899bfc69435 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:58 -0500
+Subject: [PATCH 250/389] B::C patch for op/recurse.t
+
+---
+ t/CORE/op/recurse.t | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/op/recurse.t b/t/CORE/op/recurse.t
+index c64dda1..41820b4 100644
+--- a/t/CORE/op/recurse.t
++++ b/t/CORE/op/recurse.t
+@@ -5,12 +5,10 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require "./test.pl";
+-    plan(tests => 28);
++    require "t/CORE/test.pl";    
+ }
+ 
++plan(tests => 28);
+ use strict;
+ 
+ sub gcd {
+-- 
+2.3.8 (Apple Git-58)
+

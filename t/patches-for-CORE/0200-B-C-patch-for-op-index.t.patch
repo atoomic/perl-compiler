@@ -1,0 +1,29 @@
+From 7a95a15ce396811cd23e9555112559ee63480a97 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:53 -0500
+Subject: [PATCH 200/389] B::C patch for op/index.t
+
+---
+ t/CORE/op/index.t | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/op/index.t b/t/CORE/op/index.t
+index 243cc1b..198c574 100644
+--- a/t/CORE/op/index.t
++++ b/t/CORE/op/index.t
+@@ -1,10 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
+-    require './charset_tools.pl';
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

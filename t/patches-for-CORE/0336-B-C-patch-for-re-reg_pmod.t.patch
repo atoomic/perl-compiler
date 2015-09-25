@@ -1,0 +1,27 @@
+From c7f8289d6d65ff04e49e755dbc705a64e8aeef6b Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:05 -0500
+Subject: [PATCH 336/389] B::C patch for re/reg_pmod.t
+
+---
+ t/CORE/re/reg_pmod.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/reg_pmod.t b/t/CORE/re/reg_pmod.t
+index 1db0bed..f9ac5d9 100644
+--- a/t/CORE/re/reg_pmod.t
++++ b/t/CORE/re/reg_pmod.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    require 't/CORE/test.pl';
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

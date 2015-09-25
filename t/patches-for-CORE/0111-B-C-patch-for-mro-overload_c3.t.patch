@@ -1,0 +1,33 @@
+From 32f7298aa20b3fd4b93f6ca4e255d74ba1f7601b Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:46 -0500
+Subject: [PATCH 111/389] B::C patch for mro/overload_c3.t
+
+---
+ t/CORE/mro/overload_c3.t | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/t/CORE/mro/overload_c3.t b/t/CORE/mro/overload_c3.t
+index db2b1ec..408e0c9 100644
+--- a/t/CORE/mro/overload_c3.t
++++ b/t/CORE/mro/overload_c3.t
+@@ -2,14 +2,8 @@
+ 
+ use strict;
+ use warnings;
+-BEGIN {
+-    unless (-d 'blib') {
+-        chdir 't' if -d 't';
+-        @INC = '../lib';
+-    }
+-}
+-
+-require q(./test.pl); plan(tests => 7);
++require 't/CORE/test.pl';
++plan(tests => 7);
+ 
+ {
+     package BaseTest;
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,28 @@
+From e8beb24e8747b16932d15a4fd664c7e9782c7542 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:41 -0500
+Subject: [PATCH 053/389] B::C patch for mro/basic.t
+
+---
+ t/CORE/mro/basic.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/mro/basic.t b/t/CORE/mro/basic.t
+index 3b7f9e8..d13f730 100644
+--- a/t/CORE/mro/basic.t
++++ b/t/CORE/mro/basic.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require q(./test.pl);
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';    
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

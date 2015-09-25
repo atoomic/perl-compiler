@@ -1,0 +1,27 @@
+From babca5329c256d677e937b07d21e79124de7c669 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:54 -0500
+Subject: [PATCH 211/389] B::C patch for op/lexsub.t
+
+---
+ t/CORE/op/lexsub.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/lexsub.t b/t/CORE/op/lexsub.t
+index adccf4c..864be45 100644
+--- a/t/CORE/op/lexsub.t
++++ b/t/CORE/op/lexsub.t
+@@ -1,9 +1,7 @@
+ #!perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+     *bar::is = *is;
+     *bar::like = *like;
+ }
+-- 
+2.3.8 (Apple Git-58)
+

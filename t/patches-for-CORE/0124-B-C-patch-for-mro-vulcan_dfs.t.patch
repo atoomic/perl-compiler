@@ -1,0 +1,25 @@
+From e53a0d2dcbbb2306af8c625a4f8678b07f4989de Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:47 -0500
+Subject: [PATCH 124/389] B::C patch for mro/vulcan_dfs.t
+
+---
+ t/CORE/mro/vulcan_dfs.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/mro/vulcan_dfs.t b/t/CORE/mro/vulcan_dfs.t
+index eb3e128..a2f5378 100644
+--- a/t/CORE/mro/vulcan_dfs.t
++++ b/t/CORE/mro/vulcan_dfs.t
+@@ -3,7 +3,7 @@
+ use strict;
+ use warnings;
+ 
+-require q(./test.pl); plan(tests => 1);
++require 't/CORE/test.pl'; plan(tests => 1);
+ 
+ =pod
+ 
+-- 
+2.3.8 (Apple Git-58)
+

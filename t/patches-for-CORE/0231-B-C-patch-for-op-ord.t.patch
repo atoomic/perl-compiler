@@ -1,0 +1,27 @@
+From fe7eba4a3bc68bb34413ed92445cfa046bfd0531 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:56 -0500
+Subject: [PATCH 231/389] B::C patch for op/ord.t
+
+---
+ t/CORE/op/ord.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/ord.t b/t/CORE/op/ord.t
+index 51b2a4e..2b00a74 100644
+--- a/t/CORE/op/ord.t
++++ b/t/CORE/op/ord.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib); # ../lib needed for test.deparse
+-    require "./test.pl";
++    require "t/CORE/test.pl";
+ }
+ 
+ plan tests => 35;
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,31 @@
+From c64f7e46b28f859cbc5e1fa54b6c0603602d8948 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:51 -0500
+Subject: [PATCH 166/389] B::C patch for op/dor.t
+
+---
+ t/CORE/op/dor.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/dor.t b/t/CORE/op/dor.t
+index 7fbeca0..96bfcad 100644
+--- a/t/CORE/op/dor.t
++++ b/t/CORE/op/dor.t
+@@ -3,12 +3,11 @@
+ # Test // and friends.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
++    push @INC, "t/CORE/lib";
+ }
+ 
+ package main;
+-require './test.pl';
++require 't/CORE/test.pl';
+ 
+ plan( tests => 34 );
+ 
+-- 
+2.3.8 (Apple Git-58)
+

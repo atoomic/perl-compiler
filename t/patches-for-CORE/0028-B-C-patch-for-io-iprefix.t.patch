@@ -1,0 +1,26 @@
+From 155657f757d8d7cf481257800f7883645898c93f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:38 -0500
+Subject: [PATCH 028/389] B::C patch for io/iprefix.t
+
+---
+ t/CORE/io/iprefix.t | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/t/CORE/io/iprefix.t b/t/CORE/io/iprefix.t
+index f011eba..37e94dc 100644
+--- a/t/CORE/io/iprefix.t
++++ b/t/CORE/io/iprefix.t
+@@ -1,7 +1,8 @@
+ #!./perl
+ use strict;
+ chdir 't' if -d 't';
+-require './test.pl';
++push @INC, "t/CORE/lib";
++require 'test.pl';
+ 
+ $^I = 'bak.*';
+ 
+-- 
+2.3.8 (Apple Git-58)
+

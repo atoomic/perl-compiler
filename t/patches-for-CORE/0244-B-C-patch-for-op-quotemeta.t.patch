@@ -1,0 +1,30 @@
+From bf0813898617ca36bfafe3f475a3f4c910deb917 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:57 -0500
+Subject: [PATCH 244/389] B::C patch for op/quotemeta.t
+
+---
+ t/CORE/op/quotemeta.t | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/op/quotemeta.t b/t/CORE/op/quotemeta.t
+index 35ed2c6..089e222 100644
+--- a/t/CORE/op/quotemeta.t
++++ b/t/CORE/op/quotemeta.t
+@@ -1,11 +1,9 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(../lib .);
+     require Config; import Config;
+-    require "./test.pl";
+-    require "./loc_tools.pl";
++    require "t/CORE/test.pl";
++    require "t/CORE/loc_tools.pl";
+ }
+ 
+ plan tests => 60;
+-- 
+2.3.8 (Apple Git-58)
+

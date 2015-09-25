@@ -1,0 +1,28 @@
+From 1d3c576f50d4204b8a95e4ab56e0345592597cb7 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:38 -0500
+Subject: [PATCH 032/389] B::C patch for io/openpid.t
+
+---
+ t/CORE/io/openpid.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/openpid.t b/t/CORE/io/openpid.t
+index 946fa5e..63bf1ae 100644
+--- a/t/CORE/io/openpid.t
++++ b/t/CORE/io/openpid.t
+@@ -8,9 +8,8 @@
+ #####################################################################
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 'test.pl';
+ }
+ 
+ if ($^O eq 'dos') {
+-- 
+2.3.8 (Apple Git-58)
+

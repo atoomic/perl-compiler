@@ -1,0 +1,30 @@
+From af7c5750be81e4c4461bb78825ed24e708a04650 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:49 -0500
+Subject: [PATCH 146/389] B::C patch for op/chr.t
+
+---
+ t/CORE/op/chr.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/chr.t b/t/CORE/op/chr.t
+index 3546f02..0e7a5b6 100644
+--- a/t/CORE/op/chr.t
++++ b/t/CORE/op/chr.t
+@@ -1,11 +1,10 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib); # ../lib needed for test.deparse
+-    require "./test.pl";
++    require 't/CORE/test.pl';
+ }
+ 
++
+ plan tests => 45;
+ 
+ # Note that t/op/ord.t already tests for chr() <-> ord() rountripping.
+-- 
+2.3.8 (Apple Git-58)
+

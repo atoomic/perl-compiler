@@ -1,0 +1,27 @@
+From 81042d238300cd65dcbe8d11a63901803d3036e7 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:37 -0500
+Subject: [PATCH 022/389] B::C patch for io/errno.t
+
+---
+ t/CORE/io/errno.t | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/t/CORE/io/errno.t b/t/CORE/io/errno.t
+index 8d0f4b2..52f86ef 100644
+--- a/t/CORE/io/errno.t
++++ b/t/CORE/io/errno.t
+@@ -7,8 +7,8 @@
+ use strict;
+ use Config;
+ 
+-chdir 't' if -d 't';
+-require './test.pl';
++push @INC, "t/CORE/lib";
++require 'test.pl';
+ 
+ plan( tests => 16 );
+ 
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,28 @@
+From 31082bee44f2bcdeb098cfc7ca15111f896775f3 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:38 -0500
+Subject: [PATCH 030/389] B::C patch for io/nargv.t
+
+---
+ t/CORE/io/nargv.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/nargv.t b/t/CORE/io/nargv.t
+index 41417cd..5c2113c 100644
+--- a/t/CORE/io/nargv.t
++++ b/t/CORE/io/nargv.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require "./test.pl";
++    push @INC, "t/CORE/lib";
++    require 'test.pl';
+ }
+ 
+ print "1..5\n";
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,29 @@
+From b5aa4340ac84c6984aca668d7c930e072821521c Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:06 -0500
+Subject: [PATCH 351/389] B::C patch for re/subst_amp.t
+
+---
+ t/CORE/re/subst_amp.t | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/subst_amp.t b/t/CORE/re/subst_amp.t
+index f05d95d..3911918 100644
+--- a/t/CORE/re/subst_amp.t
++++ b/t/CORE/re/subst_amp.t
+@@ -1,9 +1,9 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

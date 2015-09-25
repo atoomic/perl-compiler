@@ -1,0 +1,29 @@
+From 49457e57c71ecc707ccaaaac91de3a7873bc6807 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:03 -0500
+Subject: [PATCH 319/389] B::C patch for re/pat_re_eval.t
+
+---
+ t/CORE/re/pat_re_eval.t | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/pat_re_eval.t b/t/CORE/re/pat_re_eval.t
+index e59b059..14d3a24 100644
+--- a/t/CORE/re/pat_re_eval.t
++++ b/t/CORE/re/pat_re_eval.t
+@@ -16,9 +16,9 @@ $| = 1;
+ 
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl'; require './charset_tools.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
++    unshift @INC, 't/CORE/lib';
+ }
+ 
+ 
+-- 
+2.3.8 (Apple Git-58)
+

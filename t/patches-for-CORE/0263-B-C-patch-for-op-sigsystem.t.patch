@@ -1,0 +1,26 @@
+From a520dff9df0c38d86a8067ca3b53e13a522dc696 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:59 -0500
+Subject: [PATCH 263/389] B::C patch for op/sigsystem.t
+
+---
+ t/CORE/op/sigsystem.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/op/sigsystem.t b/t/CORE/op/sigsystem.t
+index 25da854..ae36ba9 100644
+--- a/t/CORE/op/sigsystem.t
++++ b/t/CORE/op/sigsystem.t
+@@ -1,8 +1,7 @@
+ #!perl -w
+ 
+ BEGIN {
+-      chdir 't' if -d 't';
+-      require './test.pl';
++      require "t/CORE/test.pl";
+       skip_all_if_miniperl();
+       skip_all_without_config(qw(d_fork));
+ }
+-- 
+2.3.8 (Apple Git-58)
+

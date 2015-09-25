@@ -1,0 +1,26 @@
+From 37568ff58c2db98caafd878cf6e57d56491db021 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 360/389] B::C patch for uni/chr.t
+
+---
+ t/CORE/uni/chr.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/chr.t b/t/CORE/uni/chr.t
+index 390cdb1..6468128 100644
+--- a/t/CORE/uni/chr.t
++++ b/t/CORE/uni/chr.t
+@@ -1,8 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+     skip_all_without_dynamic_extension('Encode');
+     skip_all("no encoding pragma in EBCDIC") if $::IS_EBCDIC;
+     skip_all_without_perlio();
+-- 
+2.3.8 (Apple Git-58)
+

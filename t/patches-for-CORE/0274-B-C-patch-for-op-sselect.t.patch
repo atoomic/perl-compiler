@@ -1,0 +1,31 @@
+From f80ff62f5c7affad238c64fe5833eac10071c2c8 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:00 -0500
+Subject: [PATCH 274/389] B::C patch for op/sselect.t
+
+---
+ t/CORE/op/sselect.t | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/t/CORE/op/sselect.t b/t/CORE/op/sselect.t
+index 212c69a..506deaa 100644
+--- a/t/CORE/op/sselect.t
++++ b/t/CORE/op/sselect.t
+@@ -2,13 +2,10 @@
+ 
+ my $hires;
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = ('.', '../lib');
++    require "t/CORE/test.pl";
+     $hires = eval 'use Time::HiResx "time"; 1';
+ }
+ 
+-require './test.pl';
+-
+ skip_all("Win32 miniperl has no socket select")
+   if $^O eq "MSWin32" && is_miniperl();
+ 
+-- 
+2.3.8 (Apple Git-58)
+

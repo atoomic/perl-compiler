@@ -1,0 +1,28 @@
+From e0989db32bc130cf5b3ef849a90694a2c481f304 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:51 -0500
+Subject: [PATCH 170/389] B::C patch for op/evalbytes.t
+
+---
+ t/CORE/op/evalbytes.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/evalbytes.t b/t/CORE/op/evalbytes.t
+index cca7c04..9ad5939 100644
+--- a/t/CORE/op/evalbytes.t
++++ b/t/CORE/op/evalbytes.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl'; require './charset_tools.pl';
++    require 't/CORE/test.pl';
++    require 't/CORE/charset_tools.pl';
+ }
+ 
+ plan(tests => 8);
+-- 
+2.3.8 (Apple Git-58)
+

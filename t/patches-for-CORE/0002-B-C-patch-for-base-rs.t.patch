@@ -1,0 +1,25 @@
+From bff099b0981e46f8f9f76f8aeaeaf45d08f6f9f1 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:33 -0500
+Subject: [PATCH 002/389] B::C patch for base/rs.t
+
+---
+ t/CORE/base/rs.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/base/rs.t b/t/CORE/base/rs.t
+index 6f3c4b5..f40ff37 100644
+--- a/t/CORE/base/rs.t
++++ b/t/CORE/base/rs.t
+@@ -126,7 +126,7 @@ $/ = "\n";
+  # If we do not include the lib directories, we may end up picking up a
+  # binary-incompatible previously-installed version. The eval won’t help in
+  # intercepting a SIGTRAP.
+- local @INC = ("../lib", "lib", @INC);
++ local @INC = ("t/CORE/lib", @INC);
+  if (not eval q/use PerelIO::scalar; 1/) {
+   # In-memory files necessitate PerlIO::scalar, thus a perl with
+   # perlio and dynaloading enabled. miniperl won't be able to run this
+-- 
+2.3.8 (Apple Git-58)
+

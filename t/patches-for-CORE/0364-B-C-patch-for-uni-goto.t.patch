@@ -1,0 +1,26 @@
+From f7afdb6952f6e69beffd34720432314b5bdc398f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 364/389] B::C patch for uni/goto.t
+
+---
+ t/CORE/uni/goto.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/goto.t b/t/CORE/uni/goto.t
+index 76132bc..7e193ec 100644
+--- a/t/CORE/uni/goto.t
++++ b/t/CORE/uni/goto.t
+@@ -1,8 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ plan tests => 4;
+-- 
+2.3.8 (Apple Git-58)
+

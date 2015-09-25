@@ -1,0 +1,28 @@
+From 1e57a9e0aae1a616cbcf4c3a41e0664a5e223f11 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:52 -0500
+Subject: [PATCH 181/389] B::C patch for op/fork.t
+
+---
+ t/CORE/op/fork.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/fork.t b/t/CORE/op/fork.t
+index 77cc7b7..af77e30 100644
+--- a/t/CORE/op/fork.t
++++ b/t/CORE/op/fork.t
+@@ -3,9 +3,8 @@
+ # tests for both real and emulated fork()
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+     require Config;
+     skip_all('no fork')
+ 	unless ($Config::Config{d_fork} or $Config::Config{d_pseudofork});
+-- 
+2.3.8 (Apple Git-58)
+

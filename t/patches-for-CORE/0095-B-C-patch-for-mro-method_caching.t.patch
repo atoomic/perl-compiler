@@ -1,0 +1,30 @@
+From 1a468ae9ead07b7823361f602a881e2e00edb3e2 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:44 -0500
+Subject: [PATCH 095/389] B::C patch for mro/method_caching.t
+
+---
+ t/CORE/mro/method_caching.t | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/t/CORE/mro/method_caching.t b/t/CORE/mro/method_caching.t
+index ab312a8..2260e31 100644
+--- a/t/CORE/mro/method_caching.t
++++ b/t/CORE/mro/method_caching.t
+@@ -1,12 +1,6 @@
+ #!./perl
+ 
+-BEGIN {
+-    unless (-d 'blib') {
+-        chdir 't' if -d 't';
+-        @INC = '../lib';
+-    }
+-    require './test.pl';
+-}
++BEGIN { require 't/CORE/test.pl' }
+ 
+ use strict;
+ no strict 'refs'; # we do a lot of this
+-- 
+2.3.8 (Apple Git-58)
+

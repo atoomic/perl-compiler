@@ -1,0 +1,26 @@
+From 7f822b00b5b7e73fed433eae47952f145825bd05 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:56 -0500
+Subject: [PATCH 229/389] B::C patch for op/oct.t
+
+---
+ t/CORE/op/oct.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/op/oct.t b/t/CORE/op/oct.t
+index 2324655..fddda00 100644
+--- a/t/CORE/op/oct.t
++++ b/t/CORE/op/oct.t
+@@ -2,8 +2,7 @@
+ 
+ # Tests 51 onwards are intentionally not all-warnings-clean
+ 
+-chdir 't' if -d 't';
+-require './test.pl';
++require "t/CORE/test.pl";
+ use strict;
+ 
+ plan(tests => 77);
+-- 
+2.3.8 (Apple Git-58)
+

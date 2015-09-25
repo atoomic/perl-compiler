@@ -1,0 +1,30 @@
+From a103894474993529eee94774d58861f8be0dee08 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:50 -0500
+Subject: [PATCH 158/389] B::C patch for op/defins.t
+
+---
+ t/CORE/op/defins.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/defins.t b/t/CORE/op/defins.t
+index 86e0dd8..062ae97 100644
+--- a/t/CORE/op/defins.t
++++ b/t/CORE/op/defins.t
+@@ -5,11 +5,10 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+     $SIG{__WARN__} = sub { $warns++; warn $_[0] };
++    require 't/CORE/test.pl';
+ }
+-require './test.pl';
++
+ plan( tests => 27 );
+ 
+ my $unix_mode = 1;
+-- 
+2.3.8 (Apple Git-58)
+

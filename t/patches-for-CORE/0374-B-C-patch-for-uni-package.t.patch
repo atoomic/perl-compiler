@@ -1,0 +1,26 @@
+From 6eabc986e70dc6f586bd1d80ed1ce544036fbb76 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:08 -0500
+Subject: [PATCH 374/389] B::C patch for uni/package.t
+
+---
+ t/CORE/uni/package.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/package.t b/t/CORE/uni/package.t
+index 1480ebd..0167744 100644
+--- a/t/CORE/uni/package.t
++++ b/t/CORE/uni/package.t
+@@ -3,8 +3,7 @@
+ # Checks if 'package' work as intended.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ plan (tests => 18);
+-- 
+2.3.8 (Apple Git-58)
+

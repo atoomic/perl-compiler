@@ -1,0 +1,28 @@
+From a575b54645934117b3376aa08ac0d9edba1f52d2 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:56 -0500
+Subject: [PATCH 234/389] B::C patch for op/pack.t
+
+---
+ t/CORE/op/pack.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/pack.t b/t/CORE/op/pack.t
+index 1b0fd0d..396f546 100644
+--- a/t/CORE/op/pack.t
++++ b/t/CORE/op/pack.t
+@@ -1,9 +1,8 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl'; require './charset_tools.pl';
+-    set_up_inc(qw '../lib ../dist/Math-BigInt/lib');
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
+ }
+ 
+ # This is truth in an if statement, and could be a skip message
+-- 
+2.3.8 (Apple Git-58)
+

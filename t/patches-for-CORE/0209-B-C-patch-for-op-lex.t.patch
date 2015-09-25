@@ -1,0 +1,25 @@
+From ac4cadf7f2e703efa8caebf512fe9c9f68d9a64b Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:54 -0500
+Subject: [PATCH 209/389] B::C patch for op/lex.t
+
+---
+ t/CORE/op/lex.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/op/lex.t b/t/CORE/op/lex.t
+index a4ce65c..c11643b 100644
+--- a/t/CORE/op/lex.t
++++ b/t/CORE/op/lex.t
+@@ -5,7 +5,7 @@
+ use strict;
+ use warnings;
+ 
+-BEGIN { chdir 't' if -d 't'; require './test.pl'; }
++BEGIN { require "t/CORE/test.pl"; }
+ 
+ plan(tests => 25);
+ 
+-- 
+2.3.8 (Apple Git-58)
+

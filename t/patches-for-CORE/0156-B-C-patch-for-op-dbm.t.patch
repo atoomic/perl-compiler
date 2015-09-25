@@ -1,0 +1,27 @@
+From 9aa8fb3b92aaa2565e7fd6c7ccdc6db01db4b6d4 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:50 -0500
+Subject: [PATCH 156/389] B::C patch for op/dbm.t
+
+---
+ t/CORE/op/dbm.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/dbm.t b/t/CORE/op/dbm.t
+index 6c51dad..7cd7361 100644
+--- a/t/CORE/op/dbm.t
++++ b/t/CORE/op/dbm.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    require 't/CORE/test.pl';
+ 
+     eval { require AnyDBM_File }; # not all places have dbm* functions
+     skip_all("No dbm functions") if $@;
+-- 
+2.3.8 (Apple Git-58)
+

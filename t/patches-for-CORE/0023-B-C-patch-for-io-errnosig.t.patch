@@ -1,0 +1,26 @@
+From 972ca756a21c3e757fe3148180d1e75b41fd7e0f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:38 -0500
+Subject: [PATCH 023/389] B::C patch for io/errnosig.t
+
+---
+ t/CORE/io/errnosig.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/io/errnosig.t b/t/CORE/io/errnosig.t
+index ef6a7bd..e66dacb 100644
+--- a/t/CORE/io/errnosig.t
++++ b/t/CORE/io/errnosig.t
+@@ -1,8 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
++    push @INC, qw{t/CORE/lib};
+ }
+ 
+ require Config; import Config;
+-- 
+2.3.8 (Apple Git-58)
+

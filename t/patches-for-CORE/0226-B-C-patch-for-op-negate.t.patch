@@ -1,0 +1,27 @@
+From 2a1e1f477431504b52cfce2159cf484b024a6b9f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:56 -0500
+Subject: [PATCH 226/389] B::C patch for op/negate.t
+
+---
+ t/CORE/op/negate.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/negate.t b/t/CORE/op/negate.t
+index 8fa8c0a..2f086c7 100644
+--- a/t/CORE/op/negate.t
++++ b/t/CORE/op/negate.t
+@@ -1,9 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ plan tests => 48;
+-- 
+2.3.8 (Apple Git-58)
+

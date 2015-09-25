@@ -1,0 +1,26 @@
+From bf104e7d296a7a56547610960cc8deb6b11c0642 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:06 -0500
+Subject: [PATCH 353/389] B::C patch for re/uniprops.t
+
+---
+ t/CORE/re/uniprops.t | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/t/CORE/re/uniprops.t b/t/CORE/re/uniprops.t
+index f53a9c2..9899fc3 100644
+--- a/t/CORE/re/uniprops.t
++++ b/t/CORE/re/uniprops.t
+@@ -2,7 +2,8 @@ use strict;
+ use warnings;
+ no warnings 'once';
+ 
+-if ($^O eq 'dec_osf') {
++# disabled by cPanel
++if (1 || $^O eq 'dec_osf') {
+    print "1..0 # $^O cannot handle this test\n";
+    exit(0);
+ }
+-- 
+2.3.8 (Apple Git-58)
+

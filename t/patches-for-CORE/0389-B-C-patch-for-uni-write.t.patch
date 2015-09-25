@@ -1,0 +1,26 @@
+From 8458772144d319bc455f9a1b595dd61b4c85d057 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:09 -0500
+Subject: [PATCH 389/389] B::C patch for uni/write.t
+
+---
+ t/CORE/uni/write.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/write.t b/t/CORE/uni/write.t
+index c099957..ef4710b 100644
+--- a/t/CORE/uni/write.t
++++ b/t/CORE/uni/write.t
+@@ -2,8 +2,7 @@
+ use strict;
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+     skip_all_without_perlio();
+ }
+ 
+-- 
+2.3.8 (Apple Git-58)
+

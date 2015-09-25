@@ -1,0 +1,29 @@
+From 32218cd1b5a0904187a4607c3946face2765d323 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:09 -0500
+Subject: [PATCH 386/389] B::C patch for uni/universal.t
+
+---
+ t/CORE/uni/universal.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/uni/universal.t b/t/CORE/uni/universal.t
+index 56b41d4..1cf98f2 100644
+--- a/t/CORE/uni/universal.t
++++ b/t/CORE/uni/universal.t
+@@ -4,10 +4,9 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw '../lib ../dist/base/lib';
+     $| = 1;
+-    require "./test.pl";
++    push @INC, "t/CORE/lib";
++    require "t/CORE/test.pl";
+ }
+ 
+ use utf8;
+-- 
+2.3.8 (Apple Git-58)
+

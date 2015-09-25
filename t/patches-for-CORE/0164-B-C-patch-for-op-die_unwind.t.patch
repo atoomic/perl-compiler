@@ -1,0 +1,25 @@
+From efb2308666a0fbd61a91e088a05cb7f79626d681 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:50 -0500
+Subject: [PATCH 164/389] B::C patch for op/die_unwind.t
+
+---
+ t/CORE/op/die_unwind.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/op/die_unwind.t b/t/CORE/op/die_unwind.t
+index eee1ce5..27d088f 100644
+--- a/t/CORE/op/die_unwind.t
++++ b/t/CORE/op/die_unwind.t
+@@ -1,7 +1,6 @@
+ #!./perl -w
+ 
+-chdir 't' if -d 't';
+-require './test.pl';
++require 't/CORE/test.pl';
+ use strict;
+ 
+ #
+-- 
+2.3.8 (Apple Git-58)
+

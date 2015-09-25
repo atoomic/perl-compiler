@@ -1,0 +1,29 @@
+From a947f088a8ffa6ab0960d2bbc7ca46aa7d35fdac Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:04 -0500
+Subject: [PATCH 324/389] B::C patch for re/qr.t
+
+---
+ t/CORE/re/qr.t | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/qr.t b/t/CORE/re/qr.t
+index 811f5c5..c476faa 100644
+--- a/t/CORE/re/qr.t
++++ b/t/CORE/re/qr.t
+@@ -1,9 +1,9 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+ }
+ 
+ plan tests => 5;
+-- 
+2.3.8 (Apple Git-58)
+

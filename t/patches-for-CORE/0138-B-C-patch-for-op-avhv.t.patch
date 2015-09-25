@@ -1,0 +1,27 @@
+From 8897e5c119516e50c6ab8fb0f461dcf6636ec6be Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:48 -0500
+Subject: [PATCH 138/389] B::C patch for op/avhv.t
+
+---
+ t/CORE/op/avhv.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/avhv.t b/t/CORE/op/avhv.t
+index 39a54dc..aaedcc6 100644
+--- a/t/CORE/op/avhv.t
++++ b/t/CORE/op/avhv.t
+@@ -4,9 +4,7 @@
+ # they were properly removed in 5.9.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require 't/CORE/test.pl';
+ }
+ 
+ require Tie::Array;
+-- 
+2.3.8 (Apple Git-58)
+

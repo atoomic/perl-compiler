@@ -1,0 +1,27 @@
+From e0a3e542ddf8dfa458469d1dd3b79251d3826112 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:54 -0500
+Subject: [PATCH 204/389] B::C patch for op/kvaslice.t
+
+---
+ t/CORE/op/kvaslice.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/kvaslice.t b/t/CORE/op/kvaslice.t
+index 16ee446..a0b78c1 100644
+--- a/t/CORE/op/kvaslice.t
++++ b/t/CORE/op/kvaslice.t
+@@ -1,9 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+ }
+ 
+ # use strict;
+-- 
+2.3.8 (Apple Git-58)
+

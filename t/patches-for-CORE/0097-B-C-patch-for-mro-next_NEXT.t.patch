@@ -1,0 +1,26 @@
+From d178492dade1beef00ee907d9cd87d5fdace0757 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:44 -0500
+Subject: [PATCH 097/389] B::C patch for mro/next_NEXT.t
+
+---
+ t/CORE/mro/next_NEXT.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/mro/next_NEXT.t b/t/CORE/mro/next_NEXT.t
+index 7f61c4d..8df4678 100644
+--- a/t/CORE/mro/next_NEXT.t
++++ b/t/CORE/mro/next_NEXT.t
+@@ -4,8 +4,7 @@ use strict;
+ use warnings;
+ use NEXT;
+ 
+-chdir 't' if -d 't';
+-require './test.pl';
++BEGIN { require 't/CORE/test.pl' }
+ plan(tests => 4);
+ 
+ {
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,27 @@
+From b9be183b02b0669797e75786beec6a28d528bc7a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:02 -0500
+Subject: [PATCH 298/389] B::C patch for op/upgrade.t
+
+---
+ t/CORE/op/upgrade.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/upgrade.t b/t/CORE/op/upgrade.t
+index d451cd5..d1e934e 100644
+--- a/t/CORE/op/upgrade.t
++++ b/t/CORE/op/upgrade.t
+@@ -5,9 +5,7 @@
+ # build or testsuite that upgraded an NV to an RV
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

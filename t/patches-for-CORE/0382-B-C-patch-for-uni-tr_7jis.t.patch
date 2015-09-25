@@ -1,0 +1,26 @@
+From 06ee279c5d1563a56d0be6ab91b7592d5ea740f0 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:09 -0500
+Subject: [PATCH 382/389] B::C patch for uni/tr_7jis.t
+
+---
+ t/CORE/uni/tr_7jis.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/uni/tr_7jis.t b/t/CORE/uni/tr_7jis.t
+index d1735f9..fbec39a 100644
+--- a/t/CORE/uni/tr_7jis.t
++++ b/t/CORE/uni/tr_7jis.t
+@@ -5,8 +5,7 @@
+ # -- dankogai
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
++    require "t/CORE/test.pl";
+     skip_all_without_dynamic_extension('Encode');
+     skip_all("no encoding pragma in EBCDIC") if $::IS_EBCDIC;
+     skip_all_without_perlio();
+-- 
+2.3.8 (Apple Git-58)
+

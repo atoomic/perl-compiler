@@ -1,0 +1,35 @@
+From d6a8844db1724bea26fd3c4d9c4a5250702e5751 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:03 -0500
+Subject: [PATCH 317/389] B::C patch for re/pat_advanced.t
+
+---
+ t/CORE/re/pat_advanced.t | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/re/pat_advanced.t b/t/CORE/re/pat_advanced.t
+index 891bb66..214cc1b 100644
+--- a/t/CORE/re/pat_advanced.t
++++ b/t/CORE/re/pat_advanced.t
+@@ -5,13 +5,13 @@
+ # that does fit that format, add it to re/re_tests, not here.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(../lib .);
+-    require './test.pl';
+-    require './charset_tools.pl';
+-    skip_all_if_miniperl("miniperl can't load Tie::Hash::NamedCapture, need for %+ and %-");
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
++    unshift @INC, 't/CORE/lib';
+ }
+ 
++skip_all_if_miniperl("miniperl can't load Tie::Hash::NamedCapture, need for %+ and %-");
++
+ use strict;
+ use warnings;
+ use 5.010;
+-- 
+2.3.8 (Apple Git-58)
+

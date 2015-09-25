@@ -1,0 +1,27 @@
+From 41ac5dd15b53e81b042d15f7f8975d9a3a6ecd3b Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:59 -0500
+Subject: [PATCH 265/389] B::C patch for op/smartkve.t
+
+---
+ t/CORE/op/smartkve.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/smartkve.t b/t/CORE/op/smartkve.t
+index 1b54adc..b78c83c 100644
+--- a/t/CORE/op/smartkve.t
++++ b/t/CORE/op/smartkve.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+ }
+ use strict;
+ use warnings;
+-- 
+2.3.8 (Apple Git-58)
+

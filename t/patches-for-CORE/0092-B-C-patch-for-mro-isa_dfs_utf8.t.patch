@@ -1,0 +1,28 @@
+From e82aa5a55c7257e1d9aaecf6091b701493997806 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:44 -0500
+Subject: [PATCH 092/389] B::C patch for mro/isa_dfs_utf8.t
+
+---
+ t/CORE/mro/isa_dfs_utf8.t | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/t/CORE/mro/isa_dfs_utf8.t b/t/CORE/mro/isa_dfs_utf8.t
+index 1c95eaa..bb3b4dd 100644
+--- a/t/CORE/mro/isa_dfs_utf8.t
++++ b/t/CORE/mro/isa_dfs_utf8.t
+@@ -1,10 +1,6 @@
+ #!perl -w
+ 
+-BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require "./test.pl";
+-}
++BEGIN { require 't/CORE/test.pl' }
+ 
+ use strict;
+ use utf8;
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,27 @@
+From a39dcada9860a53d67f21226cd444f22cb996d22 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:59 -0500
+Subject: [PATCH 272/389] B::C patch for op/sprintf2.t
+
+---
+ t/CORE/op/sprintf2.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/sprintf2.t b/t/CORE/op/sprintf2.t
+index 1a4dd30..1e78efb 100644
+--- a/t/CORE/op/sprintf2.t
++++ b/t/CORE/op/sprintf2.t
+@@ -3,9 +3,7 @@
+ # Tests for sprintf that do not fit the format of sprintf.t.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++	require "t/CORE/test.pl";
+ }   
+ 
+ # We'll run 12 extra tests (see below) if $Q is false.
+-- 
+2.3.8 (Apple Git-58)
+

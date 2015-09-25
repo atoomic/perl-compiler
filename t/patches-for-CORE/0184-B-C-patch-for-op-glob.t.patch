@@ -1,0 +1,32 @@
+From 5920fe737fe7338470071ba465722283984c49b4 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:52 -0500
+Subject: [PATCH 184/389] B::C patch for op/glob.t
+
+---
+ t/CORE/op/glob.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/glob.t b/t/CORE/op/glob.t
+index 7eec330..6820e0e 100644
+--- a/t/CORE/op/glob.t
++++ b/t/CORE/op/glob.t
+@@ -1,13 +1,12 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ plan( tests => 18 );
+ 
++chdir('t/CORE');
+ @oops = @ops = <op/*>;
+ 
+ if ($^O eq 'MSWin32') {
+-- 
+2.3.8 (Apple Git-58)
+

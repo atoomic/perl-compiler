@@ -1,0 +1,40 @@
+From 100dd86ab024806dfce32db5a76f889a5cc716da Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:41 -0500
+Subject: [PATCH 051/389] B::C patch for lib/warnings/doio
+
+---
+ t/CORE/lib/warnings/doio | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/lib/warnings/doio b/t/CORE/lib/warnings/doio
+index baa6b97..a5bba61 100644
+--- a/t/CORE/lib/warnings/doio
++++ b/t/CORE/lib/warnings/doio
+@@ -305,9 +305,9 @@ EOM
+ }
+ use warnings 'io' ;
+ close STDOUT;
+-open FH1, "../harness"; close FH1;
++open FH1, "t/CORE/TEST"; close FH1;
+ no warnings 'io' ;
+-open FH2, "../harness"; close FH2;
++open FH2, "t/CORE/TEST"; close FH2;
+ EXPECT
+ Filehandle STDOUT reopened as FH1 only for input at - line 14.
+ ########
+@@ -326,9 +326,9 @@ EOM
+ }
+ use warnings 'io' ;
+ close STDOUT;
+-open ᶠᚻ1, "../harness"; close ᶠᚻ1;
++open ᶠᚻ1, "t/CORE/TEST"; close ᶠᚻ1;
+ no warnings 'io' ;
+-open ᶠᚻ2, "../harness"; close ᶠᚻ2;
++open ᶠᚻ2, "t/CORE/TEST"; close ᶠᚻ2;
+ EXPECT
+ Filehandle STDOUT reopened as ᶠᚻ1 only for input at - line 16.
+ ########
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,26 @@
+From 129c95ff44309115e30fe848649c34dbdab23809 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:46 -0500
+Subject: [PATCH 116/389] B::C patch for mro/pkg_gen.t
+
+---
+ t/CORE/mro/pkg_gen.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/mro/pkg_gen.t b/t/CORE/mro/pkg_gen.t
+index e236ea9..f431bc1 100644
+--- a/t/CORE/mro/pkg_gen.t
++++ b/t/CORE/mro/pkg_gen.t
+@@ -3,8 +3,7 @@
+ use strict;
+ use warnings;
+ 
+-chdir 't' if -d 't';
+-require q(./test.pl); plan(tests => 7);
++require 't/CORE/test.pl'; plan(tests => 7);
+ 
+ require mro;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

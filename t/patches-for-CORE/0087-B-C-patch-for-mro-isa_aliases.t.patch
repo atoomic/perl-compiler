@@ -1,0 +1,24 @@
+From 0ce135dc3bc2b0ca12e66241b00be23764e6b74e Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:44 -0500
+Subject: [PATCH 087/389] B::C patch for mro/isa_aliases.t
+
+---
+ t/CORE/mro/isa_aliases.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/mro/isa_aliases.t b/t/CORE/mro/isa_aliases.t
+index 6ce81d1..c5daeb3 100644
+--- a/t/CORE/mro/isa_aliases.t
++++ b/t/CORE/mro/isa_aliases.t
+@@ -1,6 +1,6 @@
+ #!./perl
+ 
+-BEGIN { chdir 't' if -d 't'; @INC = '../lib'; require './test.pl' }
++BEGIN { require 't/CORE/test.pl' }
+ 
+ plan 13;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

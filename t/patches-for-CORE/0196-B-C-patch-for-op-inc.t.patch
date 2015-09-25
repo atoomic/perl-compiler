@@ -1,0 +1,27 @@
+From 4b1c765591463c957bea1b03e4cf2dc7cbcaac23 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:53 -0500
+Subject: [PATCH 196/389] B::C patch for op/inc.t
+
+---
+ t/CORE/op/inc.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/inc.t b/t/CORE/op/inc.t
+index 517fa2d..325e5cd 100644
+--- a/t/CORE/op/inc.t
++++ b/t/CORE/op/inc.t
+@@ -1,9 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++  require "t/CORE/test.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

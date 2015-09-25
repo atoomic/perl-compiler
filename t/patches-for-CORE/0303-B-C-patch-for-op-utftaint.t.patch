@@ -1,0 +1,28 @@
+From 6c9689d266b910fe14cf4876b5eb1518f7e78f54 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:02 -0500
+Subject: [PATCH 303/389] B::C patch for op/utftaint.t
+
+---
+ t/CORE/op/utftaint.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/utftaint.t b/t/CORE/op/utftaint.t
+index da4f842..1d60350 100644
+--- a/t/CORE/op/utftaint.t
++++ b/t/CORE/op/utftaint.t
+@@ -2,9 +2,8 @@
+ # tests whether tainting works with UTF-8
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    unshift @INC, 't/CORE';
++    require 'test.pl';
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

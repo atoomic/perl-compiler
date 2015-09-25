@@ -1,0 +1,28 @@
+From 9c5c34e5a3a969b4d9b0c6a36c8074e0704117ba Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:54 -0500
+Subject: [PATCH 207/389] B::C patch for op/leaky-magic.t
+
+---
+ t/CORE/op/leaky-magic.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/leaky-magic.t b/t/CORE/op/leaky-magic.t
+index dd94d30..c0e70d5 100644
+--- a/t/CORE/op/leaky-magic.t
++++ b/t/CORE/op/leaky-magic.t
+@@ -5,9 +5,8 @@
+ # in other packages (%Net::DNS::RR::SIG, ${"'Oh no'!"}, etc.).
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    @INC = '../lib';
++    require 't/CORE/test.pl';
++    push @INC, "t/CORE/lib";
+ }
+ 
+ # Hack to allow test counts to be specified piecemeal
+-- 
+2.3.8 (Apple Git-58)
+

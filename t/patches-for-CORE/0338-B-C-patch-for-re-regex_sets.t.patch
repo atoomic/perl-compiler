@@ -1,0 +1,32 @@
+From 8e7359bbb2da461d5683efb6b27479c74e2e70c2 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:05 -0500
+Subject: [PATCH 338/389] B::C patch for re/regex_sets.t
+
+---
+ t/CORE/re/regex_sets.t | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/re/regex_sets.t b/t/CORE/re/regex_sets.t
+index 48a4f00..0ab32dc 100644
+--- a/t/CORE/re/regex_sets.t
++++ b/t/CORE/re/regex_sets.t
+@@ -6,12 +6,10 @@
+ # with the expected result.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = ('../lib','.','../ext/re');
+-    require './test.pl';
+-    require './test.pl'; require './charset_tools.pl';
+-    skip_all_without_unicode_tables();
++	require "t/CORE/test.pl";
++	require "t/CORE/charset_tools.pl";
+ }
++skip_all_without_unicode_tables();
+ 
+ use strict;
+ use warnings;
+-- 
+2.3.8 (Apple Git-58)
+

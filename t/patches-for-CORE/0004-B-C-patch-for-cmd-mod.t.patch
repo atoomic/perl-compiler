@@ -1,0 +1,25 @@
+From d2799caf699baf78eb2c34c5824e51b431742089 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:34 -0500
+Subject: [PATCH 004/389] B::C patch for cmd/mod.t
+
+---
+ t/CORE/cmd/mod.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/cmd/mod.t b/t/CORE/cmd/mod.t
+index d3048e7..ede0096 100644
+--- a/t/CORE/cmd/mod.t
++++ b/t/CORE/cmd/mod.t
+@@ -33,7 +33,7 @@ if (join(' ',@y) eq '0 2 4 6 8 10 12 14 16 18 20') {
+ }
+ 
+ # Well this is fragile...
+-open(foo,'./TEST') || open(foo,'TEST') || open(foo,'t/TEST');
++open(foo,'./t/CORE/TEST');
+ $x = 0;
+ $x++ while <foo>;
+ print $x > 50 && $x < 2000 ? "ok 8\n" : "not ok 8\n";
+-- 
+2.3.8 (Apple Git-58)
+

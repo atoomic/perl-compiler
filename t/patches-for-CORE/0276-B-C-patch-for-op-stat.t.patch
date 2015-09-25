@@ -1,0 +1,84 @@
+From b794687f1cd6678222fd0dd1b4458e6b16669949 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:00 -0500
+Subject: [PATCH 276/389] B::C patch for op/stat.t
+
+---
+ t/CORE/op/stat.t | 28 ++++++++++------------------
+ 1 file changed, 10 insertions(+), 18 deletions(-)
+
+diff --git a/t/CORE/op/stat.t b/t/CORE/op/stat.t
+index ad94b3f..535647b 100644
+--- a/t/CORE/op/stat.t
++++ b/t/CORE/op/stat.t
+@@ -1,23 +1,15 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';	# for which_perl() etc
++    require "t/CORE/test.pl";
+ }
+ 
+ use Config;
+-
++use File::Spec ();
+ my ($Null, $Curdir);
+-if(eval {require File::Spec; 1}) {
+-    $Null = File::Spec->devnull;
+-    $Curdir = File::Spec->curdir;
+-} else {
+-    die $@ unless is_miniperl();
+-    $Curdir = '.';
+-    diag("miniperl failed to load File::Spec, error is:\n$@");
+-    diag("\ncontinuing, assuming '.' for current directory. Some tests will be skipped.");
+-}
++
++$Null = File::Spec->devnull;
++$Curdir = File::Spec->curdir;
+ 
+ if ($^O eq 'MSWin32') {
+     # under minitest, buildcustomize sets this to 1, which means
+@@ -387,7 +379,7 @@ SKIP: {
+ 
+ 
+ # These aren't strictly "stat" calls, but so what?
+-my $statfile = './op/stat.t';
++my $statfile = 't/CORE/op/stat.t';
+ ok(  -T $statfile,    '-T');
+ ok(! -B $statfile,    '!-B');
+ ok(-B $Perl,      '-B');
+@@ -565,12 +557,12 @@ SKIP: {
+     # And now for the ambiguous bareword case
+     {
+ 	no warnings 'deprecated';
+-	ok(open(DIR, "TEST"), 'Can open "TEST" dir')
++	ok(open(DIR, "t/CORE/TEST"), 'Can open "TEST" dir')
+ 	    || diag "Can't open 'TEST':  $!";
+     }
+     my $size = (stat(DIR))[7];
+     ok(defined $size, "stat() on bareword works");
+-    is($size, -s "TEST", "size returned by stat of bareword is for the file");
++    is($size, -s "t/CORE/TEST", "size returned by stat of bareword is for the file");
+     ok(-f _, "ambiguous bareword uses file handle, not dir handle");
+     ok(-f DIR);
+     closedir DIR or die $!;
+@@ -598,12 +590,12 @@ SKIP: {
+ 	# And now for the ambiguous bareword case
+ 	{
+ 	    no warnings 'deprecated';
+-	    ok(open(DIR, "TEST"), 'Can open "TEST" dir')
++	    ok(open(DIR, "t/CORE/TEST"), 'Can open "TEST" dir')
+ 		|| diag "Can't open 'TEST':  $!";
+ 	}
+ 	my $size = (stat(*DIR{IO}))[7];
+ 	ok(defined $size, "stat() on *THINGY{IO} works");
+-	is($size, -s "TEST",
++	is($size, -s "t/CORE/TEST",
+ 	   "size returned by stat of *THINGY{IO} is for the file");
+ 	ok(-f _, "ambiguous *THINGY{IO} uses file handle, not dir handle");
+ 	ok(-f *DIR{IO});
+-- 
+2.3.8 (Apple Git-58)
+

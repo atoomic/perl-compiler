@@ -1,0 +1,29 @@
+From 51c0a5cb787ac5503e94cc04bfabcec870e776c0 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:04 -0500
+Subject: [PATCH 329/389] B::C patch for re/reg_email.t
+
+---
+ t/CORE/re/reg_email.t | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/reg_email.t b/t/CORE/re/reg_email.t
+index 4fc9dfe..3bf9e97 100644
+--- a/t/CORE/re/reg_email.t
++++ b/t/CORE/re/reg_email.t
+@@ -4,9 +4,9 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

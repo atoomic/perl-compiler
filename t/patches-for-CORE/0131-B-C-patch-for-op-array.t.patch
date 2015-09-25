@@ -1,0 +1,27 @@
+From 1fb92ec7468dc36be05cf87521b8f6c23f7b4ef5 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:48 -0500
+Subject: [PATCH 131/389] B::C patch for op/array.t
+
+---
+ t/CORE/op/array.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/array.t b/t/CORE/op/array.t
+index 7239d48..9593961 100644
+--- a/t/CORE/op/array.t
++++ b/t/CORE/op/array.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = ('.', '../lib');
+-    require './test.pl';
++    require 't/CORE/test.pl';
+ }
+ 
+ plan (172);
+-- 
+2.3.8 (Apple Git-58)
+

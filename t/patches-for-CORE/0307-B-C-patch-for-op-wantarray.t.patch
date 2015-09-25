@@ -1,0 +1,28 @@
+From dd241d2ab23fb29c2e53b0ab4b9159d21fa5ba5c Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:02 -0500
+Subject: [PATCH 307/389] B::C patch for op/wantarray.t
+
+---
+ t/CORE/op/wantarray.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/wantarray.t b/t/CORE/op/wantarray.t
+index 433a839..fb4fcef 100644
+--- a/t/CORE/op/wantarray.t
++++ b/t/CORE/op/wantarray.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

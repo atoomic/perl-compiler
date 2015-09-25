@@ -1,0 +1,29 @@
+From 9ef5b3f004f3aeffb2169e754914dd30d2a8074a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:06 -0500
+Subject: [PATCH 354/389] B::C patch for uni/attrs.t
+
+---
+ t/CORE/uni/attrs.t | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/uni/attrs.t b/t/CORE/uni/attrs.t
+index be064b9..391ad36 100644
+--- a/t/CORE/uni/attrs.t
++++ b/t/CORE/uni/attrs.t
+@@ -3,9 +3,9 @@
+ # Regression tests for attributes.pm and the C< : attrs> syntax.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+     skip_all_if_miniperl("miniperl can't load attributes");
+ }
+ 
+-- 
+2.3.8 (Apple Git-58)
+

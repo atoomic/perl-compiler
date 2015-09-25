@@ -1,0 +1,30 @@
+From 48e5ee5990159b0c3aca528f2d7d5a5918bd9e33 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:06 -0500
+Subject: [PATCH 349/389] B::C patch for re/subst.t
+
+---
+ t/CORE/re/subst.t | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/t/CORE/re/subst.t b/t/CORE/re/subst.t
+index 6963c42..e94dd32 100644
+--- a/t/CORE/re/subst.t
++++ b/t/CORE/re/subst.t
+@@ -1,11 +1,9 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+     require Config; import Config;
+-    require './charset_tools.pl';
++    require "t/CORE/charset_tools.pl";
+ }
+ 
+ plan( tests => 261 );
+-- 
+2.3.8 (Apple Git-58)
+

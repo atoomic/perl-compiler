@@ -1,0 +1,43 @@
+From d85161c03ce965164d71542c4af1464b9d6c5916 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:49 -0500
+Subject: [PATCH 154/389] B::C patch for op/crypt.t
+
+---
+ t/CORE/op/crypt.t | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/op/crypt.t b/t/CORE/op/crypt.t
+index 47e546d..a1a118b 100644
+--- a/t/CORE/op/crypt.t
++++ b/t/CORE/op/crypt.t
+@@ -1,22 +1,21 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
++    push @INC, qw{t/CORE/lib};
+ }
+ 
+ BEGIN {
+     use Config;
+ 
+-    require "./test.pl";
+-
++    require "test.pl";
++}
+     if( !$Config{d_crypt} ) {
+         skip_all("crypt unimplemented");
+     }
+     else {
+         plan(tests => 6);
+     }
+-}
++
+ 
+ # Can't assume too much about the string returned by crypt(),
+ # and about how many bytes of the encrypted (really, hashed)
+-- 
+2.3.8 (Apple Git-58)
+

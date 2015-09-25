@@ -1,0 +1,38 @@
+From 89e07b94b413cd190bb8edc73eb6e76532a3c7a8 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:44 -0500
+Subject: [PATCH 086/389] B::C patch for mro/inconsistent_c3_utf8.t
+
+---
+ t/CORE/mro/inconsistent_c3_utf8.t | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/mro/inconsistent_c3_utf8.t b/t/CORE/mro/inconsistent_c3_utf8.t
+index b7baa3e..fc262e2 100644
+--- a/t/CORE/mro/inconsistent_c3_utf8.t
++++ b/t/CORE/mro/inconsistent_c3_utf8.t
+@@ -1,10 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    unless (-d 'blib') {
+-        chdir 't' if -d 't';
+-        @INC = '../lib';
+-    }
++    push @INC, "t/CORE/lib";
++    require q(test.pl);
+ }
+ 
+ use strict;
+@@ -13,7 +11,7 @@ use warnings;
+ use utf8;
+ use open qw( :utf8 :std );
+ 
+-require q(./test.pl); plan(tests => 1);
++plan(tests => 1);
+ 
+ require mro;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

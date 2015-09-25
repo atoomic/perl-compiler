@@ -1,0 +1,26 @@
+From 0e6f2bda4d412f764ae663bbd698b7275f280e5e Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:58 -0500
+Subject: [PATCH 261/389] B::C patch for op/sigdispatch.t
+
+---
+ t/CORE/op/sigdispatch.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/op/sigdispatch.t b/t/CORE/op/sigdispatch.t
+index 9808f7b..fa3b600 100644
+--- a/t/CORE/op/sigdispatch.t
++++ b/t/CORE/op/sigdispatch.t
+@@ -3,8 +3,7 @@
+ # We assume that TestInit has been used.
+ 
+ BEGIN {
+-      chdir 't' if -d 't';
+-      require './test.pl';
++    require "t/CORE/test.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

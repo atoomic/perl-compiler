@@ -1,0 +1,26 @@
+From 22e56d2d404e72eb4bc11e24f02dac83531df823 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:59 -0500
+Subject: [PATCH 273/389] B::C patch for op/srand.t
+
+---
+ t/CORE/op/srand.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/op/srand.t b/t/CORE/op/srand.t
+index 61c64d2..0956674 100644
+--- a/t/CORE/op/srand.t
++++ b/t/CORE/op/srand.t
+@@ -1,8 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir "t" if -d "t";
+-    @INC = qw(. ../lib);
++    push @INC, qw{t/CORE/lib};
+ }
+ 
+ # Test srand.
+-- 
+2.3.8 (Apple Git-58)
+

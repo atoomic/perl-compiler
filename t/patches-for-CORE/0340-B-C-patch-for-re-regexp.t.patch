@@ -1,0 +1,34 @@
+From 12042dc09dc195e03aa58eaa947ac2ad88e84f71 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:05 -0500
+Subject: [PATCH 340/389] B::C patch for re/regexp.t
+
+---
+ t/CORE/re/regexp.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/regexp.t b/t/CORE/re/regexp.t
+index f27a027..11e192d 100644
+--- a/t/CORE/re/regexp.t
++++ b/t/CORE/re/regexp.t
+@@ -64,8 +64,6 @@ BEGIN {
+ 	open TESTS, $file or die "Can't open $file";
+     }
+ 
+-    chdir 't' if -d 't';
+-    @INC = qw '../lib ../ext/re';
+     if (!defined &DynaLoader::boot_DynaLoader) { # miniperl
+ 	print("1..0 # Skip Unicode tables not built yet\n"), exit
+ 	    unless eval 'require "unicore/Heavy.pl"';
+@@ -103,7 +101,7 @@ use vars qw($qr $skip_amp $qr_embed $qr_embed_thr $regex_sets); # set by our cal
+ 
+ 
+ if (!defined $file) {
+-    open TESTS, 're/re_tests' or die "Can't open re/re_tests: $!";
++    open TESTS, 't/CORE/re/re_tests' or die "Can't open re/re_tests: $!";
+ }
+ 
+ my @tests = <TESTS>;
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,37 @@
+From 4b190ab3631fc98358afefafef6e2074ae41b2bf Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:37 -0500
+Subject: [PATCH 020/389] B::C patch for io/eintr.t
+
+---
+ t/CORE/io/eintr.t | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/t/CORE/io/eintr.t b/t/CORE/io/eintr.t
+index ca15232..47f3f9c 100644
+--- a/t/CORE/io/eintr.t
++++ b/t/CORE/io/eintr.t
+@@ -7,9 +7,8 @@
+ # principally, don't segfault).
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 'test.pl';
+     skip_all_without_dynamic_extension('Fcntl');
+ }
+ 
+@@ -17,8 +16,6 @@ use warnings;
+ use strict;
+ use Config;
+ 
+-require './test.pl';
+-
+ my $piped;
+ eval {
+ 	pipe my $in, my $out;
+-- 
+2.3.8 (Apple Git-58)
+

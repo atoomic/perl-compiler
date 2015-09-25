@@ -1,0 +1,27 @@
+From 3eb8a4e7ce770599f387e3f9aff067115ee921ea Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:02 -0500
+Subject: [PATCH 304/389] B::C patch for op/vec.t
+
+---
+ t/CORE/op/vec.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/vec.t b/t/CORE/op/vec.t
+index 141a6da..3868f12 100644
+--- a/t/CORE/op/vec.t
++++ b/t/CORE/op/vec.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+ }
+ 
+ plan( tests => 35 );
+-- 
+2.3.8 (Apple Git-58)
+

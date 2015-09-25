@@ -1,0 +1,25 @@
+From 377fe6bfb94e379890c488a299db5e4fce857ced Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:42 -0500
+Subject: [PATCH 072/389] B::C patch for mro/basic_05_dfs.t
+
+---
+ t/CORE/mro/basic_05_dfs.t | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/t/CORE/mro/basic_05_dfs.t b/t/CORE/mro/basic_05_dfs.t
+index 0fee5c5..6d07c63 100644
+--- a/t/CORE/mro/basic_05_dfs.t
++++ b/t/CORE/mro/basic_05_dfs.t
+@@ -3,7 +3,7 @@
+ use strict;
+ use warnings;
+ 
+-require q(./test.pl); plan(tests => 2);
++require 't/CORE/test.pl'; plan(tests => 2);
+ 
+ =pod
+ 
+-- 
+2.3.8 (Apple Git-58)
+

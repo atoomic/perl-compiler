@@ -1,0 +1,26 @@
+From 8057f3baf9abc869711b6a597b4f1a7b10ea7f57 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:35 -0500
+Subject: [PATCH 008/389] B::C patch for comp/proto.t
+
+---
+ t/CORE/comp/proto.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/comp/proto.t b/t/CORE/comp/proto.t
+index 39891b4..b953244 100644
+--- a/t/CORE/comp/proto.t
++++ b/t/CORE/comp/proto.t
+@@ -10,8 +10,7 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
++    push @INC, "t/CORE/lib";
+ }
+ 
+ # We need this, as in places we're testing the interaction of prototypes with
+-- 
+2.3.8 (Apple Git-58)
+

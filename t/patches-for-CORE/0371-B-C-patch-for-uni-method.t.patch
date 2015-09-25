@@ -1,0 +1,28 @@
+From 7a5fa813011a92fcd332d1a193bb717ff623961e Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:08 -0500
+Subject: [PATCH 371/389] B::C patch for uni/method.t
+
+---
+ t/CORE/uni/method.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/uni/method.t b/t/CORE/uni/method.t
+index 4a12e3d..c44fedb 100644
+--- a/t/CORE/uni/method.t
++++ b/t/CORE/uni/method.t
+@@ -5,9 +5,8 @@
+ #
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib ../cpan/parent/lib);
+-    require "./test.pl"; require './charset_tools.pl';
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

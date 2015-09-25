@@ -1,0 +1,28 @@
+From a38223110b7c5e05aef722ff6c3379f069a43e5f Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:39 -0500
+Subject: [PATCH 039/389] B::C patch for io/pvbm.t
+
+---
+ t/CORE/io/pvbm.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/pvbm.t b/t/CORE/io/pvbm.t
+index 19f9733..0fe5e74 100644
+--- a/t/CORE/io/pvbm.t
++++ b/t/CORE/io/pvbm.t
+@@ -4,9 +4,8 @@
+ # filehandles. Most of these will segfault perl if they fail.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require "./test.pl";
++    push @INC, qw{t/CORE/lib};
++    require 'test.pl';
+ }
+ 
+ BEGIN { $| = 1 }
+-- 
+2.3.8 (Apple Git-58)
+

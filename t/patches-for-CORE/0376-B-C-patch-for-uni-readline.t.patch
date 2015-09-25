@@ -1,0 +1,27 @@
+From 097e9bc1b4e1d486df8510e802ba57ded18cfd4b Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:08 -0500
+Subject: [PATCH 376/389] B::C patch for uni/readline.t
+
+---
+ t/CORE/uni/readline.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/uni/readline.t b/t/CORE/uni/readline.t
+index c733f69..b443e84 100644
+--- a/t/CORE/uni/readline.t
++++ b/t/CORE/uni/readline.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++  require "t/CORE/test.pl";
+ }
+ 
+ plan tests => 7;
+-- 
+2.3.8 (Apple Git-58)
+

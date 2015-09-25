@@ -1,0 +1,27 @@
+From 24df56ca3d24cc0dde82e70a70d823ee89293fc7 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:54 -0500
+Subject: [PATCH 202/389] B::C patch for op/join.t
+
+---
+ t/CORE/op/join.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/join.t b/t/CORE/op/join.t
+index 17b618e..cc60d6d 100644
+--- a/t/CORE/op/join.t
++++ b/t/CORE/op/join.t
+@@ -1,9 +1,7 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++  require "t/CORE/test.pl";
+ }
+ 
+ plan tests => 29;
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,27 @@
+From 821dd81881493d7ecb02321a6a23271c2a50d253 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:40 -0500
+Subject: [PATCH 048/389] B::C patch for lib/commonsense.t
+
+---
+ t/CORE/lib/commonsense.t | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/t/CORE/lib/commonsense.t b/t/CORE/lib/commonsense.t
+index 9f0f13f..652833b 100644
+--- a/t/CORE/lib/commonsense.t
++++ b/t/CORE/lib/commonsense.t
+@@ -1,9 +1,8 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+     @INC = '../lib';
+-    require './test.pl';
++    require 'test.pl';
+ }
+ 
+ plan( tests => 1);
+-- 
+2.3.8 (Apple Git-58)
+

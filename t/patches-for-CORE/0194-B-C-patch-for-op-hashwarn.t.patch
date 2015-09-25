@@ -1,0 +1,29 @@
+From 1bd462aa82d88f6abe1b19e51b79a7572f38496a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:53 -0500
+Subject: [PATCH 194/389] B::C patch for op/hashwarn.t
+
+---
+ t/CORE/op/hashwarn.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/hashwarn.t b/t/CORE/op/hashwarn.t
+index a6a1de9..517cf48 100644
+--- a/t/CORE/op/hashwarn.t
++++ b/t/CORE/op/hashwarn.t
+@@ -1,11 +1,9 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
++    require "t/CORE/test.pl";
+ }
+ 
+-require './test.pl';
+ plan( tests => 16 );
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

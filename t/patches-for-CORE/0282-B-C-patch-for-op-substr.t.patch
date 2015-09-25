@@ -1,0 +1,27 @@
+From fa027794fc8add29a9374246525eec941733a874 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:00 -0500
+Subject: [PATCH 282/389] B::C patch for op/substr.t
+
+---
+ t/CORE/op/substr.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/substr.t b/t/CORE/op/substr.t
+index 71e9e89..f8e1ca4 100644
+--- a/t/CORE/op/substr.t
++++ b/t/CORE/op/substr.t
+@@ -3,9 +3,7 @@
+ #P = start of string  Q = start of substr  R = end of substr  S = end of string
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++  require "t/CORE/test.pl";
+ }
+ use warnings ;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

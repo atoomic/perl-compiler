@@ -1,0 +1,27 @@
+From 6810f968adff7ad61baf469e4dd008fe6c1d2e3e Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:55 -0500
+Subject: [PATCH 224/389] B::C patch for op/my_stash.t
+
+---
+ t/CORE/op/my_stash.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/my_stash.t b/t/CORE/op/my_stash.t
+index 1e728e2..0b384fe 100644
+--- a/t/CORE/op/my_stash.t
++++ b/t/CORE/op/my_stash.t
+@@ -3,9 +3,7 @@
+ package Foo;
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++  require "t/CORE/test.pl";
+ }
+ 
+ plan 9;
+-- 
+2.3.8 (Apple Git-58)
+

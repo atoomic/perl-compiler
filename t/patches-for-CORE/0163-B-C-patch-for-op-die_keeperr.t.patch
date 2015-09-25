@@ -1,0 +1,31 @@
+From 47985015ce1d97f9c53053d405cf3590f35a1771 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:50 -0500
+Subject: [PATCH 163/389] B::C patch for op/die_keeperr.t
+
+---
+ t/CORE/op/die_keeperr.t | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/die_keeperr.t b/t/CORE/op/die_keeperr.t
+index 055a802..ff72129 100644
+--- a/t/CORE/op/die_keeperr.t
++++ b/t/CORE/op/die_keeperr.t
+@@ -1,11 +1,11 @@
+ #!perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    plan(24);
++    require 't/CORE/test.pl';
+ }
+ 
++plan(24);
++
+ sub End::DESTROY { $_[0]->() }
+ 
+ sub end(&) {
+-- 
+2.3.8 (Apple Git-58)
+

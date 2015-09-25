@@ -1,0 +1,30 @@
+From 695044b738376e86a5c414f6a66eb15b5a7f16dc Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:47 -0500
+Subject: [PATCH 130/389] B::C patch for op/args.t
+
+---
+ t/CORE/op/args.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/args.t b/t/CORE/op/args.t
+index bfa015e..4640b41 100644
+--- a/t/CORE/op/args.t
++++ b/t/CORE/op/args.t
+@@ -1,11 +1,10 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
++    push @INC, "t/CORE/lib";
+ }
+ 
+-require './test.pl';
++require 't/CORE/test.pl';
+ plan( tests => 23 );
+ 
+ # test various operations on @_
+-- 
+2.3.8 (Apple Git-58)
+

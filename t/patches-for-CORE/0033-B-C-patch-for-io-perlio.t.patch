@@ -1,0 +1,27 @@
+From 158ceb1e346059d1a7c3d9e9b5fb2948ddd2645a Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:38 -0500
+Subject: [PATCH 033/389] B::C patch for io/perlio.t
+
+---
+ t/CORE/io/perlio.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/perlio.t b/t/CORE/io/perlio.t
+index 6b03e19..59ce3cc 100644
+--- a/t/CORE/io/perlio.t
++++ b/t/CORE/io/perlio.t
+@@ -1,8 +1,7 @@
+ BEGIN {
+-	chdir 't' if -d 't';
+-	@INC = '../lib';
++	push @INC, "t/CORE/lib";
+ 	require Config; import Config;
+-	require './test.pl';
++	require 'test.pl';
+ 	skip_all_without_perlio();
+ }
+ 
+-- 
+2.3.8 (Apple Git-58)
+

@@ -1,0 +1,27 @@
+From 6debe0fcec5eb230cb4fe311cbfe816ef32dd983 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:07 -0500
+Subject: [PATCH 367/389] B::C patch for uni/labels.t
+
+---
+ t/CORE/uni/labels.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/uni/labels.t b/t/CORE/uni/labels.t
+index efae494..8a53fb1 100644
+--- a/t/CORE/uni/labels.t
++++ b/t/CORE/uni/labels.t
+@@ -3,9 +3,7 @@
+ # Tests for labels in UTF-8
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++    require "t/CORE/test.pl";
+     skip_all_without_unicode_tables();
+ }
+ 
+-- 
+2.3.8 (Apple Git-58)
+

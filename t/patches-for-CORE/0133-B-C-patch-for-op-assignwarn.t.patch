@@ -1,0 +1,28 @@
+From 1ecf985551c86cd8b844b528cfbea2cfca80d7db Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:48 -0500
+Subject: [PATCH 133/389] B::C patch for op/assignwarn.t
+
+---
+ t/CORE/op/assignwarn.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/assignwarn.t b/t/CORE/op/assignwarn.t
+index ac1ad77..f803ef8 100644
+--- a/t/CORE/op/assignwarn.t
++++ b/t/CORE/op/assignwarn.t
+@@ -8,9 +8,8 @@
+ # Now almost completely rewritten.
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 't/CORE/test.pl';
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

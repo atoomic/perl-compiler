@@ -1,0 +1,27 @@
+From 2429b17b7575700452e603b45a28b9eb3091df1e Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:03 -0500
+Subject: [PATCH 315/389] B::C patch for re/overload.t
+
+---
+ t/CORE/re/overload.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/re/overload.t b/t/CORE/re/overload.t
+index ee821f1..1cb6466 100644
+--- a/t/CORE/re/overload.t
++++ b/t/CORE/re/overload.t
+@@ -1,9 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw '../lib ../ext/re';
+-    require './test.pl';
++	require "t/CORE/test.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

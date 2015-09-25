@@ -1,0 +1,28 @@
+From 3409c92607b71428be848f091f647108a41538d2 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:37 -0500
+Subject: [PATCH 017/389] B::C patch for io/data.t
+
+---
+ t/CORE/io/data.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/data.t b/t/CORE/io/data.t
+index abcdebc..e9a515e 100644
+--- a/t/CORE/io/data.t
++++ b/t/CORE/io/data.t
+@@ -3,9 +3,8 @@
+ # tests for DATA filehandle operations
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = '../lib';
+-    require './test.pl';
++    push @INC, "t/CORE/lib";
++    require 'test.pl';
+ }
+ 
+ $|=1;
+-- 
+2.3.8 (Apple Git-58)
+

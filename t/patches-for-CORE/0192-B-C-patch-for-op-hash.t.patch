@@ -1,0 +1,27 @@
+From 4d5f7f62c47ee7b5a3330ad1027f0f7d4aad6477 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:53 -0500
+Subject: [PATCH 192/389] B::C patch for op/hash.t
+
+---
+ t/CORE/op/hash.t | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/hash.t b/t/CORE/op/hash.t
+index 429eb38..b9910fa 100644
+--- a/t/CORE/op/hash.t
++++ b/t/CORE/op/hash.t
+@@ -1,9 +1,7 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    require './test.pl';
+-    set_up_inc('../lib');
++  require "t/CORE/test.pl";
+ }
+ 
+ use strict;
+-- 
+2.3.8 (Apple Git-58)
+

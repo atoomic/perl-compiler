@@ -1,0 +1,28 @@
+From ee98141ae4cb9ed96d588866bbda1e772aa8a976 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:36 -0500
+Subject: [PATCH 015/389] B::C patch for io/crlf.t
+
+---
+ t/CORE/io/crlf.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/io/crlf.t b/t/CORE/io/crlf.t
+index 9331068..3057704 100644
+--- a/t/CORE/io/crlf.t
++++ b/t/CORE/io/crlf.t
+@@ -1,9 +1,8 @@
+ #!./perl -w
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
+-    require "./test.pl"; require "charset_tools.pl";
++    push @INC, qw{t/CORE/lib}, qw{t/CORE};
++    require "test.pl"; require "charset_tools.pl";
+     skip_all_without_perlio();
+ }
+ 
+-- 
+2.3.8 (Apple Git-58)
+

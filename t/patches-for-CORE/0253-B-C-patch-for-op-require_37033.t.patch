@@ -1,0 +1,28 @@
+From 5ccb5b22f93567227c7f6da50725853a5af2a61b Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:21:58 -0500
+Subject: [PATCH 253/389] B::C patch for op/require_37033.t
+
+---
+ t/CORE/op/require_37033.t | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/require_37033.t b/t/CORE/op/require_37033.t
+index b107636..ab68c0e 100644
+--- a/t/CORE/op/require_37033.t
++++ b/t/CORE/op/require_37033.t
+@@ -3,9 +3,8 @@
+ # Check that require doesn't leave the handle it uses open, if it happens that
+ # the handle it opens gets file descriptor 0. RT #37033.
+ 
+-chdir 't' if -d 't';
+-require './test.pl';
+-@INC = 'lib';
++require "t/CORE/test.pl";
++unshift @INC, 't/CORE/lib';
+ 
+ use strict;
+ 
+-- 
+2.3.8 (Apple Git-58)
+

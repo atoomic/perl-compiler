@@ -1,0 +1,30 @@
+From ae7ee3fd420183d485cf07b4c95a1b0ab304e7b6 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Fri, 25 Sep 2015 12:22:02 -0500
+Subject: [PATCH 305/389] B::C patch for op/ver.t
+
+---
+ t/CORE/op/ver.t | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/t/CORE/op/ver.t b/t/CORE/op/ver.t
+index e896e9e..b2f4f1e 100644
+--- a/t/CORE/op/ver.t
++++ b/t/CORE/op/ver.t
+@@ -1,10 +1,10 @@
+ #!./perl
+ 
+ BEGIN {
+-    chdir 't' if -d 't';
+-    @INC = qw(. ../lib);
++    
+     $SIG{'__WARN__'} = sub { warn $_[0] if $DOWARN };
+-    require "./test.pl"; require "./charset_tools.pl";
++    require "t/CORE/test.pl";
++    require "t/CORE/charset_tools.pl";
+ }
+ 
+ $DOWARN = 1; # enable run-time warnings now
+-- 
+2.3.8 (Apple Git-58)
+
