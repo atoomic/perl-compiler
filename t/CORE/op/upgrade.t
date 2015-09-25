@@ -5,9 +5,7 @@
 # build or testsuite that upgraded an NV to an RV
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    require './test.pl';
+    require "t/CORE/test.pl";
 }
 
 use strict;
