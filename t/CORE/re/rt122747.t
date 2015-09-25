@@ -6,9 +6,8 @@ $| = 1;
 
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = ('../lib','.','../ext/re');
-    require './test.pl';
+    require "t/CORE/test.pl";
+    unshift @INC, 't/CORE/lib', 't/CORE/ext/re';
     if (is_miniperl()) {
         skip_all_if_miniperl("Unicode tables not built yet", 2)
             unless eval 'require "unicore/Heavy.pl"';
