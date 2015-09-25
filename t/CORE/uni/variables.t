@@ -4,8 +4,7 @@
 # (including weird syntax errors)
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
+    require "t/CORE/test.pl";
     skip_all_if_miniperl("miniperl, no arybase");
     skip_all_without_unicode_tables();
 }
