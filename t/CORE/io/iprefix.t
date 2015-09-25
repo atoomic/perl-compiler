@@ -1,7 +1,8 @@
 #!./perl
 use strict;
 chdir 't' if -d 't';
-require './test.pl';
+push @INC, "t/CORE/lib";
+require 'test.pl';
 
 $^I = 'bak.*';
 
