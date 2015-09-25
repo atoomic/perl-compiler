@@ -7,8 +7,8 @@
 use strict;
 use Config;
 
-chdir 't' if -d 't';
-require './test.pl';
+push @INC, "t/CORE/lib";
+require 'test.pl';
 
 plan( tests => 16 );
 
