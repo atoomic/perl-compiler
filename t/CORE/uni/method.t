@@ -5,9 +5,8 @@
 #
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib ../cpan/parent/lib);
-    require "./test.pl"; require './charset_tools.pl';
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
 }
 
 use strict;
