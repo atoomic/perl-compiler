@@ -1,6 +1,7 @@
 #!perl -wT
 
-require './t/CORE/test.pl';
+unshift(@INC, 't/CORE' );
+require 'test.pl';
 
 for $file ( 't/CORE/re/subst.t', 're/subst.t', 't/re/subst.t', ':re:subst.t') {
   if (-r $file) {
