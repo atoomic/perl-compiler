@@ -1,9 +1,8 @@
 #!./perl -w
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl'; require './charset_tools.pl';
-    set_up_inc(qw '../lib ../dist/Math-BigInt/lib');
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
 }
 
 # This is truth in an if statement, and could be a skip message
