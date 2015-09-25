@@ -3,15 +3,14 @@
 # Tests for the source filters in coderef-in-@INC
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib);
-    require './test.pl';
-    skip_all_if_miniperl('no dynamic loading on miniperl, no Filter::Util::Call');
-    skip_all_without_perlio();
+    require "t/CORE/test.pl";
 }
 use strict;
 use Config;
 use Filter::Util::Call;
+
+skip_all_if_miniperl('no dynamic loading on miniperl, no Filter::Util::Call');
+skip_all_without_perlio();
 
 plan(tests => 153);
 
