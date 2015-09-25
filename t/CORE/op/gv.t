@@ -5,13 +5,12 @@
 #
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    require 't/CORE/test.pl';
 }
 
 use warnings;
 
+chdir 't/CORE';
 plan( tests => 273 );
 
 # type coercion on assignment
