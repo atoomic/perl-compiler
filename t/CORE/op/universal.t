@@ -4,11 +4,8 @@
 #
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc(qw '../lib ../dist/base/lib');
     $| = 1;
-    require "./test.pl";
+    require "t/CORE/test.pl";
 }
 
 plan tests => 143;
