@@ -15,10 +15,8 @@
 #
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = ('../lib','.','../ext/re');
     require Config; import Config;
-    require './test.pl';
+    require "./t/CORE/test.pl";
     skip_all('no re module') unless defined &DynaLoader::boot_DynaLoader;
     skip_all_without_unicode_tables();
 }
