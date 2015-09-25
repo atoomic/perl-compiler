@@ -9,11 +9,9 @@ sub run_tests;
 $| = 1;
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = ('../lib','.');
-    require './test.pl';
-    skip_all_if_miniperl("miniperl can't load Tie::Hash::NamedCapture, need for %+ and %-");
+    require "t/CORE/test.pl";
 }
+skip_all_if_miniperl("miniperl can't load Tie::Hash::NamedCapture, need for %+ and %-");
 
 use strict;
 use warnings;
