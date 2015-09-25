@@ -1,8 +1,7 @@
 #!./perl -w
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
+	require "t/CORE/test.pl";
     skip_all_without_dynamic_extension('Encode');
     skip_all("encoding doesn't work with EBCDIC") if $::IS_EBCDIC;
     skip_all_without_perlio();
