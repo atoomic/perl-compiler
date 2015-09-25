@@ -3,9 +3,7 @@
 # Tests for sprintf that do not fit the format of sprintf.t.
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    require './test.pl';
+	require "t/CORE/test.pl";
 }   
 
 # We'll run 12 extra tests (see below) if $Q is false.
