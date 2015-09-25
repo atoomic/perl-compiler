@@ -5,12 +5,12 @@
 # that does fit that format, add it to re/re_tests, not here.
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(../lib .);
-    require './test.pl';
-    require './charset_tools.pl';
-    skip_all_if_miniperl("miniperl can't load Tie::Hash::NamedCapture, need for %+ and %-");
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
+    unshift @INC, 't/CORE/lib';
 }
+
+skip_all_if_miniperl("miniperl can't load Tie::Hash::NamedCapture, need for %+ and %-");
 
 use strict;
 use warnings;
