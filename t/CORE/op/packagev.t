@@ -1,9 +1,7 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw '../lib ../cpan/version/lib';
-    require './test.pl';
+    require "t/CORE/test.pl";
 }
 
 # XXX remove this later -- dagolden, 2010-01-13
