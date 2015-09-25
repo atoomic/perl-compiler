@@ -7,9 +7,7 @@
 #   Run with -debug for debugging output.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    require 't/CORE/test.pl';
 }
 
 use Config;
@@ -241,7 +239,7 @@ END_MARK_TWO
     print "not ok: got unexpected warning \$msg\\n";
 } }
 
-require './test.pl';
+require 't/CORE/test.pl';
 curr_test($test);
 
 # some of the variables which the closure will access
@@ -717,7 +715,7 @@ $r = \$x
 
 # [perl #113812] Closure prototypes with no CvOUTSIDE (crash caused by the
 #                fix for #89544)
-do "./op/closure_test.pl" or die $@||$!;
+do "./t/CORE/op/closure_test.pl" or die $@||$!;
 is $closure_test::s2->()(), '10 cubes',
   'cloning closure proto with no CvOUTSIDE';
 
