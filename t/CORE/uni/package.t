@@ -3,8 +3,7 @@
 # Checks if 'package' work as intended.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
+    require "t/CORE/test.pl";
 }
 
 plan (tests => 18);
