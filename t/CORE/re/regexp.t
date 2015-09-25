@@ -64,8 +64,6 @@ BEGIN {
 	open TESTS, $file or die "Can't open $file";
     }
 
-    chdir 't' if -d 't';
-    @INC = qw '../lib ../ext/re';
     if (!defined &DynaLoader::boot_DynaLoader) { # miniperl
 	print("1..0 # Skip Unicode tables not built yet\n"), exit
 	    unless eval 'require "unicore/Heavy.pl"';
@@ -103,7 +101,7 @@ use vars qw($qr $skip_amp $qr_embed $qr_embed_thr $regex_sets); # set by our cal
 
 
 if (!defined $file) {
-    open TESTS, 're/re_tests' or die "Can't open re/re_tests: $!";
+    open TESTS, 't/CORE/re/re_tests' or die "Can't open re/re_tests: $!";
 }
 
 my @tests = <TESTS>;
