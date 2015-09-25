@@ -1,9 +1,7 @@
 #!./perl -w
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc(qw '../lib ../dist/base/lib');
+    require "t/CORE/test.pl";
 }
 
 my @expect;
