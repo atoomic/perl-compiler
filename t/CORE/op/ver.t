@@ -1,10 +1,10 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib);
+    
     $SIG{'__WARN__'} = sub { warn $_[0] if $DOWARN };
-    require "./test.pl"; require "./charset_tools.pl";
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
 }
 
 $DOWARN = 1; # enable run-time warnings now
