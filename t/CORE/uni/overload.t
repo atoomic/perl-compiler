@@ -1,10 +1,9 @@
 #!perl -w
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
     require Config; import Config;
-    require './test.pl'; require './charset_tools.pl';
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
 }
 
 plan(tests => 215);
