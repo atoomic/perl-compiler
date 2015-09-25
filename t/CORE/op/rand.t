@@ -16,13 +16,12 @@
 # chapter 3. ISBN 0-201-03822-6 (v. 2)
 
 BEGIN {
-    push @INC, qw{t/CORE/lib};
+    require "t/CORE/test.pl";
 }
 
 use strict;
 use Config;
 
-require "./test.pl";
 plan(tests => 10);
 
 
