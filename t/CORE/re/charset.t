@@ -1,10 +1,8 @@
 # Test the /a, /d, etc regex modifiers
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw '../lib ../dist/if';
-    require './test.pl';
-    require './loc_tools.pl';
+    require "t/CORE/test.pl";
+    require "t/CORE/loc_tools.pl";
 }
 
 use strict;
