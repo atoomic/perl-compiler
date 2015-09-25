@@ -1,14 +1,14 @@
 #!./perl -w
 
 BEGIN {
-    push @INC, qw{t/CORE/lib};
+    require "t/CORE/test.pl";
 }
 
 # Test srand.
 
 use strict;
 
-require "./test.pl";
+
 plan(tests => 10);
 
 # Generate a load of random numbers.
