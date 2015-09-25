@@ -3,9 +3,7 @@
 # Make sure pos / resetting pos on failed match works
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    require './test.pl';
+	require "t/CORE/test.pl";
 }
 
 plan tests => 8;
