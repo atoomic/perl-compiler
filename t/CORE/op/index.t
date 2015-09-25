@@ -1,10 +1,8 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
-    require './charset_tools.pl';
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
 }
 
 use strict;
