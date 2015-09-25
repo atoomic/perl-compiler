@@ -1,17 +1,13 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib);
+    require "t/CORE/test.pl";
 }
 
 use strict;
 use warnings;
 
-BEGIN {
-    require './test.pl';
-    plan( tests => 12 );
-}
+plan( tests => 12 );
 
 use vars qw{ @warnings $sub $warn };
 
