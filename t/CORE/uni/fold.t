@@ -5,13 +5,11 @@ use warnings;
 # This file also tests the fc() keyword.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    require "t/CORE/test.pl";
     skip_all_without_unicode_tables();
     require Config; import Config;
-    require './charset_tools.pl';
-    require './loc_tools.pl';   # Contains find_utf8_ctype_locale()
+    require "t/CORE/charset_tools.pl";
+    require "t/CORE/loc_tools.pl";
 }
 
 use feature 'unicode_strings';
