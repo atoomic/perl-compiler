@@ -1,11 +1,10 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
+	push @INC, "t/CORE/lib", "t/CORE";
 }
 
-BEGIN { require "./test.pl"; require "./charset_tools.pl"; }
+BEGIN { require "test.pl"; require "charset_tools.pl"; }
 
 plan(tests => 3);
 
