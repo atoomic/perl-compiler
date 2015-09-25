@@ -1,9 +1,7 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib); # ../lib needed for test.deparse
-    require "./test.pl";
+    require "t/CORE/test.pl";
 }
 
 plan tests => 35;
