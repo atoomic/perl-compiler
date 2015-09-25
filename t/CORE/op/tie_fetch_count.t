@@ -4,12 +4,10 @@
 # See Bugs #76814 and #87708.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
-    plan (tests => 347);
+    require "t/CORE/test.pl";    
 }
 
+plan (tests => 347);
 use strict;
 use warnings;
 
@@ -146,7 +144,7 @@ for (split //, 'rwxoRWXOezsfdpSbctugkTBMAC') {
     check_count "-$_ \\\$tied_glob";
 }
 $dummy  = -l $var       ; check_count '-l';
-$var = "test.pl";
+$var = "t/CORE/test.pl";
 $dummy  = -e -e -e $var ; check_count '-e -e';
 
 # Matching
