@@ -3,8 +3,7 @@
 # Check if eval correctly ignores the UTF-8 hint.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
+    require "t/CORE/test.pl";
 }
 
 plan (tests => 5);
