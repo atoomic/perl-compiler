@@ -1,11 +1,8 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(../lib);
+    require "t/CORE/test.pl";
 }
-
-BEGIN { require "./test.pl"; }
 
 plan( tests => 51 );
 
