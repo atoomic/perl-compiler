@@ -3,8 +3,7 @@
 # We assume that TestInit has been used.
 
 BEGIN {
-      chdir 't' if -d 't';
-      require './test.pl';
+    require "t/CORE/test.pl";
 }
 
 use strict;
