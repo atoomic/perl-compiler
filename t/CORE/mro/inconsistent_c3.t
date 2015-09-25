@@ -1,16 +1,14 @@
 #!./perl
 
 BEGIN {
-    unless (-d 'blib') {
-        chdir 't' if -d 't';
-        @INC = '../lib';
-    }
+    push @INC, "t/CORE/lib";
+    require q(test.pl);
 }
 
 use strict;
 use warnings;
 
-require q(./test.pl); plan(tests => 1);
+plan(tests => 1);
 
 require mro;
 
