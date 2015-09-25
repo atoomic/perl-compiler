@@ -4,9 +4,7 @@
 # they were properly removed in 5.9.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    require 't/CORE/test.pl';
 }
 
 require Tie::Array;
