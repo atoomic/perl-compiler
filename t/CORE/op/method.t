@@ -5,14 +5,14 @@
 #
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib lib ../dist/base/lib);
-    require "./test.pl";
+  unshift @INC, 'lib';
+  require "t/CORE/test.pl";
 }
 
 use strict;
 no warnings 'once';
 
+chdir 't/CORE';
 plan(tests => 147);
 
 @A::ISA = 'B';
