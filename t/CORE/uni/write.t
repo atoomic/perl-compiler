@@ -2,8 +2,7 @@
 use strict;
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
+    require "t/CORE/test.pl";
     skip_all_without_perlio();
 }
 
