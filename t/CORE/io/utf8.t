@@ -1,9 +1,8 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    require './test.pl'; require './charset_tools.pl';
+    push @INC, "t/CORE/lib", "t/CORE";
+    require 'test.pl'; require 'charset_tools.pl';
     skip_all_without_perlio();
 }
 
