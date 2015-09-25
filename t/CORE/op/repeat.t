@@ -1,11 +1,9 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
+	require "t/CORE/test.pl";
 }
 
-require './test.pl';
 plan(tests => 47);
 
 # compile time
