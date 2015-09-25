@@ -3,9 +3,7 @@
 # Test scoping issues with embedded code in regexps.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc(qw(lib ../lib));
+    require "t/CORE/test.pl";
 }
 
 plan 48;
