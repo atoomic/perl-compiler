@@ -10,9 +10,7 @@
 
 
 BEGIN {
-    chdir 't';
-    require './test.pl';
-    set_up_inc("../lib");
+    require 't/CORE/test.pl';
 }
 
 use warnings;

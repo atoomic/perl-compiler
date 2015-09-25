@@ -1597,7 +1597,7 @@ EOP
     {   # make sure we get an error when \p{} cannot load Unicode tables
         fresh_perl_like(<<'        prog that cannot load uni tables',
             BEGIN {
-                @INC = '../lib';
+                #@INC = '../lib';
                 require utf8; require 'utf8_heavy.pl';
                 @INC = ();
             }
@@ -1616,6 +1616,7 @@ EOP
 
     {   # Special handling of literal-ended ranges in [...] was breaking this
         use utf8;
+        binmode 'STDOUT', ':utf8';
         like("ÿ", qr/[ÿ-ÿ]/, "\"ÿ\" should match [ÿ-ÿ]");
     }
 
@@ -1663,7 +1664,7 @@ EOP
             # NOTE - Do not put quotes in the code!
             # NOTE - We have to triple escape the backref in the pattern below.
             my $code='
-                BEGIN{require q(test.pl);}
+                BEGIN{require q(t/CORE/test.pl);}
                 watchdog(3);
                 for my $len (1 .. 20) {
                     my $eights= q(8) x $len;

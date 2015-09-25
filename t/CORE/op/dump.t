@@ -3,9 +3,7 @@
 # Minimally test if dump() behaves as expected
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib);
-    require './test.pl';
+    require 't/CORE/test.pl';
 
     skip_all_if_miniperl();
 }

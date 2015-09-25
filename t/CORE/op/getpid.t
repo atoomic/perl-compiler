@@ -3,15 +3,13 @@
 # Tests if $$ and getppid return consistent values across threads
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(../lib);
-    require './test.pl';
+    require 't/CORE/test.pl';
 }
 
 use strict;
 use Config;
 
-BEGIN {
+#BEGIN {
     skip_all_without_config(qw(useithreads d_getppid));
     skip_all_if_miniperl("no dynamic loading on miniperl, no threads");
     eval 'use threads; use threads::shared';
@@ -22,7 +20,7 @@ BEGIN {
     else {
 	pass("thread modules loaded");
     }
-}
+#}
 
 my ($pid, $ppid) = ($$, getppid());
 my $pid2 : shared = 0;

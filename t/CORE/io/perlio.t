@@ -111,7 +111,7 @@ ok(close($utffh));
       unlink_all $filename if defined $filename;
     }
 }
-
+chdir('t/CORE');
 # fileno() for directory handles, on supported platforms
 SKIP: {
     opendir my $dh, "io"

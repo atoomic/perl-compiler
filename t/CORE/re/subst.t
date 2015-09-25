@@ -1,9 +1,10 @@
 #!./perl -w
 
 BEGIN {
-    require "t/CORE/test.pl";
+    unshift @INC, 't/CORE';
+    require "test.pl";
     require Config; import Config;
-    require "t/CORE/charset_tools.pl";
+    require "charset_tools.pl";
 }
 
 plan( tests => 261 );
