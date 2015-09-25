@@ -8,14 +8,18 @@
 #       break correctly as well.
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
+    require 't/CORE/test.pl';
 # turn warnings into fatal errors
     $SIG{__WARN__} = sub { die "WARNING: @_" } ;
 
     skip_all_if_miniperl("no dynamic loading on miniperl, no Fcntl");
     require Fcntl;
 }
+
+
+skip_all() unless eval q{use XS::APItest; 1};
+
+
 use strict;
 use warnings;
 use vars '$VALID';
@@ -92,7 +96,7 @@ BEGIN {
     use Config;
     if ($Config{extensions} =~ m{XS/APItest}) {
 	eval q[use XS::APItest qw(mycroak); 1]
-	    or die "use XS::APItest: $@\n";
+	    #or die "use XS::APItest: $@\n";
     }
     else {
 	*mycroak = sub { die @_ };
