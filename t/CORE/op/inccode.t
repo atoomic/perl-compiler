@@ -3,9 +3,7 @@
 # Tests for the coderef-in-@INC feature
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    require "t/CORE/test.pl";
 }
 
 use Config;
@@ -197,7 +195,7 @@ is( $ret, 'abc', 'do "abc.pl" sees return value' );
     my $got;
     #local @INC; # local fails on tied @INC
     my @old_INC = @INC; # because local doesn't work on tied arrays
-    @INC = ('lib', 'lib/Devel', sub { $got = $_[1]; return undef; });
+    @INC = ('t/CORE/lib', 'lib/Devel', sub { $got = $_[1]; return undef; });
     foreach my $filename ('/test_require.pm', './test_require.pm',
 			  '../test_require.pm') {
 	local %INC;
