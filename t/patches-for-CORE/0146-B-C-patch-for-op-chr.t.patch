@@ -1,7 +1,7 @@
 From af7c5750be81e4c4461bb78825ed24e708a04650 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:49 -0500
-Subject: [PATCH 146/389] B::C patch for op/chr.t
+Subject: [PATCH 146/407] B::C patch for op/chr.t
 
 ---
  t/CORE/op/chr.t | 5 ++---

@@ -1,7 +1,7 @@
 From b382d3f0417bd31b302d01b2dce07ca1e40e79a4 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:00 -0500
-Subject: [PATCH 280/389] B::C patch for op/sub.t
+Subject: [PATCH 280/407] B::C patch for op/sub.t
 
 ---
  t/CORE/op/sub.t | 4 +---

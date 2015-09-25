@@ -1,7 +1,7 @@
 From 422df0a479b2ace8175c161dc778c01447efd71b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:04 -0500
-Subject: [PATCH 325/389] B::C patch for re/qr_gc.t
+Subject: [PATCH 325/407] B::C patch for re/qr_gc.t
 
 ---
  t/CORE/re/qr_gc.t | 6 +++---

@@ -1,7 +1,7 @@
 From f1ab26c850d17cb522d1d51755a1cc92fc27efa8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 044/389] B::C patch for io/socket.t
+Subject: [PATCH 044/407] B::C patch for io/socket.t
 
 ---
  t/CORE/io/socket.t | 5 ++---

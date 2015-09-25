@@ -1,7 +1,7 @@
 From 1bd462aa82d88f6abe1b19e51b79a7572f38496a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 194/389] B::C patch for op/hashwarn.t
+Subject: [PATCH 194/407] B::C patch for op/hashwarn.t
 
 ---
  t/CORE/op/hashwarn.t | 4 +---

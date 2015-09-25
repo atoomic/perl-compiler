@@ -1,7 +1,7 @@
 From 1feb90c1a5df4c9fecb9610540bffe28ea85d5f5 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:07 -0500
-Subject: [PATCH 362/389] B::C patch for uni/eval.t
+Subject: [PATCH 362/407] B::C patch for uni/eval.t
 
 ---
  t/CORE/uni/eval.t | 3 +--

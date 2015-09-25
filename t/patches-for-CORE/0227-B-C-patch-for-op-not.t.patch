@@ -1,7 +1,7 @@
 From 5163ce39353f2969c9ce2d9499d32f0f675af453 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:56 -0500
-Subject: [PATCH 227/389] B::C patch for op/not.t
+Subject: [PATCH 227/407] B::C patch for op/not.t
 
 ---
  t/CORE/op/not.t | 5 ++---

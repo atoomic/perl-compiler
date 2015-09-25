@@ -1,7 +1,7 @@
 From ec5978dd76b243c60e78b1ff0619bf342ea2a02d Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 258/389] B::C patch for op/runlevel.t
+Subject: [PATCH 258/407] B::C patch for op/runlevel.t
 
 ---
  t/CORE/op/runlevel.t | 5 ++---

@@ -1,7 +1,7 @@
 From 3b498ed1b5b9567991cbf3402044cc436e7a1b7f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:40 -0500
-Subject: [PATCH 047/389] B::C patch for io/utf8.t
+Subject: [PATCH 047/407] B::C patch for io/utf8.t
 
 ---
  t/CORE/io/utf8.t | 5 ++---

@@ -1,7 +1,7 @@
 From fe47cc79089fc30d9a88bb8f5019fb7120b32472 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 255/389] B::C patch for op/reset.t
+Subject: [PATCH 255/407] B::C patch for op/reset.t
 
 ---
  t/CORE/op/reset.t | 5 ++---

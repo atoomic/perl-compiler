@@ -1,7 +1,7 @@
 From 8f15c6182064eb0b4a965571e95edd3ea9f8dc31 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 179/389] B::C patch for op/flip.t
+Subject: [PATCH 179/407] B::C patch for op/flip.t
 
 ---
  t/CORE/op/flip.t | 5 ++---

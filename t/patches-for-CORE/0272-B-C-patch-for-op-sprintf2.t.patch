@@ -1,7 +1,7 @@
 From a39dcada9860a53d67f21226cd444f22cb996d22 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 272/389] B::C patch for op/sprintf2.t
+Subject: [PATCH 272/407] B::C patch for op/sprintf2.t
 
 ---
  t/CORE/op/sprintf2.t | 4 +---

@@ -1,7 +1,7 @@
 From 6debe0fcec5eb230cb4fe311cbfe816ef32dd983 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:07 -0500
-Subject: [PATCH 367/389] B::C patch for uni/labels.t
+Subject: [PATCH 367/407] B::C patch for uni/labels.t
 
 ---
  t/CORE/uni/labels.t | 4 +---

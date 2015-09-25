@@ -1,7 +1,7 @@
 From 1925210cab62956c05f17573f97f420e2d0ad56b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:43 -0500
-Subject: [PATCH 078/389] B::C patch for mro/complex_c3_utf8.t
+Subject: [PATCH 078/407] B::C patch for mro/complex_c3_utf8.t
 
 ---
  t/CORE/mro/complex_c3_utf8.t | 2 +-

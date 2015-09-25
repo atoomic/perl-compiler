@@ -1,7 +1,7 @@
 From b03f04e0b0cb175a9c94fd568ac7b94d8475d61b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:56 -0500
-Subject: [PATCH 230/389] B::C patch for op/or.t
+Subject: [PATCH 230/407] B::C patch for op/or.t
 
 ---
  t/CORE/op/or.t | 5 ++---

@@ -1,7 +1,7 @@
 From 4b190ab3631fc98358afefafef6e2074ae41b2bf Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:37 -0500
-Subject: [PATCH 020/389] B::C patch for io/eintr.t
+Subject: [PATCH 020/407] B::C patch for io/eintr.t
 
 ---
  t/CORE/io/eintr.t | 7 ++-----

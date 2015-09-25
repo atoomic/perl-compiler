@@ -1,7 +1,7 @@
 From 749b5bba01f49b4a81f58686c2bdd8dc92034291 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:50 -0500
-Subject: [PATCH 160/389] B::C patch for op/die.t
+Subject: [PATCH 160/407] B::C patch for op/die.t
 
 ---
  t/CORE/op/die.t | 5 ++---

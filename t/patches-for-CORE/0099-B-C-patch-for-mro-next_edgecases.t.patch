@@ -1,7 +1,7 @@
 From 4be543e41d68c39b80d0c0bab762d4a62229260a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:45 -0500
-Subject: [PATCH 099/389] B::C patch for mro/next_edgecases.t
+Subject: [PATCH 099/407] B::C patch for mro/next_edgecases.t
 
 ---
  t/CORE/mro/next_edgecases.t | 2 +-

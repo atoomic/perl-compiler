@@ -1,7 +1,7 @@
 From de2969aa1a23176433670e7b19a2099166656ed3 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 110/389] B::C patch for mro/next_skip_utf8.t
+Subject: [PATCH 110/407] B::C patch for mro/next_skip_utf8.t
 
 ---
  t/CORE/mro/next_skip_utf8.t | 2 +-

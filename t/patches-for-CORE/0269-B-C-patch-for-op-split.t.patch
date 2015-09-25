@@ -1,7 +1,7 @@
 From 2ce43a88f3743005e6c517eb5a18d95d1bd4cd04 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 269/389] B::C patch for op/split.t
+Subject: [PATCH 269/407] B::C patch for op/split.t
 
 ---
  t/CORE/op/split.t | 4 +---

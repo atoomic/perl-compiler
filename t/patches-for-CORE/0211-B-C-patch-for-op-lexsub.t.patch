@@ -1,7 +1,7 @@
 From babca5329c256d677e937b07d21e79124de7c669 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 211/389] B::C patch for op/lexsub.t
+Subject: [PATCH 211/407] B::C patch for op/lexsub.t
 
 ---
  t/CORE/op/lexsub.t | 4 +---

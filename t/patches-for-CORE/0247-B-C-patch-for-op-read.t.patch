@@ -1,7 +1,7 @@
 From b8f39a1af19f09b64771ebea0459e4af58e6f168 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:57 -0500
-Subject: [PATCH 247/389] B::C patch for op/read.t
+Subject: [PATCH 247/407] B::C patch for op/read.t
 
 ---
  t/CORE/op/read.t | 12 ++++--------

@@ -1,7 +1,7 @@
 From 0b40debde29f64f73c2df41e49f636028ef745b4 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 270/389] B::C patch for op/split_unicode.t
+Subject: [PATCH 270/407] B::C patch for op/split_unicode.t
 
 ---
  t/CORE/op/split_unicode.t | 8 ++++----

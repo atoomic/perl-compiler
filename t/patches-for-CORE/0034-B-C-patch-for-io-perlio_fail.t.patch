@@ -1,7 +1,7 @@
 From ca6a3cd9f6e2166e3876da181ac6cd592ebd637a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:38 -0500
-Subject: [PATCH 034/389] B::C patch for io/perlio_fail.t
+Subject: [PATCH 034/407] B::C patch for io/perlio_fail.t
 
 ---
  t/CORE/io/perlio_fail.t | 6 ++----

@@ -1,7 +1,7 @@
 From 9ef5b3f004f3aeffb2169e754914dd30d2a8074a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 354/389] B::C patch for uni/attrs.t
+Subject: [PATCH 354/407] B::C patch for uni/attrs.t
 
 ---
  t/CORE/uni/attrs.t | 6 +++---

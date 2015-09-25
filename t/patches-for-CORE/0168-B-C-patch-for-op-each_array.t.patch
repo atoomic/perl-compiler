@@ -1,7 +1,7 @@
 From df3ce193aa3505473bc0649cf760dcd1fb932cbc Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 168/389] B::C patch for op/each_array.t
+Subject: [PATCH 168/407] B::C patch for op/each_array.t
 
 ---
  t/CORE/op/each_array.t | 5 ++---

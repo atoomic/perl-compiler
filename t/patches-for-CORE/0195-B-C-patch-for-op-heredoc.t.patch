@@ -1,7 +1,7 @@
 From af9675b2f93a27c41804ec3a59c4eb1cc66bcbad Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 195/389] B::C patch for op/heredoc.t
+Subject: [PATCH 195/407] B::C patch for op/heredoc.t
 
 ---
  t/CORE/op/heredoc.t | 5 ++---

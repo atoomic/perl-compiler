@@ -1,7 +1,7 @@
 From 49272e9f89e2f054cb8a0c227d2deed5b9bf4638 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:09 -0500
-Subject: [PATCH 384/389] B::C patch for uni/tr_sjis.t
+Subject: [PATCH 384/407] B::C patch for uni/tr_sjis.t
 
 ---
  t/CORE/uni/tr_sjis.t | 3 +--

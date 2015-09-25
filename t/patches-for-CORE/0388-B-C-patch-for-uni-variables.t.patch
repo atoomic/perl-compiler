@@ -1,7 +1,7 @@
 From 69eb1c0c48245761361a2decc27278cfc4481e51 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:09 -0500
-Subject: [PATCH 388/389] B::C patch for uni/variables.t
+Subject: [PATCH 388/407] B::C patch for uni/variables.t
 
 ---
  t/CORE/uni/variables.t | 3 +--

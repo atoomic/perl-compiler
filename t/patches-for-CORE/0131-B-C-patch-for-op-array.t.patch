@@ -1,7 +1,7 @@
 From 1fb92ec7468dc36be05cf87521b8f6c23f7b4ef5 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:48 -0500
-Subject: [PATCH 131/389] B::C patch for op/array.t
+Subject: [PATCH 131/407] B::C patch for op/array.t
 
 ---
  t/CORE/op/array.t | 4 +---

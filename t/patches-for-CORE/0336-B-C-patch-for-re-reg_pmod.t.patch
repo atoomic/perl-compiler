@@ -1,7 +1,7 @@
 From c7f8289d6d65ff04e49e755dbc705a64e8aeef6b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:05 -0500
-Subject: [PATCH 336/389] B::C patch for re/reg_pmod.t
+Subject: [PATCH 336/407] B::C patch for re/reg_pmod.t
 
 ---
  t/CORE/re/reg_pmod.t | 4 +---

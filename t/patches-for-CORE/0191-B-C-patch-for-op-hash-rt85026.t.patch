@@ -1,7 +1,7 @@
 From c752c16675f9e2b847c65a210a536d0ef4a35ddc Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 191/389] B::C patch for op/hash-rt85026.t
+Subject: [PATCH 191/407] B::C patch for op/hash-rt85026.t
 
 ---
  t/CORE/op/hash-rt85026.t | 4 +---

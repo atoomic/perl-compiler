@@ -1,7 +1,7 @@
 From 414c1a3782fccb961a8e35e17d784bb5892cc086 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:55 -0500
-Subject: [PATCH 221/389] B::C patch for op/method.t
+Subject: [PATCH 221/407] B::C patch for op/method.t
 
 ---
  t/CORE/op/method.t | 6 +++---

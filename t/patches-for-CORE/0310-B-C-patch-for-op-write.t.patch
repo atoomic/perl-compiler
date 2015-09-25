@@ -1,7 +1,7 @@
 From de3c792662d33ec72962f333e7935fce8996e70b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:03 -0500
-Subject: [PATCH 310/389] B::C patch for op/write.t
+Subject: [PATCH 310/407] B::C patch for op/write.t
 
 ---
  t/CORE/op/write.t | 4 +---

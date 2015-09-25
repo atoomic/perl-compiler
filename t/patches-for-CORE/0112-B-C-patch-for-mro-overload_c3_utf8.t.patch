@@ -1,7 +1,7 @@
 From b86f90d8466d7d07b4264b7877b115c93d7b1114 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 112/389] B::C patch for mro/overload_c3_utf8.t
+Subject: [PATCH 112/407] B::C patch for mro/overload_c3_utf8.t
 
 ---
  t/CORE/mro/overload_c3_utf8.t | 8 +-------

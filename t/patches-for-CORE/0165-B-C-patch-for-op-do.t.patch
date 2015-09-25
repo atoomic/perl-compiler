@@ -1,7 +1,7 @@
 From 5a04406c112d211803f0a25b6a5ccc542d1c5ca8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:50 -0500
-Subject: [PATCH 165/389] B::C patch for op/do.t
+Subject: [PATCH 165/407] B::C patch for op/do.t
 
 ---
  t/CORE/op/do.t | 5 ++---

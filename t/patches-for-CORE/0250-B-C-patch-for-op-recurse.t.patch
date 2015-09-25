@@ -1,7 +1,7 @@
 From 5254c2a5d872f395e4408130dd5a7899bfc69435 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 250/389] B::C patch for op/recurse.t
+Subject: [PATCH 250/407] B::C patch for op/recurse.t
 
 ---
  t/CORE/op/recurse.t | 6 ++----

@@ -1,7 +1,7 @@
 From 32a6dddaf0006a9042e530beb59f9f3872633526 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:55 -0500
-Subject: [PATCH 218/389] B::C patch for op/lop.t
+Subject: [PATCH 218/407] B::C patch for op/lop.t
 
 ---
  t/CORE/op/lop.t | 5 ++---

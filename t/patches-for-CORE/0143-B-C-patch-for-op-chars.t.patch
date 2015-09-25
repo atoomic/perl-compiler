@@ -1,7 +1,7 @@
 From 943a1ad16aa5f8f7de46b213a06df8bc6ce58ba4 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:49 -0500
-Subject: [PATCH 143/389] B::C patch for op/chars.t
+Subject: [PATCH 143/407] B::C patch for op/chars.t
 
 ---
  t/CORE/op/chars.t | 5 ++---

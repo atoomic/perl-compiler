@@ -1,7 +1,7 @@
 From 775df4b463a89bf7ab0a96def9b528dfff899a3e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:05 -0500
-Subject: [PATCH 335/389] B::C patch for re/reg_nc_tie.t
+Subject: [PATCH 335/407] B::C patch for re/reg_nc_tie.t
 
 ---
  t/CORE/re/reg_nc_tie.t | 6 +++---

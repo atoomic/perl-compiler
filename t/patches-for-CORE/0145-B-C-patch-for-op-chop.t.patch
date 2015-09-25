@@ -1,7 +1,7 @@
 From 7ec26bcd3763ad89b617ec664e333781d99c5d80 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:49 -0500
-Subject: [PATCH 145/389] B::C patch for op/chop.t
+Subject: [PATCH 145/407] B::C patch for op/chop.t
 
 ---
  t/CORE/op/chop.t | 4 +---

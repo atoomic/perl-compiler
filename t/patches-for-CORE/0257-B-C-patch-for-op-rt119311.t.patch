@@ -1,7 +1,7 @@
 From 861e6f5b1522f2cded67bc829e5bc453cf3f2f8c Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 257/389] B::C patch for op/rt119311.t
+Subject: [PATCH 257/407] B::C patch for op/rt119311.t
 
 ---
  t/CORE/op/rt119311.t | 5 ++++-

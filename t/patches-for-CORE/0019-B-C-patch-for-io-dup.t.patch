@@ -1,7 +1,7 @@
 From e770d3e02eb2cc9bba6ce03f0ac96f624c6b2b6a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:37 -0500
-Subject: [PATCH 019/389] B::C patch for io/dup.t
+Subject: [PATCH 019/407] B::C patch for io/dup.t
 
 ---
  t/CORE/io/dup.t | 5 ++---

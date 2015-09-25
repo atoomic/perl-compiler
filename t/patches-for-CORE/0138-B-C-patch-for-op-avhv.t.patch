@@ -1,7 +1,7 @@
 From 8897e5c119516e50c6ab8fb0f461dcf6636ec6be Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:48 -0500
-Subject: [PATCH 138/389] B::C patch for op/avhv.t
+Subject: [PATCH 138/407] B::C patch for op/avhv.t
 
 ---
  t/CORE/op/avhv.t | 4 +---

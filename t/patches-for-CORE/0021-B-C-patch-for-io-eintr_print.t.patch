@@ -1,7 +1,7 @@
 From 836e1a3c2069b722224ec658681fff2ed1a447ec Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:37 -0500
-Subject: [PATCH 021/389] B::C patch for io/eintr_print.t
+Subject: [PATCH 021/407] B::C patch for io/eintr_print.t
 
 ---
  t/CORE/io/eintr_print.t | 5 ++---

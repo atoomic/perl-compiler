@@ -1,7 +1,7 @@
 From 7c6f633f9c6c59aff0120ccb197f88046378c4cb Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:40 -0500
-Subject: [PATCH 050/389] B::C patch for lib/no_load.t
+Subject: [PATCH 050/407] B::C patch for lib/no_load.t
 
 ---
  t/CORE/lib/no_load.t | 1 -

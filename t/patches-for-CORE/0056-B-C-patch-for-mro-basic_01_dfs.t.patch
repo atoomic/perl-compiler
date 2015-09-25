@@ -1,7 +1,7 @@
 From d505c9d19daf21495a56a78c418ab812a3402df7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:41 -0500
-Subject: [PATCH 056/389] B::C patch for mro/basic_01_dfs.t
+Subject: [PATCH 056/407] B::C patch for mro/basic_01_dfs.t
 
 ---
  t/CORE/mro/basic_01_dfs.t | 2 +-

@@ -1,7 +1,7 @@
 From e0989db32bc130cf5b3ef849a90694a2c481f304 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 170/389] B::C patch for op/evalbytes.t
+Subject: [PATCH 170/407] B::C patch for op/evalbytes.t
 
 ---
  t/CORE/op/evalbytes.t | 5 ++---

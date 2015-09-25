@@ -1,7 +1,7 @@
 From 3eb8a4e7ce770599f387e3f9aff067115ee921ea Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 304/389] B::C patch for op/vec.t
+Subject: [PATCH 304/407] B::C patch for op/vec.t
 
 ---
  t/CORE/op/vec.t | 4 +---

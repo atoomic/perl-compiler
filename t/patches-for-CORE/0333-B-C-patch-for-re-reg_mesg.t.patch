@@ -1,7 +1,7 @@
 From 57dd8dd1433a50a0dd039f06afe2997130503d1a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:05 -0500
-Subject: [PATCH 333/389] B::C patch for re/reg_mesg.t
+Subject: [PATCH 333/407] B::C patch for re/reg_mesg.t
 
 ---
  t/CORE/re/reg_mesg.t | 6 ++----

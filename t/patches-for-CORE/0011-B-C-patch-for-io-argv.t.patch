@@ -1,7 +1,7 @@
 From 6c8774a9b4dea3e34447613a5f78ba952ab2ed1a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:36 -0500
-Subject: [PATCH 011/389] B::C patch for io/argv.t
+Subject: [PATCH 011/407] B::C patch for io/argv.t
 
 ---
  t/CORE/io/argv.t | 5 ++---

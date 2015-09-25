@@ -1,7 +1,7 @@
 From 72fd6b957bff4097a86be052b67978d2a18696c7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 350/389] B::C patch for re/substT.t
+Subject: [PATCH 350/407] B::C patch for re/substT.t
 
 ---
  t/CORE/re/substT.t | 7 +++++--

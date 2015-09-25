@@ -1,7 +1,7 @@
 From 24fc57fc9688c718a712a45cde5caf88852cae99 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:05 -0500
-Subject: [PATCH 342/389] B::C patch for re/regexp_notrie.t
+Subject: [PATCH 342/407] B::C patch for re/regexp_notrie.t
 
 ---
  t/CORE/re/regexp_notrie.t | 2 +-

@@ -1,7 +1,7 @@
 From 17b1e1fb52029cc2bbbf62dd7773b16aacc7ada7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 309/389] B::C patch for op/while.t
+Subject: [PATCH 309/407] B::C patch for op/while.t
 
 ---
  t/CORE/op/while.t | 7 ++-----

@@ -1,7 +1,7 @@
 From 339ac6c2a72c5a3e9ace0d4b1388b6847b9f161f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:41 -0500
-Subject: [PATCH 059/389] B::C patch for mro/basic_02_c3_utf8.t
+Subject: [PATCH 059/407] B::C patch for mro/basic_02_c3_utf8.t
 
 ---
  t/CORE/mro/basic_02_c3_utf8.t | 2 +-

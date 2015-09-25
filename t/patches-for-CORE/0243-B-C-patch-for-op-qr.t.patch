@@ -1,7 +1,7 @@
 From bb7c601e8b22e0ce1988396b1b7715ca6644d5cd Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:57 -0500
-Subject: [PATCH 243/389] B::C patch for op/qr.t
+Subject: [PATCH 243/407] B::C patch for op/qr.t
 
 ---
  t/CORE/op/qr.t | 3 +--

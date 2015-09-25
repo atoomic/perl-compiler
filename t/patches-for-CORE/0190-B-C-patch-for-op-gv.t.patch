@@ -1,7 +1,7 @@
 From 18a524e491f7bd6acbc0ce2eb6b080935ad505b6 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 190/389] B::C patch for op/gv.t
+Subject: [PATCH 190/407] B::C patch for op/gv.t
 
 ---
  t/CORE/op/gv.t | 5 ++---

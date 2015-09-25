@@ -1,7 +1,7 @@
 From ee9a42f802444b59616d0b930260ba071d66bcd0 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:43 -0500
-Subject: [PATCH 082/389] B::C patch for mro/dbic_c3_utf8.t
+Subject: [PATCH 082/407] B::C patch for mro/dbic_c3_utf8.t
 
 ---
  t/CORE/mro/dbic_c3_utf8.t | 2 +-

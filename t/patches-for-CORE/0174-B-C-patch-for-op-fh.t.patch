@@ -1,7 +1,7 @@
 From ce32962f3f0817c6850d000ec0d63ec7f4f0d19e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 174/389] B::C patch for op/fh.t
+Subject: [PATCH 174/407] B::C patch for op/fh.t
 
 ---
  t/CORE/op/fh.t | 4 +---

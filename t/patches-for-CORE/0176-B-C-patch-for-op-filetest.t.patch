@@ -1,7 +1,7 @@
 From ca71f289946bf83be2acac8d185a05f54dd06581 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 176/389] B::C patch for op/filetest.t
+Subject: [PATCH 176/407] B::C patch for op/filetest.t
 
 ---
  t/CORE/op/filetest.t | 5 ++---

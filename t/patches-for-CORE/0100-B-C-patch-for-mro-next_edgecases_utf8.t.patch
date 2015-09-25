@@ -1,7 +1,7 @@
 From cf05459c31b455d7802f69fd9490bb6ecd623f8f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:45 -0500
-Subject: [PATCH 100/389] B::C patch for mro/next_edgecases_utf8.t
+Subject: [PATCH 100/407] B::C patch for mro/next_edgecases_utf8.t
 
 ---
  t/CORE/mro/next_edgecases_utf8.t | 3 ++-

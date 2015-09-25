@@ -1,7 +1,7 @@
 From 1c05746e081d892327af11d86ba12863cef4cf20 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 205/389] B::C patch for op/kvhslice.t
+Subject: [PATCH 205/407] B::C patch for op/kvhslice.t
 
 ---
  t/CORE/op/kvhslice.t | 4 +---

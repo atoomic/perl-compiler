@@ -1,7 +1,7 @@
 From e0fc5c5d533b61543587780cb2a04bd8d9cf7e49 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:50 -0500
-Subject: [PATCH 159/389] B::C patch for op/delete.t
+Subject: [PATCH 159/407] B::C patch for op/delete.t
 
 ---
  t/CORE/op/delete.t | 4 +---

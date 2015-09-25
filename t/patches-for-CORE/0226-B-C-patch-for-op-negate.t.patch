@@ -1,7 +1,7 @@
 From 2a1e1f477431504b52cfce2159cf484b024a6b9f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:56 -0500
-Subject: [PATCH 226/389] B::C patch for op/negate.t
+Subject: [PATCH 226/407] B::C patch for op/negate.t
 
 ---
  t/CORE/op/negate.t | 4 +---

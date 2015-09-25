@@ -1,7 +1,7 @@
 From f1fed40547b545af0cdd8de819eeb67c77a732b7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:07 -0500
-Subject: [PATCH 359/389] B::C patch for uni/chomp.t
+Subject: [PATCH 359/407] B::C patch for uni/chomp.t
 
 ---
  t/CORE/uni/chomp.t | 3 +--

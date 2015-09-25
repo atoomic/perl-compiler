@@ -1,7 +1,7 @@
 From 636e295f5431a4a19dac17be59a39d9e45a21ff8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 042/389] B::C patch for io/sem.t
+Subject: [PATCH 042/407] B::C patch for io/sem.t
 
 ---
  t/CORE/io/sem.t | 5 ++---

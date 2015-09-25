@@ -1,7 +1,7 @@
 From b794687f1cd6678222fd0dd1b4458e6b16669949 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:00 -0500
-Subject: [PATCH 276/389] B::C patch for op/stat.t
+Subject: [PATCH 276/407] B::C patch for op/stat.t
 
 ---
  t/CORE/op/stat.t | 28 ++++++++++------------------

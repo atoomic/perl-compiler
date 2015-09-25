@@ -1,7 +1,7 @@
 From 111797c08f4fdb77ae694d9a72fa1c3f1c1fa916 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:49 -0500
-Subject: [PATCH 149/389] B::C patch for op/cond.t
+Subject: [PATCH 149/407] B::C patch for op/cond.t
 
 ---
  t/CORE/op/cond.t | 5 ++---

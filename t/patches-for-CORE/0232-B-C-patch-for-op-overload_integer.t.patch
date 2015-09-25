@@ -1,7 +1,7 @@
 From c5c183b1aebe6725f190ef40c3c97c24b1b41866 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:56 -0500
-Subject: [PATCH 232/389] B::C patch for op/overload_integer.t
+Subject: [PATCH 232/407] B::C patch for op/overload_integer.t
 
 ---
  t/CORE/op/overload_integer.t | 5 ++---

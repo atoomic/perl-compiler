@@ -1,7 +1,7 @@
 From 097e9bc1b4e1d486df8510e802ba57ded18cfd4b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:08 -0500
-Subject: [PATCH 376/389] B::C patch for uni/readline.t
+Subject: [PATCH 376/407] B::C patch for uni/readline.t
 
 ---
  t/CORE/uni/readline.t | 4 +---

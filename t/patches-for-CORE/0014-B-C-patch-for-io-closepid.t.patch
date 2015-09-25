@@ -1,7 +1,7 @@
 From ec8e965af25d80bcd3d24c7e2e0845bcbac6774d Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:36 -0500
-Subject: [PATCH 014/389] B::C patch for io/closepid.t
+Subject: [PATCH 014/407] B::C patch for io/closepid.t
 
 ---
  t/CORE/io/closepid.t | 5 ++---

@@ -1,7 +1,7 @@
 From e9cd425daf794e7c5330e854d50ad80af86721e5 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:55 -0500
-Subject: [PATCH 216/389] B::C patch for op/lock.t
+Subject: [PATCH 216/407] B::C patch for op/lock.t
 
 ---
  t/CORE/op/lock.t | 5 ++---

@@ -1,7 +1,7 @@
 From a520dff9df0c38d86a8067ca3b53e13a522dc696 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 263/389] B::C patch for op/sigsystem.t
+Subject: [PATCH 263/407] B::C patch for op/sigsystem.t
 
 ---
  t/CORE/op/sigsystem.t | 3 +--

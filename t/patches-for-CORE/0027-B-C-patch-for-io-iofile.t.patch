@@ -1,7 +1,7 @@
 From 7c24640447842cdee38c0a5c254c9d757f23da8d Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:38 -0500
-Subject: [PATCH 027/389] B::C patch for io/iofile.t
+Subject: [PATCH 027/407] B::C patch for io/iofile.t
 
 ---
  t/CORE/io/iofile.t | 5 ++---

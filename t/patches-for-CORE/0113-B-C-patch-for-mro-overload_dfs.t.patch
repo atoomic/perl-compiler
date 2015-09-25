@@ -1,7 +1,7 @@
 From 77b948a24c2eed7407923bea0d1c4c61138c4f2a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 113/389] B::C patch for mro/overload_dfs.t
+Subject: [PATCH 113/407] B::C patch for mro/overload_dfs.t
 
 ---
  t/CORE/mro/overload_dfs.t | 8 +-------

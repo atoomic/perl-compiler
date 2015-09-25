@@ -1,7 +1,7 @@
 From a957900fe2727c2302363b9353969e577a540ae0 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 251/389] B::C patch for op/ref.t
+Subject: [PATCH 251/407] B::C patch for op/ref.t
 
 ---
  t/CORE/op/ref.t | 4 +---

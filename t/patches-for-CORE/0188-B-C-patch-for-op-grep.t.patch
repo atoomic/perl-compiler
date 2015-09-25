@@ -1,7 +1,7 @@
 From abbad8ef1a2fd3891538bd2e8186aabf6ce0b431 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 188/389] B::C patch for op/grep.t
+Subject: [PATCH 188/407] B::C patch for op/grep.t
 
 ---
  t/CORE/op/grep.t | 4 +---

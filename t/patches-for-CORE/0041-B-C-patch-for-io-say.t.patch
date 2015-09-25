@@ -1,7 +1,7 @@
 From db74da6dfe2758cf7d138dc1ff2e56c8716516a9 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 041/389] B::C patch for io/say.t
+Subject: [PATCH 041/407] B::C patch for io/say.t
 
 ---
  t/CORE/io/say.t | 5 ++---

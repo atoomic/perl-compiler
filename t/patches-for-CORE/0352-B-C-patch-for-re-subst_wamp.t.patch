@@ -1,7 +1,7 @@
 From 1cc39bbf4bab8686ffc46766cb8be1e272ccc133 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 352/389] B::C patch for re/subst_wamp.t
+Subject: [PATCH 352/407] B::C patch for re/subst_wamp.t
 
 ---
  t/CORE/re/subst_wamp.t | 2 +-

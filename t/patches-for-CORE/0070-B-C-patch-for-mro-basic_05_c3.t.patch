@@ -1,7 +1,7 @@
 From bd7b868215b1699538cebb89304f2091c0e7f115 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:42 -0500
-Subject: [PATCH 070/389] B::C patch for mro/basic_05_c3.t
+Subject: [PATCH 070/407] B::C patch for mro/basic_05_c3.t
 
 ---
  t/CORE/mro/basic_05_c3.t | 2 +-

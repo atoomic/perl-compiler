@@ -1,7 +1,7 @@
 From c37cbd3d81762d131a2d43f827c22ca06344aef1 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:35 -0500
-Subject: [PATCH 009/389] B::C patch for comp/require.t
+Subject: [PATCH 009/407] B::C patch for comp/require.t
 
 ---
  t/CORE/comp/require.t | 7 ++-----

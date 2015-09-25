@@ -1,7 +1,7 @@
 From bff099b0981e46f8f9f76f8aeaeaf45d08f6f9f1 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:33 -0500
-Subject: [PATCH 002/389] B::C patch for base/rs.t
+Subject: [PATCH 002/407] B::C patch for base/rs.t
 
 ---
  t/CORE/base/rs.t | 2 +-

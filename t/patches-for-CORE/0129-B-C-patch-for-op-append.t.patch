@@ -1,7 +1,7 @@
 From 47e9af02e931640fdb49ecf2799cd87ce313381b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 129/389] B::C patch for op/append.t
+Subject: [PATCH 129/407] B::C patch for op/append.t
 
 ---
  t/CORE/op/append.t | 5 ++---

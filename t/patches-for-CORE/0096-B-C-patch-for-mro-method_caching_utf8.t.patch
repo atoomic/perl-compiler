@@ -1,7 +1,7 @@
 From cae4ff6d7fb073f20f1f6299a466259cd4fe1ae1 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:44 -0500
-Subject: [PATCH 096/389] B::C patch for mro/method_caching_utf8.t
+Subject: [PATCH 096/407] B::C patch for mro/method_caching_utf8.t
 
 ---
  t/CORE/mro/method_caching_utf8.t | 9 +--------

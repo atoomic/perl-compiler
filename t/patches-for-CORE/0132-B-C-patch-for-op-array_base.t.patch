@@ -1,7 +1,7 @@
 From a0a23871ea970a8c05d26aa663322a849ef2b9a1 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:48 -0500
-Subject: [PATCH 132/389] B::C patch for op/array_base.t
+Subject: [PATCH 132/407] B::C patch for op/array_base.t
 
 ---
  t/CORE/op/array_base.t | 24 ++++++++++++++----------

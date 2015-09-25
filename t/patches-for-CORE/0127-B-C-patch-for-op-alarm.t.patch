@@ -1,7 +1,7 @@
 From 1ff2141f3eff2ca0e3ffd01267ef5d8374e8bae7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 127/389] B::C patch for op/alarm.t
+Subject: [PATCH 127/407] B::C patch for op/alarm.t
 
 ---
  t/CORE/op/alarm.t | 4 +---

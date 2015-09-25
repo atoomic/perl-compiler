@@ -1,7 +1,7 @@
 From 0c49309638f679dd61b7d5b85df8720ddc7c0a4f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 267/389] B::C patch for op/sort.t
+Subject: [PATCH 267/407] B::C patch for op/sort.t
 
 ---
  t/CORE/op/sort.t | 4 +---

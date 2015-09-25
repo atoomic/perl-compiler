@@ -1,7 +1,7 @@
 From a1e0a096248029a1dea5617472362de4b4025ab6 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 169/389] B::C patch for op/eval.t
+Subject: [PATCH 169/407] B::C patch for op/eval.t
 
 ---
  t/CORE/op/eval.t | 4 +---

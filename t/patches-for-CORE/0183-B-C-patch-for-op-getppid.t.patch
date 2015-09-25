@@ -1,7 +1,7 @@
 From 0a697b2bd6c5c492f2214f43e83194de5b07798e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 183/389] B::C patch for op/getppid.t
+Subject: [PATCH 183/407] B::C patch for op/getppid.t
 
 ---
  t/CORE/op/getppid.t | 10 +++++-----

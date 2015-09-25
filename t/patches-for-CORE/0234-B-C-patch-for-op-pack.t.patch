@@ -1,7 +1,7 @@
 From a575b54645934117b3376aa08ac0d9edba1f52d2 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:56 -0500
-Subject: [PATCH 234/389] B::C patch for op/pack.t
+Subject: [PATCH 234/407] B::C patch for op/pack.t
 
 ---
  t/CORE/op/pack.t | 5 ++---

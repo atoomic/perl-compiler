@@ -1,7 +1,7 @@
 From a8dcdcec979f1e10a63c27725c388c3f1c212958 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:09 -0500
-Subject: [PATCH 385/389] B::C patch for uni/tr_utf8.t
+Subject: [PATCH 385/407] B::C patch for uni/tr_utf8.t
 
 ---
  t/CORE/uni/tr_utf8.t | 3 +--

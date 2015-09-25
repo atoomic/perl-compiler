@@ -1,7 +1,7 @@
 From fd6ceb7c9f043be7edf86b251b14380c8ce11b1b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:04 -0500
-Subject: [PATCH 332/389] B::C patch for re/reg_fold.t
+Subject: [PATCH 332/407] B::C patch for re/reg_fold.t
 
 ---
  t/CORE/re/reg_fold.t | 6 +++---

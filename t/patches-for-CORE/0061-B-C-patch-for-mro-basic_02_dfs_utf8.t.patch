@@ -1,7 +1,7 @@
 From 4df2f185759056768273730e3ed730de433d4602 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:41 -0500
-Subject: [PATCH 061/389] B::C patch for mro/basic_02_dfs_utf8.t
+Subject: [PATCH 061/407] B::C patch for mro/basic_02_dfs_utf8.t
 
 ---
  t/CORE/mro/basic_02_dfs_utf8.t | 2 +-

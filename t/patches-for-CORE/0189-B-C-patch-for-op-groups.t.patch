@@ -1,7 +1,7 @@
 From 8602723188dd0c095968ab3cf0890330750b7e89 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 189/389] B::C patch for op/groups.t
+Subject: [PATCH 189/407] B::C patch for op/groups.t
 
 ---
  t/CORE/op/groups.t | 4 +---

@@ -1,7 +1,7 @@
 From def2bcbbcff605cd11833c4db0a2bc0f9c3bd21e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 118/389] B::C patch for mro/recursion_c3.t
+Subject: [PATCH 118/407] B::C patch for mro/recursion_c3.t
 
 ---
  t/CORE/mro/recursion_c3.t | 9 +--------

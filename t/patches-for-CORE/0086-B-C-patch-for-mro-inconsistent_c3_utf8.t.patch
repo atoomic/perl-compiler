@@ -1,7 +1,7 @@
 From 89e07b94b413cd190bb8edc73eb6e76532a3c7a8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:44 -0500
-Subject: [PATCH 086/389] B::C patch for mro/inconsistent_c3_utf8.t
+Subject: [PATCH 086/407] B::C patch for mro/inconsistent_c3_utf8.t
 
 ---
  t/CORE/mro/inconsistent_c3_utf8.t | 8 +++-----

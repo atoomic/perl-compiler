@@ -1,7 +1,7 @@
 From 87de3d70a56446aa90159f4536f0b4ac2fecd991 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:44 -0500
-Subject: [PATCH 091/389] B::C patch for mro/isa_dfs.t
+Subject: [PATCH 091/407] B::C patch for mro/isa_dfs.t
 
 ---
  t/CORE/mro/isa_dfs.t | 6 +-----

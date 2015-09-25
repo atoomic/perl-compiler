@@ -1,7 +1,7 @@
 From 529feb7bdb85ccba0ef40248e0781548bc762b85 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:45 -0500
-Subject: [PATCH 101/389] B::C patch for mro/next_goto.t
+Subject: [PATCH 101/407] B::C patch for mro/next_goto.t
 
 ---
  t/CORE/mro/next_goto.t | 2 +-

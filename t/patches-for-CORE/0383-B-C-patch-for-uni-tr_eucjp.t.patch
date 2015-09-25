@@ -1,7 +1,7 @@
 From 06977b3cd54d20c443d2d402d0144fd1192b12cb Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:09 -0500
-Subject: [PATCH 383/389] B::C patch for uni/tr_eucjp.t
+Subject: [PATCH 383/407] B::C patch for uni/tr_eucjp.t
 
 ---
  t/CORE/uni/tr_eucjp.t | 3 +--

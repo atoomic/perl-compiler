@@ -1,7 +1,7 @@
 From 5213e912158445b15b812dcfbf4568f4a262bc48 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:38 -0500
-Subject: [PATCH 024/389] B::C patch for io/fflush.t
+Subject: [PATCH 024/407] B::C patch for io/fflush.t
 
 ---
  t/CORE/io/fflush.t | 5 ++---

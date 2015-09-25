@@ -1,7 +1,7 @@
 From 86adbded22a921942af026233579cf750d21900d Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:04 -0500
-Subject: [PATCH 323/389] B::C patch for re/qr-72922.t
+Subject: [PATCH 323/407] B::C patch for re/qr-72922.t
 
 ---
  t/CORE/re/qr-72922.t | 8 ++++----

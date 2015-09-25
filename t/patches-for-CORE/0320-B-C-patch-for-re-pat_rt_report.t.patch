@@ -1,7 +1,7 @@
 From 29a893957af8e2113dae0dee5a06adc42b0a916e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:03 -0500
-Subject: [PATCH 320/389] B::C patch for re/pat_rt_report.t
+Subject: [PATCH 320/407] B::C patch for re/pat_rt_report.t
 
 ---
  t/CORE/re/pat_rt_report.t | 6 ++----

@@ -1,7 +1,7 @@
 From 32f7298aa20b3fd4b93f6ca4e255d74ba1f7601b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 111/389] B::C patch for mro/overload_c3.t
+Subject: [PATCH 111/407] B::C patch for mro/overload_c3.t
 
 ---
  t/CORE/mro/overload_c3.t | 10 ++--------

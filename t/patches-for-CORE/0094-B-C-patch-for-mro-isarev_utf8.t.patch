@@ -1,7 +1,7 @@
 From f123d91f95d7b81ba93018e9ca857b916e1ea37f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:44 -0500
-Subject: [PATCH 094/389] B::C patch for mro/isarev_utf8.t
+Subject: [PATCH 094/407] B::C patch for mro/isarev_utf8.t
 
 ---
  t/CORE/mro/isarev_utf8.t | 8 +-------

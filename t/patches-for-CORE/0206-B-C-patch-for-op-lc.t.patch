@@ -1,7 +1,7 @@
 From 338f8a824533b0f7a5996291e33ce98a63a1d147 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 206/389] B::C patch for op/lc.t
+Subject: [PATCH 206/407] B::C patch for op/lc.t
 
 ---
  t/CORE/op/lc.t | 8 +++-----

@@ -1,7 +1,7 @@
 From 4bec697237f223ef25b3515043ed9f84e0a48fd3 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:04 -0500
-Subject: [PATCH 328/389] B::C patch for re/reg_60508.t
+Subject: [PATCH 328/407] B::C patch for re/reg_60508.t
 
 ---
  t/CORE/re/reg_60508.t | 6 +++---

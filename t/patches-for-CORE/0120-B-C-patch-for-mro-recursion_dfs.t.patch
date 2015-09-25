@@ -1,7 +1,7 @@
 From 39b5fe377db438859d0e4869dbde76f41a823291 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 120/389] B::C patch for mro/recursion_dfs.t
+Subject: [PATCH 120/407] B::C patch for mro/recursion_dfs.t
 
 ---
  t/CORE/mro/recursion_dfs.t | 9 +--------

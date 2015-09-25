@@ -1,7 +1,7 @@
 From e659e8a417b7ac4a781b58944753d40f18a240d9 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 121/389] B::C patch for mro/recursion_dfs_utf8.t
+Subject: [PATCH 121/407] B::C patch for mro/recursion_dfs_utf8.t
 
 ---
  t/CORE/mro/recursion_dfs_utf8.t | 10 ++--------

@@ -1,7 +1,7 @@
 From f92cedfaa8656d199f0f7ec45c3809d1e7d324e5 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:08 -0500
-Subject: [PATCH 373/389] B::C patch for uni/overload.t
+Subject: [PATCH 373/407] B::C patch for uni/overload.t
 
 ---
  t/CORE/uni/overload.t | 5 ++---

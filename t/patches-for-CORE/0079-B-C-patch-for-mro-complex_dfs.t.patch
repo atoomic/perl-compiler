@@ -1,7 +1,7 @@
 From ed05acfc6e3f0cd1049dc01f22cd167fbb164947 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:43 -0500
-Subject: [PATCH 079/389] B::C patch for mro/complex_dfs.t
+Subject: [PATCH 079/407] B::C patch for mro/complex_dfs.t
 
 ---
  t/CORE/mro/complex_dfs.t | 2 +-

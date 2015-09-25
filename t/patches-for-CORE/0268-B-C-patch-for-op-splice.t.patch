@@ -1,7 +1,7 @@
 From 17b9c9b20644ff450631d7c0f5fd8caa735c1f71 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 268/389] B::C patch for op/splice.t
+Subject: [PATCH 268/407] B::C patch for op/splice.t
 
 ---
  t/CORE/op/splice.t | 5 ++---

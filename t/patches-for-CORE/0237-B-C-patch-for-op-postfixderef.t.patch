@@ -1,7 +1,7 @@
 From 9317d478a2c461966843f3726a9ac6d7a8140e10 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:56 -0500
-Subject: [PATCH 237/389] B::C patch for op/postfixderef.t
+Subject: [PATCH 237/407] B::C patch for op/postfixderef.t
 
 ---
  t/CORE/op/postfixderef.t | 4 +---

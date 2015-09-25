@@ -1,7 +1,7 @@
 From 695044b738376e86a5c414f6a66eb15b5a7f16dc Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 130/389] B::C patch for op/args.t
+Subject: [PATCH 130/407] B::C patch for op/args.t
 
 ---
  t/CORE/op/args.t | 5 ++---

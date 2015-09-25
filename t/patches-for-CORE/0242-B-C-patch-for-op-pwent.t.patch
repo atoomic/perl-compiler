@@ -1,7 +1,7 @@
 From 9a9a57d95f7f1bd259036e43b57288935f4c1be9 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:57 -0500
-Subject: [PATCH 242/389] B::C patch for op/pwent.t
+Subject: [PATCH 242/407] B::C patch for op/pwent.t
 
 ---
  t/CORE/op/pwent.t | 5 ++---

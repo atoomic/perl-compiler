@@ -1,7 +1,7 @@
 From 31cc5eac5cfc2641a1532c5a42e37a6acfe6cf4c Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:29 -0500
-Subject: [PATCH 001/389] B::C patch for TEST
+Subject: [PATCH 001/407] B::C patch for TEST
 
 ---
  t/CORE/TEST | 4 +---

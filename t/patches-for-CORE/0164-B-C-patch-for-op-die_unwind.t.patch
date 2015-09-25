@@ -1,7 +1,7 @@
 From efb2308666a0fbd61a91e088a05cb7f79626d681 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:50 -0500
-Subject: [PATCH 164/389] B::C patch for op/die_unwind.t
+Subject: [PATCH 164/407] B::C patch for op/die_unwind.t
 
 ---
  t/CORE/op/die_unwind.t | 3 +--

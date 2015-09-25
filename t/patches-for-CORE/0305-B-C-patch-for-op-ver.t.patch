@@ -1,7 +1,7 @@
 From ae7ee3fd420183d485cf07b4c95a1b0ab304e7b6 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 305/389] B::C patch for op/ver.t
+Subject: [PATCH 305/407] B::C patch for op/ver.t
 
 ---
  t/CORE/op/ver.t | 6 +++---

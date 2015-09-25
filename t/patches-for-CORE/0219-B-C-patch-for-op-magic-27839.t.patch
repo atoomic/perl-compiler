@@ -1,7 +1,7 @@
 From e518d831997f127e0b34668644a6a1f39199de58 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:55 -0500
-Subject: [PATCH 219/389] B::C patch for op/magic-27839.t
+Subject: [PATCH 219/407] B::C patch for op/magic-27839.t
 
 ---
  t/CORE/op/magic-27839.t | 8 ++++----

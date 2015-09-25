@@ -1,7 +1,7 @@
 From d8b46324c8699fb3aae978fb87a4eaadf542fccb Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 252/389] B::C patch for op/repeat.t
+Subject: [PATCH 252/407] B::C patch for op/repeat.t
 
 ---
  t/CORE/op/repeat.t | 4 +---

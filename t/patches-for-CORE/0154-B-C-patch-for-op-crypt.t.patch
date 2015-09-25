@@ -1,7 +1,7 @@
 From d85161c03ce965164d71542c4af1464b9d6c5916 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:49 -0500
-Subject: [PATCH 154/389] B::C patch for op/crypt.t
+Subject: [PATCH 154/407] B::C patch for op/crypt.t
 
 ---
  t/CORE/op/crypt.t | 9 ++++-----

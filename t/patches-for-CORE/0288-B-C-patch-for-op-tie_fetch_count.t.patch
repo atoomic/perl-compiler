@@ -1,7 +1,7 @@
 From 213edecdd307001add57cc85078ebaf729757aa3 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:01 -0500
-Subject: [PATCH 288/389] B::C patch for op/tie_fetch_count.t
+Subject: [PATCH 288/407] B::C patch for op/tie_fetch_count.t
 
 ---
  t/CORE/op/tie_fetch_count.t | 8 +++-----

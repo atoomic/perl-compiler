@@ -1,7 +1,7 @@
 From f5e236b67530e98f6e98971de5ab6ba6f8780cbd Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:48 -0500
-Subject: [PATCH 136/389] B::C patch for op/attrs.t
+Subject: [PATCH 136/407] B::C patch for op/attrs.t
 
 ---
  t/CORE/op/attrs.t | 5 ++---

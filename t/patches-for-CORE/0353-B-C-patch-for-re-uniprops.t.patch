@@ -1,7 +1,7 @@
 From bf104e7d296a7a56547610960cc8deb6b11c0642 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 353/389] B::C patch for re/uniprops.t
+Subject: [PATCH 353/407] B::C patch for re/uniprops.t
 
 ---
  t/CORE/re/uniprops.t | 3 ++-

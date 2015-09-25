@@ -1,7 +1,7 @@
 From 742789f04e68bc5b25c97ad33233aa087f173c9c Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 108/389] B::C patch for mro/next_method_utf8.t
+Subject: [PATCH 108/407] B::C patch for mro/next_method_utf8.t
 
 ---
  t/CORE/mro/next_method_utf8.t | 2 +-

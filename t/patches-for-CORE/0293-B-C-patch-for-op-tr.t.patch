@@ -1,7 +1,7 @@
 From 99d86634a3256c7297ee1b6340a988a7c14e6e71 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:01 -0500
-Subject: [PATCH 293/389] B::C patch for op/tr.t
+Subject: [PATCH 293/407] B::C patch for op/tr.t
 
 ---
  t/CORE/op/tr.t | 4 +---

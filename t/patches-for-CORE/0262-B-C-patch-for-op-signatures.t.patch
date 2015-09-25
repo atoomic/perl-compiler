@@ -1,7 +1,7 @@
 From fd561263f3e273f857d25cd3c1471fd8331510ba Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 262/389] B::C patch for op/signatures.t
+Subject: [PATCH 262/407] B::C patch for op/signatures.t
 
 ---
  t/CORE/op/signatures.t | 7 +++----

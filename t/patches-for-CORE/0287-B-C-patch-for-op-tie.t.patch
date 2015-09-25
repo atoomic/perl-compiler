@@ -1,7 +1,7 @@
 From ad6bdde8383b1eb557a107666206746501b97da8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:01 -0500
-Subject: [PATCH 287/389] B::C patch for op/tie.t
+Subject: [PATCH 287/407] B::C patch for op/tie.t
 
 ---
  t/CORE/op/tie.t | 5 ++---

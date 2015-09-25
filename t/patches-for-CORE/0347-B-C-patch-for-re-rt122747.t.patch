@@ -1,7 +1,7 @@
 From 1923638f63a91cc008714570f596a6dfa18f16ae Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 347/389] B::C patch for re/rt122747.t
+Subject: [PATCH 347/407] B::C patch for re/rt122747.t
 
 ---
  t/CORE/re/rt122747.t | 5 ++---

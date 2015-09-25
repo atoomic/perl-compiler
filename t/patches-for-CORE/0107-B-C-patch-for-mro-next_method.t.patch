@@ -1,7 +1,7 @@
 From a113f23ddcd4a52b537eb3ee1ef6fa30215b834e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:45 -0500
-Subject: [PATCH 107/389] B::C patch for mro/next_method.t
+Subject: [PATCH 107/407] B::C patch for mro/next_method.t
 
 ---
  t/CORE/mro/next_method.t | 2 +-

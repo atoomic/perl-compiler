@@ -1,7 +1,7 @@
 From 09c2202f05f9a48ad51a7dc57228a186bd3add84 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 173/389] B::C patch for op/exp.t
+Subject: [PATCH 173/407] B::C patch for op/exp.t
 
 ---
  t/CORE/op/exp.t | 4 +---

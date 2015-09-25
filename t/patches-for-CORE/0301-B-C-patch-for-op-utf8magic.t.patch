@@ -1,7 +1,7 @@
 From a1f5e82a9050decc1ad6a0435aac4086de0c6dd8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 301/389] B::C patch for op/utf8magic.t
+Subject: [PATCH 301/407] B::C patch for op/utf8magic.t
 
 ---
  t/CORE/op/utf8magic.t | 5 ++---

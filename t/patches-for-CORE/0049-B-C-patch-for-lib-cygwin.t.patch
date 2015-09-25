@@ -1,7 +1,7 @@
 From b0a1171e0878ef43cf51b48edd5b127bf17fdb65 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:40 -0500
-Subject: [PATCH 049/389] B::C patch for lib/cygwin.t
+Subject: [PATCH 049/407] B::C patch for lib/cygwin.t
 
 ---
  t/CORE/lib/cygwin.t | 3 +--

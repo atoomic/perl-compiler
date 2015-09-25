@@ -1,7 +1,7 @@
 From 89eb2718fb40754ad00c11ec267cb8febcb32c0f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 271/389] B::C patch for op/sprintf.t
+Subject: [PATCH 271/407] B::C patch for op/sprintf.t
 
 ---
  t/CORE/op/sprintf.t | 4 +---

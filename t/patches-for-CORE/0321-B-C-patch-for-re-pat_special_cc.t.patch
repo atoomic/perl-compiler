@@ -1,7 +1,7 @@
 From 24e15103a00a5e53d2c3f9f8399473807b219d4a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:03 -0500
-Subject: [PATCH 321/389] B::C patch for re/pat_special_cc.t
+Subject: [PATCH 321/407] B::C patch for re/pat_special_cc.t
 
 ---
  t/CORE/re/pat_special_cc.t | 4 +---

@@ -1,7 +1,7 @@
 From 5e40278d3187d6beb4fd5b27c52a759163286c49 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:38 -0500
-Subject: [PATCH 029/389] B::C patch for io/layers.t
+Subject: [PATCH 029/407] B::C patch for io/layers.t
 
 ---
  t/CORE/io/layers.t | 26 +++++++++++++-------------

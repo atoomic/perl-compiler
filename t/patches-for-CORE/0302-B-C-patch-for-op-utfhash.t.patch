@@ -1,7 +1,7 @@
 From c9567a85fc0b783e860594e4144a1c53d867f210 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 302/389] B::C patch for op/utfhash.t
+Subject: [PATCH 302/407] B::C patch for op/utfhash.t
 
 ---
  t/CORE/op/utfhash.t | 8 +++-----

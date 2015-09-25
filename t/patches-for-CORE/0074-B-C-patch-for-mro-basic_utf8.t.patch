@@ -1,7 +1,7 @@
 From 99ce6e0da018c70840852c763f7eb07e6db8d0a8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:42 -0500
-Subject: [PATCH 074/389] B::C patch for mro/basic_utf8.t
+Subject: [PATCH 074/407] B::C patch for mro/basic_utf8.t
 
 ---
  t/CORE/mro/basic_utf8.t | 2 +-

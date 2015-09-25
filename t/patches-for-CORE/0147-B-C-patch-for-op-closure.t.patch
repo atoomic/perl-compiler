@@ -1,7 +1,7 @@
 From 7bd9719ba1207a30141be2bf0e43f6b064341e74 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:49 -0500
-Subject: [PATCH 147/389] B::C patch for op/closure.t
+Subject: [PATCH 147/407] B::C patch for op/closure.t
 
 ---
  t/CORE/op/closure.t | 8 +++-----

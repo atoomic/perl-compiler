@@ -1,7 +1,7 @@
 From e87b3728a5357675830d6bfe5d88876d8f62339a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:49 -0500
-Subject: [PATCH 151/389] B::C patch for op/coreamp.t
+Subject: [PATCH 151/407] B::C patch for op/coreamp.t
 
 ---
  t/CORE/op/coreamp.t | 9 +++++----

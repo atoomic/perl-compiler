@@ -1,7 +1,7 @@
 From 5920fe737fe7338470071ba465722283984c49b4 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 184/389] B::C patch for op/glob.t
+Subject: [PATCH 184/407] B::C patch for op/glob.t
 
 ---
  t/CORE/op/glob.t | 5 ++---

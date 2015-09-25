@@ -1,7 +1,7 @@
 From b5aa4340ac84c6984aca668d7c930e072821521c Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 351/389] B::C patch for re/subst_amp.t
+Subject: [PATCH 351/407] B::C patch for re/subst_amp.t
 
 ---
  t/CORE/re/subst_amp.t | 6 +++---

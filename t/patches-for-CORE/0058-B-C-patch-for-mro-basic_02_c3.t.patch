@@ -1,7 +1,7 @@
 From 0ef924604c2a53ec1489ffe1fd01cc3d8069e68d Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:41 -0500
-Subject: [PATCH 058/389] B::C patch for mro/basic_02_c3.t
+Subject: [PATCH 058/407] B::C patch for mro/basic_02_c3.t
 
 ---
  t/CORE/mro/basic_02_c3.t | 2 +-

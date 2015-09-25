@@ -1,7 +1,7 @@
 From ad1065c4eb045ee53a0707405518c88e8e11b3d8 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:07 -0500
-Subject: [PATCH 366/389] B::C patch for uni/gv.t
+Subject: [PATCH 366/407] B::C patch for uni/gv.t
 
 ---
  t/CORE/uni/gv.t | 9 ++++-----

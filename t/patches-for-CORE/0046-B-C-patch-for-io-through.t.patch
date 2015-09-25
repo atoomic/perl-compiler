@@ -1,7 +1,7 @@
 From ed2eaae8a6d087df02c73603c282e355c3486b43 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 046/389] B::C patch for io/through.t
+Subject: [PATCH 046/407] B::C patch for io/through.t
 
 ---
  t/CORE/io/through.t | 5 ++---

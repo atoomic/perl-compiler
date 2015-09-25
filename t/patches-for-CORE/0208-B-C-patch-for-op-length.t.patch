@@ -1,7 +1,7 @@
 From 6c0f6b73482aa5eacc67d8d61626e5727e5da20e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 208/389] B::C patch for op/length.t
+Subject: [PATCH 208/407] B::C patch for op/length.t
 
 ---
  t/CORE/op/length.t | 4 +---

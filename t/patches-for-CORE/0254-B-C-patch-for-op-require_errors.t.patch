@@ -1,7 +1,7 @@
 From bcd5db5ef5ad133495a7d0a4291ffa0c3d3e9faa Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 254/389] B::C patch for op/require_errors.t
+Subject: [PATCH 254/407] B::C patch for op/require_errors.t
 
 ---
  t/CORE/op/require_errors.t | 7 ++++---

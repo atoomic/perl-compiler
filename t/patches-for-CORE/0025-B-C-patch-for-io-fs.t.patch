@@ -1,7 +1,7 @@
 From 54ba30c6955f83788a3124717325801adc372939 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:38 -0500
-Subject: [PATCH 025/389] B::C patch for io/fs.t
+Subject: [PATCH 025/407] B::C patch for io/fs.t
 
 ---
  t/CORE/io/fs.t | 5 ++---

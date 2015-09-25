@@ -1,7 +1,7 @@
 From 698c392a84abfc63ade92d38651541b3616c51e4 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:01 -0500
-Subject: [PATCH 295/389] B::C patch for op/universal.t
+Subject: [PATCH 295/407] B::C patch for op/universal.t
 
 ---
  t/CORE/op/universal.t | 5 +----

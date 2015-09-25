@@ -1,7 +1,7 @@
 From 227b9d1d91a15f9548aa1a2214e4133f3e4c7dbe Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 177/389] B::C patch for op/filetest_stack_ok.t
+Subject: [PATCH 177/407] B::C patch for op/filetest_stack_ok.t
 
 ---
  t/CORE/op/filetest_stack_ok.t | 5 ++---

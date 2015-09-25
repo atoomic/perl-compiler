@@ -1,7 +1,7 @@
 From 79060ddfa5d4bacc491103bd8010d5f28605bb78 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 259/389] B::C patch for op/select.t
+Subject: [PATCH 259/407] B::C patch for op/select.t
 
 ---
  t/CORE/op/select.t | 10 +++++-----

@@ -1,7 +1,7 @@
 From 42de0cd79160fc8773b7144053e6a1f938c0a127 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 185/389] B::C patch for op/gmagic.t
+Subject: [PATCH 185/407] B::C patch for op/gmagic.t
 
 ---
  t/CORE/op/gmagic.t | 5 ++---

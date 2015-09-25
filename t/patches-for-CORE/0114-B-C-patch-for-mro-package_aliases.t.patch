@@ -1,7 +1,7 @@
 From 26d2815d45a5e1c3294e58a24436ee424de8d50a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 114/389] B::C patch for mro/package_aliases.t
+Subject: [PATCH 114/407] B::C patch for mro/package_aliases.t
 
 ---
  t/CORE/mro/package_aliases.t | 8 +-------

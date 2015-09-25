@@ -1,7 +1,7 @@
 From 35f10a5e6b5e31be758cc089d0180bef29f5738b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 193/389] B::C patch for op/hashassign.t
+Subject: [PATCH 193/407] B::C patch for op/hashassign.t
 
 ---
  t/CORE/op/hashassign.t | 5 ++---

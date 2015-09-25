@@ -1,7 +1,7 @@
 From 45ee8a347ffab2f47be6826d83fee21c32e034b7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:45 -0500
-Subject: [PATCH 105/389] B::C patch for mro/next_ineval.t
+Subject: [PATCH 105/407] B::C patch for mro/next_ineval.t
 
 ---
  t/CORE/mro/next_ineval.t | 2 +-

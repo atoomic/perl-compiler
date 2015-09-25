@@ -1,7 +1,7 @@
 From 516d0c01bcba0a739114a978e45f73b48d41b20d Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 182/389] B::C patch for op/fresh_perl_utf8.t
+Subject: [PATCH 182/407] B::C patch for op/fresh_perl_utf8.t
 
 ---
  t/CORE/op/fresh_perl_utf8.t | 5 ++---

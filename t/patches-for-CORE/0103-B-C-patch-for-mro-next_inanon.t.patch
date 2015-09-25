@@ -1,7 +1,7 @@
 From f170f48c192dce6f40832ff884988ff0d9a11ef2 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:45 -0500
-Subject: [PATCH 103/389] B::C patch for mro/next_inanon.t
+Subject: [PATCH 103/407] B::C patch for mro/next_inanon.t
 
 ---
  t/CORE/mro/next_inanon.t | 2 +-

@@ -1,7 +1,7 @@
 From 886e0f00d272e598edaeecbf464b9247ec0e1dfd Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:07 -0500
-Subject: [PATCH 358/389] B::C patch for uni/case.pl
+Subject: [PATCH 358/407] B::C patch for uni/case.pl
 
 ---
  t/CORE/uni/case.pl | 3 +--

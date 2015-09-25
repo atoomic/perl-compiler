@@ -1,7 +1,7 @@
 From 7e35d3ceb8b1b4b165456e813c1879cb8bf4f238 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:00 -0500
-Subject: [PATCH 277/389] B::C patch for op/state.t
+Subject: [PATCH 277/407] B::C patch for op/state.t
 
 ---
  t/CORE/op/state.t | 5 ++---

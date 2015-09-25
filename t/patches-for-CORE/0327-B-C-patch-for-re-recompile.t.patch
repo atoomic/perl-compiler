@@ -1,7 +1,7 @@
 From 4ecdea29ebbbb4e05b1c66837b579780a5354c8f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:04 -0500
-Subject: [PATCH 327/389] B::C patch for re/recompile.t
+Subject: [PATCH 327/407] B::C patch for re/recompile.t
 
 ---
  t/CORE/re/recompile.t | 6 ++----

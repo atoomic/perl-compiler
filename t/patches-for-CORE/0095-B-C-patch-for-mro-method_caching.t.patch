@@ -1,7 +1,7 @@
 From 1a468ae9ead07b7823361f602a881e2e00edb3e2 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:44 -0500
-Subject: [PATCH 095/389] B::C patch for mro/method_caching.t
+Subject: [PATCH 095/407] B::C patch for mro/method_caching.t
 
 ---
  t/CORE/mro/method_caching.t | 8 +-------

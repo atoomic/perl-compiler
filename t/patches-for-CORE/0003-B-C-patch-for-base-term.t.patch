@@ -1,7 +1,7 @@
 From 2a1da025972b74c4420115bdbe40a4e38060a026 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:34 -0500
-Subject: [PATCH 003/389] B::C patch for base/term.t
+Subject: [PATCH 003/407] B::C patch for base/term.t
 
 ---
  t/CORE/base/term.t | 6 +-----

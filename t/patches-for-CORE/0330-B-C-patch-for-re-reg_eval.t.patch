@@ -1,7 +1,7 @@
 From dd39597f5e60304b8b4defe3d49b0e04deea988e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:04 -0500
-Subject: [PATCH 330/389] B::C patch for re/reg_eval.t
+Subject: [PATCH 330/407] B::C patch for re/reg_eval.t
 
 ---
  t/CORE/re/reg_eval.t | 3 +--

@@ -1,7 +1,7 @@
 From 9bc2ffd3f48f6f757cb07e0b99e6a11af07c1d8a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:38 -0500
-Subject: [PATCH 026/389] B::C patch for io/inplace.t
+Subject: [PATCH 026/407] B::C patch for io/inplace.t
 
 ---
  t/CORE/io/inplace.t | 3 ++-

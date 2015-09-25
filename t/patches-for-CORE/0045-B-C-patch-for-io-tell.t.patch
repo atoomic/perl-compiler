@@ -1,7 +1,7 @@
 From fb6ee1b0889b0b532798f6410fbaebe7898c9fa0 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 045/389] B::C patch for io/tell.t
+Subject: [PATCH 045/407] B::C patch for io/tell.t
 
 ---
  t/CORE/io/tell.t | 11 +++++------

@@ -1,7 +1,7 @@
 From a38223110b7c5e05aef722ff6c3379f069a43e5f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 039/389] B::C patch for io/pvbm.t
+Subject: [PATCH 039/407] B::C patch for io/pvbm.t
 
 ---
  t/CORE/io/pvbm.t | 5 ++---

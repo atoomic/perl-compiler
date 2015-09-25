@@ -1,7 +1,7 @@
 From e5f7b047666dcc2b3c357aa19075e9eb201641ed Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 186/389] B::C patch for op/goto.t
+Subject: [PATCH 186/407] B::C patch for op/goto.t
 
 ---
  t/CORE/op/goto.t | 5 ++---

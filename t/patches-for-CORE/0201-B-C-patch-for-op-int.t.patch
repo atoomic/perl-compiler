@@ -1,7 +1,7 @@
 From ca99d7a8a458f21857e076d907be90780f606380 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 201/389] B::C patch for op/int.t
+Subject: [PATCH 201/407] B::C patch for op/int.t
 
 ---
  t/CORE/op/int.t | 5 ++---

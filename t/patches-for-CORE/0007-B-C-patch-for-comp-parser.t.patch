@@ -1,7 +1,7 @@
 From c5e2df2bfc86ff15f108e9fc12fcc62e5606c542 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:35 -0500
-Subject: [PATCH 007/389] B::C patch for comp/parser.t
+Subject: [PATCH 007/407] B::C patch for comp/parser.t
 
 ---
  t/CORE/comp/parser.t | 6 +-----

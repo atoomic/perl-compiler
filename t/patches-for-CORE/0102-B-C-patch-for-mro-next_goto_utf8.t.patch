@@ -1,7 +1,7 @@
 From 908d10053e835c887d4176690bcedc6bd511930e Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:45 -0500
-Subject: [PATCH 102/389] B::C patch for mro/next_goto_utf8.t
+Subject: [PATCH 102/407] B::C patch for mro/next_goto_utf8.t
 
 ---
  t/CORE/mro/next_goto_utf8.t | 2 +-

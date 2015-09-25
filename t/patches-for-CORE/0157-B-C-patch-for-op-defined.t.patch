@@ -1,7 +1,7 @@
 From 21a3194b66f9d5e8652d1e9f9ad7233a466f7ba9 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:50 -0500
-Subject: [PATCH 157/389] B::C patch for op/defined.t
+Subject: [PATCH 157/407] B::C patch for op/defined.t
 
 ---
  t/CORE/op/defined.t | 3 +--

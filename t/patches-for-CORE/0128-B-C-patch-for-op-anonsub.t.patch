@@ -1,7 +1,7 @@
 From 35b72f2969748955ab39b90ffcce3e88b550520b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 128/389] B::C patch for op/anonsub.t
+Subject: [PATCH 128/407] B::C patch for op/anonsub.t
 
 ---
  t/CORE/op/anonsub.t | 5 ++---

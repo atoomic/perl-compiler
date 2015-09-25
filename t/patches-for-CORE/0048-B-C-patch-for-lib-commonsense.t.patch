@@ -1,7 +1,7 @@
 From 821dd81881493d7ecb02321a6a23271c2a50d253 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:40 -0500
-Subject: [PATCH 048/389] B::C patch for lib/commonsense.t
+Subject: [PATCH 048/407] B::C patch for lib/commonsense.t
 
 ---
  t/CORE/lib/commonsense.t | 3 +--

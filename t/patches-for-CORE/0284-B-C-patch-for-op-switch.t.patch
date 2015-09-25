@@ -1,7 +1,7 @@
 From 3f058a828ca151c915b4aeac439c4f118bd34aed Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:00 -0500
-Subject: [PATCH 284/389] B::C patch for op/switch.t
+Subject: [PATCH 284/407] B::C patch for op/switch.t
 
 ---
  t/CORE/op/switch.t | 6 ++----

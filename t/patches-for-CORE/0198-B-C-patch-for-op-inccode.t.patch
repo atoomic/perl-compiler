@@ -1,7 +1,7 @@
 From 068dc68c385004d608dd1eb5b4be7c60249eef43 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 198/389] B::C patch for op/inccode.t
+Subject: [PATCH 198/407] B::C patch for op/inccode.t
 
 ---
  t/CORE/op/inccode.t | 8 +++-----

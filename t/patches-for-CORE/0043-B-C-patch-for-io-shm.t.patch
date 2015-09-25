@@ -1,7 +1,7 @@
 From 7e229e6a479a0e4d4e70a0a649bc8740c705755f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 043/389] B::C patch for io/shm.t
+Subject: [PATCH 043/407] B::C patch for io/shm.t
 
 ---
  t/CORE/io/shm.t | 6 ++----

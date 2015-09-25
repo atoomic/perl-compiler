@@ -1,7 +1,7 @@
 From 1999c4c27b027b87525a161920584a6c1d438e68 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 126/389] B::C patch for op/64bitint.t
+Subject: [PATCH 126/407] B::C patch for op/64bitint.t
 
 ---
  t/CORE/op/64bitint.t | 5 ++---

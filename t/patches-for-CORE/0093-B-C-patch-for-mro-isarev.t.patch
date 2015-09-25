@@ -1,7 +1,7 @@
 From 57677fd8dda3fe60813cf44c86bb8c6c1d8e818a Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:44 -0500
-Subject: [PATCH 093/389] B::C patch for mro/isarev.t
+Subject: [PATCH 093/407] B::C patch for mro/isarev.t
 
 ---
  t/CORE/mro/isarev.t | 8 +-------

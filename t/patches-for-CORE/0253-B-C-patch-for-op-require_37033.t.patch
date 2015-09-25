@@ -1,7 +1,7 @@
 From 5ccb5b22f93567227c7f6da50725853a5af2a61b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 253/389] B::C patch for op/require_37033.t
+Subject: [PATCH 253/407] B::C patch for op/require_37033.t
 
 ---
  t/CORE/op/require_37033.t | 5 ++---

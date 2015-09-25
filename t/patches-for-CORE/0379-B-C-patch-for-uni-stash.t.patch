@@ -1,7 +1,7 @@
 From 1ec6c9abf8599d7f05b3c0cb40a2fe921ee121d3 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:08 -0500
-Subject: [PATCH 379/389] B::C patch for uni/stash.t
+Subject: [PATCH 379/407] B::C patch for uni/stash.t
 
 ---
  t/CORE/uni/stash.t | 4 +---

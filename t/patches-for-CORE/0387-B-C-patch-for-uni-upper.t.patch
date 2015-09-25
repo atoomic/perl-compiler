@@ -1,7 +1,7 @@
 From 4fb1e129f17422f6661f170e5566c83ff94a6a3c Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:09 -0500
-Subject: [PATCH 387/389] B::C patch for uni/upper.t
+Subject: [PATCH 387/407] B::C patch for uni/upper.t
 
 ---
  t/CORE/uni/upper.t | 3 +--

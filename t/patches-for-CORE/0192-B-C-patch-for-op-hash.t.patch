@@ -1,7 +1,7 @@
 From 4d5f7f62c47ee7b5a3330ad1027f0f7d4aad6477 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:53 -0500
-Subject: [PATCH 192/389] B::C patch for op/hash.t
+Subject: [PATCH 192/407] B::C patch for op/hash.t
 
 ---
  t/CORE/op/hash.t | 4 +---

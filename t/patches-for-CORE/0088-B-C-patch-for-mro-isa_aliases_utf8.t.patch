@@ -1,7 +1,7 @@
 From 4032656aeb1158418d965289fdab7d1b97dd5c37 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:44 -0500
-Subject: [PATCH 088/389] B::C patch for mro/isa_aliases_utf8.t
+Subject: [PATCH 088/407] B::C patch for mro/isa_aliases_utf8.t
 
 ---
  t/CORE/mro/isa_aliases_utf8.t | 2 +-

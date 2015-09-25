@@ -1,7 +1,7 @@
 From 8c772cefc74b398de662bc882a740cc6999256c2 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 356/389] B::C patch for uni/cache.t
+Subject: [PATCH 356/407] B::C patch for uni/cache.t
 
 ---
  t/CORE/uni/cache.t | 4 +---

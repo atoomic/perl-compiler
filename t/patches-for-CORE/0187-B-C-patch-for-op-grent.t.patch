@@ -1,7 +1,7 @@
 From 2aa066f733b9800826a1dcf3494e16684538445c Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:52 -0500
-Subject: [PATCH 187/389] B::C patch for op/grent.t
+Subject: [PATCH 187/407] B::C patch for op/grent.t
 
 ---
  t/CORE/op/grent.t | 5 ++---

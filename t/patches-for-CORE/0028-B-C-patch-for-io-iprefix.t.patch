@@ -1,7 +1,7 @@
 From 155657f757d8d7cf481257800f7883645898c93f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:38 -0500
-Subject: [PATCH 028/389] B::C patch for io/iprefix.t
+Subject: [PATCH 028/407] B::C patch for io/iprefix.t
 
 ---
  t/CORE/io/iprefix.t | 3 ++-

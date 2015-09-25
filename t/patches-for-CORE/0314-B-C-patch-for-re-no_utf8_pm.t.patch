@@ -1,7 +1,7 @@
 From 9dc2c2cae3a61ce25cfbb5f51188492387956c4f Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:03 -0500
-Subject: [PATCH 314/389] B::C patch for re/no_utf8_pm.t
+Subject: [PATCH 314/407] B::C patch for re/no_utf8_pm.t
 
 ---
  t/CORE/re/no_utf8_pm.t | 6 +++---

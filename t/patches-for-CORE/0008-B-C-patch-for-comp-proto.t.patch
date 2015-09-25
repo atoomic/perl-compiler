@@ -1,7 +1,7 @@
 From 8057f3baf9abc869711b6a597b4f1a7b10ea7f57 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:35 -0500
-Subject: [PATCH 008/389] B::C patch for comp/proto.t
+Subject: [PATCH 008/407] B::C patch for comp/proto.t
 
 ---
  t/CORE/comp/proto.t | 3 +--

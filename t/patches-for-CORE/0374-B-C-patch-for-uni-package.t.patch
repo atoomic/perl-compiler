@@ -1,7 +1,7 @@
 From 6eabc986e70dc6f586bd1d80ed1ce544036fbb76 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:08 -0500
-Subject: [PATCH 374/389] B::C patch for uni/package.t
+Subject: [PATCH 374/407] B::C patch for uni/package.t
 
 ---
  t/CORE/uni/package.t | 3 +--

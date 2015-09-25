@@ -1,7 +1,7 @@
 From 1bac686558b5916c47b6e471638f9ab468618f85 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:08 -0500
-Subject: [PATCH 375/389] B::C patch for uni/parser.t
+Subject: [PATCH 375/407] B::C patch for uni/parser.t
 
 ---
  t/CORE/uni/parser.t | 3 +--

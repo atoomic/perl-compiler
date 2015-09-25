@@ -1,7 +1,7 @@
 From 9c5c34e5a3a969b4d9b0c6a36c8074e0704117ba Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 207/389] B::C patch for op/leaky-magic.t
+Subject: [PATCH 207/407] B::C patch for op/leaky-magic.t
 
 ---
  t/CORE/op/leaky-magic.t | 5 ++---

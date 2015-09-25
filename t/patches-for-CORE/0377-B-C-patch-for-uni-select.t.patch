@@ -1,7 +1,7 @@
 From 5999b7f01eeff73de78be8e22e3b8c4fa3a04fb7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:08 -0500
-Subject: [PATCH 377/389] B::C patch for uni/select.t
+Subject: [PATCH 377/407] B::C patch for uni/select.t
 
 ---
  t/CORE/uni/select.t | 6 +++---

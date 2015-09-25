@@ -1,7 +1,7 @@
 From 8ef0f8cb55cb01abf771428af77e8d83520cde94 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:55 -0500
-Subject: [PATCH 222/389] B::C patch for op/mkdir.t
+Subject: [PATCH 222/407] B::C patch for op/mkdir.t
 
 ---
  t/CORE/op/mkdir.t | 5 ++---

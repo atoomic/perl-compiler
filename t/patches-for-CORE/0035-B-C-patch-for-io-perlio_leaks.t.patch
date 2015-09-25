@@ -1,7 +1,7 @@
 From 9bc338ec3b041c91f45bacb197d80a9d9dcfa281 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:39 -0500
-Subject: [PATCH 035/389] B::C patch for io/perlio_leaks.t
+Subject: [PATCH 035/407] B::C patch for io/perlio_leaks.t
 
 ---
  t/CORE/io/perlio_leaks.t | 5 ++---

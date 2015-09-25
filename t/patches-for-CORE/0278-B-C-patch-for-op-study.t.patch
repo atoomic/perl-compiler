@@ -1,7 +1,7 @@
 From 28b3d614a911ff332680f01771bb7833244097a9 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:00 -0500
-Subject: [PATCH 278/389] B::C patch for op/study.t
+Subject: [PATCH 278/407] B::C patch for op/study.t
 
 ---
  t/CORE/op/study.t | 5 ++---

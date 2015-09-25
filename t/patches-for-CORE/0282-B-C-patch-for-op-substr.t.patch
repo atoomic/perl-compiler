@@ -1,7 +1,7 @@
 From fa027794fc8add29a9374246525eec941733a874 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:00 -0500
-Subject: [PATCH 282/389] B::C patch for op/substr.t
+Subject: [PATCH 282/407] B::C patch for op/substr.t
 
 ---
  t/CORE/op/substr.t | 4 +---

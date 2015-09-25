@@ -1,7 +1,7 @@
 From ddd044bc09b77aceaf16d888ddf1aad498c2b0a1 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:05 -0500
-Subject: [PATCH 341/389] B::C patch for re/regexp_noamp.t
+Subject: [PATCH 341/407] B::C patch for re/regexp_noamp.t
 
 ---
  t/CORE/re/regexp_noamp.t | 2 +-

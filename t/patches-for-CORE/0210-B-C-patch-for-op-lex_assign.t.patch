@@ -1,7 +1,7 @@
 From 4f125ca8be41655ee83dd642f38797b8419884e2 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 210/389] B::C patch for op/lex_assign.t
+Subject: [PATCH 210/407] B::C patch for op/lex_assign.t
 
 ---
  t/CORE/op/lex_assign.t | 4 +---

@@ -1,7 +1,7 @@
 From 8e7359bbb2da461d5683efb6b27479c74e2e70c2 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:05 -0500
-Subject: [PATCH 338/389] B::C patch for re/regex_sets.t
+Subject: [PATCH 338/407] B::C patch for re/regex_sets.t
 
 ---
  t/CORE/re/regex_sets.t | 8 +++-----

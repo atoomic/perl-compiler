@@ -1,7 +1,7 @@
 From 039e7aafb9c9ca3f17f69079e3ab8b170aff28e5 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:58 -0500
-Subject: [PATCH 260/389] B::C patch for op/setpgrpstack.t
+Subject: [PATCH 260/407] B::C patch for op/setpgrpstack.t
 
 ---
  t/CORE/op/setpgrpstack.t | 5 ++---

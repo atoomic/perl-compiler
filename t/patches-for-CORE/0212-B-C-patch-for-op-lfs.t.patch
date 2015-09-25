@@ -1,7 +1,7 @@
 From 2c206382c374bee155c916930813c518dc805436 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 212/389] B::C patch for op/lfs.t
+Subject: [PATCH 212/407] B::C patch for op/lfs.t
 
 ---
  t/CORE/op/lfs.t | 5 ++---

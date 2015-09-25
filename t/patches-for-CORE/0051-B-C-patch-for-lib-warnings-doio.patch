@@ -1,7 +1,7 @@
 From 100dd86ab024806dfce32db5a76f889a5cc716da Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:41 -0500
-Subject: [PATCH 051/389] B::C patch for lib/warnings/doio
+Subject: [PATCH 051/407] B::C patch for lib/warnings/doio
 
 ---
  t/CORE/lib/warnings/doio | 8 ++++----

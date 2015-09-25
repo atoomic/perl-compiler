@@ -1,7 +1,7 @@
 From 51c0a5cb787ac5503e94cc04bfabcec870e776c0 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:04 -0500
-Subject: [PATCH 329/389] B::C patch for re/reg_email.t
+Subject: [PATCH 329/407] B::C patch for re/reg_email.t
 
 ---
  t/CORE/re/reg_email.t | 6 +++---

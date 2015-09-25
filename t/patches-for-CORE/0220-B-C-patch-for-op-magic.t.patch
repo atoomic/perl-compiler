@@ -1,7 +1,7 @@
 From 2d071adec647842545feff87ed4a442352ddd8ad Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:55 -0500
-Subject: [PATCH 220/389] B::C patch for op/magic.t
+Subject: [PATCH 220/407] B::C patch for op/magic.t
 
 ---
  t/CORE/op/magic.t | 15 +++++----------

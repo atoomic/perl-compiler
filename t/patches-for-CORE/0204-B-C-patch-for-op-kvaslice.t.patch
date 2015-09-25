@@ -1,7 +1,7 @@
 From e0a3e542ddf8dfa458469d1dd3b79251d3826112 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 204/389] B::C patch for op/kvaslice.t
+Subject: [PATCH 204/407] B::C patch for op/kvaslice.t
 
 ---
  t/CORE/op/kvaslice.t | 4 +---

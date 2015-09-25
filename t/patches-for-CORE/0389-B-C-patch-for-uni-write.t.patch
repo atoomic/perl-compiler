@@ -1,7 +1,7 @@
 From 8458772144d319bc455f9a1b595dd61b4c85d057 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:09 -0500
-Subject: [PATCH 389/389] B::C patch for uni/write.t
+Subject: [PATCH 389/407] B::C patch for uni/write.t
 
 ---
  t/CORE/uni/write.t | 3 +--

@@ -1,7 +1,7 @@
 From c4b1240fef8ddf3a0341d372d041beafb95e5222 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 117/389] B::C patch for mro/pkg_gen_utf8.t
+Subject: [PATCH 117/407] B::C patch for mro/pkg_gen_utf8.t
 
 ---
  t/CORE/mro/pkg_gen_utf8.t | 3 +--

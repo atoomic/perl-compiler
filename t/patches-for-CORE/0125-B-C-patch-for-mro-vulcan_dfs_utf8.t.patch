@@ -1,7 +1,7 @@
 From ed50d69d4bc5566fc9b96d370e411faa2b6fdee7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 125/389] B::C patch for mro/vulcan_dfs_utf8.t
+Subject: [PATCH 125/407] B::C patch for mro/vulcan_dfs_utf8.t
 
 ---
  t/CORE/mro/vulcan_dfs_utf8.t | 2 +-

@@ -1,7 +1,7 @@
 From 12042dc09dc195e03aa58eaa947ac2ad88e84f71 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:05 -0500
-Subject: [PATCH 340/389] B::C patch for re/regexp.t
+Subject: [PATCH 340/407] B::C patch for re/regexp.t
 
 ---
  t/CORE/re/regexp.t | 4 +---

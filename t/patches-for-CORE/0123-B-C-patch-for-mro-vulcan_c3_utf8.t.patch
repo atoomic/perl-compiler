@@ -1,7 +1,7 @@
 From cb18b42d321917305eb1d40938316fda70d251d5 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 123/389] B::C patch for mro/vulcan_c3_utf8.t
+Subject: [PATCH 123/407] B::C patch for mro/vulcan_c3_utf8.t
 
 ---
  t/CORE/mro/vulcan_c3_utf8.t | 2 +-

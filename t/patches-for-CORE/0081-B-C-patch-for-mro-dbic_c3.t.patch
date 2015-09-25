@@ -1,7 +1,7 @@
 From eee57285d1e25a48e1ea6f66066594ade28ae287 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:43 -0500
-Subject: [PATCH 081/389] B::C patch for mro/dbic_c3.t
+Subject: [PATCH 081/407] B::C patch for mro/dbic_c3.t
 
 ---
  t/CORE/mro/dbic_c3.t | 2 +-

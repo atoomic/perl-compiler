@@ -1,7 +1,7 @@
 From 9f5bb2101a566afcb7f09bcc0a7044930257a0d3 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:00 -0500
-Subject: [PATCH 275/389] B::C patch for op/stash.t
+Subject: [PATCH 275/407] B::C patch for op/stash.t
 
 ---
  t/CORE/op/stash.t | 5 +----

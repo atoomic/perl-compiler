@@ -1,7 +1,7 @@
 From 052c5727544b53cfa6e7d47d8166e439e43645a2 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:08 -0500
-Subject: [PATCH 369/389] B::C patch for uni/lex_utf8.t
+Subject: [PATCH 369/407] B::C patch for uni/lex_utf8.t
 
 ---
  t/CORE/uni/lex_utf8.t | 4 +---

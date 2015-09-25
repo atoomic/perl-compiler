@@ -1,7 +1,7 @@
 From ac4cadf7f2e703efa8caebf512fe9c9f68d9a64b Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:54 -0500
-Subject: [PATCH 209/389] B::C patch for op/lex.t
+Subject: [PATCH 209/407] B::C patch for op/lex.t
 
 ---
  t/CORE/op/lex.t | 2 +-

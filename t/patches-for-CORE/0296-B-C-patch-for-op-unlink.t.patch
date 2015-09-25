@@ -1,7 +1,7 @@
 From 5ef0e61a8a9ae209d2143a9021d035cb8c1d3874 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:01 -0500
-Subject: [PATCH 296/389] B::C patch for op/unlink.t
+Subject: [PATCH 296/407] B::C patch for op/unlink.t
 
 ---
  t/CORE/op/unlink.t | 4 +---

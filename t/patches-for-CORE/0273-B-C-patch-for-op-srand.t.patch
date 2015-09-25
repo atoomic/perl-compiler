@@ -1,7 +1,7 @@
 From 22e56d2d404e72eb4bc11e24f02dac83531df823 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:59 -0500
-Subject: [PATCH 273/389] B::C patch for op/srand.t
+Subject: [PATCH 273/407] B::C patch for op/srand.t
 
 ---
  t/CORE/op/srand.t | 3 +--

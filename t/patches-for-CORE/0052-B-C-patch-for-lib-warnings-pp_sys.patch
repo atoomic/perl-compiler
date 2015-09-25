@@ -1,7 +1,7 @@
 From 2e4d386e010a1faa0b2c10867b23f5f7c2d221b0 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:41 -0500
-Subject: [PATCH 052/389] B::C patch for lib/warnings/pp_sys
+Subject: [PATCH 052/407] B::C patch for lib/warnings/pp_sys
 
 ---
  t/CORE/lib/warnings/pp_sys | 28 ++++++++++++++--------------

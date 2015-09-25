@@ -1,7 +1,7 @@
 From ff4320a44a58d725a2112f55ea2d3ce958640533 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:51 -0500
-Subject: [PATCH 172/389] B::C patch for op/exists_sub.t
+Subject: [PATCH 172/407] B::C patch for op/exists_sub.t
 
 ---
  t/CORE/op/exists_sub.t | 5 ++---

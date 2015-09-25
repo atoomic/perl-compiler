@@ -1,7 +1,7 @@
 From 4f70b4e352609f44bc1d18e5caf8ed4fbf450ae7 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:07 -0500
-Subject: [PATCH 363/389] B::C patch for uni/fold.t
+Subject: [PATCH 363/407] B::C patch for uni/fold.t
 
 ---
  t/CORE/uni/fold.t | 8 +++-----

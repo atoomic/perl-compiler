@@ -1,7 +1,7 @@
 From 12ce543933ad520ea5579bb3b3f1262e79e306f5 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:01 -0500
-Subject: [PATCH 286/389] B::C patch for op/sysio.t
+Subject: [PATCH 286/407] B::C patch for op/sysio.t
 
 ---
  t/CORE/op/sysio.t | 6 +++---

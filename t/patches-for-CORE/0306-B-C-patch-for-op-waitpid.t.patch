@@ -1,7 +1,7 @@
 From 1f38b3ba5eb8d4c62d2da78abacfacc432a43727 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 306/389] B::C patch for op/waitpid.t
+Subject: [PATCH 306/407] B::C patch for op/waitpid.t
 
 ---
  t/CORE/op/waitpid.t | 5 ++---

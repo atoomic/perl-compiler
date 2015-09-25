@@ -1,7 +1,7 @@
 From 704d83f1050bb7468949b8e8be30bd1c798b4d9d Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:37 -0500
-Subject: [PATCH 018/389] B::C patch for io/defout.t
+Subject: [PATCH 018/407] B::C patch for io/defout.t
 
 ---
  t/CORE/io/defout.t | 5 ++---

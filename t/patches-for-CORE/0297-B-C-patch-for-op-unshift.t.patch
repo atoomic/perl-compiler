@@ -1,7 +1,7 @@
 From 4e37f8b614010807f9a81b3b77bbb3f88090bb86 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 297/389] B::C patch for op/unshift.t
+Subject: [PATCH 297/407] B::C patch for op/unshift.t
 
 ---
  t/CORE/op/unshift.t | 3 +--

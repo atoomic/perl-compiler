@@ -1,7 +1,7 @@
 From 7f822b00b5b7e73fed433eae47952f145825bd05 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:56 -0500
-Subject: [PATCH 229/389] B::C patch for op/oct.t
+Subject: [PATCH 229/407] B::C patch for op/oct.t
 
 ---
  t/CORE/op/oct.t | 3 +--

@@ -1,7 +1,7 @@
 From 32f2cafacb29c52df8291cfa1b9a569a3cf208dd Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:55 -0500
-Subject: [PATCH 215/389] B::C patch for op/localref.t
+Subject: [PATCH 215/407] B::C patch for op/localref.t
 
 ---
  t/CORE/op/localref.t | 4 +---

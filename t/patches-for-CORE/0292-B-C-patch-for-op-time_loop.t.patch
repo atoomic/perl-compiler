@@ -1,7 +1,7 @@
 From 3f7860ec8fd557a0014292ac0bec01518d8d7fc3 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:01 -0500
-Subject: [PATCH 292/389] B::C patch for op/time_loop.t
+Subject: [PATCH 292/407] B::C patch for op/time_loop.t
 
 ---
  t/CORE/op/time_loop.t | 2 +-

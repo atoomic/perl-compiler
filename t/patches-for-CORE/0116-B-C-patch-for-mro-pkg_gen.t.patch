@@ -1,7 +1,7 @@
 From 129c95ff44309115e30fe848649c34dbdab23809 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:46 -0500
-Subject: [PATCH 116/389] B::C patch for mro/pkg_gen.t
+Subject: [PATCH 116/407] B::C patch for mro/pkg_gen.t
 
 ---
  t/CORE/mro/pkg_gen.t | 3 +--

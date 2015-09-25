@@ -1,7 +1,7 @@
 From 8f0aa2ad073942e2ef5f17a540d58a989f71e32c Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:06 -0500
-Subject: [PATCH 345/389] B::C patch for re/regexp_trielist.t
+Subject: [PATCH 345/407] B::C patch for re/regexp_trielist.t
 
 ---
  t/CORE/re/regexp_trielist.t | 2 +-

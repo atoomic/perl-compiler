@@ -1,7 +1,7 @@
 From 4f106c8dae1dcd49ddcb4c440bbaf92e3ff44f46 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:21:47 -0500
-Subject: [PATCH 122/389] B::C patch for mro/vulcan_c3.t
+Subject: [PATCH 122/407] B::C patch for mro/vulcan_c3.t
 
 ---
  t/CORE/mro/vulcan_c3.t | 2 +-

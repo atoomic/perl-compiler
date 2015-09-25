@@ -1,7 +1,7 @@
 From feb40d962be50090edcdf54c482ab11f56032044 Mon Sep 17 00:00:00 2001
 From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
 Date: Fri, 25 Sep 2015 12:22:02 -0500
-Subject: [PATCH 308/389] B::C patch for op/warn.t
+Subject: [PATCH 308/407] B::C patch for op/warn.t
 
 ---
  t/CORE/op/warn.t | 6 +++---
