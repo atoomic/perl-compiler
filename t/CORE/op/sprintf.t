@@ -9,14 +9,12 @@
 # For tests that do not fit this format, use sprintf2.t.
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw '../lib ../cpan/version/lib';
+    require "t/CORE/test.pl";
 }
 use warnings;
 use version;
 use Config;
 use strict;
-require './test.pl';
 
 my @tests = ();
 my ($template, $data, $result, $comment, $w, $x, $evalData, $n, $p);
