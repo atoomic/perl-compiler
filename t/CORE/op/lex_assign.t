@@ -4,9 +4,7 @@
 # and causes no ill side-effects.
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    require './test.pl';
+  require "t/CORE/test.pl";  
 }
 
 $| = 1;
