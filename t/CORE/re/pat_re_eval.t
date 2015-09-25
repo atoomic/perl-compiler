@@ -16,9 +16,9 @@ $| = 1;
 
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl'; require './charset_tools.pl';
-    set_up_inc('../lib');
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
+    unshift @INC, 't/CORE/lib';
 }
 
 
