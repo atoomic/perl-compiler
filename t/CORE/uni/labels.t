@@ -3,9 +3,7 @@
 # Tests for labels in UTF-8
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    require "t/CORE/test.pl";
     skip_all_without_unicode_tables();
 }
 
