@@ -1,12 +1,10 @@
 #!./perl -w
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
-    require './test.pl';
-
-    plan(tests => 99);
+  require "t/CORE/test.pl";
 }
+
+plan(tests => 99);
 
 use strict;
 
