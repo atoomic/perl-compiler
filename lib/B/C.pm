@@ -4774,10 +4774,6 @@ sub B::PADLIST::save {
 sub B::PADNAMELIST::save {
   return B::AV::save(@_);
 }
-# B::Flags workaround
-sub B::PADNAMELIST::flagspv {
-  return "";
-}
 
 sub B::HV::save {
   my ($hv, $fullname) = @_;
