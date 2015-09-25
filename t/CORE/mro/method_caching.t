@@ -1,12 +1,6 @@
 #!./perl
 
-BEGIN {
-    unless (-d 'blib') {
-        chdir 't' if -d 't';
-        @INC = '../lib';
-    }
-    require './test.pl';
-}
+BEGIN { require 't/CORE/test.pl' }
 
 use strict;
 no strict 'refs'; # we do a lot of this
