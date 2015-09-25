@@ -1,17 +1,22 @@
 #!./perl -w
 
+my $zero;
 BEGIN {
     # We really want to know if chdir is working, as the build process will
     # all go wrong if it is not.  So avoid clearing @INC under miniperl.
-    @INC = () if defined &DynaLoader::boot_DynaLoader;
+    #@INC = () if defined &DynaLoader::boot_DynaLoader;
 
     # We're not going to chdir() into 't' because we don't know if
     # chdir() works!  Instead, we'll hedge our bets and put both
     # possibilities into @INC.
     unshift @INC, qw(t . lib ../lib);
-    require "./test.pl";
-    plan(tests => 48);
+    require "t/CORE/test.pl";
+    # freeze $0 for compilation
+    $zero = $0;
 }
+
+chdir 't/CORE';
+plan(tests => 48);
 
 use Config;
 
@@ -51,7 +56,7 @@ my $Cwd = abs_path;
 # Let's get to a known position
 SKIP: {
     my ($vol,$dir) = splitpath(abs_path,1);
-    my $test_dir = 't';
+    my $test_dir = 'CORE';
     my $compare_dir = (splitdir($dir))[-1];
 
     # VMS is case insensitive but will preserve case in EFS mode.
@@ -157,8 +162,8 @@ sub check_env {
         ok( chdir(undef),           "chdir(undef) w/ only \$ENV{$key} set" );
         is( abs_path, $ENV{$key},   '  abs_path() agrees' );
         is( $warning,  <<WARNING,   '  got uninit & deprecation warning' );
-Use of uninitialized value in chdir at $0 line 64.
-Use of chdir('') or chdir(undef) as chdir() is deprecated at $0 line 64.
+Use of uninitialized value in chdir at $zero line 64.
+Use of chdir('') or chdir(undef) as chdir() is deprecated at $zero line 64.
 WARNING
 
         chdir($Cwd);
@@ -169,7 +174,7 @@ WARNING
         ok( chdir(''),              "chdir('') w/ only \$ENV{$key} set" );
         is( abs_path, $ENV{$key},   '  abs_path() agrees' );
         is( $warning,  <<WARNING,   '  got deprecation warning' );
-Use of chdir('') or chdir(undef) as chdir() is deprecated at $0 line 76.
+Use of chdir('') or chdir(undef) as chdir() is deprecated at $zero line 76.
 WARNING
 
         chdir($Cwd);
