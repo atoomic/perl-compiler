@@ -1,9 +1,7 @@
 #!perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    require "t/CORE/test.pl";
     *bar::is = *is;
     *bar::like = *like;
 }
