@@ -1,9 +1,7 @@
 #!perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+	require "t/CORE/test.pl";
 }
 
 no warnings "illegalproto";
@@ -1295,7 +1293,8 @@ is scalar(@{[ t117(333, 444) ]}), 0;
 is scalar(t117(333, 444)), undef;
 
 use File::Spec::Functions;
-my $keywords_file = catfile(updir,'regen','keywords.pl');
+chdir(q{t/CORE});
+my $keywords_file = catfile('lib','keywords.pl');
 open my $kh, $keywords_file
    or die "$0 cannot open $keywords_file: $!";
 while(<$kh>) {
