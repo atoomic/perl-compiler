@@ -1,11 +1,6 @@
 #!./perl
 
-BEGIN {
-    unless (-d 'blib') {
-        chdir 't' if -d 't';
-        @INC = '../lib';
-    }
-}
+BEGIN { require 't/CORE/test.pl' }
 
 use utf8;
 use open qw( :utf8 :std );
@@ -13,8 +8,6 @@ use strict;
 use warnings;
 no warnings 'redefine'; # we do a lot of this
 no warnings 'prototype'; # we do a lot of this
-
-require './test.pl';
 
 {
     package MC텟ᵀ::Bࡎᶓ;
