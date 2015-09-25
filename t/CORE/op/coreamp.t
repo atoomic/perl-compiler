@@ -8,11 +8,12 @@
 # Other tests for CORE subs are in coresubs.t
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib ../dist/if);
-    require "./test.pl"; require './charset_tools.pl';
+    require "t/CORE/test.pl";
+    require "t/CORE/charset_tools.pl";
     $^P |= 0x100;
 }
+
+chdir 't/CORE';
 
 no warnings 'experimental::smartmatch';
 
@@ -1019,7 +1020,7 @@ like $@, qr'^Undefined format "STDOUT" called',
   require File::Spec::Functions;
   my $keywords_file =
    File::Spec::Functions::catfile(
-      File::Spec::Functions::updir,'regen','keywords.pl'
+      'lib','keywords.pl'
    );
   open my $kh, $keywords_file
     or die "$0 cannot open $keywords_file: $!";
