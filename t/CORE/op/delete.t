@@ -1,11 +1,9 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(. ../lib);
+    require 't/CORE/test.pl';
 }
 
-require "./test.pl";
 plan( tests => 38 );
 
 # delete() on hash elements
