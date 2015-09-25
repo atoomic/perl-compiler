@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-BEGIN { chdir 't' if -d 't'; require q(./test.pl); @INC = qw "../lib lib" }
+# FIXME: broken on 5.22.0
+BEGIN { require 't/CORE/test.pl' }
 
 use utf8;
 use open qw( :utf8 :std );
