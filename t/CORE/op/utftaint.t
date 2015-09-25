@@ -2,9 +2,8 @@
 # tests whether tainting works with UTF-8
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    unshift @INC, 't/CORE';
+    require 'test.pl';
 }
 
 use strict;
