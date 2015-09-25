@@ -5,7 +5,7 @@ BEGIN {
 }
 
 require Config; import Config;
-require "./test.pl";
+require "./t/CORE/test.pl";
 plan(tests => 1);
 
 SKIP: {
