@@ -1,8 +1,7 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    require "./test.pl";
+    require 't/CORE/test.pl';
 }
 
 plan(14);
@@ -24,7 +23,7 @@ is($y, '12E0123E0');
 {
 local $.;
 
-open(of,'harness') or die "Can't open harness: $!";
+open(of,'t/CORE/TEST') or die "Can't open harness: $!";
 while (<of>) {
     (3 .. 5) && ($foo .= $_);
 }
