@@ -1,11 +1,10 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = qw(../lib);
-    require './test.pl';
-    plan (tests => 22);
+    require 't/CORE/test.pl';    
 }
+
+INIT { plan (tests => 22) }
 
 is __SUB__, "__SUB__", '__SUB__ is a bareword outside of use feature';
 
@@ -39,11 +38,13 @@ is $subsubs[2]()(0), 3, '__SUB__ inside closure (3)';
 
 BEGIN {
     return "begin 1" if @_;
-    is CORE::__SUB__->(0), "begin 1", 'in BEGIN block'
+    my $x = CORE::__SUB__->(0);
+    INIT { is $x, "begin 1", 'in BEGIN block' }
 }
 BEGIN {
     return "begin 2" if @_;
-    is &CORE::__SUB__->(0), "begin 2", 'in BEGIN block via & (unoptimised)'
+    my $x = &CORE::__SUB__->(0);
+    INIT { is $x, "begin 2", 'in BEGIN block via & (unoptimised)' }
 }
 
 sub bar;
