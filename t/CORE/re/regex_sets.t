@@ -6,12 +6,10 @@
 # with the expected result.
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = ('../lib','.','../ext/re');
-    require './test.pl';
-    require './test.pl'; require './charset_tools.pl';
-    skip_all_without_unicode_tables();
+	require "t/CORE/test.pl";
+	require "t/CORE/charset_tools.pl";
 }
+skip_all_without_unicode_tables();
 
 use strict;
 use warnings;
