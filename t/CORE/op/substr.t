@@ -3,9 +3,7 @@
 #P = start of string  Q = start of substr  R = end of substr  S = end of string
 
 BEGIN {
-    chdir 't' if -d 't';
-    require './test.pl';
-    set_up_inc('../lib');
+  require "t/CORE/test.pl";
 }
 use warnings ;
 
