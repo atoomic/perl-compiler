@@ -5,6 +5,8 @@ set -e
 for d in "base" "cmd" "comp" "io" "mro" "op" "re" "uni"; do
     pushd $d
     echo "* $d"
+    # remove threaded tests
+    rm -f *_thr.t ||: 
     for t in *.t; do
         echo - updating: $t
         unlink $t
