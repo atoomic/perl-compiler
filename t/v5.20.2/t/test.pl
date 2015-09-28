@@ -106,6 +106,12 @@ sub note {
     _print( _comment(@_) );
 }
 
+sub set_up_inc {
+          # Don’t clobber @INC under miniperl
+    @INC = () unless is_miniperl;
+    unshift @INC, @_;
+}
+
 sub is_miniperl {
     return !defined &DynaLoader::boot_DynaLoader;
 }
