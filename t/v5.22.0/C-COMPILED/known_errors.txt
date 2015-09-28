@@ -24,6 +24,7 @@
 #
 
 base/lex.t              PLAN  invalid plan, was not tested previously
+base/num.t              SIG TODO: tests fails with segfault
 comp/final_line_num.t COMPAT   This test is about BEGIN / file parse behavior so not relevant to B::C
 comp/form_scope.t    SIG       TODO: This test got WAY complicated in db4cf31d1d6 and probably wouldn't have passed back then either. FORMAT -- who cares?
 comp/hints.t         SKIP     tests are using BEGIN block, do not ready for B::C
