@@ -1,0 +1,2 @@
+* Known limitations:
+- Tests in t directory should be run from t, as it's designed in the core testsuite.
