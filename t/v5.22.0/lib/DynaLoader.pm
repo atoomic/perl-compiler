@@ -16,10 +16,9 @@ package DynaLoader;
 # Tim.Bunce@ig.co.uk, August 1994
 
 BEGIN {
-    $VERSION = '1.25';
+    $VERSION = '1.32';
 }
 
-use Config;
 
 # enable debug/trace messages from DynaLoader perl code
 $dl_debug = $ENV{PERL_DL_DEBUG} || 0 unless defined $dl_debug;
@@ -38,8 +37,8 @@ $dl_debug = $ENV{PERL_DL_DEBUG} || 0 unless defined $dl_debug;
 
 sub dl_load_flags { 0x00 }
 
-($dl_dlext, $dl_so, $dlsrc) = @Config::Config{qw(dlext so dlsrc)};
-
+($dl_dlext, $dl_so, $dlsrc) = ('so','so','dl_dlopen.xs')
+;
 
 $do_expand = 0;
 
@@ -55,15 +54,13 @@ $do_expand = 0;
 # This is a fix to support DLD's unfortunate desire to relink -lc
 @dl_resolve_using = dl_findfile('-lc') if $dlsrc eq "dl_dld.xs";
 
-# Initialise @dl_library_path with the 'standard' library path
-# for this platform as determined by Configure.
+# The below @dl_library_path has been expanded (%Config) in Perl build time.
 
-push(@dl_library_path, split(' ', $Config::Config{libpth}));
+@dl_library_path = ("\/usr\/local\/cpanel\/3rdparty\/perl\/522\/lib", "\/usr\/local\/cpanel\/3rdparty\/lib", "\/usr\/local\/lib", "\/lib", "\/usr\/lib", "\/usr\/local\/cpanel\/3rdparty\/lib", "\/usr\/local\/lib", "\/usr\/lib");
 
-
-my $ldlibpthname         = $Config::Config{ldlibpthname};
-my $ldlibpthname_defined = defined $Config::Config{ldlibpthname};
-my $pthsep               = $Config::Config{path_sep};
+my $ldlibpthname         = 'LD_LIBRARY_PATH';
+my $ldlibpthname_defined = '1';
+my $pthsep               = ':';
 
 # Add to @dl_library_path any extra directories we can gather from environment
 # during runtime.
@@ -355,7 +352,7 @@ anyone wishing to use the DynaLoader directly in an application.
 
 The DynaLoader is designed to be a very simple high-level
 interface that is sufficiently general to cover the requirements
-of SunOS, HP-UX, NeXT, Linux, VMS and other platforms.
+of SunOS, HP-UX, Linux, VMS and other platforms.
 
 It is also hoped that the interface will cover the needs of OS/2, NT
 etc and also allow pseudo-dynamic linking (using C<ld -A> at runtime).
@@ -573,7 +570,6 @@ current values of @dl_require_symbols and @dl_resolve_using if required.
     SunOS: dlopen($filename)
     HP-UX: shl_load($filename)
     Linux: dld_create_reference(@dl_require_symbols); dld_link($filename)
-    NeXT:  rld_load($filename, @dl_resolve_using)
     VMS:   lib$find_image_symbol($filename,$dl_require_symbols[0])
 
 (The dlopen() function is also used by Solaris and some versions of
@@ -610,7 +606,6 @@ Apache and mod_perl built with the APXS mechanism.
     SunOS: dlclose($libref)
     HP-UX: ???
     Linux: ???
-    NeXT:  ???
     VMS:   ???
 
 (The dlclose() function is also used by Solaris and some versions of
@@ -646,7 +641,6 @@ be passed to, and understood by, dl_install_xsub().
     SunOS: dlsym($libref, $symbol)
     HP-UX: shl_findsym($libref, $symbol)
     Linux: dld_get_func($symbol) and/or dld_get_symbol($symbol)
-    NeXT:  rld_lookup("_$symbol")
     VMS:   lib$find_image_symbol($libref,$symbol)
 
 

@@ -10,7 +10,7 @@ use strict;
 use warnings;
 use vars '%Config', '$VERSION';
 
-$VERSION = "5.020002";
+$VERSION = "5.022000";
 
 # Skip @Config::EXPORT because it only contains %Config, which we special
 # case below as it's not a function. @Config::EXPORT won't change in the
@@ -56,11 +56,11 @@ sub import {
     return;
 }
 
-die "$0: Perl lib version (5.20.2) doesn't match executable '$^X' version ($])"
+die "$0: Perl lib version (5.22.0) doesn't match executable '$^X' version ($])"
     unless $^V;
 
-$^V eq 5.20.2
-    or die sprintf "%s: Perl lib version (5.20.2) doesn't match executable '$^X' version (%vd)", $0, $^V;
+$^V eq 5.22.0
+    or die sprintf "%s: Perl lib version (5.22.0) doesn't match executable '$^X' version (%vd)", $0, $^V;
 
 
 sub FETCH {
@@ -84,9 +84,9 @@ sub AUTOLOAD {
 
 # tie returns the object, so the value returned to require will be true.
 tie %Config, 'Config', {
-    archlibexp => '/usr/local/lib/perl5/5.20.2/i686-linux',
-    archname => 'i686-linux',
-    cc => 'cc',
+    archlibexp => '/usr/local/cpanel/3rdparty/perl/522/lib/perl5/5.22.0/i386-linux-64int',
+    archname => 'i386-linux-64int',
+    cc => '/usr/bin/gcc',
     d_readlink => 'define',
     d_symlink => 'define',
     dlext => 'so',
@@ -96,16 +96,16 @@ tie %Config, 'Config', {
     inc_version_list => ' ',
     intsize => '4',
     ldlibpthname => 'LD_LIBRARY_PATH',
-    libpth => '/usr/local/lib /usr/lib /lib',
+    libpth => '/usr/local/cpanel/3rdparty/perl/522/lib /usr/local/cpanel/3rdparty/lib /usr/local/lib /lib /usr/lib /usr/local/cpanel/3rdparty/lib /usr/local/lib /usr/lib',
     osname => 'linux',
     osvers => '2.6.32-573.3.1.el6.i686',
     path_sep => ':',
-    privlibexp => '/usr/local/lib/perl5/5.20.2',
-    scriptdir => '/usr/local/bin',
-    sitearchexp => '/usr/local/lib/perl5/site_perl/5.20.2/i686-linux',
-    sitelibexp => '/usr/local/lib/perl5/site_perl/5.20.2',
+    privlibexp => '/usr/local/cpanel/3rdparty/perl/522/lib/perl5/5.22.0',
+    scriptdir => '/usr/local/cpanel/3rdparty/perl/522/bin',
+    sitearchexp => '/opt/cpanel/perl5/522/site_lib/i386-linux-64int',
+    sitelibexp => '/opt/cpanel/perl5/522/site_lib',
     so => 'so',
     useithreads => undef,
-    usevendorprefix => undef,
-    version => '5.20.2',
+    usevendorprefix => 'define',
+    version => '5.22.0',
 };
