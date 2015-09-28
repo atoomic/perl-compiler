@@ -69,6 +69,7 @@ op/exists_sub.t      SIG       TODO: No output. and Issue 290
 op/filetest.t        TESTS     TODO: Tests broke.
 op/glob.t            TESTS     TODO: broke.
 op/gmagic.t          TESTS     TODO: not ok 35 - number of stores when chomping a ref
+op/goto_xs.t         SKIP      needs XS::APItest
 op/gv.t              SIG       TODO: Segmentation Fault
 op/hash-rt85026.t    PLAN      TODO: buncha these: Constant subroutine _IOFBF redefined at t/op/hash-rt85026.bin line 4294967295.
 op/hash.t            TESTS     TODO: broke
