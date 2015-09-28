@@ -45,7 +45,7 @@ fresh_perl_is("require AnyDBM_File;\n$prog", 'ok', {}, 'explicit require');
 fresh_perl_is($prog, 'ok', {}, 'implicit require');
 
 $prog = <<'EOC';
-unshift @INC,  ();
+@INC = ();
 dbmopen(%LT, $filename, 0666);
 1 while unlink $filename;
 1 while unlink glob "$filename.*";

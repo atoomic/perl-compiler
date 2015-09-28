@@ -83,7 +83,7 @@ SKIP: {
     skip "Can't test permissions meaningfully if you're superuser", 2
         if ($^O eq 'cygwin' ? Win32::IsAdminUser() : $> == 0);
 
-    local unshift @INC,  ".";
+    local @INC = ".";
     eval "use $module";
     like $@,
         qr<^\QCan't locate $mod_file:>,
@@ -125,8 +125,8 @@ like $@, qr/^Can't locate strict\.pm\\0invalid: /, 'do nul check';
   like $@, qr{^Can't locate strict\.pm\\0invalid: }, 'nul error';
 
   $WARN = '';
-  local unshift @INC,  @INC;
-  unshift @INC, "lib\0invalid";
+  local @INC = @INC;
+  @INC = "lib\0invalid";
   eval { require "unknown.pm" };
   like $WARN, qr{^Invalid \\0 character in \@INC entry for require: lib\\0invalid at }, 'nul warning';
 }

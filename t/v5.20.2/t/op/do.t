@@ -222,7 +222,7 @@ SKIP: {
 
   my $code = '42; 1';
   # Based on Eval::WithLexicals::_eval_do
-  local unshift @INC,  (sub {
+  local @INC = (sub {
     if ($_[1] eq '/eval_do') {
       open my $fh, '<', \$code;
       $fh;
