@@ -93,6 +93,7 @@ op/sub_lval.t        TESTS     TODO:  sub declaration with :lvalue applies it to
 op/substr.t          TESTS     utf8 issue in subs
 op/svleak.t          COMPAT    This test uses XS::APItest, which we don't install during perl install?
 op/switch.t          PLAN      TODO: Overloaded obj in given (true): called at t/op/switch.t line 839 got "0" expected "1"
+op/taint.t          TESTS   infinite m//g on arrays
 op/threads.t    SKIP      threaded test
 op/threads-dirh.t    SKIP      threaded test
 op/tie_fetch_count.t TESTS     TODO: broke
