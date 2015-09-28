@@ -6,7 +6,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-plan( tests => 33 );
+plan(tests => 39);
 
 sub empty_sub {}
 
@@ -147,31 +147,6 @@ is eval {
     Munchy(Crunchy);
 } || $@, 2, 'freeing ops does not make sub(){42} immutable';
 
-# [perl #79908]
-{
-    my $x = 5;
-    *_79908 = sub (){$x};
-    $x = 7;
-    TODO: {
-        local $TODO = "Should be fixed with a deprecation cycle, see 'How about having a recommended way to add constant subs dynamically?' on p5p";
-        is eval "_79908", 7, 'sub(){$x} does not break closures';
-    }
-    isnt eval '\_79908', \$x, 'sub(){$x} returns a copy';
-
-    # Test another thing that was broken by $x inlinement
-    my $y;
-    no warnings 'once';
-    local *time = sub():method{$y};
-    my $w;
-    local $SIG{__WARN__} = sub { $w .= shift };
-    eval "()=time";
-    TODO: {
-        local $TODO = "Should be fixed with a deprecation cycle, see 'How about having a recommended way to add constant subs dynamically?' on p5p";
-        is $w, undef,
-          '*keyword = sub():method{$y} does not cause ambiguity warnings';
-    }
-}
-
 # &xsub when @_ has nonexistent elements
 {
     no warnings "uninitialized";
@@ -221,4 +196,102 @@ ok !exists $INC{"re.pm"}, 're.pm not loaded yet';
     eval "sub foo{}";
     is $str[1], $str[0],
       'Pure-Perl sub clobbering sub whose DESTROY assigns to the glob';
+}
+
+# [perl #122107] previously this would return
+#  Subroutine BEGIN redefined at (eval 2) line 2.
+fresh_perl_is(<<'EOS', "", { stderr => 1 },
+use strict; use warnings; eval q/use File::{Spec}/; eval q/use File::Spec/;
+EOS
+	       "check special blocks are cleared on error");
+
+use constant { constant1 => 1, constant2 => 2 };
+{
+    my $w;
+    local $SIG{__WARN__} = sub { $w++ };
+    eval 'sub constant1; sub constant2($)';
+    is eval '&constant1', '1',
+      'stub re-declaration of constant with no prototype';
+    is eval '&constant2', '2',
+      'stub re-declaration of constant with wrong prototype';
+    is $w, 2, 'two warnings from the above';
+}
+
+package _122845 {
+    our $depth = 0;
+    my $parent; # just to make the sub a closure
+
+    sub {
+	local $depth = $depth + 1;
+	our $ok++, return if $depth == 2;
+
+	()= $parent;  # just to make the sub a closure
+	our $whatever; # this causes the crash
+
+	CORE::__SUB__->();
+    }->();
+};
+is $_122845::ok, 1,
+  '[perl #122845] no crash in closure recursion with our-vars';
+
+() = *predeclared; # vivify the glob at compile time
+sub predeclared; # now we have a CV stub with no body (incorporeal? :-)
+sub predeclared {
+    CORE::state $x = 42;
+    sub inside_predeclared {
+	is eval '$x', 42, 'eval q/$var/ in named sub in predeclared sub';
+    }
+}
+predeclared(); # set $x to 42
+$main::x = $main::x = "You should not see this.";
+inside_predeclared(); # run test
+
+# RT #124156 death during unwinding causes crash
+# the tie allows us to trigger another die while cleaning up the stack
+# from an earlier die.
+
+{
+    package RT124156;
+
+    sub TIEHASH { bless({}, $_[0]) }
+    sub EXISTS { 0 }
+    sub FETCH { undef }
+    sub STORE { }
+    sub DELETE { die "outer\n" }
+
+    my @value;
+    eval {
+        @value = sub {
+            @value = sub {
+                my %a;
+                tie %a, "RT124156";
+                local $a{foo} = "bar";
+                die "inner";
+                ("dd2a", "dd2b");
+            }->();
+            ("cc3a", "cc3b");
+        }->();
+    };
+    ::is($@, "outer\n", "RT124156 plain");
+
+    my $destroyed = 0;
+    sub DESTROY { $destroyed = 1 }
+
+    sub f {
+        my $x;
+        my $f = sub {
+            $x = 1; # force closure
+            my %a;
+            tie %a, "RT124156";
+            local $a{foo} = "bar";
+            die "inner";
+        };
+        bless $f, 'RT124156';
+        $f->();
+    }
+
+    eval { f(); };
+    # as opposed to $@ eq "Can't undef active subroutine"
+    ::is($@, "outer\n", "RT124156 depth");
+    ::is($destroyed, 1, "RT124156 freed cv");
 }

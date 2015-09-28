@@ -24,7 +24,8 @@
 use Config;
 BEGIN {
     require "./test.pl";
-    unshift @INC,  '..' if -f '../TestInit.pm';
+    skip_all("Won't ship a release from EBCDIC") if $::IS_EBCDIC;
+    @INC = '..' if -f '../TestInit.pm';
 }
 use TestInit qw(T A); # T is chdir to the top level, A makes paths absolute
 
@@ -32,4 +33,4 @@ if ( $Config{usecrosscompile} ) {
   skip_all( "Not all files are available during cross-compilation" );
 }
 
-system "$^X Porting/checkcfgvar.pl --tap";
+system "$^X -Ilib Porting/checkcfgvar.pl --tap";

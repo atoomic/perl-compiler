@@ -4,7 +4,7 @@ BEGIN {
     chdir 't' if -d 't';
     # We need '../../lib' as well as '../lib' because parts of Config are
     # delay-loaded, after we've chdir()'ed into $testdir.
-    unshift @INC,  ('../lib', '../../lib');
+    @INC = ('../lib', '../../lib');
     # XXX this could be further munged to enable some parts on other
     # platforms
     require './test.pl';
@@ -151,7 +151,7 @@ while (<$T>) {
 	    note "want: $expect";
 	    note "got : $_";
 	}
-	ok($expect eq $_);
+	ok($expect eq $_, $comment // '');
     }
 }
 close $T;

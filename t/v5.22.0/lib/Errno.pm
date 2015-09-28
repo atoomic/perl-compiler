@@ -5,7 +5,12 @@
 
 package Errno;
 require Exporter;
+use Config;
 use strict;
+
+"$Config{'archname'}-$Config{'osvers'}" eq
+"i686-linux-2.6.32-573.3.1.el6.i686" or
+	die "Errno architecture (i686-linux-2.6.32-573.3.1.el6.i686) does not match executable architecture ($Config{'archname'}-$Config{'osvers'})";
 
 our $VERSION = "1.20_05";
 $VERSION = eval $VERSION;

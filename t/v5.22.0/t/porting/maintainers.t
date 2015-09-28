@@ -10,7 +10,7 @@ BEGIN {
 	# XXX that should be fixed
 
     chdir '..' unless -d 't';
-    unshift @INC,  qw(lib Porting);
+    @INC = qw(lib Porting);
     require './t/test.pl';
 }
 

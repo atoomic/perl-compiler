@@ -6,7 +6,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-plan tests => 119;
+plan tests => 131;
 
 $FS = ':';
 
@@ -180,7 +180,10 @@ is($cnt, scalar(@ary));
 
 # /^/ treated as /^/m
 $_ = join ':', split /^/, "ab\ncd\nef\n";
-is($_, "ab\n:cd\n:ef\n");
+is($_, "ab\n:cd\n:ef\n","check that split /^/ is treated as split /^/m");
+
+$_ = join ':', split /\A/, "ab\ncd\nef\n";
+is($_, "ab\ncd\nef\n","check that split /\A/ is NOT treated as split /^/m");
 
 # see if @a = @b = split(...) optimization works
 @list1 = @list2 = split ('p',"a p b c p");
@@ -371,6 +374,21 @@ is($cnt, scalar(@ary));
 }
 
 {
+    # LATIN SMALL LETTER A WITH DIAERESIS, CYRILLIC SMALL LETTER I
+    for my $pattern ("\N{U+E4}", "\x{0437}") {
+        utf8::upgrade $pattern;
+        my @res;
+        for my $str ("a${pattern}b", "axb", "a${pattern}b") {
+            @split = split /$pattern/, $str;
+            push @res, scalar(@split);
+        }
+        is($res[0], 2);
+        is($res[1], 1);
+        is($res[2], 2, '#123469 - split with utf8 pattern after handling non-utf8 EXPR');
+    }
+}
+
+{
     is (\@a, \@{"a"}, '@a must be global for following test');
     $p="";
     $n = @a = split /,/,$p;
@@ -474,14 +492,16 @@ is($cnt, scalar(@ary));
     my @results;
     my $expr;
     $expr = ' a b c ';
-    @results = split "\x20", $expr;
+    @results = split "\x20", $expr if $::IS_ASCII;
+    @results = split "\x40", $expr if $::IS_EBCDIC;
     is @results, 3,
         "RT #116086: split on string of single hex-20: captured 3 elements";
     is $results[0], 'a',
         "RT #116086: split on string of single hex-20: first element is non-empty";
 
     $expr = " a \tb c ";
-    @results = split "\x20", $expr;
+    @results = split "\x20", $expr if $::IS_ASCII;
+    @results = split "\x40", $expr if $::IS_EBCDIC;
     is @results, 3,
         "RT #116086: split on string of single hex-20: captured 3 elements";
     is $results[0], 'a',
@@ -492,3 +512,23 @@ is($cnt, scalar(@ary));
 use constant nought => 0;
 ($a,$b,$c) = split //, $foo, nought;
 is nought, 0, 'split does not mangle 0 constants';
+
+*aaa = *bbb;
+$aaa[1] = "foobarbaz";
+$aaa[1] .= "";
+@aaa = split //, $bbb[1];
+is "@aaa", "f o o b a r b a z",
+   'split-to-array does not free its own argument';
+
+() = @a = split //, "abc";
+is "@a", "a b c", '() = split-to-array';
+
+(@a = split //, "abc") = 1..10;
+is "@a", '1 2 3', 'assignment to split-to-array (pmtarget/package array)';
+{
+  my @a;
+  (@a = split //, "abc") = 1..10;
+  is "@a", '1 2 3', 'assignment to split-to-array (targ/lexical)';
+}
+(@{\@a} = split //, "abc") = 1..10;
+is "@a", '1 2 3', 'assignment to split-to-array (stacked)';

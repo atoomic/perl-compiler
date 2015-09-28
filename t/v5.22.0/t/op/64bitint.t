@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
     eval { my $q = pack "q", 0 };
     skip_all('no 64-bit types') if $@;
 }
@@ -354,5 +354,14 @@ cmp_ok($q, '==', -9223372036854775806);
     cmp_ok($q, '!=', 0x5555555555555556);
     unlike($q, qr/[e.]/, 'Should not be floating point');
 }
+
+# trigger various attempts to negate IV_MIN
+
+cmp_ok  0x8000000000000000 / -0x8000000000000000, '==', -1, '(IV_MAX+1) / IV_MIN';
+cmp_ok -0x8000000000000000 /  0x8000000000000000, '==', -1, 'IV_MIN / (IV_MAX+1)';
+cmp_ok  0x8000000000000000 / -1, '==', -0x8000000000000000, '(IV_MAX+1) / -1';
+cmp_ok                   0 % -0x8000000000000000, '==',  0, '0 % IV_MIN';
+cmp_ok -0x8000000000000000 % -0x8000000000000000, '==',  0, 'IV_MIN % IV_MIN';
+
 
 done_testing();

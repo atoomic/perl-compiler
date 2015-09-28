@@ -2,12 +2,13 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    require Config; import Config;
     require './test.pl';
     set_up_inc('../lib');
+    require Config; import Config;
+    require './charset_tools.pl';
 }
 
-plan( tests => 236 );
+plan( tests => 261 );
 
 $_ = 'david';
 $a = s/david/rules/r;
@@ -1002,3 +1003,61 @@ like $@, qr/^Modification of a read-only value/,
 eval { for (__PACKAGE__) { s/b/c/; } };
 like $@, qr/^Modification of a read-only value/,
     'read-only COW =~ s/does not match// should croak';
+
+SKIP: {
+    my $a_acute = chr utf8::unicode_to_native(0xE1); # LATIN SMALL LETTER A WITH ACUTE
+    my $egrave = chr utf8::unicode_to_native(0xE8);  # LATIN SMALL LETTER E WITH GRAVE
+    my $u_umlaut = chr utf8::unicode_to_native(0xFC);  # LATIN SMALL LETTER U WITH DIAERESIS
+    my $division = chr utf8::unicode_to_native(0xF7);  # DIVISION SIGN
+
+    is("ab.c" =~ s/\b/!/agr, "!ab!.!c!", '\\b matches ASCII before string, mid, and end, /a');
+    is("$a_acute$egrave.$u_umlaut" =~ s/\b/!/agr, "$a_acute$egrave.$u_umlaut", '\\b matches Latin1 before string, mid, and end, /a');
+    is("\x{100}\x{101}.\x{102}" =~ s/\b/!/agr, "\x{100}\x{101}.\x{102}", '\\b matches above-Latin1 before string, mid, and end, /a');
+
+    is("..." =~ s/\B/!/agr, "!.!.!.!", '\\B matches ASCII before string, mid, and end, /a');
+    is("$division$division$division" =~ s/\B/!/agr, "!$division!$division!$division!", '\\B matches Latin1 before string, mid, and end, /a');
+    is("\x{2028}\x{2028}\x{2028}" =~ s/\B/!/agr, "!\x{2028}!\x{2028}!\x{2028}!", '\\B matches above-Latin1 before string, mid, and end, /a');
+
+    is("ab.c" =~ s/\b/!/dgr, "!ab!.!c!", '\\b matches ASCII before string, mid, and end, /d');
+    { is("$a_acute$egrave.$u_umlaut" =~ s/\b/!/dgr, "$a_acute$egrave.$u_umlaut", '\\b matches Latin1 before string, mid, and end, /d'); }
+    is("\x{100}\x{101}.\x{102}" =~ s/\b/!/dgr, "!\x{100}\x{101}!.!\x{102}!", '\\b matches above-Latin1 before string, mid, and end, /d');
+
+    is("..." =~ s/\B/!/dgr, "!.!.!.!", '\\B matches ASCII before string, mid, and end, /d');
+    is("$division$division$division" =~ s/\B/!/dgr, "!$division!$division!$division!", '\\B matches Latin1 before string, mid, and end, /d');
+    is("\x{2028}\x{2028}\x{2028}" =~ s/\B/!/dgr, "!\x{2028}!\x{2028}!\x{2028}!", '\\B matches above-Latin1 before string, mid, and end, /d');
+
+    is("ab.c" =~ s/\b/!/ugr, "!ab!.!c!", '\\b matches ASCII before string, mid, and end, /u');
+    is("$a_acute$egrave.$u_umlaut" =~ s/\b/!/ugr, "!$a_acute$egrave!.!$u_umlaut!", '\\b matches Latin1 before string, mid, and end, /u');
+    is("\x{100}\x{101}.\x{102}" =~ s/\b/!/ugr, "!\x{100}\x{101}!.!\x{102}!", '\\b matches above-Latin1 before string, mid, and end, /u');
+
+    is("..." =~ s/\B/!/ugr, "!.!.!.!", '\\B matches ASCII before string, mid, and end, /u');
+    is("$division$division$division" =~ s/\B/!/ugr, "!$division!$division!$division!", '\\B matches Latin1 before string, mid, and end, /u');
+    is("\x{2028}\x{2028}\x{2028}" =~ s/\B/!/ugr, "!\x{2028}!\x{2028}!\x{2028}!", '\\B matches above-Latin1 before string, mid, and end, /u');
+
+SKIP: {
+    eval { require POSIX; POSIX->import("locale_h"); };
+    if ($@ || !eval { &POSIX::LC_ALL; 1 }) {
+        skip "Can't test locale (maybe you are missing POSIX)", 6;
+    }
+
+    setlocale(&POSIX::LC_ALL, "C");
+    use locale;
+    is("a.b" =~ s/\b/!/gr, "!a!.!b!", '\\b matches ASCII before string, mid, and end, /l');
+    is("$a_acute.$egrave" =~ s/\b/!/gr, "$a_acute.$egrave", '\\b matches Latin1 before string, mid, and end, /l');
+    is("\x{100}\x{101}.\x{102}" =~ s/\b/!/gr, "!\x{100}\x{101}!.!\x{102}!", '\\b matches above-Latin1 before string, mid, and end, /l');
+
+    is("..." =~ s/\B/!/gr, "!.!.!.!", '\\B matches ASCII before string, mid, and end, /l');
+    is("$division$division$division" =~ s/\B/!/gr, "!$division!$division!$division!", '\\B matches Latin1 before string, mid, and end, /l');
+    is("\x{2028}\x{2028}\x{2028}" =~ s/\B/!/gr, "!\x{2028}!\x{2028}!\x{2028}!", '\\B matches above-Latin1 before string, mid, and end, /l');
+}
+
+}
+
+{
+    # RT #123954 if the string getting matched against got converted during
+    # s///e so that it was no longer SvPOK, an assertion would fail when
+    # setting pos.
+    my $s1 = 0;
+    $s1 =~ s/.?/$s1++/ge;
+    is($s1, "01","RT #123954 s1");
+}

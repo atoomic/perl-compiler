@@ -19,6 +19,7 @@ BEGIN {
     $VERSION = '1.25';
 }
 
+use Config;
 
 # enable debug/trace messages from DynaLoader perl code
 $dl_debug = $ENV{PERL_DL_DEBUG} || 0 unless defined $dl_debug;
@@ -37,8 +38,8 @@ $dl_debug = $ENV{PERL_DL_DEBUG} || 0 unless defined $dl_debug;
 
 sub dl_load_flags { 0x00 }
 
-($dl_dlext, $dl_so, $dlsrc) = ('so','so','dl_dlopen.xs')
-;
+($dl_dlext, $dl_so, $dlsrc) = @Config::Config{qw(dlext so dlsrc)};
+
 
 $do_expand = 0;
 
@@ -54,13 +55,15 @@ $do_expand = 0;
 # This is a fix to support DLD's unfortunate desire to relink -lc
 @dl_resolve_using = dl_findfile('-lc') if $dlsrc eq "dl_dld.xs";
 
-# The below @dl_library_path has been expanded (%Config) in Perl build time.
+# Initialise @dl_library_path with the 'standard' library path
+# for this platform as determined by Configure.
 
-@dl_library_path = ("\/usr\/local\/cpanel\/3rdparty\/perl\/520\/lib", "\/usr\/local\/cpanel\/3rdparty\/lib", "\/usr\/local\/lib", "\/lib", "\/usr\/lib", "\/usr\/local\/cpanel\/3rdparty\/lib", "\/usr\/local\/lib", "\/usr\/lib");
+push(@dl_library_path, split(' ', $Config::Config{libpth}));
 
-my $ldlibpthname         = 'LD_LIBRARY_PATH';
-my $ldlibpthname_defined = '1';
-my $pthsep               = ':';
+
+my $ldlibpthname         = $Config::Config{ldlibpthname};
+my $ldlibpthname_defined = defined $Config::Config{ldlibpthname};
+my $pthsep               = $Config::Config{path_sep};
 
 # Add to @dl_library_path any extra directories we can gather from environment
 # during runtime.

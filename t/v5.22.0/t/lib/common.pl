@@ -6,7 +6,7 @@
 # to call cur_test() to find out how many this executed
 
 BEGIN {
-    require './test.pl';
+    require './test.pl'; require './charset_tools.pl';
 }
 
 use Config;
@@ -33,7 +33,7 @@ if (@ARGV) {
 my ($tests, @prgs) = setup_multiple_progs(@w_files);
 
 $^X = rel2abs($^X);
-unshift @INC,  map { rel2abs($_) } @INC;
+@INC = map { rel2abs($_) } @INC;
 my $tempdir = tempfile;
 
 mkdir $tempdir, 0700 or die "Can't mkdir '$tempdir': $!";

@@ -8,7 +8,7 @@ BEGIN {
 
 # use strict;
 
-plan tests => 44;
+plan tests => 40;
 
 # simple use cases
 {
@@ -151,7 +151,7 @@ plan tests => 44;
         my $v = eval '%h{a}';
         is (scalar @warn, 1, 'warning in scalar context');
         like $warn[0],
-             qr{^%h{"a"} in scalar context better written as \$h{"a"}},
+             qr{^%h\{"a"\} in scalar context better written as \$h\{"a"\}},
             "correct warning text";
     }
     {
@@ -162,20 +162,13 @@ plan tests => 44;
         is (scalar @warn, 0, 'no warning in list context');
     }
 
-    # deprecated syntax
     {
         my $h = \%h;
-        @warn = ();
-        ok( eq_array([eval '%$h->{a}'], ['A']), 'works, but deprecated' );
-        is (scalar @warn, 1, 'one warning');
-        like $warn[0], qr{^Using a hash as a reference is deprecated},
-            "correct warning text";
+        eval '%$h->{a}';
+        like($@, qr/Can't use a hash as a reference/, 'hash reference is error' );
 
-        @warn = ();
-        ok( eq_array([eval '%$h->{"b","c"}'], [undef]), 'works, but deprecated' );
-        is (scalar @warn, 1, 'one warning');
-        like $warn[0], qr{^Using a hash as a reference is deprecated},
-            "correct warning text";
+        eval '%$h->{"b","c"}';
+        like($@, qr/Can't use a hash as a reference/, 'hash slice reference is error' );
     }
 }
 

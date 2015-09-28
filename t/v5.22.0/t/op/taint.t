@@ -10,8 +10,8 @@
 BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
+    require './loc_tools.pl';
     set_up_inc('../lib');
-    skip_all_if_miniperl("no dynamic loading on miniperl, no re");
 }
 
 use strict;
@@ -299,17 +299,13 @@ my $TEST = 'TEST';
     is($one, 'a',      "$desc: \$1 value");
 
   SKIP: {
-        skip 'No locale testing without d_setlocale', 10 if(!$Config{d_setlocale});
+        skip 'Locales not available', 10 unless locales_enabled('LC_CTYPE');
 
         $desc = "match with pattern tainted via locale";
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ /(\w+)/; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -322,11 +318,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ /(\w)/g; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -360,17 +352,13 @@ my $TEST = 'TEST';
     is($one, 'd',      "$desc: \$1 value");
 
   SKIP: {
-        skip 'No locale testing without d_setlocale', 12 if(!$Config{d_setlocale});
+        skip 'Locales not available', 12 unless locales_enabled('LC_CTYPE');
 
         $desc = "match with pattern tainted via locale, list cxt";
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             ($res) = $s =~ /(\w+)/; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -383,11 +371,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             ($res, $res2) = $s =~ /(\w)/g; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -520,17 +504,13 @@ my $TEST = 'TEST';
     is($one, 'abcd',   "$desc: \$1 value");
 
   SKIP: {
-        skip 'No locale testing without d_setlocale', 18 if(!$Config{d_setlocale});
+        skip 'Locales not available', 18 unless locales_enabled('LC_CTYPE');
 
         $desc = "substitution with pattern tainted via locale";
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ s/(\w+)/xyz/; $one = $1;
         }
         is_tainted($s,     "$desc: s tainted");
@@ -544,11 +524,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ s/(\w)/x/g; $one = $1;
         }
         is_tainted($s,     "$desc: s tainted");
@@ -562,11 +538,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ s/(\w+)/xyz/r; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -716,17 +688,13 @@ my $TEST = 'TEST';
 	is($one, 'a',      "$desc: \$1 value");
 
   SKIP: {
-        skip 'No locale testing without d_setlocale', 10 if(!$Config{d_setlocale});
+        skip 'Locales not available', 10 unless locales_enabled('LC_CTYPE');
 
         $desc = "use re 'taint': match with pattern tainted via locale";
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ /(\w+)/; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -739,11 +707,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ /(\w)/g; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -777,17 +741,13 @@ my $TEST = 'TEST';
 	is($one, 'd',      "$desc: \$1 value");
 
   SKIP: {
-        skip 'No locale testing without d_setlocale', 12 if(!$Config{d_setlocale});
+        skip 'Locales not available', 12 unless locales_enabled('LC_CTYPE');
 
         $desc = "use re 'taint': match with pattern tainted via locale, list cxt";
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             ($res) = $s =~ /(\w+)/; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -800,11 +760,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             ($res, $res2) = $s =~ /(\w)/g; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -938,17 +894,13 @@ my $TEST = 'TEST';
 	is($one, 'abcd',   "$desc: \$1 value");
 
   SKIP: {
-        skip 'No locale testing without d_setlocale', 18 if(!$Config{d_setlocale});
+        skip 'Locales not available', 18 unless locales_enabled('LC_CTYPE');
 
         $desc = "use re 'taint': substitution with pattern tainted via locale";
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ s/(\w+)/xyz/; $one = $1;
         }
         is_tainted($s,     "$desc: s tainted");
@@ -962,11 +914,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ s/(\w)/x/g; $one = $1;
         }
         is_tainted($s,     "$desc: s tainted");
@@ -980,11 +928,7 @@ my $TEST = 'TEST';
 
         $s = 'abcd';
         {
-            BEGIN {
-                if($Config{d_setlocale}) {
-                    require locale; import locale;
-                }
-            }
+            use locale;
             $res = $s =~ s/(\w+)/xyz/r; $one = $1;
         }
         isnt_tainted($s,   "$desc: s not tainted");
@@ -1569,7 +1513,7 @@ SKIP: {
     }
 
     SKIP: {
-        skip "no Fcntl", 18 unless $has_fcntl;
+        skip "no Fcntl", 36 unless $has_fcntl;
 
 	my $foo = tempfile();
 	my $evil = $foo . $TAINT;
@@ -2024,7 +1968,19 @@ foreach my $ord (78, 163, 256) {
   SKIP: {
       skip 'No crypt function, skipping crypt tests', 4 if(!$Config{d_crypt});
       # 59998
-      sub cr { my $x = crypt($_[0], $_[1]); $x }
+      sub cr {
+          # On platforms implementing FIPS mode, using a weak algorithm
+          # (including the default triple-DES algorithm) causes crypt(3) to
+          # return a null pointer, which Perl converts into undef. We assume
+          # for now that all such platforms support glibc-style selection of
+          # a different hashing algorithm.
+          my $alg = '';       # Use default algorithm
+          if ( !defined(crypt("ab", "cd")) ) {
+              $alg = '$5$';   # Use SHA-256
+          }
+          my $x = crypt($_[0], $alg . $_[1]);
+          $x
+      }
       sub co { my $x = ~$_[0]; $x }
       my ($a, $b);
       $a = cr('hello', 'foo' . $TAINT);
@@ -2127,11 +2083,11 @@ foreach my $ord (78, 163, 256) {
 }
 
 # Bug RT #45167 the return value of sprintf sometimes wasn't tainted
-# when the args were tainted. This only occured on the first use of
+# when the args were tainted. This only occurred on the first use of
 # sprintf; after that, its TARG has taint magic attached, so setmagic
 # at the end works.  That's why there are multiple sprintf's below, rather
 # than just one wrapped in an inner loop. Also, any plaintext between
-# fprmat entires would correctly cause tainting to get set. so test with
+# format entries would correctly cause tainting to get set. so test with
 # "%s%s" rather than eg "%s %s".
 
 {
@@ -2342,14 +2298,10 @@ pass("no death when TARG of ref is tainted");
 }
 
 SKIP: {
-    skip 'No locale testing without d_setlocale', 4 if(!$Config{d_setlocale});
+    skip 'Locales not available', 4 unless locales_enabled('LC_CTYPE');
 
     use feature 'fc';
-    BEGIN {
-        if($Config{d_setlocale}) {
-            require locale; import locale;
-        }
-    }
+    use locale;
     my ($latin1, $utf8) = ("\xDF") x 2;
     utf8::downgrade($latin1);
     utf8::upgrade($utf8);

@@ -7,9 +7,9 @@
 # it probably needs expanding at some point to cover other stuff.
 
 BEGIN {
-    chdir 't';
-    require "./test.pl";
-    set_up_inc('../lib');
+    chdir 't' if -d 't';
+    @INC = '../lib';
+    require './test.pl';
 }
 
 plan tests => 16;

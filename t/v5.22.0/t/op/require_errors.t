@@ -1,17 +1,18 @@
 #!perl
-use strict;
-use warnings;
 
 BEGIN {
-    chdir 't';
+    chdir 't' if -d 't';
     require './test.pl';
 }
+
+use strict;
+use warnings;
 
 plan(tests => 17);
 
 my $nonfile = tempfile();
 
-unshift @INC,  qw(Perl Rules);
+@INC = qw(Perl Rules);
 
 # The tests for ' ' and '.h' never did fail, but previously the error reporting
 # code would read memory before the start of the SV's buffer
@@ -55,7 +56,7 @@ for my $file ("$nonfile.ph", ".ph") {
 }
 
 eval 'require <foom>';
-like $@, qr/^<> should be quotes at /, 'require <> error';
+like $@, qr/^<> at require-statement should be quotes at /, 'require <> error';
 
 my $module   = tempfile();
 my $mod_file = "$module.pm";
@@ -126,7 +127,7 @@ like $@, qr/^Can't locate strict\.pm\\0invalid: /, 'do nul check';
 
   $WARN = '';
   local @INC = @INC;
-  @INC = "lib\0invalid";
+  unshift @INC, "lib\0invalid";
   eval { require "unknown.pm" };
   like $WARN, qr{^Invalid \\0 character in \@INC entry for require: lib\\0invalid at }, 'nul warning';
 }

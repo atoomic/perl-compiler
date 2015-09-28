@@ -23,12 +23,13 @@ LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9
 
 BEGIN {
     chdir 't';
-    require './test.pl';
-    set_up_inc('../lib');
+    @INC = '../lib';
 }
 
 use strict;
 use File::Basename;
+require './test.pl';
+
 
 my $manifest = '../MANIFEST';
 

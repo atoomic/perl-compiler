@@ -190,7 +190,7 @@ sub createMerge
         *$self->{Handle} = 1 if $outType eq 'handle';
 
         #seek(*$self->{FH}, $end_offset, SEEK_SET) 
-        *$self->{FH}->seek($end_offset, IO::Seekable::SEEK_SET)
+        *$self->{FH}->seek($end_offset, SEEK_SET) 
             or return $self->saveErrorString(undef, $!, $!) ;
     }
 

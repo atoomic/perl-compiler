@@ -2,14 +2,14 @@
 
 BEGIN {
     chdir "t" if -d "t";
-    unshift @INC,  qw(. ../lib);
+    @INC = qw(. ../lib);
 }
 
 # Test srand.
 
 use strict;
 
-require "test.pl";
+require "./test.pl";
 plan(tests => 10);
 
 # Generate a load of random numbers.

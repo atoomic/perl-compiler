@@ -2,6 +2,7 @@
 use strict;
 
 BEGIN {
+    chdir 't' if -d 't';
     require './test.pl';
 }
 use File::Copy ();
@@ -11,7 +12,7 @@ plan(tests => 10);
 
 my $test_dir = File::Spec->catdir(qw(lib deprecate));
 chdir $test_dir or die "Can't chdir $test_dir";
-unshift @INC,  ( File::Spec->catdir( (File::Spec->updir)x3, qw(lib)) );
+@INC = ( File::Spec->catdir( (File::Spec->updir)x3, qw(lib)) );
 
 my %libdir = (
 	privlibexp	=> File::Spec->catdir(qw(lib perl)),

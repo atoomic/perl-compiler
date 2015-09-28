@@ -8,7 +8,11 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-plan tests => 134;
+plan tests => 138;
+
+# Test this first before we extend the stack with other operations.
+# This caused an asan failure due to a bad write past the end of the stack.
+eval { my $x; die  1..127, $x =~ y/// };
 
 my $Is_EBCDIC = (ord('i') == 0x89 & ord('J') == 0xd1);
 
@@ -522,7 +526,7 @@ SKIP: {
 
     my $x = "Perlα";
     $x =~ tr/αα/βγ/;
-    note $x;
+    { no warnings 'utf8'; print "# $x\n"; } # No note() to avoid wide warning.
     is($x, "Perlβ", "Only first of multiple transliterations is used");
 }
 
@@ -532,6 +536,19 @@ for ("", nullrocow) {
     eval { $_ =~ y/a/b/ };
     like $@, qr/^Modification of a read-only value attempted at /,
         'tr/a/b/ fails on zero-length ro string';
+}
+
+# Whether they're permitted or not, non-modifying tr/// should not write
+# to read-only values, even with funky flags.
+{ # [perl #123759]
+	eval q{ ('a' =~ /./) =~ tr///d };
+	ok(1, "tr///d on PL_Yes does not assert");
+	eval q{ ('a' =~ /./) =~ tr/a-z/a-z/d };
+	ok(1, "tr/a-z/a-z/d on PL_Yes does not assert");
+	eval q{ ('a' =~ /./) =~ tr///s };
+	ok(1, "tr///s on PL_Yes does not assert");
+	eval q{ *x =~ tr///d };
+	ok(1, "tr///d on glob does not assert");
 }
 
 1;

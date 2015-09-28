@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';	# for which_perl() etc
-    set_up_inc('../lib');
 }
 
 use Config;
@@ -19,8 +19,13 @@ if(eval {require File::Spec; 1}) {
     diag("\ncontinuing, assuming '.' for current directory. Some tests will be skipped.");
 }
 
+if ($^O eq 'MSWin32') {
+    # under minitest, buildcustomize sets this to 1, which means
+    # nlinks isn't populated properly, allow nlinks tests to pass
+    ${^WIN32_SLOPPY_STAT} = 0;
+}
 
-plan tests => 113;
+plan tests => 115;
 
 my $Perl = which_perl();
 
@@ -472,10 +477,13 @@ like $@, qr/^The stat preceding lstat\(\) wasn't an lstat at /,
 'stat $ioref resets stat type';
 
 {
-    my @statbuf = stat STDOUT;
+    open(FOO, ">$tmpfile") || DIE("Can't open temp test file: $!");
+    my @statbuf = stat FOO;
     stat "test.pl";
-    my @lstatbuf = lstat *STDOUT{IO};
+    my @lstatbuf = lstat *FOO{IO};
     is "@lstatbuf", "@statbuf", 'lstat $ioref reverts to regular fstat';
+    close(FOO);
+    unlink $tmpfile or print "# unlink failed: $!\n";
 }
   
 SKIP: {
@@ -612,6 +620,16 @@ SKIP: {
     stat 'prepeinamehyparcheiarcheiometoonomaavto';
     stat _;
     is $w, undef, 'no unopened warning from stat _';
+}
+
+{
+    # [perl #123816]
+    # Inappropriate stacking of l?stat with filetests should either work or
+    # give a syntax error, they shouldn't crash.
+    eval { stat -t };
+    ok(1, 'can "stat -t" without crashing');
+	eval { lstat -t };
+    ok(1, 'can "lstat -t" without crashing');
 }
 
 END {

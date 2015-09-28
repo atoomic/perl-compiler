@@ -18,7 +18,6 @@ package Storable; @ISA = qw(Exporter);
 	retrieve_fd
 	lock_store lock_nstore lock_retrieve
         file_magic read_magic
-	BLESS_OK TIE_OK FLAGS_COMPAT
 );
 
 use vars qw($canonical $forgive_me $VERSION);
@@ -67,21 +66,8 @@ sub CLONE {
     Storable::init_perinterp();
 }
 
-sub BLESS_OK {
-    return 2;
-}
-
-sub TIE_OK {
-    return 4;
-}
-
-sub FLAGS_COMPAT {
-	return BLESS_OK() | TIE_OK();
-}
-
 # By default restricted hashes are downgraded on earlier perls.
 
-$Storable::flags = 6;
 $Storable::downgrade_restricted = 1;
 $Storable::accept_future_minor = 1;
 
@@ -91,7 +77,14 @@ XSLoader::load('Storable', $Storable::VERSION);
 # Determine whether locking is possible, but only when needed.
 #
 
-sub CAN_FLOCK { return 1 }
+sub CAN_FLOCK; my $CAN_FLOCK; sub CAN_FLOCK {
+	return $CAN_FLOCK if defined $CAN_FLOCK;
+	require Config; import Config;
+	return $CAN_FLOCK =
+		$Config{'d_flock'} ||
+		$Config{'d_fcntl_can_lock'} ||
+		$Config{'d_lockf'};
+}
 
 sub show_file_magic {
     print <<EOM;
@@ -246,7 +239,7 @@ sub _store {
 	logcroak "wrong argument number" unless @_ == 2;	# No @foo in arglist
 	local *FILE;
 	if ($use_locking) {
-		open(FILE, ">>", $file) || logcroak "can't write into $file: $!";
+		open(FILE, ">>$file") || logcroak "can't write into $file: $!";
 		unless (&CAN_FLOCK) {
 			logcarp "Storable::lock_store: fcntl/flock emulation broken on $^O";
 			return undef;
@@ -256,7 +249,7 @@ sub _store {
 		truncate FILE, 0;
 		# Unlocking will happen when FILE is closed
 	} else {
-		open(FILE, ">", $file) || logcroak "can't create $file: $!";
+		open(FILE, ">$file") || logcroak "can't create $file: $!";
 	}
 	binmode FILE;				# Archaic systems...
 	my $da = $@;				# Don't mess if called from exception handler
@@ -357,7 +350,7 @@ sub _freeze {
 # object of that tree.
 #
 sub retrieve {
-	_retrieve($_[0], $_[1], 0);
+	_retrieve($_[0], 0);
 }
 
 #
@@ -366,15 +359,14 @@ sub retrieve {
 # Same as retrieve, but with advisory locking.
 #
 sub lock_retrieve {
-	_retrieve($_[0], $_[1], 1);
+	_retrieve($_[0], 1);
 }
 
 # Internal retrieve routine
 sub _retrieve {
-	my ($file, $flags, $use_locking) = @_;
-	$flags = $Storable::flags unless defined $flags;
+	my ($file, $use_locking) = @_;
 	local *FILE;
-	open(FILE, "<", $file) || logcroak "can't open $file: $!";
+	open(FILE, $file) || logcroak "can't open $file: $!";
 	binmode FILE;							# Archaic systems...
 	my $self;
 	my $da = $@;							# Could be from exception handler
@@ -386,7 +378,7 @@ sub _retrieve {
 		flock(FILE, LOCK_SH) || logcroak "can't get shared lock on $file: $!";
 		# Unlocking will happen when FILE is closed
 	}
-	eval { $self = pretrieve(*FILE, $flags) };		# Call C routine
+	eval { $self = pretrieve(*FILE) };		# Call C routine
 	close(FILE);
 	logcroak $@ if $@ =~ s/\.?\n$/,/;
 	$@ = $da;
@@ -399,13 +391,12 @@ sub _retrieve {
 # Same as retrieve, but perform from an already opened file descriptor instead.
 #
 sub fd_retrieve {
-	my ($file, $flags) = @_;
-	$flags = $Storable::flags unless defined $flags;
+	my ($file) = @_;
 	my $fd = fileno($file);
 	logcroak "not a valid file descriptor" unless defined $fd;
 	my $self;
 	my $da = $@;							# Could be from exception handler
-	eval { $self = pretrieve($file, $flags) };		# Call C routine
+	eval { $self = pretrieve($file) };		# Call C routine
 	logcroak $@ if $@ =~ s/\.?\n$/,/;
 	$@ = $da;
 	return $self;
@@ -420,12 +411,11 @@ sub retrieve_fd { &fd_retrieve }		# Backward compatibility
 # by freeze.  If the frozen image passed is undef, return undef.
 #
 sub thaw {
-	my ($frozen, $flags) = @_;
-	$flags = $Storable::flags unless defined $flags;
+	my ($frozen) = @_;
 	return undef unless defined $frozen;
 	my $self;
 	my $da = $@;							# Could be from exception handler
-	eval { $self = mretrieve($frozen, $flags) };	# Call C routine
+	eval { $self = mretrieve($frozen) };	# Call C routine
 	logcroak $@ if $@ =~ s/\.?\n$/,/;
 	$@ = $da;
 	return $self;

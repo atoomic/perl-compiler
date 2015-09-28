@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
 }
 
 use strict;
@@ -85,7 +85,7 @@ while (@pats) {
     my %complements;
     foreach my $b (0..255) {
         my %got;
-        my $display_b = sprintf("\\x%02X", $b);
+        my $display_b = sprintf("0x%02X", $b);
         for my $type ('utf8','not-utf8') {
             my $str=chr($b).chr($b);
             if ($type eq 'utf8') {

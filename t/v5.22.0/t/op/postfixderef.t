@@ -10,8 +10,8 @@ this file contains all dereferencing tests from ref.t but using postfix instead 
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
-    require 'test.pl';
+    @INC = qw(. ../lib);
+    require './test.pl';
 }
 
 use strict qw(refs subs);
@@ -96,7 +96,7 @@ $x = "Good";
 is ($refref->$*->$*, 'Good'); # is ($$$refref, 'Good');
 
 
-# Test nested anonymous lists.
+# Test nested anonymous arrays.
 
 $ref = [[],2,[3,4,5,]];
 is (scalar $ref->@*, 3); # is (scalar @$ref, 3);

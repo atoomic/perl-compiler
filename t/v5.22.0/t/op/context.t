@@ -2,11 +2,11 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
+    @INC = qw(. ../lib);
 }
 
-require "test.pl";
-plan( tests => 7 );
+require "./test.pl";
+plan( tests => 8 );
 
 sub foo {
     $a='abcd';
@@ -25,3 +25,9 @@ my $after = curr_test();
 
 cmp_ok($after-$before,'==',1,'foo called once')
 	or diag("nr tests: before=$before, after=$after");
+
+sub context {
+    $cx = qw[void scalar list][wantarray + defined wantarray];
+}
+$_ = sub { context(); BEGIN { } }->();
+is($cx, 'scalar', 'context of { foo(); BEGIN {} }');

@@ -4,8 +4,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
     skip_all_if_miniperl("miniperl can't load attributes");
 }
 
@@ -61,10 +61,10 @@ eval 'my A $x : plǖgh;';
 is $@, '';
 
 eval 'package Càt; my Càt @socks;';
-like $@, '';
+is $@, '';
 
 eval 'my Càt %nap;';
-like $@, '';
+is $@, '';
 
 sub X::MODIFY_CODE_ATTRIBUTES { die "$_[0]" }
 sub X::ᕘ { 1 }

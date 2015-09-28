@@ -2,10 +2,10 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
+    @INC = qw(. ../lib);
 }
 
-require "test.pl";
+require "./test.pl";
 plan( tests => 38 );
 
 # delete() on hash elements

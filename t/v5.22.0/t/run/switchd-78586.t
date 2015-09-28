@@ -2,8 +2,8 @@
 
 BEGIN {
     $^P = 0x122;
-    chdir 't';
-    unshift @INC,  ('../lib', 'lib');
+    chdir 't' if -d 't';
+    @INC = ('../lib', 'lib');
     require './test.pl';
 }
 

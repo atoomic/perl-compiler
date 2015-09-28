@@ -1,16 +1,16 @@
 #!./perl
 
-use strict;
-use warnings;
 BEGIN {
     unless (-d 'blib') {
         chdir 't' if -d 't';
+        @INC = '../lib';
     }
-    require "./test.pl";
-    set_up_inc('../lib');
 }
 
-plan(tests => 1);
+use strict;
+use warnings;
+
+require q(./test.pl); plan(tests => 1);
 
 require mro;
 

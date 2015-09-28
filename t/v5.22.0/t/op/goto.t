@@ -4,8 +4,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
-    require "test.pl";
+    @INC = qw(. ../lib);
+    require "./test.pl"; require './charset_tools.pl';
 }
 
 use warnings;
@@ -473,7 +473,7 @@ is sub {
     goto &returnarg;
 }->("quick and easy"), "ick and queasy",
   'goto &foo with *_{ARRAY} replaced';
-my @__ = "\xc4\x80";
+my @__ = byte_utf8a_to_utf8n("\xc4\x80");
 sub { local *_ = \@__; goto &utf8::decode }->("no thinking aloud");
 is "@__", chr 256, 'goto &xsub with replaced *_{ARRAY}';
 

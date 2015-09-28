@@ -4,23 +4,21 @@
 # the format supported by re/regexp.t.  If you want to add a test
 # that does fit that format, add it to re/re_tests, not here.
 
-use strict;
-use warnings;
-use 5.010;
-use Config;
-
 sub run_tests;
 
 $| = 1;
 
-
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  ('../lib','.');
+    @INC = ('../lib','.');
     require './test.pl';
     skip_all_if_miniperl("miniperl can't load Tie::Hash::NamedCapture, need for %+ and %-");
 }
 
+use strict;
+use warnings;
+use 5.010;
+use Config;
 
 plan tests => 2532;  # Update this when adding/deleting tests.
 
@@ -91,6 +89,7 @@ sub run_tests {
     }
 
     {
+        no warnings 'deprecated';
         my $message = '\C and É; Bug 20001230.002';
         ok("École" =~ /^\C\C(.)/ && $1 eq 'c', $message);
         like("École", qr/^\C\C(c)/, $message);
@@ -237,6 +236,8 @@ sub run_tests {
         our $a = "x\x{100}";
         chop $a;    # Leaves the UTF-8 flag
         $a .= "y";  # 1 byte before 'y'.
+
+        no warnings 'deprecated';
 
         like($a, qr/^\C/,        'match one \C on 1-byte UTF-8; Bug 15763');
         like($a, qr/^\C{1}/,     'match \C{1}; Bug 15763');
@@ -971,8 +972,11 @@ sub run_tests {
         is($x, 'ab cd', $message);
     }
 
-    {
+    SKIP: {
+        skip("Can run out of memory on os390", 1) if $^O eq 'os390';
         ok (("a" x (2 ** 15 - 10)) =~ /^()(a|bb)*$/, "Recursive stack cracker; Bug 24274");
+    }
+    {
         ok ((q(a)x 100) =~ /^(??{'(.)'x 100})/, 
             "Regexp /^(??{'(.)'x 100})/ crashes older perls; Bug 24274");
     }
@@ -1172,7 +1176,10 @@ EOP
 
 	# this one segfaulted under the conditions above
 	# of course, CANY is evil, maybe it should crash
-	ok($s =~ /.\C+/, "CANY pointer wrap");
+        {
+            no warnings 'deprecated';
+            ok($s =~ /.\C+/, "CANY pointer wrap");
+        }
     }
 } # End of sub run_tests
 

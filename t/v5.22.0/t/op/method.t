@@ -6,8 +6,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib lib);
-    require "test.pl";
+    @INC = qw(. ../lib lib ../dist/base/lib);
+    require "./test.pl";
 }
 
 use strict;
@@ -169,15 +169,6 @@ no warnings 'redefine';
 
 is(A->eee(), "new B: In A::eee, 4");	# We get a correct $autoload
 is(A->eee(), "new B: In A::eee, 4");	# Which sticks
-
-{
-    no strict 'refs';
-    no warnings 'deprecated';
-    # this test added due to bug discovery (in 5.004_04, fb73857aa0bfa8ed)
-    # Possibly kill this test now that defined @::array is finally properly
-    # deprecated?
-    is(defined(@{"unknown_package::ISA"}) ? "defined" : "undefined", "undefined");
-}
 
 # test that failed subroutine calls don't affect method calls
 {
@@ -413,7 +404,7 @@ is $kalled, 1, 'calling a class method via a magic variable';
 
     *NulTest::AUTOLOAD = sub { our $AUTOLOAD; return $AUTOLOAD };
 
-    like(NulTest->${ \"nul\0test" }, "nul\0test", "AUTOLOAD is nul-clean");
+    like(NulTest->${ \"nul\0test" }, qr/nul\0test/, "AUTOLOAD is nul-clean");
 }
 
 
@@ -643,7 +634,7 @@ SKIP: {
     seek DATA, $data_start, Fcntl::SEEK_SET() or die $!;
 
     is(Colour::H1->getline(), <DATA>, 'read from a file');
-    is(C3::H1->getline(), 'method in C3::H1', 'intial resolution is a method');
+    is(C3::H1->getline(), 'method in C3::H1', 'initial resolution is a method');
 
     *Copy:: = \*C3::;
     *C3:: = \*Colour::;
@@ -656,6 +647,14 @@ SKIP: {
 
     is(C3::H1->getline(), 'method in C3::H1',
        'restoring the stash returns to a method');
+}
+
+# RT #123619 constant class name should be read-only
+
+{
+    sub RT123619::f { chop $_[0] }
+    eval { 'RT123619'->f(); };
+    like ($@, qr/Modification of a read-only value attempted/, 'RT #123619');
 }
 
 __END__

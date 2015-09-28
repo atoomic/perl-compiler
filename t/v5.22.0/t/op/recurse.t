@@ -6,11 +6,10 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
-    require "test.pl";    
+    @INC = qw(. ../lib);
+    require "./test.pl";
+    plan(tests => 28);
 }
-
-plan(tests => 28);
 
 use strict;
 

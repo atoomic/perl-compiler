@@ -2,10 +2,9 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    require 'test.pl';
+    require './test.pl';
+    plan(24);
 }
-
-plan(24);
 
 sub End::DESTROY { $_[0]->() }
 

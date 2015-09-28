@@ -4,8 +4,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require "./test.pl";
-    set_up_inc('../lib');
 
     skip_all_without_perlio();
     skip_all_if_miniperl('-C and $ENV{PERL_UNICODE} are disabled on miniperl');
@@ -18,7 +18,7 @@ my $r;
 my $tmpfile = tempfile();
 my $scriptfile = tempfile();
 
-my $b = pack("C*", unpack("U0C*", pack("U",256)));
+my $b = chr 256; utf8::encode $b;
 
 $r = runperl( switches => [ '-CO', '-w' ],
 	      prog     => 'print chr(256)',

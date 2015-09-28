@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
 }
 
 plan tests => 72;
@@ -241,8 +241,6 @@ SKIP: { #rt #73040
 
 {
     local $^W;
-    scalar gmtime("NaN");
-    pass('[perl #123495] gmtime(NaN) does not crash');
-    scalar localtime("NaN");
-    pass('localtime(NaN) does not crash');
+    is scalar gmtime("NaN"), undef, '[perl #123495] gmtime(NaN)';
+    is scalar localtime("NaN"), undef, 'localtime(NaN)';
 }

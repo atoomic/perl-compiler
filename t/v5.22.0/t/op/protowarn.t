@@ -2,14 +2,14 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
+    @INC = qw(. ../lib);
 }
 
 use strict;
 use warnings;
 
 BEGIN {
-    require 'test.pl';
+    require './test.pl';
     plan( tests => 12 );
 }
 

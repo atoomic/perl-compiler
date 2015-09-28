@@ -1,9 +1,9 @@
 #!./perl -w
 
 BEGIN {
-    chdir 't';
+    chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
 }
 use strict;
 no warnings 'void';

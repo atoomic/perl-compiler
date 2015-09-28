@@ -21,7 +21,7 @@
 # d) add an alias to Porting/checkAUTHORS.pl
 
 BEGIN {
-    unshift @INC,  '..' if -f '../TestInit.pm';
+    @INC = '..' if -f '../TestInit.pm';
 }
 use TestInit qw(T); # T is chdir to the top level
 use strict;

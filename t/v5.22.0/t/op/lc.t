@@ -3,10 +3,12 @@
 # This file is intentionally encoded in latin-1.
 
 BEGIN {
-    chdir 't';
-    require Config; import Config;
+    chdir 't' if -d 't';
     require './test.pl';
     set_up_inc('../lib');
+    require Config; import Config;
+    skip_all_without_unicode_tables();
+    require './charset_tools.pl';
     require './loc_tools.pl';   # Contains find_utf8_ctype_locale()
 }
 
@@ -102,17 +104,17 @@ is(uc($b)         , "\x{100}\x{100}AA",  'uc');
 is(lc($b)         , "\x{101}\x{101}aa",  'lc');
 is(fc($b)         , "\x{101}\x{101}aa",  'fc');
 
+my $sharp_s = uni_to_native("\x{DF}");
 # \x{DF} is LATIN SMALL LETTER SHARP S, its uppercase is SS or \x{53}\x{53};
 # \x{149} is LATIN SMALL LETTER N PRECEDED BY APOSTROPHE, its uppercase is
 # \x{2BC}\x{E4} or MODIFIER LETTER APOSTROPHE and N.
 
-is(latin1_to_native("\U\x{DF}aB\x{149}cD"), latin1_to_native("SSAB\x{2BC}NCD"),
-       "multicharacter uppercase");
+is("\U${sharp_s}aB\x{149}cD", "SSAB\x{2BC}NCD", "multicharacter uppercase");
 
 # The \x{DF} is its own lowercase, ditto for \x{149}.
 # There are no single character -> multiple characters lowercase mappings.
 
-is(latin1_to_native("\L\x{DF}aB\x{149}cD"), latin1_to_native("\x{DF}ab\x{149}cd"),
+is("\L${sharp_s}aB\x{149}cD", "${sharp_s}ab\x{149}cd",
        "multicharacter lowercase");
 
 # \x{DF} is LATIN SMALL LETTER SHARP S, its foldcase is ss or \x{73}\x{73};
@@ -120,8 +122,7 @@ is(latin1_to_native("\L\x{DF}aB\x{149}cD"), latin1_to_native("\x{DF}ab\x{149}cd"
 # \x{2BC}\x{6E} or MODIFIER LETTER APOSTROPHE and n.
 # Note that is this further tested in t/uni/fold.t
 
-is(latin1_to_native("\F\x{DF}aB\x{149}cD"), latin1_to_native("ssab\x{2BC}ncd"),
-       "multicharacter foldcase");
+is("\F${sharp_s}aB\x{149}cD", "ssab\x{2BC}ncd", "multicharacter foldcase");
 
 
 # titlecase is used for \u / ucfirst.
@@ -281,15 +282,15 @@ for ("$temp") {
 }
 
 # new in Unicode 5.1.0
-is(lc("\x{1E9E}"), "\x{df}", "lc(LATIN CAPITAL LETTER SHARP S)");
+is(lc("\x{1E9E}"), uni_to_native("\x{df}"), "lc(LATIN CAPITAL LETTER SHARP S)");
 
 {
     use feature 'unicode_strings';
     use bytes;
-    is(lc("\xc0"), "\xc0", "lc of above-ASCII Latin1 is itself under use bytes");
-    is(lcfirst("\xc0"), "\xc0", "lcfirst of above-ASCII Latin1 is itself under use bytes");
-    is(uc("\xe0"), "\xe0", "uc of above-ASCII Latin1 is itself under use bytes");
-    is(ucfirst("\xe0"), "\xe0", "ucfirst of above-ASCII Latin1 is itself under use bytes");
+    is(lc(uni_to_native("\xc0")), uni_to_native("\xc0"), "lc of above-ASCII Latin1 is itself under use bytes");
+    is(lcfirst(uni_to_native("\xc0")), uni_to_native("\xc0"), "lcfirst of above-ASCII Latin1 is itself under use bytes");
+    is(uc(uni_to_native("\xe0")), uni_to_native("\xe0"), "uc of above-ASCII Latin1 is itself under use bytes");
+    is(ucfirst(uni_to_native("\xe0")), uni_to_native("\xe0"), "ucfirst of above-ASCII Latin1 is itself under use bytes");
 }
 
 # Brought up in ticket #117855: Constant folding applied to uc() should use
@@ -322,6 +323,11 @@ my $utf8_locale = find_utf8_ctype_locale();
 SKIP: {
     skip 'Can\'t find a UTF-8 locale', 4*256 unless defined $utf8_locale;
 
+    eval { require POSIX; import POSIX 'locale_h'; };
+    unless (defined &POSIX::LC_CTYPE) {
+        skip "no POSIX (maybe no Fcntl, or no dynamic loading)", 4*256;
+    }
+
     use feature qw( unicode_strings );
 
     no locale;
@@ -339,7 +345,6 @@ SKIP: {
         push @unicode_ucfirst, ucfirst(chr $i);
     }
 
-    use if $Config{d_setlocale}, qw(POSIX locale_h);
     use locale;
     setlocale(LC_CTYPE, $utf8_locale);
 

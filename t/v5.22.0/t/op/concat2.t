@@ -2,18 +2,20 @@
 
 # This file is for concatenation tests that require test.pl.
 #
-# concat.t cannot use test.pl as it needs to avoid using concatenation in
+# t/opbasic/concat.t cannot use test.pl as
+# it needs to avoid using concatenation in
 # its ok() function.
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
 }
 
 plan 3;
 
 SKIP: {
+skip("no encoding pragma in EBCDIC", 1) if $::IS_EBCDIC;
 skip_if_miniperl("no dynamic loading on miniperl, no Encode", 1);
 fresh_perl_is <<'end', "ok\n", {},
     no warnings 'deprecated';

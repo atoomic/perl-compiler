@@ -3,10 +3,10 @@
 #          DO NOT EDIT DIRECTLY - edit make_patchnum.pl instead
 ######################################################################
 $Config::Git_Data=<<'ENDOFGIT';
-git_commit_id=''
-git_describe=''
-git_branch=''
-git_uncommitted_changes=''
-git_commit_id_title=''
-
+git_commit_id='c05ce579b6dae0f955ff8922469d49f95f4bf6fd'
+git_describe='v5.20.2'
+git_branch='perl520'
+git_uncommitted_changes='0'
+git_commit_id_title='Commit id:'
+git_commit_date='2015-02-14 16:44:36 +0000'
 ENDOFGIT

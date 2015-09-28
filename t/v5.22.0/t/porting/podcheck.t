@@ -2,7 +2,8 @@
 
 BEGIN {
     chdir 't';
-    unshift @INC, "../lib";
+    @INC = "../lib";
+    # Do not require test.pl, this file has its own framework.
 }
 
 use strict;
@@ -24,7 +25,7 @@ BEGIN {
     }
     if ($^O eq 'dec_osf') {
         print "1..0 # $^O cannot handle this test\n";
-        exit 0;
+        exit(0);
     }
     require '../regen/regen_lib.pl';
 }
@@ -1480,7 +1481,7 @@ plan (tests => scalar @files) if ! $regen;
 
 
  # Sort file names so we get consistent results, and to put cpan last,
- # preceeded by the ones that we don't generally parse.  This is because both
+ # preceded by the ones that we don't generally parse.  This is because both
  # these classes are generally parsed only if there is a link to the interior
  # of them, and we have to parse all others first to guarantee that they don't
  # have such a link. 'lib' files come just before these, as some of these are
@@ -1620,6 +1621,7 @@ foreach my $filename (@files) {
                 $same = $prior_contents eq $contents;
             }
 
+            use File::Basename 'basename';
             if ($same) {
                 $checker->set_skip("The pod of $filename is a duplicate of "
                                     . "the pod for $prior_filename");
@@ -1634,6 +1636,11 @@ foreach my $filename (@files) {
                 $checker->set_skip("CPAN is upstream for $filename");
             } elsif ( $filename =~ /^utils/ or $prior_filename =~ /^utils/ ) {
                 $checker->set_skip("$filename copy is in utils/");
+            } elsif ($prior_filename =~ /^(?:cpan|ext|dist)/
+                     && $filename !~ /^(?:cpan|ext|dist)/
+                     && basename($prior_filename) eq basename($filename))
+            {
+                $checker->set_skip("$filename: Need to run make?");
             } else { # Here have two pods with identical names that differ
                 $prior_checker->poderror(
                         { -msg => $duplicate_name,

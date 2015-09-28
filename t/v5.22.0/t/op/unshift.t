@@ -1,7 +1,8 @@
 #!./perl
 
 BEGIN {
-    require "test.pl";
+    chdir 't' if -d 't';
+    require "./test.pl";
 }
 
 plan(36);

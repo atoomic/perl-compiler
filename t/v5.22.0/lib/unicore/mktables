@@ -488,8 +488,9 @@ my $unicode_reference_url = 'http://www.unicode.org/reports/tr44/';
 #
 #   croak("Weird Canonical Decomposition of U+$h");
 #
-# Simply change to a carp.  It will compile, but will not know about any three
-# character decomposition.
+# Simply comment it out.  It will compile, but will not know about any three
+# character decompositions.  If using the .pm version, there is a similar
+# line.
 
 # The number of code points in \p{alpha=True} halved in 2.1.9.  It turns out
 # that the reason is that the CJK block starting at 4E00 was removed from
@@ -527,6 +528,9 @@ my $unicode_reference_url = 'http://www.unicode.org/reports/tr44/';
 # should instead be
 #   0275;LATIN SMALL LETTER BARRED O;Ll;0;L;;;;;N;;;019F;;019F
 # Without this change, there are casing problems for this character.
+#
+# Search for $string_compare_versions to see how to compare changes to
+# properties between Unicode versions
 #
 ##############################################################################
 
@@ -953,7 +957,7 @@ my %why_obsolete;    # Documentation only
         # contains the same information, but without the algorithmically
         # determinable Hangul syllables'.  This file is not published, so it's
         # existence is not noted in the comment.
-        'Decomposition_Mapping' => 'Accessible via Unicode::Normalize or Unicode::UCD::prop_invmap()',
+        'Decomposition_Mapping' => 'Accessible via Unicode::Normalize or prop_invmap() or charprop() in Unicode::UCD::',
 
         'Indic_Matra_Category' => "Provisional",
         'Indic_Syllabic_Category' => "Provisional",
@@ -962,14 +966,14 @@ my %why_obsolete;    # Documentation only
         # to differentiate between it and gc=c, which can be written as 'isc',
         # which is the same characters as ISO_Comment's short name.
 
-        'Name' => "Accessible via \\N{...} or 'use charnames;' or Unicode::UCD::prop_invmap()",
+        'Name' => "Accessible via \\N{...} or 'use charnames;' or charprop() or prop_invmap() in Unicode::UCD::",
 
-        'Simple_Case_Folding' => "$simple.  Can access this through Unicode::UCD::casefold or Unicode::UCD::prop_invmap()",
-        'Simple_Lowercase_Mapping' => "$simple.  Can access this through Unicode::UCD::charinfo or Unicode::UCD::prop_invmap()",
-        'Simple_Titlecase_Mapping' => "$simple.  Can access this through Unicode::UCD::charinfo or Unicode::UCD::prop_invmap()",
-        'Simple_Uppercase_Mapping' => "$simple.  Can access this through Unicode::UCD::charinfo or Unicode::UCD::prop_invmap()",
+        'Simple_Case_Folding' => "$simple.  Can access this through casefold(), charprop(), or prop_invmap() in Unicode::UCD",
+        'Simple_Lowercase_Mapping' => "$simple.  Can access this through charinfo(), charprop(), or prop_invmap() in Unicode::UCD",
+        'Simple_Titlecase_Mapping' => "$simple.  Can access this through charinfo(), charprop(), or prop_invmap() in Unicode::UCD",
+        'Simple_Uppercase_Mapping' => "$simple.  Can access this through charinfo(), charprop(), or prop_invmap() in Unicode::UCD",
 
-        FC_NFKC_Closure => 'Supplanted in usage by NFKC_Casefold; otherwise not useful',
+        FC_NFKC_Closure => 'Deprecated by Unicode, and supplanted in usage by NFKC_Casefold; otherwise not useful',
     );
 
     foreach my $property (
@@ -1463,6 +1467,8 @@ my $has_hangul_syllables = 0;
 my $needing_code_points_ending_in_code_point = 0;
 
 my @backslash_X_tests;     # List of tests read in for testing \X
+my @SB_tests;              # List of tests read in for testing \b{sb}
+my @WB_tests;              # List of tests read in for testing \b{wb}
 my @unhandled_properties;  # Will contain a list of properties found in
                            # the input that we didn't process.
 my @match_properties;      # Properties that have match tables, to be
@@ -2284,6 +2290,8 @@ sub trace { return main::trace(@_); }
         $file{$addr} = main::internal_file_to_platform(shift);
         $first_released{$addr} = shift;
 
+        undef $file{$addr} if $first_released{$addr} gt $v_version;
+
         # The rest of the arguments are key => value pairs
         # %constructor_fields has been set up earlier to list all possible
         # ones.  Either set or push, depending on how the default has been set
@@ -2332,7 +2340,7 @@ sub trace { return main::trace(@_); }
         # including its reason
         if ($skip{$addr}) {
             $optional{$addr} = 1;
-            $skipped_files{$file{$addr}} = $skip{$addr}
+            $skipped_files{$file{$addr}} = $skip{$addr} if $file{$addr};
         }
         elsif ($properties{$addr}) {
 
@@ -2413,7 +2421,8 @@ sub trace { return main::trace(@_); }
         # than this Unicode version), and isn't there.  This means if someone
         # copies it into an earlier version's directory, we will go ahead and
         # process it.
-        return if $first_released{$addr} gt $v_version && ! -e $file;
+        return if $first_released{$addr} gt $v_version
+                  && (! defined $file || ! -e $file);
 
         # If in debugging mode and this file doesn't have the non-skip
         # flag set, and isn't one of the critical files, skip it.
@@ -2509,17 +2518,27 @@ END
             }
             $handle{$addr} = $file_handle; # Cache the open file handle
 
-            if ($v_version ge v3.2.0
-                && lc($file) ne 'unicodedata.txt'
-
-                    # Unihan files used another format until v7
-                && ($v_version ge v7.0.0 || $file !~ /^Unihan/i))
-            {
-                $_ = <$file_handle>;
-                if ($_ !~ / - $string_version \. /x) {
-                    chomp;
-                    $_ =~ s/^#\s*//;
-                    die Carp::my_carp("File '$file' is version '$_'.  It should be version $string_version");
+            if ($v_version ge v3.2.0 && lc($file) ne 'unicodedata.txt') {
+                if ($file !~ /^Unihan/i) {
+                    $_ = <$file_handle>;
+                    if ($_ !~ / - $string_version \. /x) {
+                        chomp;
+                        $_ =~ s/^#\s*//;
+                        die Carp::my_carp("File '$file' is version '$_'.  It should be version $string_version");
+                    }
+                }
+                else {
+                    while (<$file_handle>) {
+                        if ($_ !~ /^#/) {
+                            Carp::my_carp_bug("Could not find the expected version info in file '$file'");
+                            last;
+                        }
+                        chomp;
+                        $_ =~ s/^#\s*//;
+                        next if $_ !~ / version: /x;
+                        last if $_ =~ /$string_version/;
+                        die Carp::my_carp("File '$file' is '$_'.  It should be version $string_version");
+                    }
                 }
             }
         }
@@ -6714,7 +6733,8 @@ sub trace { return main::trace(@_); }
 # but its format and even its name or existence are subject to change without
 # notice in a future Perl version.  Don't use it directly.  Instead, its
 # contents are now retrievable through a stable API in the Unicode::UCD
-# module: Unicode::UCD::prop_invmap('$property_name').
+# module: Unicode::UCD::prop_invmap('$property_name') (Values for individual
+# code points can be retrieved via Unicode::UCD::charprop());
 END
         }
         return $return;
@@ -6841,7 +6861,7 @@ END
         }
         $comment .= "\nwhere 'cp' is $cp.";
         if ($ucd_accessible_name) {
-            $comment .= "  Note that $these_mappings $are accessible via the function prop_invmap('$full_name') in Unicode::UCD";
+            $comment .= "  Note that $these_mappings $are accessible via the functions prop_invmap('$full_name') or charprop() in Unicode::UCD";
         }
 
         # And append any commentary already set from the actual property.
@@ -6996,11 +7016,14 @@ END
                     }
                 }
 
-                # I (khw) have never waded through this line to
-                # understand it well enough to comment it.
+                # The unpack yields a list of the bytes that comprise the
+                # UTF-8 of $code_point, which are each placed in \xZZ format
+                # and output in the %s to map to $tostr, so the result looks
+                # like:
+                # "\xC4\xB0" => "\x{0069}\x{0307}",
                 my $utf8 = sprintf(qq["%s" => "$tostr",],
                         join("", map { sprintf "\\x%02X", $_ }
-                            unpack("U0C*", pack("U", $code_point))));
+                            unpack("U0C*", chr $code_point)));
 
                 # Add a comment so that a human reader can more easily
                 # see what's going on.
@@ -9257,7 +9280,7 @@ sub utf8_heavy_name ($$) {
 {   # Closure
 
     my $indent_increment = " " x (($debugging_build) ? 2 : 0);
-    my %already_output;
+    %main::already_output = ();
 
     $main::simple_dumper_nesting = 0;
 
@@ -9277,7 +9300,7 @@ sub utf8_heavy_name ($$) {
         # nesting level is localized, so that as the call stack pops, it goes
         # back to the prior value.
         local $main::simple_dumper_nesting = $main::simple_dumper_nesting;
-        undef %already_output if $main::simple_dumper_nesting == 0;
+        local %main::already_output = %main::already_output;
         $main::simple_dumper_nesting++;
         #print STDERR __LINE__, ": $main::simple_dumper_nesting: $indent$item\n";
 
@@ -9308,10 +9331,10 @@ sub utf8_heavy_name ($$) {
 
             # Keep track of cycles in the input, and refuse to infinitely loop
             my $addr = do { no overloading; pack 'J', $item; };
-            if (defined $already_output{$addr}) {
+            if (defined $main::already_output{$addr}) {
                 return "${indent}ALREADY OUTPUT: $item\n";
             }
-            $already_output{$addr} = $item;
+            $main::already_output{$addr} = $item;
 
             if (ref $item eq 'ARRAY') {
                 my $using_brackets;
@@ -11704,6 +11727,30 @@ sub process_GCB_test {
     return;
 }
 
+sub process_SB_test {
+
+    my $file = shift;
+    Carp::carp_extra_args(\@_) if main::DEBUG && @_;
+
+    while ($file->next_line) {
+        push @SB_tests, $_;
+    }
+
+    return;
+}
+
+sub process_WB_test {
+
+    my $file = shift;
+    Carp::carp_extra_args(\@_) if main::DEBUG && @_;
+
+    while ($file->next_line) {
+        push @WB_tests, $_;
+    }
+
+    return;
+}
+
 sub process_NamedSequences {
     # NamedSequences.txt entries are just added to an array.  Because these
     # don't look like the other tables, they have their own handler.
@@ -13402,7 +13449,7 @@ sub compile_perl() {
     # have Uppercase and Lowercase defined, so use the general category
     # instead for them, modified by hard-coding in the code points each is
     # missing.
-    my $Lower = $perl->add_match_table('Lower');
+    my $Lower = $perl->add_match_table('XPosixLower');
     my $Unicode_Lower = property_ref('Lowercase');
     if (defined $Unicode_Lower && ! $Unicode_Lower->is_empty) {
         $Lower->set_equivalent_to($Unicode_Lower->table('Y'), Related => 1);
@@ -13440,13 +13487,12 @@ sub compile_perl() {
             $Lower += $code_point;
         }
     }
-    $Lower->add_alias('XPosixLower');
     my $Posix_Lower = $perl->add_match_table("PosixLower",
                             Description => "[a-z]",
                             Initialize => $Lower & $ASCII,
                             );
 
-    my $Upper = $perl->add_match_table('Upper');
+    my $Upper = $perl->add_match_table("XPosixUpper");
     my $Unicode_Upper = property_ref('Uppercase');
     if (defined $Unicode_Upper && ! $Unicode_Upper->is_empty) {
         $Upper->set_equivalent_to($Unicode_Upper->table('Y'), Related => 1);
@@ -13459,7 +13505,6 @@ sub compile_perl() {
         $Upper->add_range(0x2160, 0x216F);  # Uppercase Roman numerals
         $Upper->add_range(0x24B6, 0x24CF);  # Circled Latin upper case letters
     }
-    $Upper->add_alias('XPosixUpper');
     my $Posix_Upper = $perl->add_match_table("PosixUpper",
                             Description => "[A-Z]",
                             Initialize => $Upper & $ASCII,
@@ -13581,7 +13626,7 @@ sub compile_perl() {
     # one whose name generally begins with Posix that is posix-compliant, and
     # one that matches Unicode characters beyond the Posix, ASCII range
 
-    my $Alpha = $perl->add_match_table('Alpha');
+    my $Alpha = $perl->add_match_table('XPosixAlpha');
 
     # Alphabetic was not present in early releases
     my $Alphabetic = property_ref('Alphabetic');
@@ -13668,7 +13713,6 @@ sub compile_perl() {
         $Alpha->add_description('Alphabetic');
         $Alpha->add_alias('Alphabetic');
     }
-    $Alpha->add_alias('XPosixAlpha');
     my $Posix_Alpha = $perl->add_match_table("PosixAlpha",
                             Description => "[A-Za-z]",
                             Initialize => $Alpha & $ASCII,
@@ -13676,22 +13720,20 @@ sub compile_perl() {
     $Posix_Upper->set_caseless_equivalent($Posix_Alpha);
     $Posix_Lower->set_caseless_equivalent($Posix_Alpha);
 
-    my $Alnum = $perl->add_match_table('Alnum',
+    my $Alnum = $perl->add_match_table('Alnum', Full_Name => 'XPosixAlnum',
                         Description => 'Alphabetic and (decimal) Numeric',
                         Initialize => $Alpha + $gc->table('Decimal_Number'),
                         );
-    $Alnum->add_alias('XPosixAlnum');
     $perl->add_match_table("PosixAlnum",
                             Description => "[A-Za-z0-9]",
                             Initialize => $Alnum & $ASCII,
                             );
 
-    my $Word = $perl->add_match_table('Word',
+    my $Word = $perl->add_match_table('Word', Full_Name => 'XPosixWord',
                                 Description => '\w, including beyond ASCII;'
                                             . ' = \p{Alnum} + \pM + \p{Pc}',
                                 Initialize => $Alnum + $gc->table('Mark'),
                                 );
-    $Word->add_alias('XPosixWord');
     my $Pc = $gc->table('Connector_Punctuation'); # 'Pc' Not in release 1
     if (defined $Pc) {
         $Word += $Pc;
@@ -13708,13 +13750,13 @@ sub compile_perl() {
     }
 
     # This is a Perl extension, so the name doesn't begin with Posix.
-    my $PerlWord = $perl->add_match_table('PerlWord',
+    my $PerlWord = $perl->add_match_table('PosixWord',
                     Description => '\w, restricted to ASCII = [A-Za-z0-9_]',
                     Initialize => $Word & $ASCII,
                     );
-    $PerlWord->add_alias('PosixWord');
+    $PerlWord->add_alias('PerlWord');
 
-    my $Blank = $perl->add_match_table('Blank',
+    my $Blank = $perl->add_match_table('Blank', Full_Name => 'XPosixBlank',
                                 Description => '\h, Horizontal white space',
 
                                 # 200B is Zero Width Space which is for line
@@ -13725,7 +13767,6 @@ sub compile_perl() {
                                             -   0x200B, # ZWSP
                                 );
     $Blank->add_alias('HorizSpace');        # Another name for it.
-    $Blank->add_alias('XPosixBlank');
     $perl->add_match_table("PosixBlank",
                             Description => "\\t and ' '",
                             Initialize => $Blank & $ASCII,
@@ -13744,34 +13785,22 @@ sub compile_perl() {
                     );
     # No Posix equivalent for vertical space
 
-    my $Space = $perl->add_match_table('Space',
+    my $Space = $perl->add_match_table('XPosixSpace',
                 Description => '\s including beyond ASCII and vertical tab',
                 Initialize => $Blank + $VertSpace,
     );
-    $Space->add_alias('XPosixSpace');
-    my $posix_space = $perl->add_match_table("PosixSpace",
+    $Space->add_alias('XPerlSpace');    # Pre-existing synonyms
+    $Space->add_alias('SpacePerl');
+
+    my $Posix_space = $perl->add_match_table("PosixSpace",
                             Description => "\\t, \\n, \\cK, \\f, \\r, and ' '.  (\\cK is vertical tab)",
                             Initialize => $Space & $ASCII,
                             );
+    $Posix_space->add_alias('PerlSpace'); # A pre-existing synonym
 
-    # Perl's traditional space doesn't include Vertical Tab prior to v5.18
-    my $XPerlSpace = $perl->add_match_table('XPerlSpace',
-                                  Description => '\s, including beyond ASCII',
-                                  Initialize => $Space,
-                                  #Initialize => $Space
-                                  # - utf8::unicode_to_native(0x0B]
-                                );
-    $XPerlSpace->add_alias('SpacePerl');    # A pre-existing synonym
-    my $PerlSpace = $perl->add_match_table('PerlSpace',
-                        Description => '\s, restricted to ASCII = [ \f\n\r\t] plus vertical tab',
-                        Initialize => $XPerlSpace & $ASCII,
-                            );
-
-
-    my $Cntrl = $perl->add_match_table('Cntrl',
+    my $Cntrl = $perl->add_match_table('Cntrl', Full_Name => 'XPosixCntrl',
                                         Description => 'Control characters');
     $Cntrl->set_equivalent_to($gc->table('Cc'), Related => 1);
-    $Cntrl->add_alias('XPosixCntrl');
     $perl->add_match_table("PosixCntrl",
                             Description => "ASCII control characters: NUL, SOH, STX, ETX, EOT, ENQ, ACK, BEL, BS, HT, LF, VT, FF, CR, SO, SI, DLE, DC1, DC2, DC3, DC4, NAK, SYN, ETB, CAN, EOM, SUB, ESC, FS, GS, RS, US, and DEL",
                             Initialize => $Cntrl & $ASCII,
@@ -13784,22 +13813,20 @@ sub compile_perl() {
     $controls += $gc->table('Surrogate') if defined $gc->table('Surrogate');
 
     # Graph is  ~space &  ~(Cc|Cs|Cn) = ~(space + $controls)
-    my $Graph = $perl->add_match_table('Graph',
+    my $Graph = $perl->add_match_table('Graph', Full_Name => 'XPosixGraph',
                         Description => 'Characters that are graphical',
                         Initialize => ~ ($Space + $controls),
                         );
-    $Graph->add_alias('XPosixGraph');
     $perl->add_match_table("PosixGraph",
                             Description =>
                                 '[-!"#$%&\'()*+,./:;<=>?@[\\\]^_`{|}~0-9A-Za-z]',
                             Initialize => $Graph & $ASCII,
                             );
 
-    $print = $perl->add_match_table('Print',
+    $print = $perl->add_match_table('Print', Full_Name => 'XPosixPrint',
                         Description => 'Characters that are graphical plus space characters (but no controls)',
                         Initialize => $Blank + $Graph - $gc->table('Control'),
                         );
-    $print->add_alias('XPosixPrint');
     $perl->add_match_table("PosixPrint",
                             Description =>
                               '[- 0-9A-Za-z!"#$%&\'()*+,./:;<=>?@[\\\]^_`{|}~]',
@@ -13821,18 +13848,16 @@ sub compile_perl() {
         Initialize => $ASCII & $XPosixPunct,
         );
 
-    my $Digit = $perl->add_match_table('Digit',
+    my $Digit = $perl->add_match_table('Digit', Full_Name => 'XPosixDigit',
                             Description => '[0-9] + all other decimal digits');
     $Digit->set_equivalent_to($gc->table('Decimal_Number'), Related => 1);
-    $Digit->add_alias('XPosixDigit');
     my $PosixDigit = $perl->add_match_table("PosixDigit",
                                             Description => '[0-9]',
                                             Initialize => $Digit & $ASCII,
                                             );
 
     # Hex_Digit was not present in first release
-    my $Xdigit = $perl->add_match_table('XDigit');
-    $Xdigit->add_alias('XPosixXDigit');
+    my $Xdigit = $perl->add_match_table('XDigit', Full_Name => 'XPosixXDigit');
     my $Hex = property_ref('Hex_Digit');
     if (defined $Hex && ! $Hex->is_empty) {
         $Xdigit->set_equivalent_to($Hex->table('Y'), Related => 1);
@@ -14123,107 +14148,6 @@ sub compile_perl() {
                                     + ord("-")
                                     + utf8::unicode_to_native(0xA0) # NBSP
                         );
-
-    # These two tables are for matching \X, which is based on the 'extended'
-    # grapheme cluster, which came in 5.1; create empty ones if not already
-    # present.  The straight 'grapheme cluster' (non-extended) is used prior
-    # to 5.1, and differs from the extended (see
-    # http://www.unicode.org/reports/tr29/) only by these two tables, so we
-    # get the older definition automatically when they are empty.
-    my $gcb = property_ref('Grapheme_Cluster_Break');
-    my $perl_prepend = $perl->add_match_table('_X_GCB_Prepend',
-                                        Perl_Extension => 1,
-                                        Fate => $INTERNAL_ONLY);
-    if (defined (my $gcb_prepend = $gcb->table('Prepend'))) {
-        $perl_prepend->set_equivalent_to($gcb_prepend, Related => 1);
-    }
-    else {
-        push @tables_that_may_be_empty, $perl_prepend->complete_name;
-    }
-
-    # All the tables with _X_ in their names are used in defining \X handling,
-    # and are based on the Unicode GCB property.  Basically, \X matches:
-    #   CR LF
-    #   | Prepend* Begin Extend*
-    #   | .
-    # Begin is:           ( Special_Begin | ! Control )
-    # Begin is also:      ( Regular_Begin | Special_Begin )
-    #   where Regular_Begin is defined as ( ! Control - Special_Begin )
-    # Special_Begin is:   ( Regional-Indicator+ | Hangul-syllable )
-    # Extend is:          ( Grapheme_Extend | Spacing_Mark )
-    # Control is:         [ GCB_Control | CR | LF ]
-    # Hangul-syllable is: ( T+ | ( L* ( L | ( LVT | ( V | LV ) V* ) T* ) ))
-
-    foreach my $gcb_name (qw{ L V T LV LVT }) {
-
-        # The perl internal extension's name is the gcb table name prepended
-        # with an '_X_'
-        my $perl_table = $perl->add_match_table('_X_GCB_' . $gcb_name,
-                                        Perl_Extension => 1,
-                                        Fate => $INTERNAL_ONLY,
-                                        Initialize => $gcb->table($gcb_name),
-                                        );
-        # Version 1 had mostly different Hangul syllables that were removed
-        # from later versions, so some of the tables may not apply.
-        if ($v_version lt v2.0) {
-            push @tables_that_may_be_empty, $perl_table->complete_name;
-        }
-    }
-
-    # More GCB.  Populate a combined hangul syllables table
-    my $lv_lvt_v = $perl->add_match_table('_X_LV_LVT_V',
-                                          Perl_Extension => 1,
-                                          Fate => $INTERNAL_ONLY);
-    $lv_lvt_v += $gcb->table('LV') + $gcb->table('LVT') + $gcb->table('V');
-    $lv_lvt_v->add_comment('For use in \X; matches: gcb=LV | gcb=LVT | gcb=V');
-
-    my $ri = $perl->add_match_table('_X_RI', Perl_Extension => 1,
-                                    Fate => $INTERNAL_ONLY);
-    if ($v_version ge v6.2) {
-        $ri += $gcb->table('RI');
-    }
-    else {
-        push @tables_that_may_be_empty, $ri->full_name;
-    }
-
-    my $specials_begin = $perl->add_match_table('_X_Special_Begin_Start',
-                                       Perl_Extension => 1,
-                                       Fate => $INTERNAL_ONLY,
-                                       Initialize => $lv_lvt_v
-                                                   + $gcb->table('L')
-                                                   + $gcb->table('T')
-                                                   + $ri
-                                      );
-    $specials_begin->add_comment(join_lines( <<END
-For use in \\X; matches first (perhaps only) character of potential
-multi-character sequences that can begin an extended grapheme cluster.  They
-need special handling because of their complicated nature.
-END
-    ));
-    my $regular_begin = $perl->add_match_table('_X_Regular_Begin',
-                                       Perl_Extension => 1,
-                                       Fate => $INTERNAL_ONLY,
-                                       Initialize => ~ $gcb->table('Control')
-                                                   - $specials_begin
-                                                   - $gcb->table('CR')
-                                                   - $gcb->table('LF')
-                                      );
-    $regular_begin->add_comment(join_lines( <<END
-For use in \\X; matches first character of anything that can begin an extended
-grapheme cluster, except those that require special handling.
-END
-    ));
-
-    my $extend = $perl->add_match_table('_X_Extend', Perl_Extension => 1,
-                                        Fate => $INTERNAL_ONLY,
-                                        Initialize => $gcb->table('Extend')
-                                       );
-    if (defined (my $sm = $gcb->table('SpacingMark'))) {
-        $extend += $sm;
-    }
-    $extend->add_comment('For use in \X; matches: Extend | SpacingMark');
-
-    # End of GCB \X processing
 
     my @composition = ('Name', 'Unicode_1_Name', 'Name_Alias');
 
@@ -15408,7 +15332,7 @@ sub make_re_pod_entries($) {
                     }
                 }
 
-                # Ouput both short and single in the same parenthesized
+                # Output both short and single in the same parenthesized
                 # expression, but with only one of 'Single', 'Short' if there
                 # are both items.
                 if ($short_name || $single_form || $table->conflicting) {
@@ -16181,9 +16105,14 @@ $zero_matches
 
 =head1 Properties accessible through Unicode::UCD
 
-All the Unicode character properties mentioned above (except for those marked
-as for internal use by Perl) are also accessible by
-L<Unicode::UCD/prop_invlist()>.
+The value of any Unicode (not including Perl extensions) character
+property mentioned above for any single code point is available through
+L<Unicode::UCD/charprop()>.  L<Unicode::UCD/charprops_all()> returns the
+values of all the Unicode properties for a given code point.
+
+Besides these, all the Unicode character properties mentioned above
+(except for those marked as for internal use by Perl) are also
+accessible by L<Unicode::UCD/prop_invlist()>.
 
 Due to their nature, not all Unicode character properties are suitable for
 regular expression matches, nor C<prop_invlist()>.  The remaining
@@ -16259,6 +16188,10 @@ C<\$Config{privlib}>/F<unicore/> in the Perl source tree, changing the
 controlling lists contained in the program
 C<\$Config{privlib}>/F<unicore/mktables> and then re-compiling and installing.
 (C<\%Config> is available from the Config module).
+
+Also, perl can be recompiled to operate on an earlier version of the Unicode
+standard.  Further information is at
+C<\$Config{privlib}>/F<unicore/README.perl>.
 
 =head1 Other information in the Unicode data base
 
@@ -16928,15 +16861,17 @@ sub write_all_tables() {
     # (sort so that if there is an immutable file name, it has precedence, so
     # some other property can't come in and take over its file name.  (We
     # don't care if both defined, as they had better be different anyway.)
-    # We also sort by the property's name.  This is just for repeatability of
-    # the outputs between runs of this program, but does not affect
-    # correctness.
+    # The property named 'Perl' needs to be first (it doesn't have any
+    # immutable file name) because empty properties are defined in terms of
+    # its table named 'All' under the -annotate option.)   We also sort by
+    # the property's name.  This is just for repeatability of the outputs
+    # between runs of this program, but does not affect correctness.
     PROPERTY:
-    foreach my $property (sort { return -1 if defined $a->file;
+    foreach my $property ($perl,
+                          sort { return -1 if defined $a->file;
                                  return 1 if defined $b->file;
                                  return $a->name cmp $b->name;
-                                }
-                                  property_ref('*'))
+                                } grep { $_ != $perl } property_ref('*'))
     {
         my $type = $property->type;
 
@@ -17271,8 +17206,6 @@ sub write_all_tables() {
                     # Similarly, we create for Unicode::UCD a list of
                     # property-value aliases.
 
-                    my $property_full_name = $property->full_name;
-
                     # Look at each table in the property...
                     foreach my $table ($property->tables) {
                         my @values_list;
@@ -17311,7 +17244,7 @@ sub write_all_tables() {
                         }
 
                         # To save memory, unlike the similar list for property
-                        # aliases above, only the standard forms hve the list.
+                        # aliases above, only the standard forms have the list.
                         # This forces an extra step of converting from input
                         # name to standard name, but the savings are
                         # considerable.  (There is only marginal savings if we
@@ -17879,10 +17812,15 @@ sub make_property_test_script() {
 
     &write($t_path,
            0,           # Not utf8;
-           [<DATA>,
+           [$HEADER,
+            <DATA>,
             @output,
-            (map {"Test_X('$_');\n"} @backslash_X_tests),
-            "Finished();\n"]);
+            (map {"Test_GCB('$_');\n"} @backslash_X_tests),
+            (map {"Test_SB('$_');\n"} @SB_tests),
+            (map {"Test_WB('$_');\n"} @WB_tests),
+            "Finished();\n"
+           ]);
+
     return;
 }
 
@@ -18192,10 +18130,10 @@ my @input_file_objects = (
                     Skip => 'Validation Tests',
                     ),
     Input_file->new("$AUXILIARY/SBTest.txt", v4.1.0,
-                    Skip => 'Validation Tests',
+                    Handler => \&process_SB_test,
                     ),
     Input_file->new("$AUXILIARY/WBTest.txt", v4.1.0,
-                    Skip => 'Validation Tests',
+                    Handler => \&process_WB_test,
                     ),
     Input_file->new("$AUXILIARY/SentenceBreakProperty.txt", v4.1.0,
                     Property => 'Sentence_Break',
@@ -18596,11 +18534,6 @@ __DATA__
 use strict;
 use warnings;
 
-# If run outside the normal test suite on an ASCII platform, you can
-# just create a latin1_to_native() function that just returns its
-# inputs, because that's the only function used from test.pl
-require "test.pl";
-
 # Test qr/\X/ and the \p{} regular expression constructs.  This file is
 # constructed by mktables from the tables it generates, so if mktables is
 # buggy, this won't necessarily catch those bugs.  Tests are generated for all
@@ -18687,16 +18620,22 @@ sub Error($) {
     return;
 }
 
-# GCBTest.txt character that separates grapheme clusters
+# Break test files (e.g. GCBTest.txt) character that break allowed here
 my $breakable_utf8 = my $breakable = chr(utf8::unicode_to_native(0xF7));
 utf8::upgrade($breakable_utf8);
 
-# GCBTest.txt character that indicates that the adjoining code points are part
-# of the same grapheme cluster
+# Break test files (e.g. GCBTest.txt) character that indicates can't break
+# here
 my $nobreak_utf8 = my $nobreak = chr(utf8::unicode_to_native(0xD7));
 utf8::upgrade($nobreak_utf8);
 
-sub Test_X($) {
+use Config;
+my $utf8_locale;
+chdir 't' if -d 't';
+eval { require "./loc_tools.pl" };
+$utf8_locale = &find_utf8_ctype_locale if defined &find_utf8_ctype_locale;
+
+sub _test_break($$) {
     # Test qr/\X/ matches.  The input is a line from auxiliary/GCBTest.txt
     # Each such line is a sequence of code points given by their hex numbers,
     # separated by the two characters defined just before this subroutine that
@@ -18709,8 +18648,9 @@ sub Test_X($) {
     # Each \X should match the next cluster; and that is what is checked.
 
     my $template = shift;
+    my $break_type = shift;
 
-    my $line   = (caller)[2];
+    my $line   = (caller 1)[2];   # Line number
 
     # The line contains characters above the ASCII range, but in Latin1.  It
     # may or may not be in utf8, and if it is, it may or may not know it.  So,
@@ -18728,40 +18668,36 @@ sub Test_X($) {
         $template =~ s/$breakable_utf8/$breakable/g;
     }
 
-    # Get rid of the leading and trailing breakables
+    # The input is just the break/no-break symbols and sequences of Unicode
+    # code points as hex digits separated by spaces for legibility. e.g.:
+    # ÷ 0020 × 0308 ÷ 0020 ÷
+    # Convert to native \x format
+    $template =~ s/ \s* ( [[:xdigit:]]+ ) \s* /sprintf("\\x{%02X}", utf8::unicode_to_native(hex $1))/gex;
+    $template =~ s/ \s* //gx;   # Probably the line above removed all spaces;
+                                # but be sure
+
+    # Make a copy of the input with the symbols replaced by \b{} and \B{} as
+    # appropriate
+    my $break_pattern = $template =~ s/ $breakable /\\b{$break_type}/grx;
+    $break_pattern =~ s/ $nobreak /\\B{$break_type}/gx;
+
+    my $display_string = $template =~ s/[$breakable$nobreak]//gr;
+    my $string = eval "\"$display_string\"";
+
+    # The remaining massaging of the input is for the \X tests.  Get rid of
+    # the leading and trailing breakables
     $template =~ s/^ \s* $breakable \s* //x;
     $template =~ s/ \s* $breakable \s* $ //x;
 
-    # And no-breaks become just a space.
-    $template =~ s/ \s* $nobreak \s* / /xg;
+    # Delete no-breaks
+    $template =~ s/ \s* $nobreak \s* //xg;
 
     # Split the input into segments that are breakable between them.
-    my @segments = split /\s*$breakable\s*/, $template;
-
-    my $string = "";
-    my $display_string = "";
-    my @should_match;
-    my @should_display;
-
-    # Convert the code point sequence in each segment into a Perl string of
-    # characters
-    foreach my $segment (@segments) {
-        my @code_points = split /\s+/, $segment;
-        my $this_string = "";
-        my $this_display = "";
-        foreach my $code_point (@code_points) {
-            $this_string .= latin1_to_native(chr(hex $code_point));
-            $this_display .= "\\x{$code_point}";
-        }
-
-        # The next cluster should match the string in this segment.
-        push @should_match, $this_string;
-        push @should_display, $this_display;
-        $string .= $this_string;
-        $display_string .= $this_display;
-    }
+    my @should_display = split /\s*$breakable\s*/, $template;
+    my @should_match = map { eval "\"$_\"" } @should_display;
 
     # If a string can be represented in both non-ut8 and utf8, test both cases
+    my $display_upgrade = "";
     UPGRADE:
     for my $to_upgrade (0 .. 1) {
 
@@ -18771,7 +18707,53 @@ sub Test_X($) {
             next UPGRADE if utf8::is_utf8($string);
 
             utf8::upgrade($string);
+            $display_upgrade = " (utf8-upgraded)";
         }
+
+        # The /l modifier has C after it to indicate the locale to try
+        my @modifiers = qw(a aa d lC u i);
+        push @modifiers, "l$utf8_locale" if defined $utf8_locale;
+
+        # Test for each of the regex modifiers.
+        for my $modifier (@modifiers) {
+            my $display_locale = "";
+
+            # For /l, set the locale to what it says to.
+            if ($modifier =~ / ^ l (.*) /x) {
+                my $locale = $1;
+                $display_locale = "(locale = $locale)";
+                use Config;
+                if (defined $Config{d_setlocale}) {
+                    eval { require POSIX; import POSIX 'locale_h'; };
+                    if (defined &POSIX::LC_CTYPE) {
+                        POSIX::setlocale(&POSIX::LC_CTYPE, $locale);
+                    }
+                }
+                $modifier = 'l';
+            }
+
+            no warnings qw(locale regexp surrogate);
+            my $pattern = "(?$modifier:$break_pattern)";
+
+            # Actually do the test
+            my $matched = $string =~ qr/$pattern/;
+            print "not " unless $matched;
+
+            # Fancy display of test results
+            $matched = ($matched) ? "matched" : "failed to match";
+            print "ok ", ++$Tests, " - \"$display_string\" $matched /$pattern/$display_upgrade; line $line $display_locale\n";
+
+            # Repeat with the first \B{} in the pattern.  This makes sure the
+            # code in regexec.c:find_byclass() for \B gets executed
+            if ($pattern =~ / ( .*? : ) .* ( \\B\{ .* ) /x) {
+                my $B_pattern = "$1$2";
+                $matched = $string =~ qr/$B_pattern/;
+                print "not " unless $matched;
+                print "ok ", ++$Tests, " - \"$display_string\" $matched /$B_pattern/$display_upgrade; line $line $display_locale\n";
+            }
+        }
+
+        next if $break_type ne 'gcb';
 
         # Finally, do the \X match.
         my @matches = $string =~ /(\X)/g;
@@ -18791,7 +18773,7 @@ sub Test_X($) {
                 print " correctly matched $should_display[$i]; line $line\n";
             } else {
                 $matches[$i] = join("", map { sprintf "\\x{%04X}", $_ }
-                                                    unpack("U*", $matches[$i]));
+                                                    split "", $matches[$i]);
                 print "not ok $Tests - In \"$display_string\" =~ /(\\X)/g, \\X #",
                     $i + 1,
                     " should have matched $should_display[$i]",
@@ -18813,13 +18795,25 @@ sub Test_X($) {
     return;
 }
 
+sub Test_GCB($) {
+    _test_break(shift, 'gcb');
+}
+
+sub Test_SB($) {
+    _test_break(shift, 'sb');
+}
+
+sub Test_WB($) {
+    _test_break(shift, 'wb');
+}
+
 sub Finished() {
     print "1..$Tests\n";
     exit($Fails ? -1 : 0);
 }
 
 Error('\p{Script=InGreek}');    # Bug #69018
-Test_X("1100 $nobreak 1161");  # Bug #70940
+Test_GCB("1100 $nobreak 1161");  # Bug #70940
 Expect(0, 0x2028, '\p{Print}', ""); # Bug # 71722
 Expect(0, 0x2029, '\p{Print}', ""); # Bug # 71722
 Expect(1, 0xFF10, '\p{XDigit}', ""); # Bug # 71726

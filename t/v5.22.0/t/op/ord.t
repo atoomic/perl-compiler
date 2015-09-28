@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib); # ../lib needed for test.deparse
-    require "test.pl";
+    @INC = qw(. ../lib); # ../lib needed for test.deparse
+    require "./test.pl";
 }
 
 plan tests => 35;

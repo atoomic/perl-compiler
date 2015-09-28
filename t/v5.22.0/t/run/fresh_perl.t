@@ -10,8 +10,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';	# for which_perl() etc
-    set_up_inc('../lib');
 }
 
 use strict;
@@ -742,6 +742,8 @@ utf8::upgrade($_); # the original code used a UTF-8 locale (affects STDIN)
 /^([[:digit:]]+)/;
 EXPECT
 ######## [perl #20667] unicode regex vs non-unicode regex
+# SKIP: !defined &DynaLoader::boot_DynaLoader && !eval 'require "unicore/Heavy.pl"'
+# (skip under miniperl if Unicode tables are not built yet)
 $toto = 'Hello';
 $toto =~ /\w/; # this line provokes the problem!
 $name = 'A B';

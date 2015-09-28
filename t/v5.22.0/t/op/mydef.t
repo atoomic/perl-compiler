@@ -2,11 +2,9 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
 }
-
-plan tests => 73;
 
 use strict;
 no warnings 'misc', 'experimental::lexical_topic';
@@ -155,7 +153,7 @@ $_ = "global";
     my $_ = "titi";
     my $r;
     {
-    local $::TODO = 'Marked as todo since test was added in 59f00321bbc2d046';
+	local $::TODO = 'Marked as todo since test was added in 59f00321bbc2d046';
 	$r = $s =~ /to(?{ is($_, 'toto', 'my $_ in code-match' ) })to/;
     }
     ok($r, "\$s=$s should match!");
@@ -181,7 +179,7 @@ my $file = tempfile();
     open my $_, '>', $file or die "Can't open $file: $!";
     print $_ "hello\n";
     close $_;
-    ok( -s $file >  5, 'writing to filehandle $_ works');
+    cmp_ok(-s $file, '>', 5, 'writing to filehandle $_ works');
 }
 {
     open my $_, $file or die "Can't open $file: $!";
@@ -217,3 +215,4 @@ my $file = tempfile();
     ::is($_, 4, '$_ is "special", and always forced to main');
 }
 
+done_testing();

@@ -3,21 +3,14 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
+    plan( tests => 95 );
 }
-
-my @tests;
-plan( tests => 95 );
-
-print "# Tests with caller(0)\n";
-
-foreach my $t ( @tests ) {
-    my $s = \&{'main::'.$t->{type}};
-    $s->( @{$t->{args}}, $t->{txt} );    
-}
-print "# end of BEGIN tests\n";
 
 my @c;
+
+BEGIN { print "# Tests with caller(0)\n"; }
 
 @c = caller(0);
 ok( (!@c), "caller(0) in main program" );
@@ -38,13 +31,13 @@ ok( $c[4], "hasargs true with anon sub" );
 sub foo { @c = caller(0) }
 my $fooref = delete $::{foo};
 $fooref -> ();
-is( $c[3], "main::__ANON__", "deleted subroutine name" );
+is( $c[3], "main::foo", "deleted subroutine name" );
 ok( $c[4], "hasargs true with deleted sub" );
 
 BEGIN {
  require strict;
- push @tests, { type => 'is', args => [ +(caller 0)[1], __FILE__ ], 
-    txt => "[perl #68712] filenames after require in a BEGIN block" };
+ is +(caller 0)[1], __FILE__,
+  "[perl #68712] filenames after require in a BEGIN block"
 }
 
 print "# Tests with caller(1)\n";
@@ -73,7 +66,7 @@ ok( $c[4], "hasargs true with anon sub" );
 sub foo2 { f() }
 my $fooref2 = delete $::{foo2};
 $fooref2 -> ();
-is( $c[3], "main::__ANON__", "deleted subroutine name" );
+is( $c[3], "main::foo2", "deleted subroutine name" );
 ok( $c[4], "hasargs true with deleted sub" );
 
 # See if caller() returns the correct warning mask
@@ -104,10 +97,6 @@ sub testwarn {
     check_bits( (caller(0))[9], $w, "warnings match caller ($id)");
 }
 
-sub get_caller_0_9 {
-    return (caller(0))[9];
-}
-
 {
     no warnings;
     # Build the warnings mask dynamically
@@ -120,32 +109,20 @@ sub get_caller_0_9 {
 	vec($registered, $warnings::LAST_BIT/2, 2) = 1;
     }
 
-    # The repetition number must be set to the value of $BYTES in
-    # lib/warnings.pm
-    BEGIN { 
-        push @tests, { type => 'check_bits', args => [ ${^WARNING_BITS}, "\0" x 15 ], 
-            txt => 'all bits off via "no warnings"' };
-    }
-    testwarn("\0" x 15, 'no bits');
+    BEGIN { check_bits( ${^WARNING_BITS}, "\0" x $warnings::BYTES, 'all bits off via "no warnings"' ) }
+    testwarn("\0" x $warnings::BYTES, 'no bits');
 
     use warnings;
-    BEGIN { 
-        push @tests, { type => 'check_bits', args => [ ${^WARNING_BITS}, $default ], 
-            txt => 'default bits on via "use warnings"' };
-    }
-    BEGIN { 
-        push @tests, { type => 'check_bits', args => [ get_caller_0_9(), $default ] };        
-        #testwarn($default, 'all'); 
-    }
+    BEGIN { check_bits( ${^WARNING_BITS}, $default,
+			'default bits on via "use warnings"' ); }
+    BEGIN { testwarn($default, 'all'); }
     # run-time :
     # the warning mask has been extended by warnings::register
     testwarn($registered, 'ahead of w::r');
 
     use warnings::register;
-    BEGIN { 
-        push @tests, { type => 'check_bits', args => [ ${^WARNING_BITS}, $registered ], 
-            txt => 'warning bits on via "use warnings::register"' };
-    }
+    BEGIN { check_bits( ${^WARNING_BITS}, $registered,
+			'warning bits on via "use warnings::register"' ) }
     testwarn($registered, 'following w::r');
 }
 

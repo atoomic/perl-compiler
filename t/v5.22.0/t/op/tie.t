@@ -10,8 +10,8 @@
 #
 
 chdir 't' if -d 't';
+@INC = '../lib';
 require './test.pl';
-set_up_inc('../lib');
 
 $|=1;
 
@@ -27,6 +27,8 @@ tie %h, Tie::StdHash;
 untie %h;
 EXPECT
 ########
+# SKIP ?!defined &DynaLoader::boot_DynaLoader && !eval 'require base'
+# (skip under miniperl if base.pm is not in lib/ yet)
 
 # standard behaviour, without any extra references
 use Tie::Hash ;
@@ -574,7 +576,11 @@ print $h.$h;
 EXPECT
 01
 ########
+# SKIP ? $IS_EBCDIC
+# skipped on EBCDIC because "2" | "8" is 0xFA (not COLON as it is on ASCII),
+# which isn't representable in this file's UTF-8 encoding.
 # Bug 53482 (and maybe others)
+
 sub TIESCALAR { my $foo = $_[1]; bless \$foo, $_[0] }
 sub FETCH { ${$_[0]} }
 tie my $x1, "main", 2;
@@ -1415,6 +1421,9 @@ EXPECT
 main
 ok
 ########
+# SKIP ? $::IS_EBCDIC
+# skipped on EBCDIC because different from ASCII and results vary depending on
+# code page
 
 # &xsub and goto &xsub with tied @_
 use Tie::Array;
@@ -1449,3 +1458,18 @@ sub {
 print
 EXPECT
 crumpets
+########
+
+# tied() in list assignment
+
+sub TIESCALAR : lvalue {
+    ${+pop} = bless [], shift;
+}
+tie $t, "", \$a;
+$a = 7;
+($a, $b) = (3, tied $t);
+print "a is $a\n";
+print "b is $b\n";
+EXPECT
+a is 3
+b is 7

@@ -29,7 +29,7 @@ BEGIN {
     $ENV{PERL_RL} = 'Perl'; # Suppress system Term::ReadLine::Gnu
 }
 
-plan(119);
+plan(120);
 
 my $rc_filename = '.perldb';
 
@@ -92,29 +92,29 @@ EOF
 {
     local $ENV{PERLDB_OPTS} = "ReadLine=0 NonStop=1";
     my $output = runperl(switches => [ '-d' ], stderr => 1, progfile => '../lib/perl5db/t/rt-66110');
-    like($output, "All tests successful.", "[perl #66110]");
+    like($output, qr/\bAll tests successful\.$/, "[perl #66110]");
 }
 # [ perl #116769] Frame=2
 {
     local $ENV{PERLDB_OPTS} = "frame=2 nonstop";
-    my $output = runperl( switches => [ '-d' ], prog => 'print q{success}' );
+    my $output = runperl( switches => [ '-d' ], prog => 'print qq{success\n}' );
     is( $?, 0, '[perl #116769] frame=2 does not crash debugger, exit == 0' );
-    like( $output, 'success' , '[perl #116769] code is run' );
+    is( $output, "success\n" , '[perl #116769] code is run' );
 }
 # [ perl #116771] autotrace
 {
     local $ENV{PERLDB_OPTS} = "autotrace nonstop";
-    my $output = runperl( switches => [ '-d' ], prog => 'print q{success}' );
+    my $output = runperl( switches => [ '-d' ], prog => 'print qq{success\n}' );
     is( $?, 0, '[perl #116771] autotrace does not crash debugger, exit == 0' );
-    like( $output, 'success' , '[perl #116771] code is run' );
+    is( $output, "success\n" , '[perl #116771] code is run' );
 }
 # [ perl #41461] Frame=2 noTTY
 {
     local $ENV{PERLDB_OPTS} = "frame=2 noTTY nonstop";
     rc('');
-    my $output = runperl( switches => [ '-d' ], prog => 'print q{success}' );
+    my $output = runperl( switches => [ '-d' ], prog => 'print qq{success\n}' );
     is( $?, 0, '[perl #41461] frame=2 noTTY does not crash debugger, exit == 0' );
-    like( $output, 'success' , '[perl #41461] code is run' );
+    is( $output, "success\n" , '[perl #41461] code is run' );
 }
 
 package DebugWrap;
@@ -2697,6 +2697,55 @@ DebugWrap->new({
     );
 }
 
+# perl 5 RT #121509 regression bug.
+# “perl debugger doesn't save starting dir to restart from”
+# Thanks to Linda Walsh for reporting it.
+{
+    use File::Temp qw/tempdir/;
+
+    my $temp_dir = tempdir( CLEANUP => 1 );
+
+    local $ENV{__PERLDB_TEMP_DIR} = $temp_dir;
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                # This is to avoid getting the "Debugger program terminated"
+                # junk that interferes with the normal output.
+                'b _after_chdir',
+                'c',
+                'R',
+                'b _finale',
+                'c',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'n',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/rt-121509-restart-after-chdir',
+        }
+    );
+
+    $wrapper->output_like(
+        qr/
+In\ _finale\ No\ 1
+    .*?
+In\ _finale\ No\ 2
+    .*?
+In\ _finale\ No\ 3
+        /msx,
+        "Test that the debugger chdirs to the initial directory after a restart.",
+    );
+}
 # Test the perldoc command
 # We don't actually run the program, but we need to provide one to the wrapper.
 SKIP:

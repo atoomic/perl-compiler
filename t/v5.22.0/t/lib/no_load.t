@@ -5,13 +5,13 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
+    @INC = qw(. ../lib);
 }
 
 use strict;
 use warnings;
 
-require "test.pl";
+require "./test.pl";
 
 #
 # Format: [Module-that-should-not-be-loaded => modules to test]

@@ -4,11 +4,13 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
     require Config;
     skip_all('no fork')
 	unless ($Config::Config{d_fork} or $Config::Config{d_pseudofork});
+    skip_all('no fork')
+        if $^O eq 'MSWin32' && is_miniperl;
 }
 
 $|=1;
@@ -519,3 +521,13 @@ sub main {
 }
 EXPECT
 foo
+########
+# ${^GLOBAL_PHASE} at the end of a pseudo-fork
+if (my $pid = fork) {
+    waitpid $pid, 0;
+} else {
+    eval 'END { print "${^GLOBAL_PHASE}\n" }';
+    exit;
+}
+EXPECT
+END

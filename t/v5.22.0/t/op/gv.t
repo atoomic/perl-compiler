@@ -12,7 +12,7 @@ BEGIN {
 
 use warnings;
 
-plan( tests => 271 );
+plan( tests => 273 );
 
 # type coercion on assignment
 $foo = 'foo';
@@ -198,18 +198,6 @@ is *x{PACKAGE}, 'main', 'and *foo{PACKAGE} the original package';
     # test if defined() doesn't create any new symbols
 
     my $a = "SYM000";
-    ok(!defined *{$a});
-
-    {
-	no warnings 'deprecated';
-	ok(!defined @{$a});
-    }
-    ok(!defined *{$a});
-
-    {
-	no warnings 'deprecated';
-	ok(!defined %{$a});
-    }
     ok(!defined *{$a});
 
     ok(!defined ${$a});
@@ -502,6 +490,9 @@ is join("-", eval "&yarrow(1..10)"), '4-5-6', 'const list ignores & args';
 is prototype "yarrow", "", 'const list has "" prototype';
 is eval "yarrow", 3, 'const list in scalar cx returns length';
 
+$::{borage} = \&ok;
+eval 'borage("sub ref in stash")' or fail "sub ref in stash";
+
 {
     use vars qw($glook $smek $foof);
     # Check reference assignment isn't affected by the SV type (bug #38439)
@@ -524,7 +515,7 @@ is eval "yarrow", 3, 'const list in scalar cx returns length';
 format =
 .
 
-foreach my $value ({1=>2}, *STDOUT{IO}, \&ok, *STDOUT{FORMAT}) {
+foreach my $value ({1=>2}, *STDOUT{IO}, *STDOUT{FORMAT}) {
     # *STDOUT{IO} returns a reference to a PVIO. As it's blessed, ref returns
     # IO::Handle, which isn't what we want.
     my $type = $value;
@@ -1075,6 +1066,40 @@ is runperl(prog =>
   "Undefined subroutine &main::foo called at -e line 1.\n",
   "gv_try_downgrade does not anonymise CVs referenced elsewhere";
 
+SKIP: {
+    skip_if_miniperl("no dynamic loading on miniperl, so can't load IO::File", 4);
+
+package glob_constant_test {
+  sub foo { 42 }
+  use constant bar => *foo;
+  BEGIN { undef *foo }
+  ::is eval { bar->() }, eval { &{+bar} },
+    'glob_constant->() is not mangled at compile time';
+  ::is "$@", "", 'no error from eval { &{+glob_constant} }';
+  use constant quux => do {
+    local *F;
+    my $f = *F;
+    *$f = *STDOUT{IO};
+  };
+  ::is eval { quux->autoflush; 420 }, 420,
+    'glob_constant->method() works';
+  ::is "$@", "", 'no error from eval { glob_constant->method() }';
+}
+
+}
+
+{
+  my $free2;
+  local $SIG{__WARN__} = sub { ++$free2 if shift =~ /Attempt to free/ };
+  my $handleref;
+  my $proxy = \$handleref;
+  open $$proxy, "TEST";
+  delete $::{*$handleref{NAME}};  # delete *main::_GEN_xxx
+  undef $handleref;
+  is $free2, undef,
+    'no double free because of bad rv2gv/newGVgen refcounting';
+}
+
 # Look away, please.
 # This violates perl's internal structures by fiddling with stashes in a
 # way that should never happen, but perl should not start trying to free
@@ -1098,6 +1123,15 @@ $y = \&$x;                 # so when this tries to look up the right GV for
 undef $::{_119051again};   # CvGV, it still gets a fake one
 eval { $y->() };
 pass "No crash due to CvGV pointing to glob copy in the stash";
+
+# Aliasing should disable no-common-vars optimisation.
+{
+    *x = *y;
+    $x = 3;
+    ($x, my $z) = (1, $y);
+    is $z, 3, 'list assignment after aliasing [perl #89646]';
+}
+
 
 __END__
 Perl

@@ -2,7 +2,7 @@
 # Test that there are no missing authors in AUTHORS
 
 BEGIN {
-    unshift @INC,  '..' if -f '../TestInit.pm';
+    @INC = '..' if -f '../TestInit.pm';
 }
 use TestInit qw(T); # T is chdir to the top level
 use strict;

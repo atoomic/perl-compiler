@@ -17,7 +17,7 @@
 BEGIN {
   if ($ENV{'PERL_CORE'}) {
     chdir 't' if -d 't';
-    unshift @INC,  '../lib' if -d '../lib' && -d '../ext';
+    @INC = '../lib' if -d '../lib' && -d '../ext';
   }
 
   require "./test.pl";

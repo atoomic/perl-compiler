@@ -2,7 +2,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  ('../lib', 'lib');
+    @INC = ('../lib', 'lib');
     $INC{"feature.pm"} = 1; # so we don't attempt to load feature.pm
 }
 

@@ -1,7 +1,7 @@
 #!../miniperl -w
 
 BEGIN {
-    unshift @INC,  qw(../win32 ../lib);
+    @INC = qw(../win32 ../lib);
     require './test.pl';
     skip_all('FindExt not portable')
 	if $^O eq 'VMS';
@@ -75,9 +75,4 @@ unless (join (' ', sort split ' ', $Config{extensions})
             sort @found_built);
 }
 
-# Local variables:
-# cperl-indent-level: 4
-# indent-tabs-mode: nil
-# End:
-#
 # ex: set ts=8 sts=4 sw=4 et:

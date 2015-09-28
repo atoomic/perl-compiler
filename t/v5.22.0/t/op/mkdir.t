@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
+    @INC = '../lib';
     require './test.pl';
-    set_up_inc('../lib');
 }
 
 plan tests => 22;
@@ -22,13 +22,25 @@ unless (eval {
 $ENV{'LC_ALL'} = 'C';
 $ENV{LANGUAGE} = 'C'; # GNU locale extension
 
+sub errno_or_skip {
+    SKIP: {
+	if (is_miniperl && !eval { local $!; require Errno }) {
+	    skip "Errno not built yet", 1;
+	}
+	eval "ok($_[0])";
+    }
+}
+
 ok(mkdir('blurfl',0777));
 ok(!mkdir('blurfl',0777));
-ok($!{EEXIST} || $! =~ /cannot move|exist|denied|unknown/i);
+errno_or_skip('$!{EEXIST} || $! =~ /cannot move|exist|denied|unknown/i');
 ok(-d 'blurfl');
 ok(rmdir('blurfl'));
 ok(!rmdir('blurfl'));
-ok($!{ENOENT} || $! =~ /cannot find|such|exist|not found|not a directory|unknown/i);
+errno_or_skip('
+    $!{ENOENT}
+       || $! =~ /cannot find|such|exist|not found|not a directory|unknown/i
+');
 ok(mkdir('blurfl'));
 ok(rmdir('blurfl'));
 

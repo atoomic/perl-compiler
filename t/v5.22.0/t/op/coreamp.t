@@ -9,8 +9,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC,  qw(. ../lib);
-    require "test.pl";
+    @INC = qw(. ../lib ../dist/if);
+    require "./test.pl"; require './charset_tools.pl';
     $^P |= 0x100;
 }
 
@@ -276,32 +276,45 @@ is __SUB__test, \&__SUB__test, '&__SUB__';                  ++ $tests;
 
 test_proto 'abs', -5, 5;
 
-test_proto 'accept';
-$tests += 6; eval q{
-  is &CORE::accept(qw{foo bar}), undef, "&accept";
-  lis [&{"CORE::accept"}(qw{foo bar})], [undef], "&accept in list context";
+SKIP:
+{
+    if ($^O eq "MSWin32" && is_miniperl) {
+        $tests += 8;
+        skip "accept() not available in Win32 miniperl", 8
+    }
+    $tests += 6;
+    test_proto 'accept';
+    eval q{
+      is &CORE::accept(qw{foo bar}), undef, "&accept";
+      lis [&{"CORE::accept"}(qw{foo bar})], [undef], "&accept in list context";
 
-  &myaccept(my $foo, my $bar);
-  is ref $foo, 'GLOB', 'CORE::accept autovivifies its first argument';
-  is $bar, undef, 'CORE::accept does not autovivify its second argument';
-  use strict;
-  undef $foo;
-  eval { 'myaccept'->($foo, $bar) };
-  like $@, qr/^Can't use an undefined value as a symbol reference at/,
+      &myaccept(my $foo, my $bar);
+      is ref $foo, 'GLOB', 'CORE::accept autovivifies its first argument';
+      is $bar, undef, 'CORE::accept does not autovivify its second argument';
+      use strict;
+      undef $foo;
+      eval { 'myaccept'->($foo, $bar) };
+      like $@, qr/^Can't use an undefined value as a symbol reference at/,
       'CORE::accept will not accept undef 2nd arg under strict';
-  is ref $foo, 'GLOB', 'CORE::accept autovivs its first arg under strict';
-};
+      is ref $foo, 'GLOB', 'CORE::accept autovivs its first arg under strict';
+    };
+}
 
 test_proto 'alarm';
 test_proto 'atan2';
 
 test_proto 'bind';
 $tests += 3;
-is &CORE::bind('foo', 'bear'), undef, "&bind";
-lis [&CORE::bind('foo', 'bear')], [undef], "&bind in list context";
-eval { &mybind(my $foo, "bear") };
-like $@, qr/^Bad symbol for filehandle at/,
-     'CORE::bind dies with undef first arg';
+SKIP:
+{
+    skip "bind() not available in Win32 miniperl", 3
+      if $^O eq "MSWin32" && is_miniperl();
+    is &CORE::bind('foo', 'bear'), undef, "&bind";
+    lis [&CORE::bind('foo', 'bear')], [undef], "&bind in list context";
+    eval { &mybind(my $foo, "bear") };
+    like $@, qr/^Bad symbol for filehandle at/,
+         'CORE::bind dies with undef first arg';
+}
 
 test_proto 'binmode';
 $tests += 3;
@@ -397,8 +410,13 @@ lis [&CORE::closedir(foo)], [undef], '&CORE::closedir in list context';
 
 test_proto 'connect';
 $tests += 2;
-is &CORE::connect('foo','bar'), undef, '&connect';
-lis [&myconnect('foo','bar')], [undef], '&connect in list context';
+SKIP:
+{
+    skip "connect() not available in Win32 miniperl", 2
+      if $^O eq "MSWin32" && is_miniperl();
+    is &CORE::connect('foo','bar'), undef, '&connect';
+    lis [&myconnect('foo','bar')], [undef], '&connect in list context';
+}
 
 test_proto 'continue';
 $tests ++;
@@ -444,7 +462,8 @@ test_proto $_ for qw(
 test_proto 'evalbytes';
 $tests += 4;
 {
-  chop(my $upgraded = "use utf8; '\xc4\x80'" . chr 256);
+  my $U_100_bytes = byte_utf8a_to_utf8n("\xc4\x80");
+  chop(my $upgraded = "use utf8; $U_100_bytes" . chr 256);
   is &myevalbytes($upgraded), chr 256, '&evalbytes';
   # Test hints
   require strict;
@@ -482,7 +501,7 @@ test_proto 'exp';
 test_proto 'fc';
 $tests += 2;
 {
-  my $sharp_s = "\xdf";
+  my $sharp_s = uni_to_native("\xdf");
   is &myfc($sharp_s), $sharp_s, '&fc, no unicode_strings';
   use feature 'unicode_strings';
   is &myfc($sharp_s), "ss", '&fc, unicode_strings';
@@ -614,12 +633,15 @@ close file;
 }
 
 test_proto 'opendir';
-test_proto 'ord', chr(64), 64;
+test_proto 'ord', chr(utf8::unicode_to_native(64)), utf8::unicode_to_native(64);
 
 test_proto 'pack';
 $tests += 2;
-is &mypack("H*", '5065726c'), 'Perl', '&pack';
-lis [&mypack("H*", '5065726c')], ['Perl'], '&pack in list context';
+my $Perl_as_a_hex_string = join "", map
+                                    { sprintf("%2X", utf8::unicode_to_native($_)) }
+                                    0x50, 0x65, 0x72, 0x6c;
+is &mypack("H*", $Perl_as_a_hex_string), 'Perl', '&pack';
+lis [&mypack("H*", $Perl_as_a_hex_string)], ['Perl'], '&pack in list context';
 
 test_proto 'pipe';
 
@@ -781,9 +803,12 @@ like $@, qr/^Not enough arguments for select system call at /,
 eval { &myselect(1,2,3,4,5) };
 like $@, qr/^Too many arguments for select system call at /,
       ,'&myselect($a,$total,$of,$five,$args)';
-&myselect((undef)x3,.25);
-# Just have to assume that worked. :-) If we get here, at least it didn’t
-# crash or anything.
+unless ($^O eq "MSWin32" && is_miniperl) {
+    &myselect((undef)x3,.25);
+    # Just have to assume that worked. :-) If we get here, at least it didn’t
+    # crash or anything.
+    # select() is unimplemented in Win32 miniperl
+}
 
 test_proto "sem$_" for qw "ctl get op";
 
@@ -882,13 +907,13 @@ $tests += 3;
 
 test_proto 'time';
 $tests += 2;
-like &mytime, '^\d+\z', '&time in scalar context';
-like join('-', &mytime), '^\d+\z', '&time in list context';
+like &mytime, qr/^\d+\z/, '&time in scalar context';
+like join('-', &mytime), qr/^\d+\z/, '&time in list context';
 
 test_proto 'times';
 $tests += 2;
-like &mytimes, '^[\d.]+\z', '&times in scalar context';
-like join('-',&mytimes), '^[\d.]+-[\d.]+-[\d.]+-[\d.]+\z',
+like &mytimes, qr/^[\d.]+\z/, '&times in scalar context';
+like join('-',&mytimes), qr/^[\d.]+-[\d.]+-[\d.]+-[\d.]+\z/,
    '&times in list context';
 
 test_proto 'uc', 'aa', 'AA';
@@ -928,9 +953,15 @@ undef @_;
 
 test_proto 'unpack';
 $tests += 2;
+my $abcd_as_a_hex_string = join "", map
+                                    { sprintf("%2X", utf8::unicode_to_native($_)) }
+                                    0x61, 0x62, 0x63, 0x64;
+my $bcde_as_a_hex_string = join "", map
+                                    { sprintf("%2X", utf8::unicode_to_native($_)) }
+                                    0x62, 0x63, 0x64, 0x65;
 $_ = 'abcd';
-is &myunpack("H*"), '61626364', '&unpack with one arg';
-is &myunpack("H*", "bcde"), '62636465', '&unpack with two arg';
+is &myunpack("H*"), $abcd_as_a_hex_string, '&unpack with one arg';
+is &myunpack("H*", "bcde"), $bcde_as_a_hex_string, '&unpack with two arg';
 
 
 test_proto 'untie'; # behaviour already tested along with tie(d)
@@ -990,7 +1021,6 @@ like $@, qr'^Undefined format "STDOUT" called',
    File::Spec::Functions::catfile(
       File::Spec::Functions::updir,'regen','keywords.pl'
    );
-  note `pwd`;
   open my $kh, $keywords_file
     or die "$0 cannot open $keywords_file: $!";
   while(<$kh>) {

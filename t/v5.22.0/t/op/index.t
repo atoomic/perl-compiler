@@ -4,10 +4,11 @@ BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
     set_up_inc('../lib');
+    require './charset_tools.pl';
 }
 
 use strict;
-plan( tests => 121 );
+plan( tests => 122 );
 
 run_tests() unless caller;
 
@@ -92,8 +93,8 @@ is(rindex($a, "foo",    ), 0);
 {
     my $search;
     my $text;
-    $search = latin1_to_native("foo \xc9 bar");
-    $text = latin1_to_native("a\xa3\xa3a $search    $search quux");
+    $search = "foo " . uni_to_native("\xc9") . " bar";
+    $text = "a" . uni_to_native("\xa3\xa3") . "a $search    $search quux";
 
     my $text_utf8 = $text;
     utf8::upgrade($text_utf8);
@@ -129,13 +130,13 @@ is(rindex($a, "foo",    ), 0);
 }
 
 SKIP: {
-    skip "UTF-EBCDIC is limited to 0x7fffffff", 3 if ord("A") == 193;
+    skip "UTF-EBCDIC is limited to 0x7fffffff", 3 if $::IS_EBCDIC;
 
-    my $a = "\x{80000000}";
+    my $a = eval q{"\x{80000000}"};
     my $s = $a.'defxyz';
     is(index($s, 'def'), 1, "0x80000000 is a single character");
 
-    my $b = "\x{fffffffd}";
+    my $b = eval q{"\x{fffffffd}"};
     my $t = $b.'pqrxyz';
     is(index($t, 'pqr'), 1, "0xfffffffd is a single character");
 
@@ -252,3 +253,7 @@ is index('the main road', __PACKAGE__), 4,
     '[perl #119169] __PACKAGE__ as 2nd argument';
 
 } # end of sub run_tests
+
+utf8::upgrade my $substr = "\x{a3}a";
+
+is index($substr, 'a'), 1, 'index reply reflects characters not octets';

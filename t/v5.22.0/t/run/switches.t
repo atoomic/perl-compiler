@@ -6,15 +6,15 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    require "./test.pl";
-    set_up_inc('../lib');
+    @INC = '../lib';
     require Config; import Config;
 }
+
+BEGIN { require "./test.pl"; }
 
 plan(tests => 115);
 
 use Config;
-use Errno qw(EACCES EISDIR);
 BEGIN { eval 'use POSIX qw(setlocale LC_ALL)' }
 
 # due to a bug in VMS's piping which makes it impossible for runperl()
@@ -122,7 +122,11 @@ SKIP: {
 
     # Win32 won't let us open the directory, so we never get to die with
     # EISDIR, which happens after open.
-    my $error  = do { local $! = $^O eq 'MSWin32' ? EACCES : EISDIR; "$!" };
+    require Errno;
+    import Errno qw(EACCES EISDIR);
+    my $error  = do {
+        local $! = $^O eq 'MSWin32' ? &EACCES : &EISDIR; "$!"
+    };
     like(
         runperl( switches => [ '-c' ], args  => [ $tempdir ], stderr => 1),
         qr/Can't open perl script.*$tempdir.*\Q$error/s,
@@ -294,13 +298,17 @@ is runperl(stderr => 1, prog => '#!perl -M'),
     local $TODO = '';   # these ones should work on VMS
     # there are definitely known build configs where this test will fail
     # DG/UX comes to mind. Maybe we should remove these special cases?
-    my $v = sprintf "%vd", $^V;
-    my $ver = $Config{PERL_VERSION};
-    my $rel = $Config{PERL_SUBVERSION};
-    like( runperl( switches => ['-v'] ),
-	  qr/This is perl 5, version \Q$ver\E, subversion \Q$rel\E \(v\Q$v\E(?:[-*\w]+| \([^)]+\))?\) built for \Q$Config{archname}\E.+Copyright.+Larry Wall.+Artistic License.+GNU General Public License/s,
-          '-v looks okay' );
-
+  SKIP:
+    {
+        skip "Win32 miniperl produces a default archname in -v", 1
+	  if $^O eq 'MSWin32' && is_miniperl;
+        my $v = sprintf "%vd", $^V;
+        my $ver = $Config{PERL_VERSION};
+        my $rel = $Config{PERL_SUBVERSION};
+        like( runperl( switches => ['-v'] ),
+	      qr/This is perl 5, version \Q$ver\E, subversion \Q$rel\E \(v\Q$v\E(?:[-*\w]+| \([^)]+\))?\) built for \Q$Config{archname}\E.+Copyright.+Larry Wall.+Artistic License.+GNU General Public License/s,
+              '-v looks okay' );
+    }
 }
 
 # Tests for -h

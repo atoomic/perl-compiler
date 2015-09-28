@@ -2,19 +2,19 @@
 
 BEGIN {
      chdir 't' if -d 't';
+     @INC = '../lib';
      require './test.pl';
-     set_up_inc('../lib');
      $| = 1;
+
+     skip_all_without_config('useithreads');
+     skip_all_if_miniperl("no dynamic loading on miniperl, no threads");
+
+     plan(28);
 }
-
-skip_all_without_config('useithreads');
-skip_all_if_miniperl("no dynamic loading on miniperl, no threads");
-
-plan(27);
 
 use strict;
 use warnings;
-eval q/use threads/;
+use threads;
 
 # test that we don't get:
 # Attempt to free unreferenced scalar: SV 0x40173f3c
@@ -398,5 +398,11 @@ fresh_perl_is(
    {},
   'no crash when deleting $::{INC} in thread'
 );
+
+fresh_perl_is(<<'CODE', 'ok', 'no crash modifying extended array element');
+use threads;
+my @a = 1;
+threads->create(sub { $#a = 1; $a[1] = 2; print qq/ok\n/ })->join;
+CODE
 
 # EOF

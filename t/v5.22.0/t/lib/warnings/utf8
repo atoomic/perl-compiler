@@ -17,7 +17,7 @@ __END__
 # utf8.c [utf8_to_uvchr_buf] -W
 BEGIN {
     if (ord('A') == 193) {
-        print "SKIPPED\n# ebcdic platforms do not generate Malformed UTF-8 warnings.";
+        print "SKIPPED\n# ebcdic platforms generates different Malformed UTF-8 warnings.";
         exit 0;
     }
 }
@@ -80,16 +80,26 @@ Operation "uc" returns its argument for non-Unicode code point 0x110000 at - lin
 use warnings 'utf8';
 my $d800  = uc(chr(0xD800));
 my $nonUnicode =  uc(chr(0x110000));
-my $big_nonUnicode = uc(chr(0x8000_0000));
 no warnings 'non_unicode';
 my $d800  = uc(chr(0xD800));
 my $nonUnicode =  uc(chr(0x110000));
-my $big_nonUnicode = uc(chr(0x8000_0000));
 EXPECT
 Operation "uc" returns its argument for UTF-16 surrogate U+D800 at - line 2.
 Operation "uc" returns its argument for non-Unicode code point 0x110000 at - line 3.
-Operation "uc" returns its argument for non-Unicode code point 0x80000000 at - line 4.
-Operation "uc" returns its argument for UTF-16 surrogate U+D800 at - line 6.
+Operation "uc" returns its argument for UTF-16 surrogate U+D800 at - line 5.
+########
+BEGIN {
+    if (ord('A') == 193) {
+        print "SKIPPED\n# ebcdic platforms can't handle this large a code point";
+        exit 0;
+    }
+}
+use warnings 'utf8';
+my $big_nonUnicode = uc(chr(0x8000_0000));
+no warnings 'non_unicode';
+my $big_nonUnicode = uc(chr(0x8000_0000));
+EXPECT
+Operation "uc" returns its argument for non-Unicode code point 0x80000000 at - line 8.
 ########
 use warnings 'utf8';
 my $d7ff  = lc pack("U", 0xD7FF);
@@ -570,4 +580,96 @@ print $fh "\x{10FFFE}", "\n";
 print $fh "\x{10FFFF}", "\n";
 print $fh "\x{110000}", "\n";
 close $fh;
+EXPECT
+########
+# NAME Case change crosses 255/256 under non-UTF8 locale
+require '../loc_tools.pl';
+unless (locales_enabled('LC_CTYPE')) {
+    print("SKIPPED\n# locales not available\n"),exit;
+}
+eval { require POSIX; POSIX->import("locale_h") };
+if ($@) {
+    print("SKIPPED\n# no POSIX\n"),exit;
+}
+use warnings 'locale';
+use feature 'fc';
+use locale;
+setlocale(&POSIX::LC_CTYPE, "C");
+my $a;
+$a = lc("\x{178}");
+$a = fc("\x{1E9E}");
+$a = fc("\x{FB05}");
+$a = uc("\x{FB00}");
+$a = ucfirst("\x{149}");
+$a = lcfirst("\x{178}");
+no warnings 'locale';
+$a = lc("\x{178}");
+$a = fc("\x{1E9E}");
+$a = fc("\x{FB05}");
+$a = uc("\x{FB00}");
+$a = ucfirst("\x{149}");
+$a = lcfirst("\x{178}");
+EXPECT
+Can't do lc("\x{178}") on non-UTF-8 locale; resolved to "\x{178}". at - line 14.
+Can't do fc("\x{1E9E}") on non-UTF-8 locale; resolved to "\x{17F}\x{17F}". at - line 15.
+Can't do fc("\x{FB05}") on non-UTF-8 locale; resolved to "\x{FB06}". at - line 16.
+Can't do uc("\x{FB00}") on non-UTF-8 locale; resolved to "\x{FB00}". at - line 17.
+Can't do ucfirst("\x{149}") on non-UTF-8 locale; resolved to "\x{149}". at - line 18.
+Can't do lcfirst("\x{178}") on non-UTF-8 locale; resolved to "\x{178}". at - line 19.
+########
+# NAME Wide character in non-UTF-8 locale
+require '../loc_tools.pl';
+unless (locales_enabled('LC_CTYPE')) {
+    print("SKIPPED\n# locales not available\n"),exit;
+}
+eval { require POSIX; POSIX->import("locale_h") };
+if ($@) {
+    print("SKIPPED\n# no POSIX\n"),exit;
+}
+use warnings 'locale';
+use feature 'fc';
+use locale;
+setlocale(&POSIX::LC_CTYPE, "C");
+my $a;
+$a = lc("\x{100}");
+$a = lcfirst("\x{101}");
+$a = fc("\x{102}");
+$a = uc("\x{103}");
+$a = ucfirst("\x{104}");
+no warnings 'locale';
+$a = lc("\x{100}");
+$a = lcfirst("\x{101}");
+$a = fc("\x{102}");
+$a = uc("\x{103}");
+$a = ucfirst("\x{104}");
+EXPECT
+Wide character (U+100) in lc at - line 14.
+Wide character (U+101) in lcfirst at - line 15.
+Wide character (U+102) in fc at - line 16.
+Wide character (U+103) in uc at - line 17.
+Wide character (U+104) in ucfirst at - line 18.
+########
+# NAME Wide character in UTF-8 locale
+require '../loc_tools.pl';
+unless (locales_enabled('LC_CTYPE')) {
+    print("SKIPPED\n# locales not available\n"),exit;
+}
+eval { require POSIX; POSIX->import("locale_h") };
+if ($@) {
+    print("SKIPPED\n# no POSIX\n"),exit;
+}
+my @utf8_locales = find_utf8_ctype_locale();
+unless (@utf8_locales) {
+    print("SKIPPED\n# no UTF-8 locales\n"),exit;
+}
+use warnings 'locale';
+use feature 'fc';
+use locale;
+setlocale(&POSIX::LC_CTYPE, $utf8_locales[0]);
+my $a;
+$a = lc("\x{100}");
+$a = lcfirst("\x{101}");
+$a = fc("\x{102}");
+$a = uc("\x{103}");
+$a = ucfirst("\x{104}");
 EXPECT
