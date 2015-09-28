@@ -23,7 +23,9 @@ $optimizations[0] .= ',-Dwalk' if ( $ENV{BC_WALK} );
 # Setup file_to_test to be the file we actually want to test.
 my ( $file_to_test, $path ) = fileparse($0);
 my ($before, $after) = split('C-COMPILED/', $path );
-$file_to_test = $after . '/' . $file_to_test;
+my $short_path = $path;
+$short_path =~ s{^.*C-COMPILED/+}{};
+$file_to_test = $short_path . $file_to_test;
 
 # The file that tracks acceptable failures in the compiled unit tests.
 my $known_errors_file = "known_errors.txt";
