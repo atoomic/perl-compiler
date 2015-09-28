@@ -33,10 +33,7 @@ my $known_errors_file = "known_errors.txt";
 # The relative path our symlinks will point to.
 my $base_dir = dirname($path);
 
-note "$FindBin::Bin/../";
-chdir "$FindBin::Bin/../";
-note $file_to_test;
-note $known_errors_file;
+chdir "$FindBin::Bin/../" or die $!;
 
 my ( $file_in_error, $type, $description ) = ('');
 open( my $errors_fh, '<', $known_errors_file ) or die;
@@ -90,8 +87,6 @@ chdir "$FindBin::Bin/../../t" or die "Cannot chdir to t directory: $!";
 plan tests => 3 + 10 * scalar @optimizations;
 
 ok( !-z $file_to_test, "$file_to_test exists" );
-note "pwd: ", `pwd`;
-note "FILE: $file_to_test";
 open( my $fh, '<', $file_to_test ) or die("Can't open $file_to_test");
 my $taint = <$fh>;
 close $fh;
