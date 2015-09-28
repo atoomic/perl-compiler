@@ -5,12 +5,12 @@ BEGIN {
     require Config; import Config;
     require './test.pl';
     set_up_inc('../lib');
-    if (!$Config{'d_fork'}) {
-        skip_all("fork required to pipe");
-    }
-    else {
-        plan(tests => 24);
-    }
+}
+if (!$Config{'d_fork'}) {
+    skip_all("fork required to pipe");
+}
+else {
+    plan(tests => 24);
 }
 
 my $Perl = which_perl();
