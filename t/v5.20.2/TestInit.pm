@@ -54,6 +54,17 @@ sub import {
 	}
     }
 
+    # FIXME to improve: use $^X @INC use cPanel PATH
+=pod
+    push @INC, qw|
+        /usr/local/cpanel
+        /usr/local/cpanel/3rdparty/perl/520/lib/perl5/cpanel_lib/i386-linux-64int
+        /usr/local/cpanel/3rdparty/perl/520/lib/perl5/cpanel_lib
+        /usr/local/cpanel/3rdparty/perl/520/lib/perl5/5.20.2/i386-linux-64int
+        /usr/local/cpanel/3rdparty/perl/520/lib/perl5/5.20.2
+    |;
+=cut
+
     # Need to default. This behaviour is consistent with previous behaviour,
     # as the equivalent of this code used to be run at the top level, hence
     # would happen (unconditionally) before import() was called.
