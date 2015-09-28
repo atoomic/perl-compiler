@@ -5,16 +5,16 @@ BEGIN {
      require './test.pl';
      set_up_inc('../lib');
      $| = 1;
-
-     skip_all_without_config('useithreads');
-     skip_all_if_miniperl("no dynamic loading on miniperl, no threads");
-
-     plan(27);
 }
+
+skip_all_without_config('useithreads');
+skip_all_if_miniperl("no dynamic loading on miniperl, no threads");
+
+plan(27);
 
 use strict;
 use warnings;
-use threads;
+eval q/use threads/;
 
 # test that we don't get:
 # Attempt to free unreferenced scalar: SV 0x40173f3c
