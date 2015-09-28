@@ -41,7 +41,7 @@ mro/c3_with_overload_utf8.t TESTS TODO: overload not working right
 mro/complex_c3_utf8.t TESTS some tests are now failing
 mro/dbic_c3_utf8.t TESTS TODO: Wide character in print at t/test.pl line 38.
 mro/isarev.t SKIP TODO: This test fails in an inconsistent way. There's probably something even more fundamentally broken. also: https://code.google.com/p/perl-compiler/issues/detail?id=353
-mro/isarev_utf8.t TESTS TODO: mro::isarev can't handle inheritance with utf8 see also https://code.google.com/p/perl-compiler/issues/detail?id=353
+mro/isarev_utf8.t SKIP TODO: This test fails in an inconsistent way (pass when run alone not while running other tests) mro::isarev can't handle inheritance with utf8 see also https://code.google.com/p/perl-compiler/issues/detail?id=353
 mro/next_skip_utf8.t TESTS some tests are now failing
 mro/next_method_utf8.t TESTS some tests are now failing
 mro/overload_c3.t TESTS TODO: overload not working right?
