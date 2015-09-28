@@ -6,9 +6,10 @@
 BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
-    set_up_inc('../lib');
-    plan (tests => 312);
+    set_up_inc('../lib');    
 }
+
+plan (tests => 312);
 
 use strict;
 use warnings;
