@@ -2,7 +2,7 @@
 
 set -e
 
-for d in "op" "base"; do
+for d in "base" "cmd" "comp" "io" "mro" "op" "re" "uni"; do
     pushd $d
     echo "* $d"
     for t in *.t; do
