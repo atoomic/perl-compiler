@@ -107,8 +107,6 @@ sub note {
 }
 
 sub set_up_inc {
-          # Don’t clobber @INC under miniperl
-    unshift @INC,  () unless is_miniperl;
     unshift @INC, @_;
 }
 
