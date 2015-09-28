@@ -3,7 +3,7 @@
 BEGIN {
     $^P = 0x122;
     chdir 't';
-    @INC = ('../lib', 'lib');
+    unshift @INC,  ('../lib', 'lib');
     require './test.pl';
 }
 

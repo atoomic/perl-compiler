@@ -22,7 +22,7 @@
 # Pod::Functions provided by a =for directive.
 
 BEGIN {
-    @INC = ('..', '../lib') if -f '../TestInit.pm';
+    unshift @INC,  ('..', '../lib') if -f '../TestInit.pm';
 }
 
 use Config;

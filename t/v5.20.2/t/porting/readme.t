@@ -4,7 +4,7 @@
 # vice versa.
 
 BEGIN {
-    @INC = '..' if -f '../TestInit.pm';
+    unshift @INC,  '..' if -f '../TestInit.pm';
 }
 
 use TestInit qw(T); # T is chdir to the top level

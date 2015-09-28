@@ -2,7 +2,7 @@
 # Finds the files that have the same name, case insensitively in the build tree
 
 BEGIN {
-    @INC = '..' if -f '../TestInit.pm';
+    unshift @INC,  '..' if -f '../TestInit.pm';
     require './test.pl';
 }
 use TestInit qw(T); # T is chdir to the top level

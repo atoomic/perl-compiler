@@ -2,7 +2,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = ('../lib');
+    unshift @INC,  ('../lib');
     require './test.pl';
     skip_all('cygwin specific test') unless $^O eq 'cygwin';
 }

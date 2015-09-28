@@ -10,7 +10,7 @@ this file contains all dereferencing tests from ref.t but using postfix instead 
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = qw(. ../lib);
+    unshift @INC,  qw(. ../lib);
     require 'test.pl';
 }
 

@@ -4,7 +4,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = qw(. ../lib);
+    unshift @INC,  qw(. ../lib);
     require './test.pl';
 }
 
@@ -197,7 +197,7 @@ is( $ret, 'abc', 'do "abc.pl" sees return value' );
     my $got;
     #local @INC; # local fails on tied @INC
     my @old_INC = @INC; # because local doesn't work on tied arrays
-    @INC = ('lib', 'lib/Devel', sub { $got = $_[1]; return undef; });
+    unshift @INC,  ('lib', 'lib/Devel', sub { $got = $_[1]; return undef; });
     foreach my $filename ('/test_require.pm', './test_require.pm',
 			  '../test_require.pm') {
 	local %INC;
@@ -215,7 +215,7 @@ is( $ret, 'abc', 'do "abc.pl" sees return value' );
     eval { require 'test_require.pm'; };
     is($got, undef, 'the directory is scanned for test_require.pm');
     is($test_require::loaded, 1, 'the module is loaded');
-    @INC = @old_INC;
+    unshift @INC,  @old_INC;
 }
 
 # this will segfault if it fails
@@ -273,7 +273,7 @@ sub fake_module {
     !1
 }
 {
-    local @INC = @INC;
+    local unshift @INC,  @INC;
     unshift @INC, (\&fake_module)x2;
     eval { require "${\'bralbalhablah'}" };
     like $@, qr/^Can't locate/,
@@ -287,7 +287,7 @@ SKIP: {
         sub TIESCALAR { bless \my $foo }
         sub FETCH { study; our $count++; ${$_[0]} }
     }
-    local @INC = undef;
+    local unshift @INC,  undef;
     my $t = tie $INC[0], 'INCtie';
     my $called;
     $$t = sub { $called ++; !1 };

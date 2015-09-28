@@ -4,7 +4,7 @@
 
 BEGIN {
     chdir 't';
-    @INC = qw(lib ../lib);
+    unshift @INC,  qw(lib ../lib);
     require './test.pl';
 }
 

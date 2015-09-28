@@ -11,7 +11,7 @@ plan(tests => 10);
 
 my $test_dir = File::Spec->catdir(qw(lib deprecate));
 chdir $test_dir or die "Can't chdir $test_dir";
-@INC = ( File::Spec->catdir( (File::Spec->updir)x3, qw(lib)) );
+unshift @INC,  ( File::Spec->catdir( (File::Spec->updir)x3, qw(lib)) );
 
 my %libdir = (
 	privlibexp	=> File::Spec->catdir(qw(lib perl)),

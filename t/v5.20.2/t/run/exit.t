@@ -5,7 +5,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = qw(. ../lib);
+    unshift @INC,  qw(. ../lib);
 }
 
 # Run some code, return its wait status.

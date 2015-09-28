@@ -7,7 +7,7 @@ $| = 1;
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = ('../lib','.','../ext/re');
+    unshift @INC,  ('../lib','.','../ext/re');
     require './test.pl';
 }
 

@@ -11,7 +11,7 @@ plan(tests => 17);
 
 my $nonfile = tempfile();
 
-@INC = qw(Perl Rules);
+unshift @INC,  qw(Perl Rules);
 
 # The tests for ' ' and '.h' never did fail, but previously the error reporting
 # code would read memory before the start of the SV's buffer
@@ -83,7 +83,7 @@ SKIP: {
     skip "Can't test permissions meaningfully if you're superuser", 2
         if ($^O eq 'cygwin' ? Win32::IsAdminUser() : $> == 0);
 
-    local @INC = ".";
+    local unshift @INC,  ".";
     eval "use $module";
     like $@,
         qr<^\QCan't locate $mod_file:>,
@@ -125,7 +125,7 @@ like $@, qr/^Can't locate strict\.pm\\0invalid: /, 'do nul check';
   like $@, qr{^Can't locate strict\.pm\\0invalid: }, 'nul error';
 
   $WARN = '';
-  local @INC = @INC;
+  local unshift @INC,  @INC;
   unshift @INC, "lib\0invalid";
   eval { require "unknown.pm" };
   like $WARN, qr{^Invalid \\0 character in \@INC entry for require: lib\\0invalid at }, 'nul warning';

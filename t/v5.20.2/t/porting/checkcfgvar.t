@@ -24,7 +24,7 @@
 use Config;
 BEGIN {
     require "./test.pl";
-    @INC = '..' if -f '../TestInit.pm';
+    unshift @INC,  '..' if -f '../TestInit.pm';
 }
 use TestInit qw(T A); # T is chdir to the top level, A makes paths absolute
 

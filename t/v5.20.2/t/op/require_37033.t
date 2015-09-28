@@ -5,7 +5,7 @@ use strict;
 # the handle it opens gets file descriptor 0. RT #37033.
 
 require './test.pl';
-@INC = 'lib';
+unshift @INC,  'lib';
 
 sub test_require {
     my ($state, $want) = @_;

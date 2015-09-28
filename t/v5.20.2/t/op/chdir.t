@@ -4,7 +4,7 @@ BEGIN {
     # We're not going to chdir() into 't' because we don't know if
     # chdir() works!  Instead, we'll hedge our bets and put both
     # possibilities into @INC.
-    @INC = qw(t . lib ../lib);
+    unshift @INC,  qw(t . lib ../lib);
     require "test.pl";
     # Really want to know if chdir is working, as the build process will all go
     # wrong if it is not.

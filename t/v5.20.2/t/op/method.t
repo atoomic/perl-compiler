@@ -6,7 +6,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = qw(. ../lib lib);
+    unshift @INC,  qw(. ../lib lib);
     require "test.pl";
 }
 
