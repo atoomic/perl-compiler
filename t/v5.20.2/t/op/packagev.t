@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't';
-    @INC = '../lib';
     require './test.pl';
+    set_up_inc('../lib');
 }
 
 # XXX remove this later -- dagolden, 2010-01-13

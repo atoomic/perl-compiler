@@ -5,8 +5,8 @@ my $dtrace;
 
 BEGIN {
     chdir 't';
-    @INC = '../lib';
     require './test.pl';
+    set_up_inc('../lib');
 
     skip_all_without_config("usedtrace");
 

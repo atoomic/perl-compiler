@@ -3,10 +3,9 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '../lib';
-
     # only used for skip_all, the forking confuses test.pl
     require "./test.pl";
+    set_up_inc('../lib');
 }
 
 BEGIN {

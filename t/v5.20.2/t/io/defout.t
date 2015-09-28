@@ -8,8 +8,8 @@
 
 BEGIN {
     chdir 't';
-    @INC = '../lib';
-    require './test.pl';
+    require "./test.pl";
+    set_up_inc('../lib');
 }
 
 plan tests => 16;

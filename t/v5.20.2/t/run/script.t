@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't';
-    @INC = '../lib';
     require './test.pl';	# for which_perl() etc
+    set_up_inc('../lib');
     plan(3);
 }
 

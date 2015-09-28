@@ -1,9 +1,9 @@
 #!./perl
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '../lib';
     require './test.pl';    # for fresh_perl_is() etc
     require './loc_tools.pl'; # to find locales
+    set_up_inc('../lib');
 }
 
 use strict;

@@ -7,7 +7,6 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '../lib';
     require Config; import Config;
     require File::Temp; import File::Temp qw/:POSIX/;
 
@@ -21,6 +20,7 @@ BEGIN {
     }
 
     require './test.pl';
+    set_up_inc('../lib');
 }
 
 skip_all "requires compilation with PERL_IMPLICIT_SYS"

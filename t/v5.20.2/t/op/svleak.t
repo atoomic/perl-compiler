@@ -6,8 +6,8 @@
 
 BEGIN {
     chdir 't';
-    @INC = '../lib';
     require './test.pl';
+    set_up_inc('../lib');
 
     eval { require XS::APItest; XS::APItest->import('sv_count'); 1 }
 	or skip_all("XS::APItest not available");

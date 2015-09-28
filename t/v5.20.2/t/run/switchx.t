@@ -2,11 +2,10 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '../lib';
+    require './test.pl';
+    set_up_inc('../lib');
 }
 use strict;
-
-require './test.pl';
 
 # Test '-x'
 print runperl( switches => ['-x'],

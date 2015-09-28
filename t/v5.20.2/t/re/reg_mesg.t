@@ -2,9 +2,9 @@
 
 BEGIN {
 	chdir 't' if -d 't';
-	@INC = '../lib';
 	require './test.pl';
-	eval 'require Config'; # assume defaults if this fails
+	set_up_inc('../lib');
+    eval 'require Config'; # assume defaults if this fails
 }
 
 use strict;

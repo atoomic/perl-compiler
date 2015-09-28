@@ -5,8 +5,8 @@ use warnings;
 
 BEGIN {
     chdir 't';
-    @INC = '../lib';
     require q(./test.pl);
+    set_up_inc('../lib');
 }
 plan(tests => 61);
 

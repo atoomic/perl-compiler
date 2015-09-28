@@ -5,9 +5,9 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '../lib';
     $| = 1;
     require "./test.pl";
+    set_up_inc('../lib');
 }
 
 use utf8;

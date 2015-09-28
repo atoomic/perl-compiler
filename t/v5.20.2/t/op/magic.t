@@ -7,7 +7,6 @@ BEGIN {
     unshift @INC, '..';
     eval q/use TestInit; 1/;
 
-    @INC = '../lib';
     require './test.pl';
     plan (tests => 187);
 }

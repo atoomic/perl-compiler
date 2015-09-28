@@ -10,11 +10,10 @@ no warnings 'prototype'; # we do a lot of this
 BEGIN {
     unless (-d 'blib') {
         chdir 't' if -d 't';
-        @INC = '../lib';
     }
+    require './test.pl';
+    set_up_inc('../lib');
 }
-
-require './test.pl';
 
 {
     package MC텟ᵀ::Bࡎᶓ;

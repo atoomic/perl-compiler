@@ -5,7 +5,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '../lib';              # pick up only this build's lib
+    unshift @INC, '../lib';              # pick up only this build's lib
 }
 
 my $torture; # torture testing?

@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '../lib';
     require "../t/test.pl";
+    set_up_inc('../lib');
     skip_all_without_perlio();
     plan (15);
 }
