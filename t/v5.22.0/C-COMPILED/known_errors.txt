@@ -31,9 +31,25 @@ cmd/switch.t SIG TODO: segfault
 cmd/for.t   SIG TODO: segfault
 cmd/subval.t SIG TODO: segfault
 comp/final_line_num.t COMPAT   This test is about BEGIN / file parse behavior so not relevant to B::C
-comp/form_scope.t    SIG       TODO: This test got WAY complicated in db4cf31d1d6 and probably wouldn't have passed back then either. FORMAT -- who cares?
 comp/hints.t         SKIP     tests are using BEGIN block, do not ready for B::C
-comp/parser.t        TESTS     TODO: Looks like new tests and new failures in need of investigation.
+comp/bproto.t        BC TODO
+comp/colon.t         PLAN TODO
+comp/fold.t          SIG TODO: segfault
+comp/form_scope.t    SIG TODO
+comp/line_debug.t    SIG TODO: segfault
+comp/multiline.t     SIG TODO: segfault
+comp/opsubs.t        SIG TODO: segfault
+comp/our.t           SIG TODO: segfault
+comp/package_block.t SIG TODO: segfault
+comp/package.t       SIG TODO: segfault
+comp/parser.t        BC TODO fail to generate c file
+comp/proto.t         BC TODO fail to generate c file
+comp/redef.t         SIG TODO: segfault
+comp/require.t       BC TODO fail to generate c file
+comp/retainedlines.t SIG TODO: segfault
+comp/uproto.t        SIG TODO: segfault
+comp/use.t           SIG todo 
+comp/utf.t           SIG TODO: segfault
 extra/reused-variable.t PLAN  TODO: when not using my and later my + eval => conflict in the variable
 io/iofile.t          SIG       TODO: No changes to  t/io/iofile.t since 5.14.4
 io/layers.t          TESTS     https://code.google.com/p/perl-compiler/issues/detail?id=29 (dupe from 203)
