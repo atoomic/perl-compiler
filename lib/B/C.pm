@@ -4513,7 +4513,6 @@ sub B::GV::save {
       my $cvsym;
       if ( $gvcv->XSUB and $fullname ne $origname ) {    #XSUB CONSTSUB alias
 	my $package = $gvcv->GV->EGV->STASH->NAME;
-        $origname = cstring( $origname );
         warn "Boot $package, XS CONSTSUB alias of $fullname to $origname\n" if $debug{pkg};
         mark_package($package, 1);
         {
@@ -4534,7 +4533,6 @@ sub B::GV::save {
 	$init2->add("GvCV_set($sym, (CV*)SvREFCNT_inc_simple_NN($get_cv));");
       }
       elsif (!$PERL510 or $gp) {
-        $origname = cstring( $origname );
 	if ($fullname eq 'Internals::V') { # local_patches if $] >= 5.011
 	  $gvcv = svref_2object( \&__ANON__::_V );
 	}
