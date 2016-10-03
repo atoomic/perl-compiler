@@ -241,13 +241,13 @@ sub save {
     #  init1()->add( sprintf( "SvREFCNT($sym) = %u;", $gv->REFCNT ) );
     #  return $sym;
     #}
+    my $savefields = 0;            # FIXME
     my $svflags    = $gv->FLAGS;
-    my $savefields = 0;
 
     my $gp;
     my $gvadd = $notqual ? "$notqual|GV_ADD" : "GV_ADD";
     if ( $gv->isGV_with_GP and !$is_coresym ) {
-        $gp = $gv->GP;    # B limitation
+        $gp = $gv->GP;             # B limitation
         if ( defined($egvsym) && $egvsym !~ m/Null/ ) {
             debug(
                 gv => "Shared GV alias for *%s 0x%x%s to %s",
@@ -334,28 +334,7 @@ sub save {
 
     debug( gv => "check which savefields for \"$gvname\"" );
 
-    # some non-alphabetic globs require some parts to be saved
-    # ( ex. %!, but not $! )
-    if ( $gvname !~ /^([^A-Za-z]|STDIN|STDOUT|STDERR|ARGV|SIG|ENV)$/ ) {
-        $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
-    }
-    elsif ( $fullname eq 'main::!' ) {    #Errno
-        $savefields = Save_HV | Save_SV | Save_CV;
-    }
-    elsif ( $fullname eq 'main::ENV' or $fullname eq 'main::SIG' ) {
-        $savefields = Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
-    }
-    elsif ( $fullname eq 'main::ARGV' ) {
-        $savefields = Save_HV | Save_SV | Save_CV | Save_FORM | Save_IO;
-    }
-    elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
-        $savefields = Save_FORM | Save_IO;
-    }
-    $savefields &= ~$filter if ( $filter
-        and $filter !~ m/ :pad/
-        and $filter =~ /^\d+$/
-        and $filter > 0
-        and $filter < 64 );
+    $savefields = get_savefields( $savefields, $gv, $gvname, $fullname, $filter );    # FIXME
 
     # issue 79: Only save stashes for stashes.
     # But not other values to avoid recursion into unneeded territory.
@@ -373,15 +352,10 @@ sub save {
             eval { $package->bootstrap };
         }
         mark_package( 'attributes', 1 );
-        $savefields &= ~Save_CV;
         $B::C::xsub{attributes} = 'Dynamic-' . $INC{'attributes.pm'};    # XSLoader
         $B::C::use_xsloader = 1;
     }
 
-    # avoid overly dynamic POSIX redefinition warnings: GH #335, #345
-    if ( $fullname =~ m/^POSIX::M/ ) {
-        $savefields &= ~Save_CV;
-    }
     my $gvsv;
     if ($savefields) {
 
@@ -405,6 +379,47 @@ sub save {
     # $gv->save_magic($fullname) if $PERL510;
     debug( gv => "GV::save *$fullname done" );
     return $sym;
+}
+
+sub get_savefields {
+    my ( $savefields, $gv, $gvname, $fullname, $filter ) = @_;
+
+    # default savefields
+    #my $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+
+    #$savefields = 0 if $gv->is_empty or !$gv->GP;
+    # my $gp = $gv->GP; # REMOVED
+    # if ( $gp and !$gv->is_empty and $gvname !~ /::$/ ) {
+    #     $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    # }
+
+    # some non-alphabetic globs require some parts to be saved
+    # ( ex. %!, but not $! )
+    if ( $gvname !~ /^([^A-Za-z]|STDIN|STDOUT|STDERR|ARGV|SIG|ENV)$/ ) {
+        $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    }
+    elsif ( $fullname eq 'main::!' ) {    #Errno
+        $savefields = Save_HV | Save_SV | Save_CV;
+    }
+    elsif ( $fullname eq 'main::ENV' or $fullname eq 'main::SIG' ) {
+        $savefields = Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    }
+    elsif ( $fullname eq 'main::ARGV' ) {
+        $savefields = Save_HV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    }
+    elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
+        $savefields = Save_FORM | Save_IO;
+    }
+    $savefields &= ~$filter if ( $filter
+        and $filter !~ m/ :pad/
+        and $filter =~ /^\d+$/
+        and $filter > 0
+        and $filter < 64 );
+
+    # avoid overly dynamic POSIX redefinition warnings: GH #335, #345
+    $savefields &= ~Save_CV if $fullname =~ m/^POSIX::M/ or $fullname eq 'attributes::bootstrap';
+
+    return $savefields;
 }
 
 sub gv_fetchpv_string {
