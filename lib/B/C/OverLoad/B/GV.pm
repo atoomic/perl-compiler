@@ -241,13 +241,13 @@ sub save {
     #  init1()->add( sprintf( "SvREFCNT($sym) = %u;", $gv->REFCNT ) );
     #  return $sym;
     #}
-    my $savefields = 0;            # FIXME
-    my $svflags    = $gv->FLAGS;
+    my $savefields = 0; # FIXME
+    my $svflags = $gv->FLAGS;
 
     my $gp;
     my $gvadd = $notqual ? "$notqual|GV_ADD" : "GV_ADD";
     if ( $gv->isGV_with_GP and !$is_coresym ) {
-        $gp = $gv->GP;             # B limitation
+        $gp = $gv->GP;    # B limitation
         if ( defined($egvsym) && $egvsym !~ m/Null/ ) {
             debug(
                 gv => "Shared GV alias for *%s 0x%x%s to %s",
@@ -334,7 +334,7 @@ sub save {
 
     debug( gv => "check which savefields for \"$gvname\"" );
 
-    $savefields = get_savefields( $savefields, $gv, $gvname, $fullname, $filter );    # FIXME
+    $savefields = get_savefields( $savefields, $gv, $gvname, $fullname, $filter ); # FIXME
 
     # issue 79: Only save stashes for stashes.
     # But not other values to avoid recursion into unneeded territory.
@@ -385,13 +385,17 @@ sub get_savefields {
     my ( $savefields, $gv, $gvname, $fullname, $filter ) = @_;
 
     # default savefields
-    #my $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
 
     #$savefields = 0 if $gv->is_empty or !$gv->GP;
-    # my $gp = $gv->GP; # REMOVED
-    # if ( $gp and !$gv->is_empty and $gvname !~ /::$/ ) {
-    #     $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
-    # }
+    #my $gp = $gv->GP; # REMOVED
+    #if ( $gp and !$gv->is_empty and $gvname !~ /::$/ ) {
+    #    $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    #}
+
+    if ( $fullname eq 'main::_' or $fullname eq 'main::@' ) {
+        $savefields = 0;    
+    }
 
     # some non-alphabetic globs require some parts to be saved
     # ( ex. %!, but not $! )
@@ -410,14 +414,23 @@ sub get_savefields {
     elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
         $savefields = Save_FORM | Save_IO;
     }
-    $savefields &= ~$filter if ( $filter
-        and $filter !~ m/ :pad/
-        and $filter =~ /^\d+$/
-        and $filter > 0
-        and $filter < 64 );
+
+    if ( $filter and $filter =~ qr{^[0-9]$} ) {
+        $savefields &= ~$filter;        
+    }
+
+    # $savefields &= ~$filter if ( $filter
+    #     and $filter !~ m/ :pad/
+    #     and $filter =~ /^\d+$/
+    #     and $filter > 0
+    #     and $filter < 64 );
 
     # avoid overly dynamic POSIX redefinition warnings: GH #335, #345
-    $savefields &= ~Save_CV if $fullname =~ m/^POSIX::M/ or $fullname eq 'attributes::bootstrap';
+    if ( $fullname =~ m/^POSIX::M/ or $fullname eq 'attributes::bootstrap' ) {
+        $savefields &= ~Save_CV ;    
+    }
+    
+    debug( gv => "XXXX $fullname -> $savefields" );
 
     return $savefields;
 }
