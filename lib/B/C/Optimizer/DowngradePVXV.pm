@@ -21,6 +21,16 @@ sub SVt_NV   { 2 }
 sub SVt_PV   { 3 }
 sub SVt_MASK { 0xf }    # smallest bitmask that covers all types
 
+my $DEBUG = 1;
+
+sub ddebug {
+    return unless $DEBUG;
+    my (@what) = @_;
+    my $msg = join ' ', @what;
+    qx{echo '$msg' >> /tmp/flags};
+    return 1;
+}
+
 sub is_simple_pviv {
     my $sv = shift;
 
@@ -37,9 +47,7 @@ sub is_simple_pviv {
     # remove the type
     $flags &= ~SVt_MASK();
 
-    if ($flags) {
-        qx{echo '$flags' >> /tmp/flags};
-    }
+    ddebug( "PVIV with flags", $flags ) if $flags;
 
     return $flags == 0;
 }
@@ -65,9 +73,7 @@ sub is_simple_pvnv {    # should factorized them
     # remove the type
     $flags &= ~SVt_MASK();
 
-    if ($flags) {
-        qx{echo 'PVNV $flags' >> /tmp/flags};
-    }
+    ddebug( "PVNV with flags", $flags ) if $flags;
 
     return $flags == 0;
 }
@@ -116,42 +122,40 @@ sub custom_flags {
 sub downgrade_pviv {
     my ( $sv, $fullname ) = @_;
 
+    return unless is_simple_pviv($sv);
+
     #my $iok = $sv->FLAGS & ( SVf_IOK | SVp_IOK);
     #my $pok = $sv->FLAGS & ( SVf_POK | SVp_POK );
     my $iok = $sv->FLAGS & SVf_IOK;
     my $pok = $sv->FLAGS & SVf_POK;
 
-    # idea unit tests...
-    # do not downgrade it if it has some weird magic
-    #debug( pv => "###### $fullname, $sv, POK $pok IOK $iok: IV %d PV %s", $sv->IVX || 0, $sv->PV . "");
-    if ( is_simple_pviv($sv) ) {
-        if (  !$pok && $iok
-            or $iok && $sv->PV =~ qr{^[0-9]+$}
-            or $pok && !$iok && $sv->PV eq ( $sv->IVX || 0 ) ) {    # PVIV used as IV let's downgrade it as an IV
-            push @EXTRA, int get_integer_value( $sv->IVX );
-            my $sviv = B::svref_2object( \$EXTRA[-1] );
-            qx{echo '- downgrade IV' >> /tmp/flags};
-            return B::IV::save( $sviv, $fullname, { flags => custom_flags( $sv, SVt_IV() ), refcnt => $sv->REFCNT } );
+    if (  !$pok && $iok
+        or $iok && $sv->PV =~ qr{^[0-9]+$}
+        or $pok && !$iok && $sv->PV eq ( $sv->IVX || 0 ) ) {    # PVIV used as IV let's downgrade it as an IV
+        ddebug("downgrade PVIV to IV - case a");
 
-            #return B::IV::save( $sviv, $fullname );
-        }
-        elsif ( $pok && $sv->PV =~ qr{^[0-9]+$} && length( $sv->PV ) <= 18 ) {    # use Config{...}
-            qx{echo '- downgrade PV to IV' >> /tmp/flags};
+        push @EXTRA, int get_integer_value( $sv->IVX );
+        my $sviv = B::svref_2object( \$EXTRA[-1] );
+        return B::IV::save( $sviv, $fullname, { flags => custom_flags( $sv, SVt_IV() ), refcnt => $sv->REFCNT } );
 
-            # downgrade a PV that looks like an IV (and not too long) to a simple IV
-            push @EXTRA, int( "" . $sv->PV );
-            my $sviv = B::svref_2object( \$EXTRA[-1] );
-            return B::IV::save( $sviv, $fullname, { flags => custom_flags( $sv, SVt_IV() ), refcnt => $sv->REFCNT } );
-        }
-
-        # elsif ($pok) {                                                            # maybe do not downgrade it to PV if the string is only 0-9 ??
-        #                                                                           # downgrade the PVIV as a regular PV
-        #     qx{echo '- downgrade PV' >> /tmp/flags};
-        #     push @EXTRA, "" . $sv->PV;
-        #     my $svpv = B::svref_2object( \$EXTRA[-1] );
-        #     return B::PV::save( $svpv, $fullname );
-        # }
+        #return B::IV::save( $sviv, $fullname );
     }
+    elsif ( $pok && $sv->PV =~ qr{^[0-9]+$} && length( $sv->PV ) <= 18 ) {    # use Config{...}
+        ddebug("downgrade PVIV to IV - case b");
+
+        # downgrade a PV that looks like an IV (and not too long) to a simple IV
+        push @EXTRA, int( "" . $sv->PV );
+        my $sviv = B::svref_2object( \$EXTRA[-1] );
+        return B::IV::save( $sviv, $fullname, { flags => custom_flags( $sv, SVt_IV() ), refcnt => $sv->REFCNT } );
+    }
+
+    # elsif ($pok) {                                                            # maybe do not downgrade it to PV if the string is only 0-9 ??
+    #                                                                           # downgrade the PVIV as a regular PV
+    #     qx{echo '- downgrade PV' >> /tmp/flags};
+    #     push @EXTRA, "" . $sv->PV;
+    #     my $svpv = B::svref_2object( \$EXTRA[-1] );
+    #     return B::PV::save( $svpv, $fullname );
+    # }
 
     return;
 }
@@ -167,42 +171,40 @@ sub downgrade_pviv {
 sub downgrade_pvnv {
     my ( $sv, $fullname ) = @_;
 
+    return unless is_simple_pvnv($sv);
+
     my $nok = $sv->FLAGS & SVf_NOK;
     my $pok = $sv->FLAGS & SVf_POK;
 
-    # idea unit tests...
-    # do not downgrade it if it has some weird magic
-    #debug( pv => "###### $fullname, $sv, POK $pok IOK $iok: IV %d PV %s", $sv->IVX || 0, $sv->PV . "");
-    if ( is_simple_pvnv($sv) ) {
-        if (
-               $nok && !$pok && $sv->NV =~ qr{^[0-9]+$} && length( $sv->NV ) <= 18
-            or $pok
-            && $sv->PV =~ qr{^[0-9]+$}
-            && length( $sv->PV ) <= 18
+    if (
+           $nok && !$pok && $sv->NV =~ qr{^[0-9]+$} && length( $sv->NV ) <= 18
+        or $pok
+        && $sv->PV =~ qr{^[0-9]+$}
+        && length( $sv->PV ) <= 18
 
-            #or !$nok && $pok && $sv->PV eq ( $sv->NV || 0 )
-          ) {    # PVNV used as IV let's downgrade it as an IV
-            push @EXTRA, int get_integer_value( $sv->NV );
-            my $sviv = B::svref_2object( \$EXTRA[-1] );
-            qx{echo 'PVNV - downgrade IV' >> /tmp/flags};
-            return B::IV::save( $sviv, $fullname, { flags => custom_flags( $sv, SVt_IV() ), refcnt => $sv->REFCNT } );
-        }
+        #or !$nok && $pok && $sv->PV eq ( $sv->NV || 0 )
+      ) {    # PVNV used as IV let's downgrade it as an IV
+        ddebug("downgrade PVNV to IV - case a");
 
-        # elsif ( $pok && $sv->PV =~ qr{^[0-9]+$} && length( $sv->PV ) <= 18 ) {    # use Config{...}
-        #     qx{echo 'PVNV - downgrade PV to IV' >> /tmp/flags};
-        #     # downgrade a PV that looks like an IV (and not too long) to a simple IV
-        #     push @EXTRA, int( "" . $sv->PV );
-        #     my $sviv = B::svref_2object( \$EXTRA[-1] );
-        #     return B::IV::save( $sviv, $fullname, { flags => custom_flags($sv, SVt_IV() ), refcnt => $sv->REFCNT } );
-        # }
-        # elsif ($pok) {                                                            # maybe do not downgrade it to PV if the string is only 0-9 ??
-        #                                                                           # downgrade the PVIV as a regular PV
-        #     qx{echo 'PVNV - downgrade PV' >> /tmp/flags};
-        #     push @EXTRA, "" . $sv->PV;
-        #     my $svpv = B::svref_2object( \$EXTRA[-1] );
-        #     return B::PV::save( $svpv, $fullname );
-        # }
+        push @EXTRA, int get_integer_value( $sv->NV );
+        my $sviv = B::svref_2object( \$EXTRA[-1] );
+        return B::IV::save( $sviv, $fullname, { flags => custom_flags( $sv, SVt_IV() ), refcnt => $sv->REFCNT } );
     }
+
+    # elsif ( $pok && $sv->PV =~ qr{^[0-9]+$} && length( $sv->PV ) <= 18 ) {    # use Config{...}
+    #     ddebug("downgrade PVNV to IV - case b");
+    #     # downgrade a PV that looks like an IV (and not too long) to a simple IV
+    #     push @EXTRA, int( "" . $sv->PV );
+    #     my $sviv = B::svref_2object( \$EXTRA[-1] );
+    #     return B::IV::save( $sviv, $fullname, { flags => custom_flags($sv, SVt_IV() ), refcnt => $sv->REFCNT } );
+    # }
+    # elsif ($pok) {                                                            # maybe do not downgrade it to PV if the string is only 0-9 ??
+    #                                                                           # downgrade the PVIV as a regular PV
+    #     ddebug("downgrade PVNV to IV - case c");
+    #     push @EXTRA, "" . $sv->PV;
+    #     my $svpv = B::svref_2object( \$EXTRA[-1] );
+    #     return B::PV::save( $svpv, $fullname );
+    # }
 
     return;
 }
