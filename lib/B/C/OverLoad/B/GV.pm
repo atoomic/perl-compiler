@@ -602,20 +602,9 @@ sub save {
                   if $file ne 'NULL' and !$B::C::optimize_cop;
             }
 
-            my $gvform = $gv->FORM;
-            if ( $$gvform && $savefields & Save_FORM ) {
-                debug( gv => "GV::save GvFORM(*$fullname) ..." );
-                $gvform->save($fullname);
-                init()->add( sprintf( "GvFORM(%s) = (CV*)s\\_%x;", $sym, $$gvform ) );
-
-                # glob_assign_glob analog to CV
-                init()->add( sprintf( "SvREFCNT_inc(s\\_%x);", $$gvform ) );
-                debug( gv => "GV::save GvFORM(*$fullname) done" );
-            }
-
+            save_gv_format( $gv, $fullname, $sym ) if $gp && $savefields & Save_FORM;
             save_gv_io( $gv, $fullname, $sym ) if $savefields & Save_IO;
 
-            init()->add("");
         }
     }
 
@@ -623,6 +612,18 @@ sub save {
     # $gv->save_magic($fullname) if $PERL510;
     debug( gv => "GV::save *$fullname done" );
     return $sym;
+}
+
+sub save_gv_format {
+    my ( $gv, $fullname, $sym ) = @_;
+
+    return unless my $gvform = $gv->FORM;
+
+    $gvform->save($fullname);
+    init()->add( sprintf( "GvFORM(%s) = (CV*)s\\_%x;", $sym, $$gvform ) );
+    init()->add( sprintf( "SvREFCNT_inc(s\\_%x);", $$gvform ) );
+
+    return;
 }
 
 sub save_gv_sv {
