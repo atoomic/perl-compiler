@@ -15,10 +15,6 @@ use B::C::Packages qw/mark_package_used/;
 
 my %gptable;
 
-sub get_index {
-    return $B::C::gv_index;
-}
-
 sub inc_index {
     return $B::C::gv_index++;
 }
@@ -215,16 +211,13 @@ sub save {
         debug( gv => "Saving GV 0x%x as $sym", ref $gv ? $$gv : 0 );
     }
 
-    my $gvname = $gv->NAME();
-
-    if ( $gv->FLAGS & 0x40000000 ) {    # SVpbm_VALID
-        debug( gv => "  GV $sym isa FBM" );
-        return B::BM::save($gv);
-    }
+    # GV $sym isa FBM
+    return B::BM::save($gv) if $gv->FLAGS & 0x40000000;    # SVpbm_VALID
 
     my $package = $gv->get_package();
-
     return q/(SV*)&PL_sv_undef/ if B::C::skip_pkg($package);
+
+    my $gvname = $gv->NAME();
 
     # If we come across a stash hash, we therefore have code using it so we need to mark it was used so it won't be deleted.
     if ( $gvname =~ m/::$/ ) {
@@ -385,6 +378,7 @@ sub save {
     }
 
     debug( gv => "check which savefields for \"$gvname\"" );
+
     # issue 79: Only save stashes for stashes.
     # But not other values to avoid recursion into unneeded territory.
     # We walk via savecv, not via stashes.
@@ -423,16 +417,16 @@ sub save {
 
         save_gv_cv( $gv, $fullname, $sym ) if $savefields & Save_CV;
 
-            # TODO implement heksect to place all heks at the beginning
-            #heksect()->add($gv->FILE);
-            #init()->add(sprintf("GvFILE_HEK($sym) = hek_list[%d];", heksect()->index));
+        # TODO implement heksect to place all heks at the beginning
+        #heksect()->add($gv->FILE);
+        #init()->add(sprintf("GvFILE_HEK($sym) = hek_list[%d];", heksect()->index));
 
-            # XXX Maybe better leave it NULL or asis, than fighting broken
-            if ( $gp && ( !$B::C::stash or $fullname !~ /::$/ ) ) {
-                my $file = save_shared_he( $gv->FILE );
-                init()->add( sprintf( "GvFILE_HEK(%s) = &(%s->shared_he_hek);", $sym, $file ) )
-                  if $file ne 'NULL' and !$B::C::optimize_cop;
-            }
+        # XXX Maybe better leave it NULL or asis, than fighting broken
+        if ( $gp && ( !$B::C::stash or $fullname !~ /::$/ ) ) {
+            my $file = save_shared_he( $gv->FILE );
+            init()->add( sprintf( "GvFILE_HEK(%s) = &(%s->shared_he_hek);", $sym, $file ) )
+              if $file ne 'NULL' and !$B::C::optimize_cop;
+        }
 
         save_gv_format( $gv, $fullname, $sym ) if $gp && $savefields & Save_FORM;
         save_gv_io( $gv, $fullname, $sym ) if $gp && $savefields & Save_IO;
