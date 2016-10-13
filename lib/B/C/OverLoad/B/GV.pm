@@ -385,8 +385,6 @@ sub save {
     }
 
     debug( gv => "check which savefields for \"$gvname\"" );
-    my $savefields = get_savefields( $gv, $gvname, $fullname, $filter );
-
     # issue 79: Only save stashes for stashes.
     # But not other values to avoid recursion into unneeded territory.
     # We walk via savecv, not via stashes.
@@ -404,12 +402,12 @@ sub save {
         }
         mark_package( 'attributes', 1 );
 
-        #$savefields &= ~Save_CV;
         $B::C::xsub{attributes} = 'Dynamic-' . $INC{'attributes.pm'};    # XSLoader
         $B::C::use_xsloader = 1;
     }
 
-    my $gvsv;
+    my $savefields = get_savefields( $gv, $gvname, $fullname, $filter );
+
     if ($savefields) {
 
         # Don't save subfields of special GVs (*_, *1, *# and so on)
@@ -425,23 +423,20 @@ sub save {
 
         save_gv_cv( $gv, $fullname, $sym ) if $savefields & Save_CV;
 
-        if ($gp) {
-
             # TODO implement heksect to place all heks at the beginning
             #heksect()->add($gv->FILE);
             #init()->add(sprintf("GvFILE_HEK($sym) = hek_list[%d];", heksect()->index));
 
             # XXX Maybe better leave it NULL or asis, than fighting broken
-            if ( !$B::C::stash or $fullname !~ /::$/ ) {
+            if ( $gp && ( !$B::C::stash or $fullname !~ /::$/ ) ) {
                 my $file = save_shared_he( $gv->FILE );
                 init()->add( sprintf( "GvFILE_HEK(%s) = &(%s->shared_he_hek);", $sym, $file ) )
                   if $file ne 'NULL' and !$B::C::optimize_cop;
             }
 
-            save_gv_format( $gv, $fullname, $sym ) if $gp && $savefields & Save_FORM;
-            save_gv_io( $gv, $fullname, $sym ) if $savefields & Save_IO;
+        save_gv_format( $gv, $fullname, $sym ) if $gp && $savefields & Save_FORM;
+        save_gv_io( $gv, $fullname, $sym ) if $gp && $savefields & Save_IO;
 
-        }
     }
 
     # Shouldn't need to do save_magic since gv_fetchpv handles that. Esp. < and IO not
