@@ -49,7 +49,7 @@ sub code_section_names {
 # These objects will end up in an array of structs in the template and be auto-declared.
 sub struct_names {
     return qw( xpv xpvav xpvhv xpvcv padlist padname padnamelist
-      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv);
+      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv bcsvhek8 bcsvhek16 bcsvhek32);
 }
 
 # These populate the init sections and have a special header.

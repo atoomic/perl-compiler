@@ -9,7 +9,7 @@ use B::C::Save qw/savepvn savepv savestashpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init1 init2 svsect xpvmgsect xpvsect pmopsect/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
-use B::C::Helpers qw/mark_package read_utf8_string is_shared_hek/;
+use B::C::Helpers qw/mark_package read_utf8_string is_shared_hek add_int_optimized/;
 use B::C::Save::Hek qw/save_shared_he/;
 
 sub save {
@@ -80,10 +80,10 @@ sub save {
 
     if ( defined($pv) and !$static ) {
         my $shared_hek = is_shared_hek($sv);
-        if ($shared_hek) {
-            my $hek = save_shared_he( $pv, $fullname );
-            init()->add( sprintf( "sv_list[%d].sv_u.svu_pv = %s->shared_he_hek.hek_key;", $sv_ix, $hek ) )
-              unless $hek eq 'NULL';
+        if ( $shared_hek && $shared_hek != 'NULL' ) {
+            my $hek_ix;
+            $hek_ix = $1 if $shared_hek =~ qr{\[([0-9]+)\]};
+            add_int_optimized( $sv_ix, $hek_ix );
         }
     }
 

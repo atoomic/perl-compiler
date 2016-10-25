@@ -6,7 +6,7 @@ use B qw/SVf_POK SVp_POK/;
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw/svop_name padop_name mark_package do_labels read_utf8_string get_cv_string
   is_constant strlen_flags curcv set_curcv is_using_mro cow_strlen_flags is_shared_hek
-  cstring_cow
+  cstring_cow add_int_optimized
   /;
 
 # wip to be moved
@@ -126,6 +126,26 @@ sub _load_mro {
 
 sub is_using_mro {
     return keys %{mro::} > 10 ? 1 : 0;
+}
+
+use B::C::File qw/bcsvhek8 bcsvhek16 bcsvhek32/;
+{
+    my $U8_max  = 1 << 8;     # 255 + 1
+    my $U16_max = 1 << 16;    # 65535 + 1
+
+    sub add_int_optimized {
+        my ( $svix, $hek_ix ) = @_;
+
+        if ( $svix < $U8_max and $hek_ix < $U8_max ) {
+            return bcsvhek8()->add("$svix, $hek_ix");
+        }
+        elsif ( $svix < $U16_max and $hek_ix < $U16_max ) {
+            return bcsvhek16()->add("$svix, $hek_ix");
+        }
+
+        return bcsvhek32()->add("$svix, $hek_ix");
+    }
+
 }
 
 1;
