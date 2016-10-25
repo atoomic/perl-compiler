@@ -22,7 +22,7 @@ sub new {
     $self->{'max_lines'}   = 10000;
     $self->{'last_caller'} = '';
 
-    push @{ $self->{'current'} }, benchmark_time( 'START', 'START init' );
+    push @{ $self->{'current'} }, $self->benchmark_time( 'START', 'START init' );
 
     return $self;
 }
@@ -31,16 +31,19 @@ sub new {
     my $status;
 
     sub benchmark_enabled {
+        my $self = shift;
+
+        return 0 if $self->{name} eq 'initPV';
         $status = B::C::Config::Debug::debug('benchmark') || 0 unless defined $status;
         return $status;
     }
 }
 
 sub benchmark_time {
-    my ( $label, $next_label ) = @_;
+    my ( $self, $label, $next_label ) = @_;
 
     my $str = '';
-    if ( benchmark_enabled() ) {
+    if ( $self->benchmark_enabled() ) {
         $str .= sprintf( qq{\nbenchmark_time("%s");\n}, $label );
     }
     $str .= sprintf( qq{\n/*%s %s %s*/\n}, '*' x 15, $next_label, '*' x 15 );
@@ -84,17 +87,13 @@ sub add {
         $caller =~ s/^B:://;
 
         if ( $self->{'last_caller'} ne $caller ) {
-            push @$current, benchmark_time( $self->{'last_caller'}, $caller ) if $self->{'last_caller'};
+            push @$current, $self->benchmark_time( $self->{'last_caller'}, $caller ) if $self->{'last_caller'};
             $self->{'last_caller'} = $caller;
         }
     }
 
     push @$current, @_;
     $self->{'count'} += scalar(@_);
-    my $add_stack = 'B::C::Save'->can('_caller_comment');
-
-    push @$current, $add_stack->() if ( ref $add_stack );
-
     if ( !$nosplit && $self->{'count'} >= $self->{'max_lines'} ) {
         push @{ $self->{'chunks'} }, $current;
         $self->{'current'} = [];

@@ -425,6 +425,9 @@ static void perl_init0(pTHX) { /* fixup_ppaddr */
 [% END %]
 [% section.init1.output( "    %s\n", "perl_init1" ) %]
 
+/* initPV section */
+[% section.initPV.output( "    %s\n", "perl_initPV" ) %]
+
 [% IF verbose %]
 /* deferred init of XS/Dyna loaded modules */
 [% END %]
@@ -1079,10 +1082,15 @@ benchmark_time("pre global setup");
     #endif
 
     /* our special compiled init */
+    benchmark_time("initPV");
+    perl_initPV(aTHX);
+
     benchmark_time("preinit");
     perl_init(aTHX);
+
     benchmark_time("preinit1");
     perl_init1(aTHX);
+
     benchmark_time("init1 done");
     dl_init(aTHX);
 
