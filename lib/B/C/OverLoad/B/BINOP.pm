@@ -39,8 +39,7 @@ sub save {
         }
     }
     else {
-        init()->add( sprintf( "binop_list[%d].op_ppaddr = %s;", $ix, $ppaddr ) )
-          unless $B::C::optimize_ppaddr;
+        init()->add( sprintf( "binop_list[%d].op_ppaddr = %s;", $ix, $ppaddr ) );
     }
 
     $sym = savesym( $op, "(OP*)&binop_list[$ix]" );

@@ -53,8 +53,7 @@ sub save {
     padopsect()->add( sprintf( "%s, %d", $op->_save_common, $op->padix ) );
     padopsect()->debug( $op->name, $op );
     my $ix = padopsect()->index;
-    init()->add( sprintf( "padop_list[%d].op_ppaddr = %s;", $ix, $op->ppaddr ) )
-      unless $B::C::optimize_ppaddr;
+    init()->add( sprintf( "padop_list[%d].op_ppaddr = %s;", $ix, $op->ppaddr ) );
 
     return savesym( $op, "(OP*)&padop_list[$ix]" );
 }

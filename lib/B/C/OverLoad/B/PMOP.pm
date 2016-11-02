@@ -75,8 +75,7 @@ sub save {
 
     pmopsect()->debug( $op->name, $op );
     my $pm = sprintf( "pmop_list[%d]", pmopsect()->index );
-    init()->add( sprintf( "%s.op_ppaddr = %s;", $pm, $ppaddr ) )
-      unless $B::C::optimize_ppaddr;
+    init()->add( sprintf( "%s.op_ppaddr = %s;", $pm, $ppaddr ) );
     my $re = $op->precomp;
 
     if ( defined($re) ) {
