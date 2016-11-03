@@ -65,14 +65,6 @@ our $OP_UCFIRST  = opnumber('ucfirst');
     *DynaLoader::croak = sub { die @_ }
 }
 
-{
-    my $caller = original_caller();
-    if ( $caller eq 'O' or $caller eq 'Od' ) {
-        require XSLoader;
-        XSLoader::load('B::C');    # for r-magic and for utf8-keyed B::HV->ARRAY
-    }
-}
-
 sub walk_and_save_optree {
     my ( $name, $root, $start ) = @_;
     if ($root) {
