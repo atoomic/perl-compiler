@@ -19,6 +19,14 @@ use B::C::File qw( init2 init0 init decl free
 
 use B::C::Packages qw/is_package_used mark_package_unused mark_package_used mark_package_removed get_all_packages_used/;
 
+# Look this up here so we can do just a number compare
+# rather than looking up the name of every BASEOP in B::OP
+# maybe use contant
+our $OP_THREADSV = opnumber('threadsv');
+our $OP_DBMOPEN  = opnumber('dbmopen');
+our $OP_FORMLINE = opnumber('formline');
+our $OP_UCFIRST  = opnumber('ucfirst');
+
 sub svop_name {
     my $op = shift;
     my $cv = shift;

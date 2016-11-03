@@ -312,14 +312,6 @@ my $saveoptree_callback = \&walk_and_save_optree;
 sub set_callback { $saveoptree_callback = shift }
 sub saveoptree { &$saveoptree_callback(@_) }
 
-# Look this up here so we can do just a number compare
-# rather than looking up the name of every BASEOP in B::OP
-# maybe use contant
-our $OP_THREADSV = opnumber('threadsv');
-our $OP_DBMOPEN  = opnumber('dbmopen');
-our $OP_FORMLINE = opnumber('formline');
-our $OP_UCFIRST  = opnumber('ucfirst');
-
 # 1. called from method_named, so hashp should be defined
 # 2. called from svop before method_named to cache the $package_pv
 sub svop_or_padop_pv {
