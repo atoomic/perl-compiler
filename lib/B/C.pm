@@ -81,17 +81,22 @@ our @xpvav_sizes;
 our ($in_endav);
 my %static_core_pkg;       # = map {$_ => 1} static_core_packages();
 
-my @parse_later;
+
 
 sub parse_options {
     my @options = @_;
 
+    my $parsed = {}; # return everything parsed 
+    
     my $output_file;
-
+    my @parse_later;
+    
     # Allow debugging in CHECK blocks without Od
     $DB::single = 1 if defined &DB::DB;
     my ( $option, $opt, $arg );
     B::C::Save::Signals::enable();
+
+    
 
     #mark_skip qw(B::C B::C::Flags B::CC B::FAKEOP O
     #  B::Section B::Pseudoreg B::Shadow B::C::InitSection);
@@ -164,26 +169,31 @@ sub parse_options {
         }
     }
 
-    return ($output_file);
+    $parsed->{output_file} = $output_file;
+    $parsed->{parse_later} = \@parse_later;
+    
+    return $parsed;
 }
 
 sub compile {
-    my $output_file = parse_options(@_);
+    my $parsed = parse_options(@_);
 
-    B::C::File::new($output_file);    # Singleton.
+    B::C::File::new($parsed->{output_file});    # Singleton.
     B::C::Packages::new();            # Singleton.
 
-    return sub { boot_compilation($output_file) }
+    return boot_compilation($parsed);
 }
 
 sub boot_compilation {
-    my ($output_file) = @_;
+    my $parsed = shift;
 
-    foreach my $todo (@parse_later) {
-        $todo->();
+    return sub {
+        foreach my $todo ( @{$parsed->{parse_later}} ) {
+            $todo->();
+        }
+
+        return save_main($parsed->{output_file});
     }
-
-    return save_main($output_file);
 }
 
 sub enable_option_debug {
