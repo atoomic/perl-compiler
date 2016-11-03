@@ -56,7 +56,12 @@ our @xpvav_sizes;
 our ($in_endav);
 my %static_core_pkg;       # = map {$_ => 1} static_core_packages();
 
-
+{                # block necessary for caller to work
+    my $caller = caller;
+    sub original_caller {
+        return $caller;
+    }
+}
 
 sub parse_options {
     my @options = @_;
@@ -180,14 +185,6 @@ sub load_heavy {
 #================================================================================
 # the heavy one ??
 package B::C;    # B::C_heavy
-
-{                # block necessary for caller to work
-    my $caller = caller;
-    if ( $caller eq 'O' or $caller eq 'Od' ) {
-        require XSLoader;
-        XSLoader::load('B::C');    # for r-magic and for utf8-keyed B::HV->ARRAY
-    }
-}
 
 our @ISA = qw(Exporter);
 
