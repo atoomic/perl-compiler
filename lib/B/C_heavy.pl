@@ -57,6 +57,14 @@ our $OP_DBMOPEN  = opnumber('dbmopen');
 our $OP_FORMLINE = opnumber('formline');
 our $OP_UCFIRST  = opnumber('ucfirst');
 
+# This the Carp free workaround for DynaLoader::bootstrap
+{
+    # Scoped no warnings without loading the module.
+    local $^W;
+    BEGIN { ${^WARNING_BITS} = 0; }
+    *DynaLoader::croak = sub { die @_ }
+}
+
 sub walk_and_save_optree {
     my ( $name, $root, $start ) = @_;
     if ($root) {

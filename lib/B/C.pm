@@ -104,7 +104,7 @@ sub parse_options {
             $arg ||= shift @options;
             $output_file = $arg;
             if ($check) {
-                WARN("Warning: -o argument ignored with -c");
+                warn("Warning: -o argument ignored with -c");
             }
         }
         elsif ( $opt eq "s" and $arg eq "taticxs" ) {
@@ -218,15 +218,6 @@ sub add_to_currINC {
     $curINC{$k} = $v;
     return;
 }
-
-# This the Carp free workaround for DynaLoader::bootstrap
-{
-    # Scoped no warnings without loading the module.
-    local $^W;
-    BEGIN { ${^WARNING_BITS} = 0; }
-    *DynaLoader::croak = sub { die @_ }
-}
-
 
 # XXX Until we know exactly the package name for a method_call
 # we improve the method search heuristics by maintaining this mru list.
