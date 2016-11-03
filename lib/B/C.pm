@@ -58,7 +58,7 @@ our $gv_index = 0;
 our ( $package_pv, @package_pv );    # global stash for methods since 5.13
 our ( %xsub,       %init2_remap );
 our ($staticxs);
-our ( %dumped_package, %skip_package, %isa_cache );
+our ( %dumped_package, %skip_package );
 
 # fixme move to config
 our ( $use_xsloader, $devel_peek_needed );
@@ -236,15 +236,6 @@ use B::C::Optimizer::UnusedPackages ();
 use B::C::OverLoad                  ();
 use B::C::Save qw(constpv savepv set_max_string_len savestashpv);
 use B::C::Save::Signals ();
-
-# used by B::OBJECT
-sub add_to_isa_cache {
-    my ( $k, $v ) = @_;
-    die unless defined $k;
-
-    $isa_cache{$k} = $v;
-    return;
-}
 
 sub add_to_currINC {
     my ( $k, $v ) = @_;
@@ -482,56 +473,6 @@ sub mark_threads {
 
 # try_isa($pkg,$name) returns the found $pkg for the method $pkg::$name
 # If a method can be called (via UNIVERSAL::can) search the ISA's. No AUTOLOAD needed.
-# XXX issue 64, empty @ISA if a package has no subs. in Bytecode ok
-sub try_isa {
-    my ( $cvstashname, $cvname ) = @_;
-    return 0 unless defined $cvstashname;
-    if ( my $found = $isa_cache{"$cvstashname\::$cvname"} ) {
-        return $found;
-    }
-    no strict 'refs';
-
-    # XXX theoretically a valid shortcut. In reality it fails when $cvstashname is not loaded.
-    # return 0 unless $cvstashname->can($cvname);
-    my @isa = get_isa($cvstashname);
-    debug(
-        cv => "No definition for sub %s::%s. Try \@%s::ISA=(%s)",
-        $cvstashname, $cvname, $cvstashname, join( ",", @isa )
-    );
-    for (@isa) {    # global @ISA or in pad
-        next if $_ eq $cvstashname;
-        debug( cv => "Try &%s::%s", $_, $cvname );
-        if ( defined( &{ $_ . '::' . $cvname } ) ) {
-            if ( exists( ${ $cvstashname . '::' }{ISA} ) ) {
-                svref_2object( \@{ $cvstashname . '::ISA' } )->save("$cvstashname\::ISA");
-            }
-            $isa_cache{"$cvstashname\::$cvname"} = $_;
-            mark_package( $_, 1 );    # force
-            return $_;
-        }
-        else {
-            $isa_cache{"$_\::$cvname"} = 0;
-            if ( get_isa($_) ) {
-                my $parent = try_isa( $_, $cvname );
-                if ($parent) {
-                    $isa_cache{"$_\::$cvname"}           = $parent;
-                    $isa_cache{"$cvstashname\::$cvname"} = $parent;
-                    debug( gv => "Found &%s::%s", $parent, $cvname );
-                    if ( exists( ${ $parent . '::' }{ISA} ) ) {
-                        debug( pkg => "save \@$parent\::ISA" );
-                        svref_2object( \@{ $parent . '::ISA' } )->save("$parent\::ISA");
-                    }
-                    if ( exists( ${ $_ . '::' }{ISA} ) ) {
-                        debug( pkg => "save \@$_\::ISA\n" );
-                        svref_2object( \@{ $_ . '::ISA' } )->save("$_\::ISA");
-                    }
-                    return $parent;
-                }
-            }
-        }
-    }
-    return 0;    # not found
-}
 
 sub load_utf8_heavy {
     return if $savINC{"utf8_heavy.pl"};

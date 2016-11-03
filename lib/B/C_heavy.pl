@@ -20,6 +20,7 @@ use B::C::File qw( init2 init0 init decl free
 use B::C::Packages qw/is_package_used mark_package_unused mark_package_used mark_package_removed get_all_packages_used/;
 
 our %Regexp;
+our %isa_cache;
 
 # Look this up here so we can do just a number compare
 # rather than looking up the name of every BASEOP in B::OP
@@ -206,6 +207,67 @@ sub save_object {
     foreach my $sv (@_) {
         svref_2object($sv)->save;
     }
+}
+
+
+# XXX issue 64, empty @ISA if a package has no subs. in Bytecode ok
+sub try_isa {
+    my ( $cvstashname, $cvname ) = @_;
+    return 0 unless defined $cvstashname;
+    if ( my $found = $isa_cache{"$cvstashname\::$cvname"} ) {
+        return $found;
+    }
+    no strict 'refs';
+
+    # XXX theoretically a valid shortcut. In reality it fails when $cvstashname is not loaded.
+    # return 0 unless $cvstashname->can($cvname);
+    my @isa = get_isa($cvstashname);
+    debug(
+        cv => "No definition for sub %s::%s. Try \@%s::ISA=(%s)",
+        $cvstashname, $cvname, $cvstashname, join( ",", @isa )
+    );
+    for (@isa) {    # global @ISA or in pad
+        next if $_ eq $cvstashname;
+        debug( cv => "Try &%s::%s", $_, $cvname );
+        if ( defined( &{ $_ . '::' . $cvname } ) ) {
+            if ( exists( ${ $cvstashname . '::' }{ISA} ) ) {
+                svref_2object( \@{ $cvstashname . '::ISA' } )->save("$cvstashname\::ISA");
+            }
+            $isa_cache{"$cvstashname\::$cvname"} = $_;
+            mark_package( $_, 1 );    # force
+            return $_;
+        }
+        else {
+            $isa_cache{"$_\::$cvname"} = 0;
+            if ( get_isa($_) ) {
+                my $parent = try_isa( $_, $cvname );
+                if ($parent) {
+                    $isa_cache{"$_\::$cvname"}           = $parent;
+                    $isa_cache{"$cvstashname\::$cvname"} = $parent;
+                    debug( gv => "Found &%s::%s", $parent, $cvname );
+                    if ( exists( ${ $parent . '::' }{ISA} ) ) {
+                        debug( pkg => "save \@$parent\::ISA" );
+                        svref_2object( \@{ $parent . '::ISA' } )->save("$parent\::ISA");
+                    }
+                    if ( exists( ${ $_ . '::' }{ISA} ) ) {
+                        debug( pkg => "save \@$_\::ISA\n" );
+                        svref_2object( \@{ $_ . '::ISA' } )->save("$_\::ISA");
+                    }
+                    return $parent;
+                }
+            }
+        }
+    }
+    return 0;    # not found
+}
+
+# used by B::OBJECT
+sub add_to_isa_cache {
+    my ( $k, $v ) = @_;
+    die unless defined $k;
+
+    $isa_cache{$k} = $v;
+    return;
 }
 
 1;
