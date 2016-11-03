@@ -137,9 +137,6 @@ sub parse_options {
             $arg ||= shift @options;            
             push @{$parsed->{to_skip}}, $arg; # TODO mark_skip($arg);
         }
-        elsif ( $opt eq "l" ) {
-            set_max_string_len($arg);
-        }
         else {
             die "Invalid option -$opt";
         }
@@ -205,7 +202,7 @@ use B::STASHGV ();
 use B::C::Optimizer::DynaLoader     ();
 use B::C::Optimizer::UnusedPackages ();
 use B::C::OverLoad                  ();
-use B::C::Save qw(constpv savepv set_max_string_len savestashpv);
+use B::C::Save qw(constpv savepv savestashpv);
 use B::C::Save::Signals ();
 
 sub add_to_currINC {

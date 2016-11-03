@@ -11,7 +11,7 @@ use B::C::Save::Hek qw/save_shared_he/;
 use Exporter ();
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/savepvn constpv savepv savecowpv inc_pv_index set_max_string_len get_max_string_len savestash_flags savestashpv/;
+our @EXPORT_OK = qw/savepvn constpv savepv savecowpv inc_pv_index savestash_flags savestashpv/;
 
 my %strtable;
 my %cowtable;
@@ -34,33 +34,14 @@ sub savecowpv {
     my $ix = const()->add('FAKE_CONST');
     my $pvsym = sprintf( "cowpv%d", $ix );
 
-    my $max_len = B::C::Save::get_max_string_len();
-    if ( $max_len && $cur > $max_len ) {
-        my $chars = join ', ', map { cchar $_ } split //, pack( "a*", $pv );
-        const()->update( $ix, sprintf( "Static const char %s[] = { %s };", $pvsym, $chars ) );
-        $cowtable{$cstring} = [ $pvsym, $cur, $len ];
-    }
-    else {
-        const()->update( $ix, sprintf( "Static const char %s[] = %s;", $pvsym, $cstring ) );
-        $cowtable{$cstring} = [ $pvsym, $cur, $len ];
-    }
+    const()->update( $ix, sprintf( "Static const char %s[] = %s;", $pvsym, $cstring ) );
+    $cowtable{$cstring} = [ $pvsym, $cur, $len ];
+
     return ( $pvsym, $cur, $len );    # NOTE: $cur is total size of the perl string. len would be the length of the C string.
 }
 
 sub constpv {                         # could also safely use a cowpv
     return savepv( shift, 1 );
-}
-
-{
-    my $_MAX_STR_LEN;
-
-    sub set_max_string_len {
-        $_MAX_STR_LEN = shift;
-    }
-
-    sub get_max_string_len {
-        return $_MAX_STR_LEN || 0;
-    }
 }
 
 sub savepv {
@@ -71,18 +52,11 @@ sub savepv {
     return $strtable{$cstring} if defined $strtable{$cstring};
     my $pvsym = sprintf( "pv%d", inc_pv_index() );
     $const = $const ? " const" : "";
-    my $maxlen = get_max_string_len;
-    if ( $maxlen && $len > $maxlen ) {
-        my $chars = join ', ', map { cchar $_ } split //, pack( "a*", $pv );
-        decl()->add( sprintf( "Static%s char %s[] = { %s };", $const, $pvsym, $chars ) );
+    if ( $cstring ne "0" ) {          # sic
+        decl()->add( sprintf( "Static%s char %s[] = %s;", $const, $pvsym, $cstring ) );
         $strtable{$cstring} = $pvsym;
     }
-    else {
-        if ( $cstring ne "0" ) {    # sic
-            decl()->add( sprintf( "Static%s char %s[] = %s;", $const, $pvsym, $cstring ) );
-            $strtable{$cstring} = $pvsym;
-        }
-    }
+
     return $pvsym;
 }
 
@@ -90,42 +64,29 @@ sub savepvn {
     my ( $dest, $pv, $sv, $cur ) = @_;
     my @init;
 
-    my $maxlen = get_max_string_len();
-
     $pv = pack "a*", $pv if defined $pv;
-    if ( $maxlen && length($pv) > $maxlen ) {
-        push @init, sprintf( "Newx(%s,%u,char);", $dest, length($pv) + 2 );
-        my $offset = 0;
-        while ( length $pv ) {
-            my $str = substr $pv, 0, $maxlen, '';
-            push @init, sprintf( 'Copy(%s, %s+%d, %u, char);', cstring($str), $dest, $offset, length($str) );
-            $offset += length $str;
+
+    # If READONLY and FAKE use newSVpvn_share instead. (test 75)
+    if ( $sv and is_shared_hek($sv) ) {
+        debug( sv => "Saving shared HEK %s to %s\n", cstring($pv), $dest );
+        my $shared_he = save_shared_he($pv);
+        push @init, sprintf( "%s = %s->shared_he_hek.hek_key;", $dest, $shared_he ) unless $shared_he eq 'NULL';
+        if ( DEBUGGING() ) {    # we have to bypass a wrong HE->HEK assert in hv.c
+            push @B::C::static_free, $dest;
         }
-        push @init, sprintf( "%s[%u] = '\\0';", $dest, $offset );
-        debug( pv => "Copying overlong PV %s to %s\n", cstring($pv), $dest );
     }
     else {
-        # If READONLY and FAKE use newSVpvn_share instead. (test 75)
-        if ( $sv and is_shared_hek($sv) ) {
-            debug( sv => "Saving shared HEK %s to %s\n", cstring($pv), $dest );
-            my $shared_he = save_shared_he($pv);
-            push @init, sprintf( "%s = %s->shared_he_hek.hek_key;", $dest, $shared_he ) unless $shared_he eq 'NULL';
-            if ( DEBUGGING() ) {    # we have to bypass a wrong HE->HEK assert in hv.c
-                push @B::C::static_free, $dest;
-            }
+        my $cstr = cstring($pv);
+        my $cur ||= ( $sv and ref($sv) and $sv->can('CUR') and ref($sv) ne 'B::GV' ) ? $sv->CUR : length( pack "a*", $pv );
+        if ( $sv and B::C::IsCOW($sv) ) {
+            $cstr = cstring_cow( $pv, q{\000\001} );
+            $cur += 2;
         }
-        else {
-            my $cstr = cstring($pv);
-            my $cur ||= ( $sv and ref($sv) and $sv->can('CUR') and ref($sv) ne 'B::GV' ) ? $sv->CUR : length( pack "a*", $pv );
-            if ( $sv and B::C::IsCOW($sv) ) {
-                $cstr = cstring_cow( $pv, q{\000\001} );
-                $cur += 2;
-            }
-            debug( sv => "Saving PV %s:%d to %s", $cstr, $cur, $dest );
-            $cur = 0 if $cstr eq "" and $cur == 7;    # 317
-            push @init, sprintf( "%s = savepvn(%s, %u); " . _caller_comment(), $dest, $cstr, $cur );
-        }
+        debug( sv => "Saving PV %s:%d to %s", $cstr, $cur, $dest );
+        $cur = 0 if $cstr eq "" and $cur == 7;    # 317
+        push @init, sprintf( "%s = savepvn(%s, %u); " . _caller_comment(), $dest, $cstr, $cur );
     }
+
     return @init;
 }
 
