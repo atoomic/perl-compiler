@@ -55,6 +55,18 @@ our $OP_DBMOPEN  = opnumber('dbmopen');
 our $OP_FORMLINE = opnumber('formline');
 our $OP_UCFIRST  = opnumber('ucfirst');
 
+sub walk_and_save_optree {
+    my ( $name, $root, $start ) = @_;
+    if ($root) {
+
+        # B.xs: walkoptree does more, reifying refs. rebless or recreating it.
+        verbose() ? walkoptree_slow( $root, "save" ) : walkoptree( $root, "save" );
+    }
+    return objsym($start);
+}
+
+sub saveoptree { goto &walk_and_save_optree }
+
 sub enable_option_debug {
     my $arg = shift;
 

@@ -191,7 +191,7 @@ package B::C;    # B::C_heavy
 
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw(mark_skip set_callback save_context svop_or_padop_pv inc_cleanup opsect_common fixup_ppaddr);
+our @EXPORT_OK = qw(mark_skip save_context svop_or_padop_pv inc_cleanup opsect_common fixup_ppaddr);
 
 # for 5.6.[01] better use the native B::C
 # but 5.6.2 works fine
@@ -226,20 +226,6 @@ sub add_to_currINC {
     BEGIN { ${^WARNING_BITS} = 0; }
     *DynaLoader::croak = sub { die @_ }
 }
-
-sub walk_and_save_optree {
-    my ( $name, $root, $start ) = @_;
-    if ($root) {
-
-        # B.xs: walkoptree does more, reifying refs. rebless or recreating it.
-        verbose() ? walkoptree_slow( $root, "save" ) : walkoptree( $root, "save" );
-    }
-    return objsym($start);
-}
-
-my $saveoptree_callback = \&walk_and_save_optree;
-sub set_callback { $saveoptree_callback = shift }
-sub saveoptree { &$saveoptree_callback(@_) }
 
 # 1. called from method_named, so hashp should be defined
 # 2. called from svop before method_named to cache the $package_pv
