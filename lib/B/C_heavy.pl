@@ -164,4 +164,14 @@ sub get_isa ($) {
     return @{ B::C::get_linear_isa($name) };
 }
 
+
+my @_v = Internals::V();
+sub __ANON__::_V { @_v }
+
+sub save_object {
+    foreach my $sv (@_) {
+        svref_2object($sv)->save;
+    }
+}
+
 1;
