@@ -83,6 +83,51 @@ sub walk_and_save_optree {
     return objsym($start);
 }
 
+# Fixes bug #307: use foreach, not each
+# each is not safe to use (at all). walksymtable is called recursively which might add
+# symbols to the stash, which might cause re-ordered rehashes, which will fool the hash
+# iterator, leading to missing symbols in the binary.
+# Old perl5 bug: The iterator should really be stored in the op, not the hash.
+sub walksymtable {
+    my ( $symref, $method, $recurse, $prefix ) = @_;
+    my ( $sym, $ref, $fullname );
+    $prefix = '' unless defined $prefix;
+
+    # If load_utf8_heavy doesn't happen before we walk utf8:: (when utf8_heavy has already been called) then the stored CV for utf8::SWASHNEW could be wrong.
+    load_utf8_heavy() if ( $prefix eq 'utf8::' && defined $symref->{'SWASHNEW'} );
+
+    my @list = sort {
+
+        # we want these symbols to be saved last to avoid incomplete saves
+        # +/- reverse is to defer + - to fix Tie::Hash::NamedCapturespecial cases. GH #247
+        # _loose_name redefined from utf8_heavy.pl
+        # re can be loaded by utf8_heavy
+        foreach my $v (qw{- + re:: utf8:: bytes::}) {
+            $a eq $v and return 1;
+            $b eq $v and return -1;
+        }
+
+        # reverse order for now to preserve original behavior before improved patch
+        $b cmp $a
+    } keys %$symref;
+
+    # reverse is to defer + - to fix Tie::Hash::NamedCapturespecial cases. GH #247
+    foreach my $sym (@list) {
+        no strict 'refs';
+        $ref      = $symref->{$sym};
+        $fullname = "*main::" . $prefix . $sym;
+        if ( $sym =~ /::$/ ) {
+            $sym = $prefix . $sym;
+            if ( svref_2object( \*$sym )->NAME ne "main::" && $sym ne "<none>::" && &$recurse($sym) ) {
+                walksymtable( \%$fullname, $method, $recurse, $sym );
+            }
+        }
+        else {
+            svref_2object( \*$fullname )->$method();
+        }
+    }
+}
+
 sub saveoptree { goto &walk_and_save_optree }
 
 sub enable_option_debug {
