@@ -91,4 +91,66 @@ sub IsCOW_hek {
 }
 
 
+# This pair is needed because B::FAKEOP::save doesn't scalar dereference
+# $op->next and $op->sibling
+
+# For 5.8:
+# Current workaround/fix for op_free() trying to free statically
+# defined OPs is to set op_seq = -1 and check for that in op_free().
+# Instead of hardwiring -1 in place of $op->seq, we use $op_seq
+# so that it can be changed back easily if necessary. In fact, to
+# stop compilers from moaning about a U16 being initialised with an
+# uncast -1 (the printf format is %d so we can't tweak it), we have
+# to "know" that op_seq is a U16 and use 65535. Ugh.
+
+# For 5.9 the hard coded text is the values for op_opt and op_static in each
+# op.  The value of op_opt is irrelevant, and the value of op_static needs to
+# be 1 to tell op_free that this is a statically defined op and that is
+# shouldn't be freed.
+
+# For 5.10 op_seq = -1 is gone, the temp. op_static also, but we
+# have something better, we can set op_latefree to 1, which frees the children
+# (e.g. savepvn), but not the static op.
+
+# 5.8: U16 op_seq;
+# 5.9.4: unsigned op_opt:1; unsigned op_static:1; unsigned op_spare:5;
+# 5.10: unsigned op_opt:1; unsigned op_latefree:1; unsigned op_latefreed:1; unsigned op_attached:1; unsigned op_spare:3;
+# 5.18: unsigned op_opt:1; unsigned op_slabbed:1; unsigned op_savefree:1; unsigned op_static:1; unsigned op_spare:3;
+# 5.19: unsigned op_opt:1; unsigned op_slabbed:1; unsigned op_savefree:1; unsigned op_static:1; unsigned op_folded:1; unsigned op_spare:2;
+# 5.21.2: unsigned op_opt:1; unsigned op_slabbed:1; unsigned op_savefree:1; unsigned op_static:1; unsigned op_folded:1; unsigned op_lastsib:1; unsigned op_spare:1;
+
+# fixme only use opsect common
+{
+    # should use a static variable
+    # only for $] < 5.021002
+    my $opsect_common = "next, sibling, ppaddr, " . ( MAD() ? "madprop, " : "" ) . "targ, type, " . "opt, slabbed, savefree, static, folded, moresib, spare" . ", flags, private";
+
+    sub opsect_common {
+        return $opsect_common;
+    }
+
+}
+
+# dummy for B::C, only needed for B::CC
+sub label { }
+
+# save alternate ops if defined, and also add labels (needed for B::CC)
+sub do_labels ($$@) {
+    my $op    = shift;
+    my $level = shift;
+
+    for my $m (@_) {
+        no strict 'refs';
+        my $mo = $op->$m if $m;
+        if ( $mo and $$mo ) {
+            label($mo);
+            $mo->save($level)
+              if $m ne 'first'
+              or ( $op->flags & 4
+                and !( $op->name eq 'const' and $op->flags & 64 ) );    #OPpCONST_BARE has no first
+        }
+    }
+}
+
+
 1;
