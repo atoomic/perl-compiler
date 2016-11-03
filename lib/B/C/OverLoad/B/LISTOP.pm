@@ -21,7 +21,6 @@ sub save {
     listopsect()->add( sprintf( "%s, s\\_%x, s\\_%x", $op->_save_common, ${ $op->first }, ${ $op->last } ) );
     listopsect()->debug( $op->name, $op );
     my $ix = listopsect()->index;
-    init()->add( sprintf( "listop_list[%d].op_ppaddr = %s;", $ix, $op->ppaddr ) );
     $sym = savesym( $op, "(OP*)&listop_list[$ix]" );
 
     if ( $op->type == $B::C::OP_DBMOPEN ) {

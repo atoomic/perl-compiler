@@ -58,7 +58,6 @@ sub save {
     my $add_label = $op->label ? 1 : 0;
 
     copsect()->debug( $op->name, $op );
-    init()->sadd( "cop_list[%d].op_ppaddr = %s;", $ix, $op->ppaddr );
 
     my $i = 0;
     if ( $op->hints_hash ) {
@@ -125,9 +124,6 @@ sub save {
             # lexwarn<n> might be also be STRLEN* 0
             init()->sadd( "%s = (STRLEN*)savesharedpvn((const char*)%s, sizeof(%s));", $dest, $copw, $copw );
         }
-    }
-    else {
-        init()->sadd( "cop_list[%d].cop_warnings = %s;", $ix, $warn_sv );
     }
 
     my $stash = savestashpv( $op->stashpv );

@@ -32,7 +32,6 @@ sub save {
     );
     loopsect()->debug( $op->name, $op );
     my $ix = loopsect()->index;
-    init()->add( sprintf( "loop_list[%d].op_ppaddr = %s;", $ix, $op->ppaddr ) );
     $sym = savesym( $op, "(OP*)&loop_list[$ix]" );
     do_labels( $op, $level + 1, qw(first last redoop nextop lastop) );
 
