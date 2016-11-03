@@ -26,11 +26,6 @@ use B::Flags;
 use B::C::Config;    # import everything
 use B::C::Config::Debug ();    # used for setting debug levels from cmdline
 
-use B::C::File qw( init2 init0 init decl free
-  heksect binopsect condopsect copsect padopsect listopsect logopsect
-  opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
-  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect sharedhe
-);
 use B::C::Helpers qw/set_curcv is_using_mro/;
 use B::C::Helpers::Symtable qw(objsym savesym);
 
@@ -96,11 +91,9 @@ sub parse_options {
     my ( $option, $opt, $arg );
     B::C::Save::Signals::enable();
 
-    
-
-    #mark_skip qw(B::C B::C::Flags B::CC B::FAKEOP O
-    #  B::Section B::Pseudoreg B::Shadow B::C::InitSection);
-    #mark_skip('DB', 'Term::ReadLine') if defined &DB::DB;
+    push @{$parsed->{to_skip}}, qw(B::C B::C::Flags B::CC B::FAKEOP O 
+        B::Section B::Pseudoreg B::Shadow B::C::InitSection);
+    push @{$parsed->{to_skip}}, qw{DB Term::ReadLine} if defined &DB::DB;
 
   OPTION:
     while ( $option = shift @options ) {
@@ -117,7 +110,7 @@ sub parse_options {
             last OPTION;
         }
         if ( $opt eq "w" ) {
-            B::C::Helpers::Symtable::enable_warnings();
+            push @parse_later, sub { B::C::Helpers::Symtable::enable_warnings() };
         }
         if ( $opt eq "c" ) {
             $check = 1;
@@ -158,9 +151,8 @@ sub parse_options {
             push @{$parsed->{to_use}}, $arg; # TODO mark_package_used($arg);
         }
         elsif ( $opt eq "U" ) {
-            $arg ||= shift @options;
-            #mark_skip($arg); TODO
-            push @{$parsed->{to_skip}}, $arg;
+            $arg ||= shift @options;            
+            push @{$parsed->{to_skip}}, $arg; # TODO mark_skip($arg);
         }
         elsif ( $opt eq "l" ) {
             set_max_string_len($arg);
@@ -179,22 +171,32 @@ sub parse_options {
 sub compile {
     my $parsed = parse_options(@_);
 
-    B::C::File::new($parsed->{output_file});    # Singleton.
-    B::C::Packages::new();            # Singleton.
-
     return boot_compilation($parsed);
 }
 
 sub boot_compilation {
     my $parsed = shift;
 
+    load_heavy();
+
     return sub {
+
+        B::C::File::new($parsed->{output_file});    # Singleton.
+        B::C::Packages::new();            # Singleton.
+
         foreach my $todo ( @{$parsed->{parse_later}} ) {
             $todo->();
         }
 
         return save_main($parsed->{output_file});
     }
+}
+
+sub load_heavy {
+    my $bc = $INC{'B/C.pm'};
+    $bc =~ s/\.pm$/_heavy.pl/; # load B/C_heavy.pl
+    require $bc;
+    return;
 }
 
 sub enable_option_debug {
@@ -268,7 +270,6 @@ use B::STASHGV ();
 use B::C::Optimizer::DynaLoader     ();
 use B::C::Optimizer::UnusedPackages ();
 use B::C::OverLoad                  ();
-use B::C::Packages qw/is_package_used mark_package_unused mark_package_used mark_package_removed get_all_packages_used/;
 use B::C::Save qw(constpv savepv set_max_string_len savestashpv);
 use B::C::Save::Signals ();
 
