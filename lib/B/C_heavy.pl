@@ -19,6 +19,8 @@ use B::C::File qw( init2 init0 init decl free
 
 use B::C::Packages qw/is_package_used mark_package_unused mark_package_used mark_package_removed get_all_packages_used/;
 
+our %Regexp;
+
 # Look this up here so we can do just a number compare
 # rather than looking up the name of every BASEOP in B::OP
 # maybe use contant
@@ -26,6 +28,38 @@ our $OP_THREADSV = opnumber('threadsv');
 our $OP_DBMOPEN  = opnumber('dbmopen');
 our $OP_FORMLINE = opnumber('formline');
 our $OP_UCFIRST  = opnumber('ucfirst');
+
+sub enable_option_debug {
+    my $arg = shift;
+
+    $arg =~ s{^=+}{};
+    if ( B::C::Config::Debug::enable_debug_level($arg) ) {
+        WARN("Enable debug mode: $arg");
+        next;
+    }
+    foreach my $arg ( split( //, $arg ) ) {
+        next if B::C::Config::Debug::enable_debug_level($arg);
+        if ( $arg eq "o" ) {
+            B::C::Config::Debug::enabe_verbose();
+            B->debug(1);
+        }
+        elsif ( $arg eq "F" ) {
+            B::C::Config::Debug::enable_debug_level('flags');
+        }
+        elsif ( $arg eq "r" ) {
+            B::C::Config::Debug::enable_debug_level('runtime');
+            $SIG{__WARN__} = sub {
+                WARN(@_);
+                my $s = join( " ", @_ );
+                chomp $s;
+                init()->add( "/* " . $s . " */" ) if init();
+            };
+        }
+        else {
+            WARN("ignoring unknown debug option: $arg");
+        }
+    }
+}
 
 sub svop_name {
     my $op = shift;

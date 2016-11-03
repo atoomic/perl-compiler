@@ -110,14 +110,15 @@ sub parse_options {
             last OPTION;
         }
         if ( $opt eq "w" ) {
-            push @parse_later, sub { B::C::Helpers::Symtable::enable_warnings() };
+            push @parse_later, sub { eval q{B::C::Helpers::Symtable::enable_warnings()} };
         }
         if ( $opt eq "c" ) {
             $check = 1;
         }
         elsif ( $opt eq "D" ) {
             $arg ||= shift @options;
-            push @parse_later, sub { B::C::enable_option_debug($arg) };
+            # debug = $arg
+            push @parse_later, sub { eval qq{B::C::enable_option_debug($arg)} };
         }
         elsif ( $opt eq "o" ) {
             $arg ||= shift @options;
@@ -133,12 +134,9 @@ sub parse_options {
             $arg ||= shift @options;
             $init_name = $arg;
         }
-        elsif ( $opt eq "m" ) {
-            module($arg);
-            push @{$parsed->{to_use}}, $arg; # TODO mark_package_used($arg);
-        }
         elsif ( $opt eq "v" ) {
-            push @parse_later, sub { B::C::Config::Debug::enable_verbose() };
+            # v = 1
+            push @parse_later, sub { eval q{B::C::Config::Debug::enable_verbose()} };
         }
         elsif ( $opt eq "u" ) {
             $arg ||= shift @options;
@@ -177,9 +175,9 @@ sub compile {
 sub boot_compilation {
     my $parsed = shift;
 
-    load_heavy();
-
     return sub {
+
+        load_heavy();
 
         B::C::File::new($parsed->{output_file});    # Singleton.
         B::C::Packages::new();            # Singleton.
@@ -199,44 +197,10 @@ sub load_heavy {
     return;
 }
 
-sub enable_option_debug {
-    my $arg = shift;
-
-    $arg =~ s{^=+}{};
-    if ( B::C::Config::Debug::enable_debug_level($arg) ) {
-        WARN("Enable debug mode: $arg");
-        next;
-    }
-    foreach my $arg ( split( //, $arg ) ) {
-        next if B::C::Config::Debug::enable_debug_level($arg);
-        if ( $arg eq "o" ) {
-            B::C::Config::Debug::enabe_verbose();
-            B->debug(1);
-        }
-        elsif ( $arg eq "F" ) {
-            B::C::Config::Debug::enable_debug_level('flags');
-        }
-        elsif ( $arg eq "r" ) {
-            B::C::Config::Debug::enable_debug_level('runtime');
-            $SIG{__WARN__} = sub {
-                WARN(@_);
-                my $s = join( " ", @_ );
-                chomp $s;
-                init()->add( "/* " . $s . " */" ) if init();
-            };
-        }
-        else {
-            WARN("ignoring unknown debug option: $arg");
-        }
-    }
-}
-
 # the heavy one ??
 package B::C;    # B::C_heavy
 
 #use strict;
-
-our %Regexp;
 
 {                # block necessary for caller to work
     my $caller = caller;
