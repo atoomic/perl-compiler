@@ -22,6 +22,26 @@ use B::C::Packages qw/is_package_used mark_package_unused mark_package_used mark
 our %Regexp;
 our %isa_cache;
 
+# FIXME: this part can now be dynamic
+# exclude all not B::C:: prefixed subs
+# used in CV
+our %all_bc_subs = map { $_ => 1 } qw(B::AV::save B::BINOP::save B::BM::save B::COP::save B::CV::save
+  B::FAKEOP::fake_ppaddr B::FAKEOP::flags B::FAKEOP::new B::FAKEOP::next
+  B::FAKEOP::ppaddr B::FAKEOP::private B::FAKEOP::save B::FAKEOP::sibling
+  B::FAKEOP::targ B::FAKEOP::type B::GV::save B::GV::savecv B::HV::save
+  B::IO::save B::IO::save_data B::IV::save B::LISTOP::save B::LOGOP::save
+  B::LOOP::save B::NULL::save B::NV::save B::OBJECT::save
+  B::OP::_save_common B::OP::fake_ppaddr B::OP::isa B::OP::save
+  B::PADLIST::save B::PADOP::save B::PMOP::save B::PV::save B::PVIV::save
+  B::PVLV::save B::PVMG::save B::PVMG::save_magic B::PVNV::save B::PVOP::save
+  B::REGEXP::save B::RV::save B::SPECIAL::save B::SPECIAL::savecv
+  B::SV::save B::SVOP::save B::UNOP::save B::UV::save B::REGEXP::EXTFLAGS);
+
+# track all internally used packages. all other may not be deleted automatically
+# - hidden methods
+# uses now @B::C::Flags::deps
+our %all_bc_deps = map { $_ => 1 } @B::C::Flags::deps;
+
 # Look this up here so we can do just a number compare
 # rather than looking up the name of every BASEOP in B::OP
 # maybe use contant
@@ -268,6 +288,14 @@ sub add_to_isa_cache {
 
     $isa_cache{$k} = $v;
     return;
+}
+
+# Do not delete/ignore packages which were brought in from the script,
+# i.e. not defined in B::C or O. Just to be on the safe side.
+sub can_delete {
+    my $pkg = shift;
+    if ( exists $all_bc_deps{$pkg} ) { return 1 }
+    return undef;
 }
 
 1;
