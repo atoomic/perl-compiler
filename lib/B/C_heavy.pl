@@ -82,4 +82,13 @@ sub nextcop {
 }
 
 
+sub IsCOW {
+    return ( ref $_[0] && $_[0]->can('FLAGS') && $_[0]->FLAGS & 0x10000000 );    # since 5.22
+}
+
+sub IsCOW_hek {
+    return IsCOW( $_[0] ) && !$_[0]->LEN;
+}
+
+
 1;

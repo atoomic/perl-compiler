@@ -392,13 +392,6 @@ sub svop_or_padop_pv {
     }
 }
 
-sub IsCOW {
-    return ( ref $_[0] && $_[0]->can('FLAGS') && $_[0]->FLAGS & 0x10000000 );    # since 5.22
-}
-
-sub IsCOW_hek {
-    return IsCOW( $_[0] ) && !$_[0]->LEN;
-}
 
 # This pair is needed because B::FAKEOP::save doesn't scalar dereference
 # $op->next and $op->sibling
