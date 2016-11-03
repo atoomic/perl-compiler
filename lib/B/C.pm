@@ -516,18 +516,6 @@ sub mark_threads {
     }
 }
 
-sub get_isa ($) {
-    no strict 'refs';
-
-    my $name = shift;
-    if ( is_using_mro() ) {    # mro.xs loaded. c3 or dfs
-        return @{ mro::get_linear_isa($name) };
-    }
-
-    # dfs only, without loading mro
-    return @{ B::C::get_linear_isa($name) };
-}
-
 # try_isa($pkg,$name) returns the found $pkg for the method $pkg::$name
 # If a method can be called (via UNIVERSAL::can) search the ISA's. No AUTOLOAD needed.
 # XXX issue 64, empty @ISA if a package has no subs. in Bytecode ok

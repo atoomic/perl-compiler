@@ -152,5 +152,16 @@ sub do_labels ($$@) {
     }
 }
 
+sub get_isa ($) {
+    no strict 'refs';
+
+    my $name = shift;
+    if ( is_using_mro() ) {    # mro.xs loaded. c3 or dfs
+        return @{ mro::get_linear_isa($name) };
+    }
+
+    # dfs only, without loading mro
+    return @{ B::C::get_linear_isa($name) };
+}
 
 1;
