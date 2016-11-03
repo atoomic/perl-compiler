@@ -1,16 +1,15 @@
 #      C.pm
 #
 #      Copyright (c) 1996, 1997, 1998 Malcolm Beattie
-#      Copyright (c) 2008, 2009, 2010, 2011 Reini Urban
+#      Copyright (c) 2008-2016 Reini Urban
 #      Copyright (c) 2010 Nick Koston
-#      Copyright (c) 2011, 2012, 2013, 2014, 2015 cPanel Inc
+#      Copyright (c) 2011-2016 cPanel Inc
 #
 #      You may distribute under the terms of either the GNU General Public
 #      License or the Artistic License, as specified in the README file.
 #
 
 package B::C;
-use strict;
 
 our $VERSION = '5.024010';
 
@@ -38,9 +37,195 @@ use B::C::Helpers::Symtable qw(objsym savesym);
 use strict;
 use Exporter ();
 use Errno    ();               #needed since 5.14
+
+# FIXME: this part can now be dynamic
+# exclude all not B::C:: prefixed subs
+# used in CV
+our %all_bc_subs = map { $_ => 1 } qw(B::AV::save B::BINOP::save B::BM::save B::COP::save B::CV::save
+  B::FAKEOP::fake_ppaddr B::FAKEOP::flags B::FAKEOP::new B::FAKEOP::next
+  B::FAKEOP::ppaddr B::FAKEOP::private B::FAKEOP::save B::FAKEOP::sibling
+  B::FAKEOP::targ B::FAKEOP::type B::GV::save B::GV::savecv B::HV::save
+  B::IO::save B::IO::save_data B::IV::save B::LISTOP::save B::LOGOP::save
+  B::LOOP::save B::NULL::save B::NV::save B::OBJECT::save
+  B::OP::_save_common B::OP::fake_ppaddr B::OP::isa B::OP::save
+  B::PADLIST::save B::PADOP::save B::PMOP::save B::PV::save B::PVIV::save
+  B::PVLV::save B::PVMG::save B::PVMG::save_magic B::PVNV::save B::PVOP::save
+  B::REGEXP::save B::RV::save B::SPECIAL::save B::SPECIAL::savecv
+  B::SV::save B::SVOP::save B::UNOP::save B::UV::save B::REGEXP::EXTFLAGS);
+
+# track all internally used packages. all other may not be deleted automatically
+# - hidden methods
+# uses now @B::C::Flags::deps
+our %all_bc_deps = map { $_ => 1 } @B::C::Flags::deps;
+
+our $gv_index = 0;
+
+our ( $package_pv, @package_pv );    # global stash for methods since 5.13
+our ( %xsub,       %init2_remap );
+our ($staticxs);
+our ( %dumped_package, %skip_package, %isa_cache );
+
+# fixme move to config
+our ( $use_xsloader, $devel_peek_needed );
+
+# can be improved
+our $nullop_count     = 0;
+our $unresolved_count = 0;
+
+# options and optimizations shared with B::CC
+our ( $init_name, %savINC, %curINC, $mainfile, @static_free );
+
+our $const_strings = 1;    # TODO: This var needs to go away.
+
+our @xpvav_sizes;
+our ($in_endav);
+my %static_core_pkg;       # = map {$_ => 1} static_core_packages();
+
+my @parse_later;
+
+sub parse_options {
+    my @options = @_;
+
+    my $output_file;
+
+    # Allow debugging in CHECK blocks without Od
+    $DB::single = 1 if defined &DB::DB;
+    my ( $option, $opt, $arg );
+    B::C::Save::Signals::enable();
+
+    #mark_skip qw(B::C B::C::Flags B::CC B::FAKEOP O
+    #  B::Section B::Pseudoreg B::Shadow B::C::InitSection);
+    #mark_skip('DB', 'Term::ReadLine') if defined &DB::DB;
+
+  OPTION:
+    while ( $option = shift @options ) {
+        if ( $option =~ /^-(.)(.*)/ ) {
+            $opt = $1;
+            $arg = $2;
+        }
+        else {
+            unshift @options, $option;
+            last OPTION;
+        }
+        if ( $opt eq "-" && $arg eq "-" ) {
+            shift @options;
+            last OPTION;
+        }
+        if ( $opt eq "w" ) {
+            B::C::Helpers::Symtable::enable_warnings();
+        }
+        if ( $opt eq "c" ) {
+            $check = 1;
+        }
+        elsif ( $opt eq "D" ) {
+            $arg ||= shift @options;
+            push @parse_later, sub { B::C::enable_option_debug($arg) };
+        }
+        elsif ( $opt eq "o" ) {
+            $arg ||= shift @options;
+            $output_file = $arg;
+            if ($check) {
+                WARN("Warning: -o argument ignored with -c");
+            }
+        }
+        elsif ( $opt eq "s" and $arg eq "taticxs" ) {
+            $staticxs = 1;
+        }
+        elsif ( $opt eq "n" ) {
+            $arg ||= shift @options;
+            $init_name = $arg;
+        }
+        elsif ( $opt eq "m" ) {
+            module($arg);
+            mark_package_used($arg);
+        }
+        elsif ( $opt eq "v" ) {
+            push @parse_later, sub { B::C::Config::Debug::enable_verbose() };
+        }
+        elsif ( $opt eq "u" ) {
+            $arg ||= shift @options;
+            if ( $arg =~ /\.p[lm]$/ ) {
+                eval qq{require("$arg");};    # path as string
+            }
+            else {
+                eval qq{require $arg;};       # package as bareword with ::
+            }
+            mark_package_used($arg);
+        }
+        elsif ( $opt eq "U" ) {
+            $arg ||= shift @options;
+            mark_skip($arg);
+        }
+        elsif ( $opt eq "l" ) {
+            set_max_string_len($arg);
+        }
+        else {
+            die "Invalid option -$opt";
+        }
+    }
+
+    return ($output_file);
+}
+
+sub compile {
+    my $output_file = parse_options(@_);
+
+    B::C::File::new($output_file);    # Singleton.
+    B::C::Packages::new();            # Singleton.
+
+    return sub { boot_compilation($output_file) }
+}
+
+sub boot_compilation {
+    my ($output_file) = @_;
+
+    foreach my $todo (@parse_later) {
+        $todo->();
+    }
+
+    return save_main($output_file);
+}
+
+sub enable_option_debug {
+    my $arg = shift;
+
+    $arg =~ s{^=+}{};
+    if ( B::C::Config::Debug::enable_debug_level($arg) ) {
+        WARN("Enable debug mode: $arg");
+        next;
+    }
+    foreach my $arg ( split( //, $arg ) ) {
+        next if B::C::Config::Debug::enable_debug_level($arg);
+        if ( $arg eq "o" ) {
+            B::C::Config::Debug::enabe_verbose();
+            B->debug(1);
+        }
+        elsif ( $arg eq "F" ) {
+            B::C::Config::Debug::enable_debug_level('flags');
+        }
+        elsif ( $arg eq "r" ) {
+            B::C::Config::Debug::enable_debug_level('runtime');
+            $SIG{__WARN__} = sub {
+                WARN(@_);
+                my $s = join( " ", @_ );
+                chomp $s;
+                init()->add( "/* " . $s . " */" ) if init();
+            };
+        }
+        else {
+            WARN("ignoring unknown debug option: $arg");
+        }
+    }
+}
+
+# the heavy one ??
+package B::C;    # B::C_heavy
+
+#use strict;
+
 our %Regexp;
 
-{                              # block necessary for caller to work
+{                # block necessary for caller to work
     my $caller = caller;
     if ( $caller eq 'O' or $caller eq 'Od' ) {
         require XSLoader;
@@ -75,50 +260,6 @@ use B::C::OverLoad                  ();
 use B::C::Packages qw/is_package_used mark_package_unused mark_package_used mark_package_removed get_all_packages_used/;
 use B::C::Save qw(constpv savepv set_max_string_len savestashpv);
 use B::C::Save::Signals ();
-
-our $gv_index = 0;
-
-# FIXME: this part can now be dynamic
-# exclude all not B::C:: prefixed subs
-# used in CV
-our %all_bc_subs = map { $_ => 1 } qw(B::AV::save B::BINOP::save B::BM::save B::COP::save B::CV::save
-  B::FAKEOP::fake_ppaddr B::FAKEOP::flags B::FAKEOP::new B::FAKEOP::next
-  B::FAKEOP::ppaddr B::FAKEOP::private B::FAKEOP::save B::FAKEOP::sibling
-  B::FAKEOP::targ B::FAKEOP::type B::GV::save B::GV::savecv B::HV::save
-  B::IO::save B::IO::save_data B::IV::save B::LISTOP::save B::LOGOP::save
-  B::LOOP::save B::NULL::save B::NV::save B::OBJECT::save
-  B::OP::_save_common B::OP::fake_ppaddr B::OP::isa B::OP::save
-  B::PADLIST::save B::PADOP::save B::PMOP::save B::PV::save B::PVIV::save
-  B::PVLV::save B::PVMG::save B::PVMG::save_magic B::PVNV::save B::PVOP::save
-  B::REGEXP::save B::RV::save B::SPECIAL::save B::SPECIAL::savecv
-  B::SV::save B::SVOP::save B::UNOP::save B::UV::save B::REGEXP::EXTFLAGS);
-
-# track all internally used packages. all other may not be deleted automatically
-# - hidden methods
-# uses now @B::C::Flags::deps
-our %all_bc_deps = map { $_ => 1 } @B::C::Flags::deps;
-
-our ( $package_pv, @package_pv );    # global stash for methods since 5.13
-our ( %xsub,       %init2_remap );
-our ($staticxs);
-our ( %dumped_package, %skip_package, %isa_cache );
-my $output_file;
-
-# fixme move to config
-our ( $use_xsloader, $devel_peek_needed );
-
-# can be improved
-our $nullop_count     = 0;
-our $unresolved_count = 0;
-
-# options and optimizations shared with B::CC
-our ( $init_name, %savINC, %curINC, $mainfile, @static_free );
-
-our $const_strings = 1;    # TODO: This var needs to go away.
-
-our @xpvav_sizes;
-our ($in_endav);
-my %static_core_pkg;       # = map {$_ => 1} static_core_packages();
 
 # used by B::OBJECT
 sub add_to_isa_cache {
@@ -1148,9 +1289,11 @@ sub save_context {
 }
 
 sub save_main {
+    my $output_file = shift;
+
     verbose("Starting compile");
     verbose("Walking tree");
-    %Exporter::Cache = ();                # avoid B::C and B symbols being stored
+    %Exporter::Cache = ();    # avoid B::C and B symbols being stored
     _delete_macros_vendor_undefined();
     set_curcv(B::main_cv);
 
@@ -1165,7 +1308,9 @@ sub save_main {
     verbose()
       ? walkoptree_slow( main_root, "save" )
       : walkoptree( main_root, "save" );
-    save_main_rest();
+    save_main_rest($output_file);
+
+    return;
 }
 
 sub _delete_macros_vendor_undefined {
@@ -1206,6 +1351,8 @@ sub force_saving_xsloader {
 }
 
 sub save_main_rest {
+    my ($output_file) = @_;
+
     debug( [qw/verbose cv/], "done main optree, walking symtable for extras" );
     init()->add("");
     init()->add("/* done main optree, extra subs which might be unused */");
@@ -1546,148 +1693,6 @@ sub init_op_addr {
 }
 _EOT3
 
-}
-
-sub compile {
-    my @options = @_;
-
-    # Allow debugging in CHECK blocks without Od
-    $DB::single = 1 if defined &DB::DB;
-    my ( $option, $opt, $arg );
-    my @eval_at_startup;
-    B::C::Save::Signals::enable();
-
-    mark_skip qw(B::C B::C::Flags B::CC B::FAKEOP O
-      B::Section B::Pseudoreg B::Shadow B::C::InitSection);
-
-    #mark_skip('DB', 'Term::ReadLine') if defined &DB::DB;
-
-  OPTION:
-    while ( $option = shift @options ) {
-        if ( $option =~ /^-(.)(.*)/ ) {
-            $opt = $1;
-            $arg = $2;
-        }
-        else {
-            unshift @options, $option;
-            last OPTION;
-        }
-        if ( $opt eq "-" && $arg eq "-" ) {
-            shift @options;
-            last OPTION;
-        }
-        if ( $opt eq "w" ) {
-            B::C::Helpers::Symtable::enable_warnings();
-        }
-        if ( $opt eq "c" ) {
-            $check = 1;
-        }
-        elsif ( $opt eq "D" ) {
-            $arg ||= shift @options;
-            $arg =~ s{^=+}{};
-            if ( $arg eq 'full' ) {
-                $arg = 'OcAHCMGSPpsWF';
-                $all_bc_deps{'B::Flags'}++;
-            }
-            elsif ( $arg eq 'ufull' ) {
-                $arg = 'uOcAHCMGSPpsWF';
-                $all_bc_deps{'B::Flags'}++;
-            }
-            elsif ( B::C::Config::Debug::enable_debug_level($arg) ) {
-                WARN("Enable debug mode: $arg");
-                next;
-            }
-            foreach my $arg ( split( //, $arg ) ) {
-                next if B::C::Config::Debug::enable_debug_level($arg);
-                if ( $arg eq "o" ) {
-                    B::C::Config::Debug::enabe_verbose();
-                    B->debug(1);
-                }
-                elsif ( $arg eq "F" ) {
-                    B::C::Config::Debug::enable_debug_level('flags');
-                    $all_bc_deps{'B::Flags'}++;
-                }
-                elsif ( $arg eq "r" ) {
-                    B::C::Config::Debug::enable_debug_level('runtime');
-                    $SIG{__WARN__} = sub {
-                        WARN(@_);
-                        my $s = join( " ", @_ );
-                        chomp $s;
-                        init()->add( "/* " . $s . " */" ) if init();
-                    };
-                }
-                else {
-                    WARN("ignoring unknown debug option: $arg");
-                }
-            }
-        }
-        elsif ( $opt eq "o" ) {
-            $arg ||= shift @options;
-            $output_file = $arg;
-            if ($check) {
-                WARN("Warning: -o argument ignored with -c");
-            }
-        }
-        elsif ( $opt eq "s" and $arg eq "taticxs" ) {
-            $staticxs = 1;
-        }
-        elsif ( $opt eq "n" ) {
-            $arg ||= shift @options;
-            $init_name = $arg;
-        }
-        elsif ( $opt eq "m" ) {
-            module($arg);
-            mark_package_used($arg);
-        }
-        elsif ( $opt eq "v" ) {
-            B::C::Config::Debug::enable_verbose();
-        }
-        elsif ( $opt eq "u" ) {
-            $arg ||= shift @options;
-            if ( $arg =~ /\.p[lm]$/ ) {
-                eval "require(\"$arg\");";    # path as string
-            }
-            else {
-                eval "require $arg;";         # package as bareword with ::
-            }
-            mark_package_used($arg);
-        }
-        elsif ( $opt eq "U" ) {
-            $arg ||= shift @options;
-            mark_skip($arg);
-        }
-        elsif ( $opt eq "f" ) {
-            die "Invalid option -f";
-        }
-        elsif ( $opt eq "O" ) {
-            die "Invalid option -O";
-        }
-        elsif ( $opt eq "e" ) {
-            push @eval_at_startup, $arg;
-        }
-        elsif ( $opt eq "l" ) {
-            set_max_string_len($arg);
-        }
-    }
-
-    B::C::File::new($output_file);    # Singleton.
-    B::C::Packages::new();            # Singleton.
-
-    foreach my $i (@eval_at_startup) {
-        init2()->add_eval($i);
-    }
-    if (@options) {                   # modules or main?
-        return sub {
-            my $objname;
-            foreach $objname (@options) {
-                eval "save_object(\\$objname)";
-            }
-            B::C::File::output_all( $init_name || "init_module" );
-          }
-    }
-    else {
-        return sub { save_main() };
-    }
 }
 
 1;
