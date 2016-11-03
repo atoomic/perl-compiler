@@ -405,4 +405,26 @@ sub svop_or_padop_pv {
     }
 }
 
+sub inc_packname {
+    my $package = shift;
+
+    # See below at the reverse packname_inc: utf8 => utf8.pm + utf8_heavy.pl
+    $package =~ s/\:\:/\//g;
+    $package .= '.pm';
+    return $package;
+}
+
+sub packname_inc {
+    my $package = shift;
+    $package =~ s/\//::/g;
+    if ( $package =~ /^(Config_git\.pl|Config_heavy.pl)$/ ) {
+        return 'Config';
+    }
+    if ( $package eq 'utf8_heavy.pl' ) {
+        return 'utf8';
+    }
+    $package =~ s/\.p[lm]$//;
+    return $package;
+}
+
 1;
