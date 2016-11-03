@@ -86,7 +86,7 @@ my %static_core_pkg;       # = map {$_ => 1} static_core_packages();
 sub parse_options {
     my @options = @_;
 
-    my $parsed = {}; # return everything parsed 
+    my $parsed = { to_skip => [], to_use => [] }; # return everything parsed 
     
     my $output_file;
     my @parse_later;
@@ -142,7 +142,7 @@ sub parse_options {
         }
         elsif ( $opt eq "m" ) {
             module($arg);
-            mark_package_used($arg);
+            push @{$parsed->{to_use}}, $arg; # TODO mark_package_used($arg);
         }
         elsif ( $opt eq "v" ) {
             push @parse_later, sub { B::C::Config::Debug::enable_verbose() };
@@ -154,12 +154,13 @@ sub parse_options {
             }
             else {
                 eval qq{require $arg;};       # package as bareword with ::
-            }
-            mark_package_used($arg);
+            }            
+            push @{$parsed->{to_use}}, $arg; # TODO mark_package_used($arg);
         }
         elsif ( $opt eq "U" ) {
             $arg ||= shift @options;
-            mark_skip($arg);
+            #mark_skip($arg); TODO
+            push @{$parsed->{to_skip}}, $arg;
         }
         elsif ( $opt eq "l" ) {
             set_max_string_len($arg);
