@@ -200,11 +200,6 @@ use B qw(minus_c sv_undef walkoptree walkoptree_slow main_root main_start peekop
   init_av end_av opnumber cstring
   HEf_SVKEY SVf_POK SVf_ROK SVf_IOK SVf_NOK SVf_IVisUV SVf_READONLY);
 
-BEGIN {
-    @B::NV::ISA = 'B::IV';    # add IVX to nv. This fixes test 23 for Perl 5.8
-    B->import(qw(regex_padav SVp_NOK SVp_IOK CVf_CONST CVf_ANON SVt_PVGV));
-}
-
 use FileHandle;
 
 use B::FAKEOP  ();

@@ -11,6 +11,11 @@ use B qw(minus_c sv_undef walkoptree walkoptree_slow main_root main_start peekop
   init_av end_av opnumber cstring
   HEf_SVKEY SVf_POK SVf_ROK SVf_IOK SVf_NOK SVf_IVisUV SVf_READONLY);
 
+BEGIN {
+    @B::NV::ISA = 'B::IV';    # add IVX to nv. This fixes test 23 for Perl 5.8
+    B->import(qw(regex_padav SVp_NOK SVp_IOK CVf_CONST CVf_ANON SVt_PVGV));
+}
+
 use B::C::File qw( init2 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
