@@ -5,6 +5,7 @@ use strict;
 use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8/;
 
 use B::C::Config;
+use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he/;
 use B::C::Packages qw/is_package_used/;
 use B::C::File qw/init init2/;
@@ -270,7 +271,7 @@ sub save_gv_with_gp {
     my $was_emptied;
 
     if ( !$gv->isGV_with_GP ) {
-        init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ) );
+        init()->sadd( "%s = %s; /* %s */", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ), $name );
         return;
     }
 
@@ -280,30 +281,30 @@ sub save_gv_with_gp {
         debug( gv => "Shared GV alias for *%s 0x%x%s to %s", $fullname, $svflags, debug('flags') ? "(" . $gv->flagspv . ")" : "", $egvsym );
 
         # Shared glob *foo = *bar
-        init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, "$gvadd|GV_ADDMULTI", 'SVt_PVGV' ) );
+        init()->sadd( "%s = %s; /* %s */", $sym, gv_fetchpv_string( $name, "$gvadd|GV_ADDMULTI", 'SVt_PVGV' ), $name );
         init()->sadd( "GvGP_set(%s, GvGP(%s));", $sym, $egvsym );
         $was_emptied = 1;
     }
     elsif ( $gp and exists $gptable{ 0 + $gp } ) {
         debug( gv => "Shared GvGP for *%s 0x%x%s %s GP:0x%x", $fullname, $svflags, debug('flags') ? "(" . $gv->flagspv . ")" : "", $gv->FILE, $gp );
-        init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $notqual, 'SVt_PVGV' ) );
+        init()->sadd( "%s = %s; /* %s */", $sym, gv_fetchpv_string( $name, $notqual, 'SVt_PVGV' ), $name );
         init()->sadd( "GvGP_set(%s, %s);", $sym, $gptable{ 0 + $gp } );
         $was_emptied = 1;
     }
     elsif ( $gp and !$is_empty and $gvname =~ /::$/ ) {
         debug( gv => "Shared GvGP for stash %%%s 0x%x%s %s GP:0x%x", $fullname, $svflags, debug('flags') ? "(" . $gv->flagspv . ")" : "", $gv->FILE, $gp );
-        init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, 'GV_ADD', 'SVt_PVHV' ) );
+        init()->sadd( "%s = %s; /* %s */", $sym, gv_fetchpv_string( $name, 'GV_ADD', 'SVt_PVHV' ), $name );
         $gptable{ 0 + $gp } = "GvGP($sym)" if 0 + $gp;
     }
     elsif ( $gp and !$is_empty ) {
         debug( gv => "New GV for *%s 0x%x%s %s GP:0x%x", $fullname, $svflags, debug('flags') ? "(" . $gv->flagspv . ")" : "", $gv->FILE, $gp );
 
         # XXX !PERL510 and OPf_COP_TEMP we need to fake PL_curcop for gp_file hackery
-        init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ) );
+        init()->sadd( "%s = %s; /* %s */", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ), $name );
         $gptable{ 0 + $gp } = "GvGP($sym)";
     }
     else {
-        init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PVGV' ) );
+        init()->sadd( "%s = %s; /* %s */", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PVGV' ), $name );
     }
 
     return $was_emptied;
@@ -623,8 +624,10 @@ sub gv_fetchpv_string {
     warn 'undefined type'  unless defined $type;
     my ( $cname, $cur, $utf8 ) = strlen_flags($name);
 
+    my ( $cname_cow, $cur_cow, $len_cow ) = savecowpv($name);
+
     $flags .= length($flags) ? "|$utf8" : $utf8 if $utf8;
-    return "gv_fetchpvn_flags($cname, $cur, $flags, $type)";
+    return "gv_fetchpvn_flags(${cname_cow}, $cur, $flags, $type)";
 }
 
 sub savecv {
