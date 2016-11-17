@@ -5,7 +5,8 @@ use warnings;
 # avoid use vars
 use parent 'B::C::Section';
 
-use B::C::Debug ();
+use B::C::Debug        ();
+use B::C::LazyTemplate ();
 
 # All objects inject into this shared variable.
 our @all_eval_pvs;
@@ -178,6 +179,9 @@ sub output {
     if ( $self->name eq 'init' ) {
         $return_string .= "    perl_init0(aTHX);\n";
     }
+
+    B::C::LazyTemplate::substitute_all( \$return_string );
+
     $return_string .= $self->SUPER::output($format);
     $return_string .= "    return 0;\n}\n";
 }

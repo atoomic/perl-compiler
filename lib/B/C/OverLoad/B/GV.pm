@@ -5,7 +5,7 @@ use strict;
 use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8/;
 
 use B::C::Config;
-use B::C::Save qw/savecowpv/;
+use B::C::Save qw/savecowpv getcowpv/;
 use B::C::Save::Hek qw/save_shared_he/;
 use B::C::Packages qw/is_package_used/;
 use B::C::File qw/init init2/;
@@ -13,6 +13,7 @@ use B::C::Helpers qw/mark_package get_cv_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Optimizer::ForceHeavy qw/force_heavy/;
 use B::C::Packages qw/mark_package_used/;
+use B::C::LazyTemplate qw/replace_later/;
 
 my %gptable;
 
@@ -624,10 +625,19 @@ sub gv_fetchpv_string {
     warn 'undefined type'  unless defined $type;
     my ( $cname, $cur, $utf8 ) = strlen_flags($name);
 
-    my ( $cname_cow, $cur_cow, $len_cow ) = savecowpv($name);
+    #my ( $cname_cow, $cur_cow, $len_cow ) = savecowpv($name);
+    my $label = replace_later(
+        sub {
+            # if there is a cowpv for it, use it, if not use the cname
+            my @cowpv_cache = getcowpv($name);
+            $cname = $cowpv_cache[0] if scalar @cowpv_cache;
+            return $cname;
+        }
+    );
 
     $flags .= length($flags) ? "|$utf8" : $utf8 if $utf8;
-    return "gv_fetchpvn_flags(${cname_cow}, $cur, $flags, $type)";
+
+    return "gv_fetchpvn_flags($label, $cur, $flags, $type)";
 }
 
 sub savecv {

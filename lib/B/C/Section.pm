@@ -3,7 +3,9 @@ use strict;
 
 # use warnings
 
-use B::C::Debug ();
+use B::C::Debug        ();
+use B::C::LazyTemplate ();
+
 my %sections;
 
 sub new {
@@ -182,6 +184,8 @@ sub output {
 
         ++$i;
     }
+
+    B::C::LazyTemplate::substitute_all( \$return_string );
 
     return $return_string;
 }

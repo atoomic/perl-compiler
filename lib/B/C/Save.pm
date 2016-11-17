@@ -11,7 +11,7 @@ use B::C::Save::Hek qw/save_shared_he/;
 use Exporter ();
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/savepvn constpv savepv savecowpv inc_pv_index savestash_flags savestashpv/;
+our @EXPORT_OK = qw/savepvn constpv savepv savecowpv getcowpv inc_pv_index savestash_flags savestashpv/;
 
 my %strtable;
 my %cowtable;
@@ -23,6 +23,14 @@ my $pv_index = -1;
 
 sub inc_pv_index {
     return ++$pv_index;
+}
+
+sub getcowpv {
+    my $pv = shift;
+    my ( $cstring, $cur, $len, $utf8 ) = cow_strlen_flags($pv);
+
+    return @{ $cowtable{$cstring} } if defined $cowtable{$cstring};
+    return;
 }
 
 sub savecowpv {
