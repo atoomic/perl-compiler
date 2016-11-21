@@ -13,9 +13,10 @@ sub save {
 
         if ( $last && $last eq $op ) {
             ++$count;
-            if ( $count == 10_000 ) {    # make this counter high enough to pass most of the common cases
-                print STDERR sprintf( "#####\n%s - %s from %s\n", ref $op, $op, 'B::C::Save'->can('stack_flat')->() );
-                die;
+            if ( $count == 10 ) {    # make this counter high enough to pass most of the common cases
+                print STDERR sprintf( "##### detect a potential infinite loop:\n%s - %s from %s\n", ref $op, $op, 'B::C::Save'->can('stack_flat')->() );
+
+                #die;
             }
         }
         else {
@@ -32,7 +33,7 @@ sub save {
 
     # call the real save function and cache the return value{
     my $sym = $op->do_save(@args);
-    savesym( $op, $sym ) if $sym;
+    savesym( $op, $sym ) if defined $sym;
     return $sym;
 }
 
