@@ -795,6 +795,8 @@ sub static_core_packages {
     return @pkg;
 }
 
+my %SEEN;
+
 sub skip_pkg {
     my $package = shift;
     if (
@@ -802,6 +804,10 @@ sub skip_pkg {
 
         #or $package =~ /::::/ #  CORE/base/lex.t 54
         or $package =~ /^B::C::/
+        or $package eq 'B::C'
+
+        # or $package eq 'B'
+        # or $package =~ /^B::/# skip any B:: modules
         or $package eq '__ANON__'
         or index( $package, " " ) != -1    # XXX skip invalid package names
         or index( $package, "(" ) != -1    # XXX this causes the compiler to abort
@@ -810,6 +816,25 @@ sub skip_pkg {
       ) {
         return 1;
     }
+
+    #my %SAFE_TO_REMOVE = map { $_ => 1 } qw{DynaLoader IO::File Errno B::FAKEOP B::Flags B::STASHGV};
+    #my %SAFE_TO_REMOVE = map { $_ => 1 } qw{  B::FAKEOP B::Flags B::STASHGV};
+    my %UNSAFE_TO_REMOVE = map { $_ => 1 } qw{Config DynaLoader Errno
+      re
+    };
+    if (0)    #if ( $SAFE_TO_REMOVE{$package} )
+    {         # if only exists in the new INC then skip it...
+        my $path = $package . ".pm";
+        $path =~ s{::}{/}g;
+        if ( exists $INC{$path} && !exists $settings->{started_INC}->{$path} ) {
+            if ( !$SEEN{$package} ) {
+                print STDERR "========= skip $package: was not loaded " . ( $UNSAFE_TO_REMOVE{$package} ? 'unsafe' : '????' ) . "\n";
+                $SEEN{$package} = 1;
+            }
+            return 1 if !$UNSAFE_TO_REMOVE{$package};
+        }
+    }
+
     return 0;
 }
 
@@ -1075,6 +1100,7 @@ sub save_context {
         local $B::C::const_strings = 1;
         verbose("\%INC and \@INC:");
         init()->add('/* %INC */');
+        local %main::INC = $B::C::settings->{started_INC};
         inc_cleanup(0);
         my $inc_gv = svref_2object( \*main::INC );
         $inc_hv = $inc_gv->HV->save('main::INC');

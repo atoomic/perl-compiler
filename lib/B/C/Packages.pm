@@ -12,7 +12,7 @@ our @EXPORT_OK = qw/mark_package_removed mark_package_unused mark_package_used m
 our %include_package;
 
 sub new {
-    %B::C::curINC = %B::C::savINC = %INC;
+    %B::C::curINC = %B::C::savINC = %{ $B::C::settings->{started_INC} };
 }
 
 sub mark_package_unused {

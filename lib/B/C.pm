@@ -33,6 +33,7 @@ our $settings = {
     'init_name'     => '',
     'skip_packages' => {},
     'used_packages' => {},
+    'started_INC'   => {},
 };
 
 # This loads B/C_heavy.pl from the same location C.pm came from.
@@ -47,8 +48,10 @@ sub load_heavy {
 sub build_c_file {
     my (@opts) = @_;
     parse_options(@opts);    # Parses command line options and populates $settings where necessary
-    load_heavy();            # Loads B::C_heavy.pl
-    start_heavy();           # Invokes into B::C_heavy.pl
+    $settings->{started_INC} = {%INC};    # copy INC state at beginning
+
+    load_heavy();                         # Loads B::C_heavy.pl
+    start_heavy();                        # Invokes into B::C_heavy.pl
 }
 
 # This is what is called when you do perl -MO=C,....
