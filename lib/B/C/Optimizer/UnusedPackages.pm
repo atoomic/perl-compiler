@@ -71,7 +71,8 @@ sub optimize {
     descend_marked_unused();
     walkpackages( \%{$main}, \&should_save, $main eq 'main::' ? undef : $main );
     verbose( "Saving unused subs in $main" . ( $sav_debug->{unused} ? " (silent)\n" : "\n" ) );
-    walksymtable( \%{$main}, "savecv", \&should_save );
+
+    #walksymtable( \%{$main}, "savecv", \&should_save );
     @unused = get_all_packages_used();
     @dumped = grep { $B::C::dumped_package{$_} and $_ ne 'main' } sort keys %B::C::dumped_package;
     verbose( "old unused: %d, new: %d, dumped: %d", scalar @init_unused, scalar @unused, scalar @dumped );
