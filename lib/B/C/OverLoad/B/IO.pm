@@ -12,13 +12,12 @@ sub save_data {
     my ( $io, $sym, $globname, @data ) = @_;
     my $data = join '', @data;
 
-    # XXX using $DATA might clobber it!
-    my $ref = svref_2object( \\$data )->save;
+    my $ref = svref_2object( \$data )->save;
     init()->add("/* save $globname in RV ($ref) */") if verbose();
     init()->add("GvSVn( $sym ) = (SV*)$ref;");
 
     # force inclusion of PerlIO::scalar as it was loaded in BEGIN.
-    init2()->add_eval( sprintf 'open(%s, \'<:scalar\', $%s);', $globname, $globname );
+    init2()->add_eval( sprintf 'open(%s, \'<:scalar\', \\\\$%s);', $globname, $globname );
 
     # => eval_pv("open(main::DATA, '<:scalar', $main::DATA);",1); DATA being a ref to $data
     init()->pre_destruct( sprintf 'eval_pv("close %s;", 1);', $globname );

@@ -27,7 +27,7 @@ use B::Flags;
 use B::C::Config;          # import everything
 use B::C::Debug ();        # used for setting debug levels from cmdline
 
-use B::C::File qw( init2 init0 init decl free
+use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
   xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect sharedhe
@@ -1095,7 +1095,7 @@ sub save_context {
         }
     }
     debug( [qw/verbose pkg/], "Saved \@ISA for: " . join( " ", @saved_isa ) ) if @saved_isa;
-    init()->add(
+    init1()->add(
         "GvHV(PL_incgv) = $inc_hv;",
         "GvAV(PL_incgv) = $inc_av;",
         "PL_curpad = AvARRAY($curpad_sym);",
@@ -1103,7 +1103,7 @@ sub save_context {
         "PL_stack_sp = PL_stack_base;"    # reset stack (was 1++)
     );
 
-    init()->add(
+    init1()->add(
         "PadlistNAMES(CvPADLIST(PL_main_cv)) = PL_comppad_name = $curpad_nam; /* namepad */",
         "PadlistARRAY(CvPADLIST(PL_main_cv))[1] = (PAD*)$curpad_sym; /* curpad */"
     );
