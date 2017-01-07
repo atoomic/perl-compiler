@@ -191,6 +191,7 @@ sub do_save {
 
     if (
             $isconst
+        and $cvxsub
         and !is_phase_name($cvname)
         and !( $CvFLAGS & SVs_PADSTALE )
         and !( $CvFLAGS & CVf_WEAKOUTSIDE )
@@ -229,7 +230,7 @@ sub do_save {
             init()->add("$cvi = newCONSTSUB( $stsym, $name, (SV*)$vsym );");
             return $cvi;
         }
-        elsif ( $sv and ref($sv) =~ /^B::[NRPI]/ ) {
+        elsif ( $sv and ref($sv) =~ /^B::[ANRPI]/ ) {    # A is for use constant => ()
             my $vsym = $sv->save;
             my $cvi  = "cv" . $cv_index++;
             decl()->add("Static CV* $cvi;");
