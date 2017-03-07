@@ -9,6 +9,9 @@ set print pretty on
 set pagination off
 set confirm off
 
+# unsafe but can load .gdbinit from a local directory
+#set auto-load safe-path /
+
 macro define __builtin_offsetof(T, F) ((int) &(((T *) 0)->F))
 
 define dumphv
@@ -321,35 +324,44 @@ define dump_hv
   set $max = (int) ( ((XPVHV*)  ($hv)->sv_any)->xhv_max )
 
   set $i = 0
-  printf "HV: keys=%d ; max=%d\n", $keys, $max
+  printf "HV 0x%x: keys=%d ; max=%d\n", $hv, $keys, $max
+  if $hv == PL_defstash
+    printf "... HV is PL_defstash\n"
+  end
+  if $hv == PL_curstash
+    printf "... HV is PL_curstash\n"
+  end
 
   set $h = (($hv)->sv_u.svu_hash)
   # check all buckets, max included as this is = X^2 - 1
-  while $i <= $max
-    # only show used buckets
-    if $h[$i]
-      set $c = 1
-      set $next = $h[$i]->hent_next
-      while $next
-        set $c = $c + 1
-        set $next = $next->hent_next
+
+  if $h
+    while $i <= $max
+      # only show used buckets
+      if $h[$i]
+        set $c = 1
+        set $next = $h[$i]->hent_next
+        while $next
+          set $c = $c + 1
+          set $next = $next->hent_next
+        end
+        # generic stats for the bucket
+        printf "bucket #%d: 0x%x [ %d element(s) ]\n", $i, $h[$i], $c
+
+        # display all keys in the bucket
+        set $next = $h[$i]
+        printf "  "
+        while $next
+          printf "%s ", ((HEK*) ( (HE*) $next)->hent_hek)->hek_key
+          set $next = $next->hent_next
+        end
+        printf "\n"
+
+        #p (char *) ((HEK*) ( (HE*) 0x618810)->hent_hek)->hek_key
+
       end
-      # generic stats for the bucket
-      printf "bucket #%d: 0x%x [ %d element(s) ]\n", $i, $h[$i], $c
-
-      # display all keys in the bucket
-      set $next = $h[$i]
-      printf "  "
-      while $next
-        printf "%s ", ((HEK*) ( (HE*) $next)->hent_hek)->hek_key
-        set $next = $next->hent_next
-      end
-      printf "\n"
-
-      #p (char *) ((HEK*) ( (HE*) 0x618810)->hent_hek)->hek_key
-
+      set $i = $i + 1
     end
-    set $i = $i + 1
   end
 
 end
@@ -408,7 +420,9 @@ define dump_gv
   printf "\n"
   svflags $gv
   printf "\n"
-  printf "SvANY(gv)=XPVGV: 0x%x = { stash=0x%x, magic=0x%x, cur=%d, len=%d, namehek=0x%x, xgv_stash=0x%x }\n", $xpvgv, $xpvgv->xmg_stash, $xpvgv->xmg_u.xmg_magic, $xpvgv->xpv_cur, $xpvgv->xpv_len_u.xpvlenu_len, $xpvgv->xiv_u.xivu_namehek, $xpvgv->xnv_u.xgv_stash
+  if ( $xpvgv )
+    printf "SvANY(gv)=XPVGV: 0x%x = { stash=0x%x, magic=0x%x, cur=%d, len=%d, namehek=0x%x, xgv_stash=0x%x }\n", $xpvgv, $xpvgv->xmg_stash, $xpvgv->xmg_u.xmg_magic, $xpvgv->xpv_cur, $xpvgv->xpv_len_u.xpvlenu_len, $xpvgv->xiv_u.xivu_namehek, $xpvgv->xnv_u.xgv_stash
+  end
   #p *$xpvgv
   printf "GP: 0x%x -> ", $gp
   p *$gp
