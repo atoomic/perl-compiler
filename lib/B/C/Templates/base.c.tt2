@@ -730,8 +730,6 @@ dl_init(pTHX)
     [% NEXT IF ! xsub.$stashname.match('^Dynamic')  %]
     PUSHMARK(sp);
 
-cxstack_ix = -1;
-
 /* XXX -O1 or -O2 needs XPUSHs with dynamic pv */
     mXPUSHp("[% stashname %]", [% stashname.length %]);
 
@@ -747,10 +745,9 @@ cxstack_ix = -1;
         [% END %]
     PUTBACK;
     call_pv("XSLoader::load_file", G_VOID|G_DISCARD);
-cxstack_ix = 0;
       [% END %]
 #else
-   PUTBACK;
+    PUTBACK;
     /* CvSTASH(CvGV(cv)) is invalid without (issue 86) */
     /* TODO: utf8 stashname */
     { /* GH 333 */
