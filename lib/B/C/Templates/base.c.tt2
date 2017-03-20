@@ -693,11 +693,6 @@ dl_init(pTHX)
     dSP;
 /* DynaLoader bootstrapping */
     ENTER;
-  [% IF optimizer.dynaloader.xs %]
-    ++cxstack_ix;
-    cxstack[cxstack_ix].blk_oldcop = PL_curcop;
-    /* assert(cxstack_ix == 0); */
-  [% END %]
     SAVETMPS;
   [% IF optimizer.dynaloader.fixups.coro %]
  /* needed before dl_init, and after init */
@@ -761,9 +756,6 @@ dl_init(pTHX)
 /*    PUTBACK;*/
   [% END %]
     FREETMPS;
-      [% IF optimizer.dynaloader.xs %]
-    cxstack_ix--; /* i.e. POPBLOCK */
-      [% END %]
     LEAVE;
 /* end DynaLoader bootstrapping */
 [% END %]

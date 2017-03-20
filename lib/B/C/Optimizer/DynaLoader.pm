@@ -24,7 +24,6 @@ sub new {
     # Initialize in case there's no dynaloader and we return early.
     $self->{'stash'} = {
         'dl'         => 0,
-        'xs'         => 0,
         'dl_modules' => [],
         'fixups'     => {},
       },
@@ -42,7 +41,7 @@ sub optimize {
     my $self = shift or die;
     ref $self eq __PACKAGE__ or die;
 
-    my ( $boot, $dl, $xs ) = ('');
+    my ( $boot, $dl ) = ('');
     my @dl_modules = @DynaLoader::dl_modules;
 
     # filter out unused dynaloaded B modules, used within the compiler only.
@@ -80,7 +79,6 @@ sub optimize {
 
             # XSLoader.pm: $modlibname = (caller())[1]; needs a path at caller[1] to find auto,
             # otherwise we only have -e
-            $xs++ if $self->{'xsub'}->{$stashname} ne 'Dynamic';
             $dl++;
         }
 
@@ -99,9 +97,6 @@ sub optimize {
     # Something to do with 5.20? https://code.google.com/p/perl-compiler/issues/detail?id=125
     if ( $dl and !$self->{'curINC'}->{'DynaLoader.pm'} ) {
         die "Error: DynaLoader required but not dumped. Too late to add it.\n";
-    }
-    elsif ( $xs and !$self->{'curINC'}->{'XSLoader.pm'} ) {
-        die "Error: XSLoader required but not dumped. Too late to add it.\n";
     }
 
     return 0 if !$dl;
@@ -184,7 +179,6 @@ sub optimize {
     $self->{'stash'} = {
         'boot'       => $boot,
         'dl'         => $dl,
-        'xs'         => $xs,
         'dl_modules' => \@dl_modules,
         'fixups'     => {
 
