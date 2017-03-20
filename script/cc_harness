@@ -8,6 +8,8 @@ my $useshrplib = $Config{useshrplib} eq 'true';
 my $libs       = $Config{libs};
 my $so         = $Config{so};
 my ( $linkargs, $quiet, $debug );
+my $stash = q{};
+
 if ( grep { $_ eq '-q' or $_ eq '--quiet' } @ARGV ) {
     $quiet++;
     @ARGV = grep { $_ ne '-q' and $_ ne '--quiet' } @ARGV;
@@ -62,9 +64,45 @@ else {    # try dynamic lib if no static lib exists
     $linkargs = ldopts('-std');
 }
 
+if ( grep { qr{^-staticxs$} } @ARGV ) {
+    @ARGV = grep { !/^-staticxs$/o } @ARGV;
+
+    $linkargs .= q{ -DSTATICXS};
+
+    # find the c file
+    my @c_files = grep { $_ =~ qr{\.c$} && -f $_ } @ARGV;
+    die "Unsupported multiple .c files: " . join( ', ', @c_files ) if scalar @c_files > 1;
+    if ( my $c_file = $c_files[0] ) {
+        my $lst_file = $c_file;
+        $lst_file .= q{.lst};
+        $B::C::Flags::extra_libs //= q{};
+        if ( -f $lst_file ) {
+            debug("Reading .so files from $lst_file");
+
+            {    # read the lst file
+                open( my $fh, '<', $lst_file ) or die "Cannot read $lst_file: $!";
+                foreach my $line ( readline $fh ) {
+                    my ( $s, $l ) = $line =~ m/^([^\t]+)(.*)$/;
+                    die "Invalid line '$line' in $lst_file" unless length $s && length $l;
+                    $stash .= ",-u$s";
+                    $B::C::Flags::extra_libs .= " " . $l;
+                }
+                close($fh);
+            }
+        }
+
+    }
+}
+
 # Note (probably harmless): No library found for -lnsl
 $linkargs = $B::C::Flags::extra_libs . " " . $linkargs;
 $linkargs .= " $libs" if index( $linkargs, $libs ) == -1;
+
+sub debug {
+    my (@txt) = @_;
+    return if $quiet;
+    print join( ' ', map { $_ // 'undef' } '[cc_harness]', @txt ) . "\n";
+}
 
 sub cc_harness_msvc {
     my @ARGV    = @_;
@@ -96,9 +134,9 @@ sub cc_harness_msvc {
         $link .= " /DEBUG";
     }
     $link .= " perl5$Config{PERL_VERSION}.lib kernel32.lib msvcrt.lib";
-    print "running $Config{cc} $compile" unless $quiet;
+    debug("running $Config{cc} $compile");
     system("$Config{cc} $compile");
-    print "running $Config{ld} $link" unless $quiet;
+    debug("running $Config{ld} $link");
     system("$Config{ld} $link");
 }
 
@@ -137,5 +175,5 @@ $ccflags .= " --no-warn -Wl,--warn-once"
 $ccflags .= $B::C::Flags::extra_cflags;
 
 my $cccmd = "$Config{cc} $ccflags -I$coredir @ARGV $linkargs";
-print "$cccmd\n" unless $quiet;
+debug("Running: $cccmd");
 exec $cccmd;

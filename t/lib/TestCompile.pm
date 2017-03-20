@@ -19,6 +19,17 @@ use constant DEFAULT_CCFLAGS => q{-O1};
 
 my %SIGNALS = ( qw( 11 SEGV 6 SIGABRT 1 SIGHUP 13 SIGPIPE), 0 => '' );
 
+sub get_full_path {
+    my ( $f, $check_file ) = @_;
+    $check_file //= 1;
+    die "Cannot find file $f" if $check_file && !-e $f;
+    my $path = qx{readlink -m $f};
+    die "Fails to run readlink -m $f" unless $? == 0;
+    chomp $path if defined $path;
+    die "$path does not exists" if $check_file && !-e $path;
+    return $path;
+}
+
 sub compile_script {
     my ( $file_to_test, $errors, $opts ) = @_;
 
@@ -29,9 +40,12 @@ sub compile_script {
     my $extra        = $opts->{extra}        // '';
     my $optimization = $opts->{optimization} // '';
     my $c_file       = $opts->{c_file}       // die;
-    my $bin_file     = $opts->{bin_file}     // die,
+    my $bin_file     = $opts->{bin_file}     // die;
 
-      my $cflags = $ENV{'BC_CFLAGS'} // DEFAULT_CCFLAGS;
+    my $use_static_xs = $optimization =~ qr{\bstaticxs\b} ? 1 : 0;
+
+    diag "Use static_xs: $use_static_xs" if $ENV{VERBOSE};
+    my $cflags = $ENV{'BC_CFLAGS'} // DEFAULT_CCFLAGS;
 
     my $cmd = "$PERL $blib $extra -MO=-qq,C,$optimization-o$c_file $file_to_test 2>&1";
 
@@ -49,10 +63,15 @@ sub compile_script {
     $harness_opts = '-Wall' if $ENV{VERBOSE} && $ENV{WARNINGS};
     $harness_opts .= $ENV{VERBOSE} ? '' : ' -q';
     $harness_opts .= ' ' . $cflags if $cflags;
-    $cmd = "$PERL $FindBin::Bin/../../../../script/cc_harness $harness_opts $c_file -o $bin_file 2>&1";
+    $harness_opts .= ' -staticxs'  if $use_static_xs;
+
+    my $cc_harness         = get_full_path(qq{$FindBin::Bin/../../../../script/cc_harness});
+    my $c_file_full_path   = get_full_path($c_file);
+    my $bin_file_full_path = get_full_path( $bin_file, 0 );
+    $cmd = "$PERL $cc_harness $harness_opts ${c_file_full_path} -o ${bin_file_full_path} 2>&1";
     diag $cmd if $ENV{VERBOSE};
     my $compile_output = `$cmd`;
-    note $compile_output if ($compile_output);
+    note $compile_output if $compile_output;
 
     # Validate compiles
     unless ( $errors->check_todo( -x $bin_file, "$bin_file is compiled and ready to run.", 'GCC' ) ) {
