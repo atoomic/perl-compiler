@@ -616,9 +616,12 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
     }
 
     if (PL_sv_objcount) {
-	PL_in_clean_all = 1;
-	sv_clean_objs(); /* and now curse the rest */
-	PL_sv_objcount = 0;
+        PL_in_clean_all = 1;
+        /* at this point the cache might point to some non existing GVs */
+        /* clear the cache, as it's going to be rebuilt if needed */
+        hv_clear(PL_stashcache);
+        sv_clean_objs(); /* and now curse the rest */
+        PL_sv_objcount = 0;
     }
     PL_warnhook = NULL;
     PL_diehook = NULL;
