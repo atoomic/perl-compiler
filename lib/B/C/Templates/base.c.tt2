@@ -454,24 +454,34 @@ my_curse( pTHX_ SV* const sv ) {
     dSP;
     dVAR;
     HV* stash;
+    bool reset_stash;
 
     assert(SvOBJECT(sv));
     do {
+        reset_stash = FALSE;
         stash = SvSTASH(sv);
         assert(SvTYPE(stash) == SVt_PVHV);
 	if (HvNAME(stash)) {
 	    CV* destructor = NULL;
-	    if (!SvOBJECT(stash)) destructor = (CV *)SvSTASH(stash);
-	    if (!destructor
-                || HvMROMETA(stash)->destroy_gen != PL_sub_generation
-	    ) {
-            GV * const gv = gv_fetchmeth_autoload(stash, "DESTROY", 7, 0);
+	    if (!SvOBJECT(stash))
+            destructor = (CV *)SvSTASH(stash);
+	    if ( !destructor || HvMROMETA(stash)->destroy_gen != PL_sub_generation ) {
+            bool autoload = FALSE;
+            GV * gv = gv_fetchmeth_pvn(stash, "DESTROY", 7, -1, 0);
+            if (gv) destructor = GvCV(gv);
+            if ( !destructor ) {
+                gv = gv_autoload_pvn(stash, "DESTROY", 7, GV_AUTOLOAD_ISMETHOD);
+                if (gv) destructor = GvCV(gv);
+                if (destructor) autoload = TRUE;
+            }
 
-            if (gv) {
-                destructor = GvCV(gv);
+            if ( gv ) {
                 if (!SvOBJECT(stash)) {
-                    SvSTASH(stash) = destructor ? (HV *)destructor : ((HV *)0)+1;
-                    HvAUX(stash)->xhv_mro_meta->destroy_gen = PL_sub_generation;
+                    if ( !autoload ) {
+                        SvSTASH(stash) = destructor ? (HV *)destructor : ((HV *)0)+1;
+                        HvAUX(stash)->xhv_mro_meta->destroy_gen = PL_sub_generation;
+                        reset_stash = TRUE;
+                    }
                 }
             }
 	    }
@@ -505,6 +515,7 @@ my_curse( pTHX_ SV* const sv ) {
 		POPSTACK;
 		SPAGAIN;
 		LEAVE;
+        /*(void)hv_deletehek(PL_stashcache, HvNAME_HEK(hv), G_DISCARD);*/
 		if(SvREFCNT(tmpref) < 2) {
 		    /* tmpref is not kept alive! */
 		    SvREFCNT(sv)--;
@@ -513,6 +524,11 @@ my_curse( pTHX_ SV* const sv ) {
 		}
 		SvREFCNT_dec(tmpref);
 	    }
+
+        if ( reset_stash == true ) {
+            SvSTASH(stash) = (HV*) 0;
+        }
+
 	}
     } while (SvOBJECT(sv) && SvSTASH(sv) != stash);
 
@@ -590,7 +606,7 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
         int i = 1;
         DEBUG_D(PerlIO_printf(Perl_debug_log, "\nCursing named global static sv_arena:\n"));
         PL_in_clean_all = 1;
-        for (; i < SvREFCNT(&sv_list[0]); i++) {
+        for (; i < SvREFCNT(&sv_list[0]); i++) { /* loop on all our SVs: probably want to use the value from TT section.sv_sect.index + 1 */
             SV *sv = &sv_list[i];
             if (SvREFCNT(sv)) {
                 if (SvTYPE(sv) == SVt_IV && SvROK(sv))
@@ -600,7 +616,7 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
                     && PL_defstash /* Still have a symbol table? */
                     && SvDESTROYABLE(sv))
                 {
-	            SvREFCNT(sv) = 0;
+                    SvREFCNT(sv) = 0;
                     my_curse(aTHX_ sv);
                 }
             }
