@@ -620,8 +620,6 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
         /* at this point the cache might point to some non existing GVs */
         /* clear the cache, as it's going to be rebuilt if needed */
         hv_clear(PL_stashcache);
-        /* re-cache a clean state of UNIVERSAL stash to avoid corruption */
-        gv_stashpvs("UNIVERSAL", 0);
         sv_clean_objs(); /* and now curse the rest */
         PL_sv_objcount = 0;
     }
