@@ -141,42 +141,9 @@ sub stack_flat {
     return join "\n", @stack;
 }
 
-# performance optimization:
-#    limit calls to gv_stashpvn when using CopSTASHPVN_set macro
-
-# cache to only init it once
-my %stashtable;
-
-# my $hv_index = 0; # need to use it from HV
-# Dynamically allocate this stash when gv_stashpvn is called.
-sub savestash_flags {
-    my ( $name, $cstring, $len, $flags, $disable_gvadd ) = @_;
-    return $stashtable{$name} if defined $stashtable{$name};
-    my $hv_index = B::C::HV::get_index();
-    $flags = $flags ? "$flags|GV_ADD" : "GV_ADD" if !$disable_gvadd;    # enabled by default
-    my $sym = "hv$hv_index";
-    decl()->add("Static HV *$sym;");
-    B::C::HV::inc_index();
-    if ($name) {                                                        # since 5.18 save @ISA before calling stashpv
-        my @isa = B::C::get_isa($name);
-        no strict 'refs';
-        if ( @isa and exists ${ $name . '::' }{ISA} ) {
-            svref_2object( \@{"$name\::ISA"} )->save("$name\::ISA");
-        }
-    }
-    my $pvsym = $len ? constpv($name) : '""';
-    $stashtable{$name} = $sym;
-    init()->sadd(
-        "%s = gv_stashpvn(%s, %u, %s); /* $name */",
-        $sym, $pvsym, $len, $flags
-    );
-
-    return $sym;
-}
-
 sub savestashpv {
     my $name = shift;
-    return savestash_flags( $name, strlen_flags($name), shift );
+    return svref_2object( \%{ $name . '::' } )->save
 }
 
 1;
