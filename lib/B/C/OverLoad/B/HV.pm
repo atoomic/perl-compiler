@@ -142,6 +142,10 @@ sub do_save {
         if ( is_using_mro() && mro::get_mro($stash_name) eq 'c3' ) {
             B::C::make_c3($stash_name);
         }
+
+        my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);
+        init()->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
+
         enames_crap( $hv, $stash_name, $sym );
     }
 
