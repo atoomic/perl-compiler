@@ -184,7 +184,7 @@ sub do_save {
         )
     );
 
-    my $init = $name ? init() : init_stash();
+    my $init = $name ? init_stash() : init();
 
     {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
         $init->no_split;
