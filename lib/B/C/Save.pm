@@ -11,7 +11,7 @@ use B::C::Save::Hek qw/save_shared_he/;
 use Exporter ();
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/savepvn constpv savepv savecowpv inc_pv_index savestash_flags savestashpv/;
+our @EXPORT_OK = qw/savepvn constpv savepv savecowpv inc_pv_index savestashpv/;
 
 my %strtable;
 my %cowtable;
@@ -147,7 +147,8 @@ sub stack_flat {
 # cache to only init it once
 my %stashtable;
 
-#my $hv_index = 0; # need to use it from HV
+# my $hv_index = 0; # need to use it from HV
+# Dynamically allocate this stash when gv_stashpvn is called.
 sub savestash_flags {
     my ( $name, $cstring, $len, $flags, $disable_gvadd ) = @_;
     return $stashtable{$name} if defined $stashtable{$name};

@@ -217,16 +217,6 @@ sub do_save {
 
     $magic = $hv->save_magic($fullname);
     init()->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;
-    if ( $magic =~ /c/ ) {
-
-        # defer AMT magic of XS loaded stashes
-        my ( $cname, $len, $utf8 ) = strlen_flags($name);
-        init2()->add(qq[$sym = gv_stashpvn($cname, $len, GV_ADDWARN|GV_ADDMULTI|$utf8);]);
-    }
-
-    if ( $name and is_using_mro() and mro::get_mro($name) eq 'c3' ) {
-        B::C::make_c3($name);
-    }
 
     return $sym;
 }
