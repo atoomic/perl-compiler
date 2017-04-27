@@ -50,7 +50,7 @@ sub code_section_names {
 # These objects will end up in an array of structs in the template and be auto-declared.
 sub struct_names {
     return qw( xpv xpvav xpvhv xpvcv padlist padname padnamelist
-      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv), assign_sections();
+      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv xpvgv), assign_sections();
 }
 
 sub assign_sections {
@@ -58,7 +58,7 @@ sub assign_sections {
 }
 
 # These populate the init sections and have a special header.
-sub init_section_names { return qw /init init1 init2/ }
+sub init_section_names { return qw /init init1 init2 init_stash/ }
 
 sub op_sections {
     return qw { binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};

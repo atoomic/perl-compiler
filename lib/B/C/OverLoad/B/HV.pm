@@ -18,7 +18,7 @@ use strict;
 
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
 use B::C::Config;
-use B::C::File qw/init xpvhvsect svsect sharedhe decl init1 init2/;
+use B::C::File qw/init xpvhvsect svsect sharedhe decl init1 init2 init_stash/;
 use B::C::Helpers qw/mark_package read_utf8_string strlen_flags is_using_mro/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Save qw/savestashpv/;
@@ -184,9 +184,11 @@ sub do_save {
         )
     );
 
+    my $init = $name ? init() : init_stash();
+
     {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
-        init()->no_split;
-        init()->sadd( qq[{\n] . q{HvSETUP(%s, %d);}, $sym, $max + 1 );
+        $init->no_split;
+        $init->sadd( qq[{\n] . q{HvSETUP(%s, %d);}, $sym, $max + 1 );
 
         my @hash_elements;
         {
@@ -203,20 +205,20 @@ sub do_save {
 
             # Insert each key into the hash.
             my $shared_he = save_shared_he($key);
-            init()->sadd( q{HvAddEntry(%s, %s, %s, %d);}, $sym, $value, $shared_he, $max );
+            $init->sadd( q{HvAddEntry(%s, %s, %s, %d);}, $sym, $value, $shared_he, $max );
 
             #debug( hv => q{ HV key "%s" = %s}, $key, $value );
         }
 
         # save the iterator in hv_aux (and malloc it)
-        init()->sadd( "HvRITER_set(%s, %d);", $sym, -1 );    # saved $hv->RITER
+        $init->sadd( "HvRITER_set(%s, %d);", $sym, -1 );    # saved $hv->RITER
 
-        init()->add("}");
-        init()->split;
+        $init->add("}");
+        $init->split;
     }
 
     $magic = $hv->save_magic($fullname);
-    init()->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;
+    $init->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;
 
     return $sym;
 }
