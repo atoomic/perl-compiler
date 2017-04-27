@@ -35,17 +35,11 @@ sub do_save {
 
     $fullname = '' unless $fullname;
     my $name     = $hv->NAME;
-    my $is_stash = $name;
     my $magic;
     my $sym;
 
     if ($name) {
 
-        # It's a stash. See issue 79 + test 46
-        debug(
-            hv => "Saving stash HV \"%s\" from \"$fullname\" 0x%x MAX=%d\n",
-            $name, $$hv, $hv->MAX
-        );
 
         # A perl bug means HvPMROOT isn't altered when a PMOP is freed. Usually
         # the only symptom is that sv_reset tries to reset the PMf_USED flag of
@@ -126,7 +120,7 @@ sub do_save {
     # value => rv => cv => ... => rv => same hash
 
     my $sv_list_index = svsect()->add("FAKE_HV");
-    $sym = savesym( $hv, "(HV*)&sv_list[$sv_list_index]" ) unless $is_stash;
+    $sym = savesym( $hv, "(HV*)&sv_list[$sv_list_index]" );
 
     # could also simply use: savesym( $hv, sprintf( "s\\_%x", $$hv ) );
 
@@ -149,17 +143,8 @@ sub do_save {
                 WARN( "HV recursion? with $fullname\{$key\} -> %s\n", $sv->RV );
             }
 
-            if ($is_stash) {
-                if ( ref($sv) eq "B::GV" and $sv->NAME =~ /::$/ ) {
-                    $sv = bless $sv, "B::STASHGV";    # do not expand stash GV's only other stashes
-                    debug( hv => "saving STASH $fullname" . '{' . $key . "}" );
-                    $value = $sv->save( $fullname . '{' . $key . '}' );
-                }
-            }
-            else {
-                debug( hv => "saving HV [ $i / len=$length ]\$" . $fullname . '{' . $key . "} 0x%0x", $sv );
-                $value = $sv->save( $fullname . '{' . $key . '}' );    # Turn the hash value into a symbol
-            }
+            debug( hv => "saving HV [ $i / len=$length ]\$" . $fullname . '{' . $key . "} 0x%0x", $sv );
+            $value = $sv->save( $fullname . '{' . $key . '}' );    # Turn the hash value into a symbol
 
             push @hash_content_to_save, [ $key, $value ] if defined $value;
         }
