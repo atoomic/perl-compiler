@@ -9,7 +9,6 @@ use B::C::Config;
 use B::C::File qw/init init2 xpvavsect svsect/;
 use B::C::Helpers qw/strlen_flags/;
 use B::C::Helpers::Symtable qw/savesym/;
-use B::C::Save qw/savestashpv/;
 
 # maybe need to move to setup/config
 my ( $use_av_undef_speedup, $use_svpop_speedup ) = ( 1, 1 );
