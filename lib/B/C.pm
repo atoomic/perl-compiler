@@ -135,19 +135,17 @@ sub cleanup_stashes {
     }
 
     # cleanup sepcial stashes
-    foreach my $unsaved (qw{B:: O:: DB::}) {
+    foreach my $unsaved (qw{B:: O::}) {
         delete $stashes->{$unsaved};
     }
 
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
+        next if $st eq 'DB::';
         delete $stashes->{$st} if !scalar keys %{ $stashes->{$st} };
     }
 
-    # special logic for CORE
-    if ( scalar keys %{ $stashes->{'CORE::'} } == 1 && scalar keys %{ $stashes->{'CORE::'}->{'GLOBAL::'} } == 0 ) {
-        delete $stashes->{'CORE::'};
-    }
+    # special logic for CORE::GLOBAL:: MUST exist ( PL_debstash )
 
     if ( scalar keys %{ $stashes->{'Carp::'} } == 1 && exists $stashes->{'Carp::'}->{'croak'} ) {
         delete $stashes->{'Carp::'};

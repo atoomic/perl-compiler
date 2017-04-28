@@ -110,8 +110,6 @@ sub start_heavy {
     # save all our stashes at startup only
     save_stashes();
 
-    die "Our Awesome Exit !";
-
     # first iteration over the main tree
     save_optree();
 
@@ -667,16 +665,7 @@ sub walk_syms {
 }
 
 sub save_stashes {
-
-    #no strict 'refs';
-
-    #foreach my $stash ( sort { length $a <=> length $b } keys $settings->{'starting_flat_stashes'}->%* )
-    # we are saving main
-    my $main_stash = svref_2object( \%main:: )->save('main');
-
-    # ....
-
-    return;
+    return svref_2object( \%main:: )->save('main');
 }
 
 # simplified walk_syms
@@ -1358,6 +1347,7 @@ sub save_main_rest {
 
 sub build_template_stash {
     my ( $static_ext, $stashxsubs, $dynaloader_optimizer ) = @_;
+    no strict 'refs';
 
     my $c_file_stash = {
         'verbose'               => verbose(),
@@ -1380,9 +1370,20 @@ sub build_template_stash {
         'devel_peek_needed'     => $devel_peek_needed,
         'optimizer'             => {
             'dynaloader' => $dynaloader_optimizer->stash(),
-        }
+        },
+        'PL' => {
+            'defstash'    => save_stashes(),                                              # Re-uses the cache.
+            'curstname'   => svref_2object( \'main' )->save(),
+            'incgv'       => svref_2object( \*main::INC )->save("main::INC"),
+            'hintgv'      => svref_2object( \*^H )->save("^H"),                           # This shouldn't even exist at run time!!!
+            'defgv'       => svref_2object( \*_ )->save("_"),
+            'errgv'       => svref_2object( \*@ )->save("@"),
+            'replgv'      => svref_2object( \*^R )->save("^R"),
+            'debstash'    => svref_2object( \%DB:: )->save("DB::"),
+            'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
+        },
     };
-    chomp $c_file_stash->{'compile_stats'};    # Injects a new line when you call compile_stats()
+    chomp $c_file_stash->{'compile_stats'};                                               # Injects a new line when you call compile_stats()
 
     # main() .c generation needs a buncha globals to be determined so the stash can access them.
     # Some of the vars are only put in the stash if they meet certain coditions.

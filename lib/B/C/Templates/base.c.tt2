@@ -273,6 +273,23 @@ Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %
 [% END %]
 [% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
 
+void setup_perl_globals( char* argv0 ) {
+    PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
+    PL_curstname = [% PL.curstashname %];  /* "main" SVt_PV */
+    PL_incgv = [% PL.incgv %];             /* *main::INC SVt_PVGV hv and AV must be set! */
+    PL_hintgv = [% PL.hintgv %];           /* *main::^H SVt_PVGV */
+    PL_defgv = [% PL.defgv %];             /* *main::_ SVt_PVGV must have SV and AV setup?? */
+    PL_errgv = [% PL.errgv %];             /* *main::@ SVt_PVGV  must have SV setup */
+    PL_replgv = [% PL.replgv %];           /* *main::^R SVt_PVGV */
+    PL_debstash = [% PL.debstash %];       /* *main::DB:: SVt_PVHV */
+    PL_globalstash = [% PL.globalstash %]; /* *main::CORE::GLOBAL:: SVt_PVHV */
+
+    /* setup $0 on execution */
+    /* WARNING: get_sv messes with $0 in the stash?? */
+    sv_setpv_mg(get_sv("0", GV_ADD|GV_NOTQUAL), argv0);
+    CopFILE_set(&PL_compiling, argv[0]);
+}
+
 static void init_pl_strtab(pTHX) {
 /* only init PL_strtab if we have content for it */
 [% IF section.sharedhe.index + 1 > 0 %]
@@ -819,6 +836,7 @@ main(int argc, char **argv, char **env)
 
     init_pl_strtab(); /* Initialize PL_Strtab on our own before perl gets to it in perl_alloc. This allows us to use immportal constant shared HEKs */
     init_stash(); /* Setup the stashes */
+    setup_perl_globals(argv[0]);
 
 	perl_construct( &BC_unthreaded_interpreter );
 	PL_perl_destruct_level = 0;
@@ -878,9 +896,6 @@ main(int argc, char **argv, char **env)
 
 benchmark_time("pre global setup");
 
-/* setup $0 on execution */
-    sv_setpv_mg(get_sv("0", GV_ADD|GV_NOTQUAL), argv[0]);
-    CopFILE_set(&PL_compiling, argv[0]);
 
     [% IF global_vars.dollar_caret_H %]
     PL_hints = [% global_vars.dollar_caret_H %];
