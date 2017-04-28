@@ -44,19 +44,102 @@ sub load_heavy {
 
 # This is the sub called once the BEGIN state completes.
 # We want to capture stash and %INC information before we go and corrupt it!
+my @configure_options;
+
 sub build_c_file {
-    my (@opts) = @_;
-    parse_options(@opts);    # Parses command line options and populates $settings where necessary
-    load_heavy();            # Loads B::C_heavy.pl
-    start_heavy();           # Invokes into B::C_heavy.pl
+    parse_options(@configure_options);    # Parses command line options and populates $settings where necessary
+    save_compile_state();
+    load_heavy();                         # Loads B::C_heavy.pl
+    start_heavy();                        # Invokes into B::C_heavy.pl
 }
 
 # This is what is called when you do perl -MO=C,....
 # It tells O.pm what to invoke once the program completes the BEGIN state.
 sub compile {
-    my (@argv) = @_;
-    $DB::single = 1 if defined &DB::DB;
-    return sub { build_c_file(@argv) };
+    @configure_options = @_;
+    do { $DB::single = $DB::single = 1 } if defined &DB::DB;
+    return \&build_c_file;
+}
+
+sub save_compile_state {
+    $settings->{'so_files'} = save_xsloader();
+    $settings->{'needs_xs'} = scalar @{ $settings->{'so_files'} };
+
+    $settings->{'uses_re'} = scalar grep { m{\Q/re/re.so\E$} } @{ $settings->{'so_files'} };
+    $settings->{'starting_INC'} = save_inc();
+
+    $settings->{'starting_stash'} = save_stashes( $::{"main::"}, 1 );
+    set_stashes_enames( $settings->{'starting_stash'} );
+
+    # We're
+    $settings->{'starting_stash'}->{'XSLoader::'}->{'load_file'} = 1 if $settings->{'needs_xs'};    #
+
+    #require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'});
+    return;
+}
+
+sub save_inc {
+    my %compiled_INC = %INC;
+    delete $compiled_INC{"$_.pm"} foreach qw{B B/C O };
+    return \%compiled_INC;
+}
+
+my %seen;
+
+sub save_stashes {
+    my ( $stash, $in_main ) = @_;
+
+    $seen{"$stash"} = 1 if ($in_main);
+
+    my %hash;
+    foreach my $key ( sort keys %$stash ) {
+        if ( $key =~ m/::$/ ) {
+            my $goto = $stash->{$key};
+            my $name = "$goto";
+            if ( !$seen{$name} ) {
+                $seen{$name} = 1;
+                $hash{$key}  = save_stashes($goto);
+            }
+            else {
+                $hash{$key} = 1 unless ( $in_main && $key eq 'main::' );
+            }
+        }
+        else {
+            $hash{$key} = 1;
+        }
+    }
+
+    return \%hash;
+}
+
+sub set_stashes_enames {
+    my ( $stash, $name ) = @_;
+
+    return unless ref $stash;
+    $name = '' unless defined $name;
+    foreach my $k ( keys %$stash ) {
+        next unless $k =~ qr{::$};
+        my $stn = $name . $k;
+        my $ename = eval { B::svref_2object( \*{"${stn}"} )->EGV->NAME };
+        if ( $ename && $k ne $ename ) {
+
+            # increase our white list to take into account the enames [could probably merge hashes recursively]
+            if ( !exists $stash->{$ename} or !ref $stash->{$ename} ) {
+                $stash->{$ename} = { %{ $stash->{$k} } };
+            }
+            else {
+                $stash->{$ename} = { %{ $stash->{$ename} }, %{ $stash->{$k} } };
+            }
+        }
+        set_stashes_enames( $stash->{$k}, $stn );
+    }
+
+    return;
+}
+
+sub save_xsloader {
+    my @DL = eval '@DynaLoader::dl_shared_objects';    # Quoted eval gets rid of no warnings once issue.
+    return [ grep { $_ !~ m{/B/B\.so$} } @DL ];
 }
 
 # This parses the options passed to sub compile but not until build_c_file is invoked at the end of BEGIN.
@@ -118,6 +201,8 @@ sub parse_options {
         elsif ( $opt eq "U" ) {
             $arg ||= shift @opts;
             $settings->{'skip_packages'}->{$arg} = 1;
+
+            # Maybe delete the stash from save_inc ?
         }
         else {
             die "Invalid option $opt";
