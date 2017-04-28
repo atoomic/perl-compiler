@@ -68,7 +68,7 @@ sub save_compile_state {
     $settings->{'uses_re'} = scalar grep { m{\Q/re/re.so\E$} } @{ $settings->{'so_files'} };
     $settings->{'starting_INC'} = save_inc();
 
-    $settings->{'starting_stash'} = save_stashes( $::{"main::"}, 1 );
+    $settings->{'starting_stash'} = starting_stash( $::{"main::"}, 1 );
     set_stashes_enames( $settings->{'starting_stash'} );
 
     # We're
@@ -91,7 +91,7 @@ sub save_inc {
 
 my %seen;
 
-sub save_stashes {
+sub starting_stash {
     my ( $stash, $in_main ) = @_;
 
     $seen{"$stash"} = 1 if ($in_main);
@@ -103,7 +103,7 @@ sub save_stashes {
             my $name = "$goto";
             if ( !$seen{$name} ) {
                 $seen{$name} = 1;
-                $hash{$key}  = save_stashes($goto);
+                $hash{$key}  = starting_stash($goto);
             }
             else {
                 $hash{$key} = 1 unless ( $in_main && $key eq 'main::' );
