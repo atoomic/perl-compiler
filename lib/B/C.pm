@@ -74,7 +74,12 @@ sub save_compile_state {
     # We're
     $settings->{'starting_stash'}->{'XSLoader::'}->{'load_file'} = 1 if $settings->{'needs_xs'};    #
 
-    #require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'});
+    $settings->{'starting_flat_stashes'} = flatten_stashes( $settings->{'starting_stash'} );
+
+    #eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
+    #print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'});
+    #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} ); exit;
+
     return;
 }
 
@@ -109,7 +114,39 @@ sub save_stashes {
         }
     }
 
+    # cleanup stash
+    foreach my $unsaved (qw{B:: O:: DB::}) {
+        delete $hash{$unsaved};
+    }
+
     return \%hash;
+}
+
+sub _flatten_stashes {
+    my ( $stash, $prefix, $flat ) = @_;
+
+    return unless ref $stash eq 'HASH';
+
+    foreach my $k ( sort keys %$stash ) {
+        next unless $k =~ qr{::$};
+        my $p          = $prefix . $k;
+        my $stash_name = $p;
+        $stash_name =~ s{::$}{};
+        $flat->{$stash_name} = 1;
+
+        _flatten_stashes( $stash->{$k}, $p, $flat );
+    }
+
+    return;
+}
+
+sub flatten_stashes {
+    my ($start_stash) = @_;
+
+    my $flat = {};
+    _flatten_stashes( $start_stash, '', $flat );
+
+    return $flat;
 }
 
 sub set_stashes_enames {

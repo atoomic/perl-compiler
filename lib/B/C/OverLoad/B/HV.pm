@@ -32,9 +32,15 @@ sub swash_ToCf_value {    # NO idea what it s ??
 sub do_save {
     my ( $hv, $fullname ) = @_;
 
-    $fullname = '' unless $fullname;
+    $fullname ||= '';
     my $stash_name = $hv->NAME;
     my $magic;
+
+    #debug( hv => "XXXX HV fullname %s // name %s", $fullname, $stash_name );
+    if ($stash_name) {
+        my $starting_flat_stashes = $B::C::settings->{'starting_flat_stashes'} or die;
+        return unless $starting_flat_stashes->{$stash_name};    # need to skip properly ( maybe just a protection there )
+    }
 
     # protect against recursive self-reference
     # i.e. with use Moose at stash Class::MOP::Class::Immutable::Trait
