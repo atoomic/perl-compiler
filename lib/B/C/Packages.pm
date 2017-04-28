@@ -12,7 +12,9 @@ our @EXPORT_OK = qw/mark_package_removed mark_package_unused mark_package_used m
 our %include_package;
 
 sub new {
+    ### ya way to saveinc..... we only need one # FIXME to remove....
     %B::C::curINC = %B::C::savINC = %INC;
+    return;
 }
 
 sub mark_package_unused {
