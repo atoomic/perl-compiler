@@ -102,7 +102,7 @@ sub start_heavy {
     my $settings = $B::C::settings;
 
     $settings->{'output_file'} or die("Please supply a -o option to B::C");
-    B::C::File::new( $settings->{'output_file'} );    # Singleton.
+    B::C::File->new( $settings->{'output_file'} );    # Singleton.
     B::C::Packages::new();                            # Singleton.
 
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'} );

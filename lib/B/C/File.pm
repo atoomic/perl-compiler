@@ -71,7 +71,9 @@ BEGIN {
 }
 
 sub new {
-    $self and die("Re-initialized???");
+    my ( $class, $outfile ) = @_;
+
+    $self and die "Singleton: should only be called once !";
 
     my $outfile = shift;
     debug( 'file' => "Write to c file: '$outfile'" );
