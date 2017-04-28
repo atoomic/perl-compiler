@@ -143,7 +143,8 @@ sub stack_flat {
 
 sub savestashpv {
     my $name = shift;
-    return svref_2object( \%{ $name . '::' } )->save
+    no strict 'refs';
+    return svref_2object( \%{ $name . '::' } )->save;
 }
 
 1;
