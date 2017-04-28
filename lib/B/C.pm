@@ -69,6 +69,9 @@ sub save_compile_state {
     $settings->{'starting_INC'} = save_inc();
 
     $settings->{'starting_stash'} = starting_stash( $::{"main::"}, 1 );
+
+    cleanup_stashes();
+
     set_stashes_enames( $settings->{'starting_stash'} );
 
     # We're
@@ -76,8 +79,8 @@ sub save_compile_state {
 
     $settings->{'starting_flat_stashes'} = flatten_stashes( $settings->{'starting_stash'} );
 
-    #eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
-    #print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'});
+    # eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
+    # eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
     #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} ); exit;
 
     return;
@@ -120,6 +123,40 @@ sub starting_stash {
     }
 
     return \%hash;
+}
+
+sub cleanup_stashes {
+    my $use_re  = $settings->{'uses_re'};
+    my $stashes = $settings->{'starting_stash'};
+
+    if ( !$uses_re ) {
+        delete $stashes->{'re::'};
+        delete $stashes->{'Regexp::'};    # unsure
+    }
+    foreach my $k ( qw{ BEGIN ARGV ENV INC STDERR STDIN STDOUT stderr stdin stdout }, 0 .. 9 ) {
+        delete $stashes->{$k};
+    }
+
+    foreach my $st ( sort keys %$stashes ) {
+        next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
+        delete $stashes->{$st} if !scalar keys %{ $stashes->{$st} };
+    }
+
+    # special logic for CORE
+    if ( scalar keys %{ $stashes->{'CORE::'} } == 1 && scalar keys %{ $stashes->{'CORE::'}->{'GLOBAL::'} } == 0 ) {
+        delete $stashes->{'CORE::'};
+    }
+
+    if ( scalar keys %{ $stashes->{'Carp::'} } == 1 && exists $stashes->{'Carp::'}->{'croak'} ) {
+        delete $stashes->{'Carp::'};
+    }
+
+    # too fancy for now, enable it later ???
+    # if ( ! $settings->{'needs_xs'} ) {
+    #     delete $stashes->{'DynaLoader::'};
+    #     delete $stashes->{'XSLoader::'};
+    # }
+
 }
 
 sub _flatten_stashes {
