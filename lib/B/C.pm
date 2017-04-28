@@ -117,11 +117,6 @@ sub starting_stash {
         }
     }
 
-    # cleanup stash
-    foreach my $unsaved (qw{B:: O:: DB::}) {
-        delete $hash{$unsaved};
-    }
-
     return \%hash;
 }
 
@@ -133,8 +128,15 @@ sub cleanup_stashes {
         delete $stashes->{'re::'};
         delete $stashes->{'Regexp::'};    # unsure
     }
+
+    # cleanup special variables
     foreach my $k ( qw{ BEGIN ARGV ENV INC STDERR STDIN STDOUT stderr stdin stdout }, 0 .. 9 ) {
         delete $stashes->{$k};
+    }
+
+    # cleanup sepcial stashes
+    foreach my $unsaved (qw{B:: O:: DB::}) {
+        delete $stashes->{$unsaved};
     }
 
     foreach my $st ( sort keys %$stashes ) {
