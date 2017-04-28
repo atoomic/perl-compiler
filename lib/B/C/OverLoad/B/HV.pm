@@ -182,7 +182,7 @@ sub do_save {
 
             # Insert each key into the hash.
             my $shared_he = save_shared_he($key);
-            $init->sadd( q{HvAddEntry(%s, %s, %s, %d);}, $sym, $value, $shared_he, $max );
+            $init->sadd( q{HvAddEntry(%s, (SV*) %s, %s, %d);}, $sym, $value, $shared_he, $max );
 
             #debug( hv => q{ HV key "%s" = %s}, $key, $value );
         }

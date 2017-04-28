@@ -214,6 +214,31 @@ XS(XS_DynaLoader_dl_find_symbol);
 [% section.decl.output( "%s\n" ) %]
 /* </decl.output> */
 
+static void HvSETUP(HV* hv, U32 size) {
+    char *array;
+    /* malloc the hash array + the xpvhv_aux which is part of it */
+    Newxz (array, PERL_HV_ARRAY_ALLOC_BYTES (size) + sizeof(struct xpvhv_aux), char);
+
+    /* setting the hash array to the HV (in sv_list) in sv_any */
+    HvARRAY(hv) = (HE **) array;
+
+    return;
+}
+
+static void HvAddEntry(HV* hv, SV* value, SHARED_HE* hek, I32 max) {
+    HE **oentry;
+    HE *entry;
+
+    entry            = (HE*) safemalloc(sizeof(HE));
+    HeKEY_hek(entry) = &(hek->shared_he_hek);
+    HeVAL (entry)    = value;
+    oentry           = &(HvARRAY (hv))[HEK_HASH(&(hek->shared_he_hek)) & max];
+    HeNEXT(entry)    = *oentry;
+    *oentry          = entry;
+
+    return;
+}
+
 [% IF devel_peek_needed %]
 static void
 S_do_dump(pTHX_ SV *const sv, I32 lim)
@@ -381,31 +406,6 @@ SV ** INITAv(AV * av, int count) {
     AvALLOC(av) = svp;
     AvARRAY(av) = svp;
     return svp;
-}
-
-static void HvSETUP(HV* hv, U32 size) {
-    char *array;
-    /* malloc the hash array + the xpvhv_aux which is part of it */
-    Newxz (array, PERL_HV_ARRAY_ALLOC_BYTES (size) + sizeof(struct xpvhv_aux), char);
-
-    /* setting the hash array to the HV (in sv_list) in sv_any */
-    HvARRAY(hv) = (HE **) array;
-
-    return;
-}
-
-static void HvAddEntry(HV* hv, SV* value, SHARED_HE* hek, I32 max) {
-    HE **oentry;
-    HE *entry;
-
-    entry            = (HE*) safemalloc(sizeof(HE));
-    HeKEY_hek(entry) = &(hek->shared_he_hek);
-    HeVAL (entry)    = value;
-    oentry           = &(HvARRAY (hv))[HEK_HASH(&(hek->shared_he_hek)) & max];
-    HeNEXT(entry)    = *oentry;
-    *oentry          = entry;
-
-    return;
 }
 
 PADNAME ** INITPADNAME(PADNAMELIST *padname, int count) {
@@ -835,7 +835,7 @@ main(int argc, char **argv, char **env)
     assert(PL_do_undump == 0);
 
     init_pl_strtab(); /* Initialize PL_Strtab on our own before perl gets to it in perl_alloc. This allows us to use immportal constant shared HEKs */
-    init_stash(); /* Setup the stashes */
+    perl_init_stash(); /* Setup the stashes */
     setup_perl_globals(argv[0]);
 
 	perl_construct( &BC_unthreaded_interpreter );
