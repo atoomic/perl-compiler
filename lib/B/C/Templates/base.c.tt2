@@ -275,7 +275,7 @@ Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %
 
 void setup_perl_globals( char* argv0 ) {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
-    PL_curstname = [% PL.curstashname %];  /* "main" SVt_PV */
+    PL_curstname = [% PL.curstname %];  /* "main" SVt_PV */
     PL_incgv = [% PL.incgv %];             /* *main::INC SVt_PVGV hv and AV must be set! */
     PL_hintgv = [% PL.hintgv %];           /* *main::^H SVt_PVGV */
     PL_defgv = [% PL.defgv %];             /* *main::_ SVt_PVGV must have SV and AV setup?? */
@@ -287,7 +287,7 @@ void setup_perl_globals( char* argv0 ) {
     /* setup $0 on execution */
     /* WARNING: get_sv messes with $0 in the stash?? */
     sv_setpv_mg(get_sv("0", GV_ADD|GV_NOTQUAL), argv0);
-    CopFILE_set(&PL_compiling, argv[0]);
+    CopFILE_set(&PL_compiling, argv0);
 }
 
 static void init_pl_strtab(pTHX) {

@@ -45,16 +45,11 @@ sub _savefields_to_str {
 my $CORE_SYMS = {
     'main::ENV'    => 'PL_envgv',
     'main::ARGV'   => 'PL_argvgv',
-    'main::INC'    => 'PL_incgv',
     'main::STDIN'  => 'PL_stdingv',
     'main::STDERR' => 'PL_stderrgv',
-    "main::\010"   => 'PL_hintgv',     # ^H
-    "main::_"      => 'PL_defgv',
-    "main::@"      => 'PL_errgv',
-    "main::\022"   => 'PL_replgv',     # ^R
 };
 
-my $CORE_SVS = {                       # special SV syms to assign to the right GvSV
+my $CORE_SVS = {    # special SV syms to assign to the right GvSV
 
     "main::\\" => 'PL_ors_sv',
     "main::/"  => 'PL_rs',

@@ -1107,8 +1107,6 @@ sub save_context {
     }
     debug( [qw/verbose pkg/], "Saved \@ISA for: " . join( " ", @saved_isa ) ) if @saved_isa;
     init1()->add(
-        "GvHV(PL_incgv) = $inc_hv;",
-        "GvAV(PL_incgv) = $inc_av;",
         "PL_curpad = AvARRAY($curpad_sym);",
         "PL_comppad = $curpad_sym;",      # fixed "panic: illegal pad"
         "PL_stack_sp = PL_stack_base;"    # reset stack (was 1++)
