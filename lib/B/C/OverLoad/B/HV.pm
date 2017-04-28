@@ -29,6 +29,58 @@ sub swash_ToCf_value {    # NO idea what it s ??
     return $swash_ToCf;
 }
 
+sub can_save_stash {
+    my $stash_name = shift;
+
+    #return get_current_stash_position_in_starting_stash ( $stash_name ) ? 1 : 0;
+
+    return 1 if $stash_name eq 'main';
+
+    $stash_name =~ s{::$}{};
+    $stash_name =~ s{^main::}{};
+
+    # ... do something with names containing a pad FIXME ( new behavior good to have )
+
+    my $starting_flat_stashes = $B::C::settings->{'starting_flat_stashes'} or die;
+    return $starting_flat_stashes->{$stash_name} ? 1 : 0;    # need to skip properly ( maybe just a protection there
+}
+
+sub key_was_missing_from_stash_at_compile {
+    my ( $stash_name, $key, $curstash ) = @_;
+
+    # when it s not a stash (noname) we always want to save all the keys from the hash
+    return 0 unless $stash_name;
+
+    # if do not have a pointer to a stash in starting_stash, we should not save the key
+    return 1 if ref $curstash ne 'HASH';
+
+    # no need to check if the stash name is in starting_stashes ( we know this for sure )
+
+    # was the key defined at startup by starting_stash() ?
+    return !$curstash->{$key};
+}
+
+# our only goal here is to get the curstash position in starting_stash if it exists
+sub get_current_stash_position_in_starting_stash {
+    my ($stash_name) = @_;
+
+    return unless $stash_name;    # <---- we want to save all *keys*
+
+    $stash_name =~ s{::$}{};
+    $stash_name =~ s{^main::}{};
+
+    my $curstash = $B::C::settings->{'starting_stash'};
+
+    if ( $stash_name ne 'main' ) {
+        foreach my $sect ( split( '::', $stash_name ) ) {
+            $curstash = $curstash->{ $sect . '::' } or return;    # Should never happen.
+            ref $curstash eq 'HASH' or return;
+        }
+    }
+
+    return $curstash;
+}
+
 sub do_save {
     my ( $hv, $fullname ) = @_;
 
@@ -38,8 +90,12 @@ sub do_save {
 
     #debug( hv => "XXXX HV fullname %s // name %s", $fullname, $stash_name );
     if ($stash_name) {
-        my $starting_flat_stashes = $B::C::settings->{'starting_flat_stashes'} or die;
-        return unless $starting_flat_stashes->{$stash_name};    # need to skip properly ( maybe just a protection there )
+
+        if ( !can_save_stash($stash_name) ) {
+            debug( hv => 'skipping stash ' . $stash_name );
+            return 'NULL';
+        }
+        debug( hv => 'Saving stash ' . $stash_name );
     }
 
     # protect against recursive self-reference
@@ -50,6 +106,10 @@ sub do_save {
     my $sym = savesym( $hv, "(HV*)&sv_list[$sv_list_index]" );
 
     # could also simply use: savesym( $hv, sprintf( "s\\_%x", $$hv ) );
+
+    my $cache_stash_entry;
+
+    my $current_stash_position_in_starting_stash = get_current_stash_position_in_starting_stash($stash_name);
 
     # reduce the content
     # remove values from contents we are not going to save
@@ -65,6 +125,11 @@ sub do_save {
             my $key = $contents[ $i - 1 ];    # string only
             my $sv  = $contents[$i];
             my $value;
+
+            if ( key_was_missing_from_stash_at_compile( $stash_name, $key, $current_stash_position_in_starting_stash ) ) {
+                debug( hv => '...... Skipping key "%s" from stash "%s" (missing) ', $key, $stash_name );
+                next;
+            }
 
             if ( debug('hv') and ref($sv) eq 'B::RV' and defined objsym($sv) ) {
                 WARN( "HV recursion? with $fullname\{$key\} -> %s\n", $sv->RV );

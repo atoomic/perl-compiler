@@ -110,7 +110,7 @@ sub starting_stash {
             }
         }
         else {
-            $hash{$key} = 1;
+            $hash{$key} = 1;    # need to remove if we do not want to save them ?
         }
     }
 

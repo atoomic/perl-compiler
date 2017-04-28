@@ -107,7 +107,16 @@ sub start_heavy {
 
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'} );
 
-    save_main();
+    # save all our stashes at startup only
+    save_stashes();
+
+    die "Our Awesome Exit !";
+
+    # first iteration over the main tree
+    save_optree();
+
+    # fixups: wtf we could have miss during our initial walk...
+    save_main_rest();
 
     return;
 }
@@ -657,6 +666,19 @@ sub walk_syms {
     walksymtable( \%{ $package . '::' }, "savecv", sub { 1 }, $package . '::' );
 }
 
+sub save_stashes {
+
+    #no strict 'refs';
+
+    #foreach my $stash ( sort { length $a <=> length $b } keys $settings->{'starting_flat_stashes'}->%* )
+    # we are saving main
+    my $main_stash = svref_2object( \%main:: )->save('main');
+
+    # ....
+
+    return;
+}
+
 # simplified walk_syms
 # needed to populate @B::C::Flags::deps from Makefile.PL from within this %INC context
 sub walk_stashes {
@@ -1109,9 +1131,9 @@ sub save_context {
     );
 }
 
-sub save_main {
+sub save_optree {
     verbose("Starting compile");
-    verbose("Walking tree");
+    verbose("Walking optree");
     %Exporter::Cache = ();                # avoid B::C and B symbols being stored
     _delete_macros_vendor_undefined();
     set_curcv(B::main_cv);
@@ -1127,7 +1149,8 @@ sub save_main {
     verbose()
       ? walkoptree_slow( main_root, "save" )
       : walkoptree( main_root, "save" );
-    save_main_rest();
+
+    return;
 }
 
 sub _delete_macros_vendor_undefined {
@@ -1168,7 +1191,7 @@ sub force_saving_xsloader {
 }
 
 sub save_main_rest {
-    debug( [qw/verbose cv/], "done main optree, walking symtable for extras" );
+    verbose("done main optree, walking symtable for extras");
     init()->add("");
     init()->add("/* done main optree, extra subs which might be unused */");
     B::C::Optimizer::UnusedPackages::optimize();
@@ -1329,6 +1352,8 @@ sub save_main_rest {
     if ( $INC{'Devel/NYTProf.pm'} ) {
         eval q/DB::finish_profile()/;
     }
+
+    return;
 }
 
 sub build_template_stash {
