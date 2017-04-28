@@ -267,6 +267,12 @@ Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %
 
 [% END %]
 
+
+[% IF section.init_stash.comment() %]
+    /* [% section.init_stash.comment() %] */
+[% END %]
+[% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
+
 static void init_pl_strtab(pTHX) {
 /* only init PL_strtab if we have content for it */
 [% IF section.sharedhe.index + 1 > 0 %]
@@ -812,6 +818,7 @@ main(int argc, char **argv, char **env)
     assert(PL_do_undump == 0);
 
     init_pl_strtab(); /* Initialize PL_Strtab on our own before perl gets to it in perl_alloc. This allows us to use immportal constant shared HEKs */
+    init_stash(); /* Setup the stashes */
 
 	perl_construct( &BC_unthreaded_interpreter );
 	PL_perl_destruct_level = 0;
