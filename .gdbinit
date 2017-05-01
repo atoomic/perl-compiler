@@ -136,7 +136,8 @@ define AvFILL
    print ((XPVAV*)  ($arg0)->sv_any)->xav_fill
 end
 
-define dumpav
+define dump_av
+    p (XPVAV*)  ($arg0)->sv_any
     set $n = ((XPVAV*)  ($arg0)->sv_any)->xav_fill
     set $i = 0
     while $i <= $n
