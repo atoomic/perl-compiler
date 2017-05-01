@@ -165,7 +165,10 @@ sub do_save {
 
     {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
         $init->no_split;
-        $init->sadd( qq[{\n] . q{HvSETUP(%s, %d);}, $sym, $max + 1 );
+        my $comment = $stash_name ? "/* STASH declaration for $stash_name */" : '';
+        $init->sadd( '{ %s', $comment );
+        $init->indent(+1);
+        $init->sadd( q{HvSETUP(%s, %d);}, $sym, $max + 1 );
 
         my @hash_elements;
         {
@@ -182,14 +185,14 @@ sub do_save {
 
             # Insert each key into the hash.
             my $shared_he = save_shared_he($key);
-            $init->sadd( q{HvAddEntry(%s, (SV*) %s, %s, %d);}, $sym, $value, $shared_he, $max );
+            $init->sadd( q{HvAddEntry(%s, (SV*) %s, %s, %d); /* %s */}, $sym, $value, $shared_he, $max, $key );
 
             #debug( hv => q{ HV key "%s" = %s}, $key, $value );
         }
 
         # save the iterator in hv_aux (and malloc it)
         $init->sadd( "HvRITER_set(%s, %d);", $sym, -1 );    # saved $hv->RITER
-
+        $init->indent(-1);
         $init->add("}");
         $init->split;
     }
@@ -211,7 +214,7 @@ sub do_save {
         }
 
         if ( is_using_mro() && mro::get_mro($stash_name) eq 'c3' ) {
-            B::C::make_c3($stash_name); # Is it main when we want to do it for main????
+            B::C::make_c3($stash_name);    # Is it main when we want to do it for main????
         }
 
         my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);

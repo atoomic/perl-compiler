@@ -14,13 +14,14 @@ sub new {
     my $class = shift;
     my $self  = $class->SUPER::new(@_);
 
-    $self->{'initav'}      = [];
-    $self->{'chunks'}      = [];
-    $self->{'nosplit'}     = 0;
-    $self->{'current'}     = [];
-    $self->{'count'}       = 0;
-    $self->{'max_lines'}   = 10000;
-    $self->{'last_caller'} = '';
+    $self->{'initav'}       = [];
+    $self->{'chunks'}       = [];
+    $self->{'nosplit'}      = 0;
+    $self->{'current'}      = [];
+    $self->{'count'}        = 0;
+    $self->{'indent_level'} = 0;
+    $self->{'max_lines'}    = 10000;
+    $self->{'last_caller'}  = '';
 
     $self->benchmark_time( 'START', 'START init' );
 
@@ -55,14 +56,23 @@ sub benchmark_time {
     return;
 }
 
+sub indent {
+    my ( $self, $inc ) = @_;
+    return $self->{indent_level} unless defined $inc;
+    $self->{indent_level} += $inc;
+    $self->{indent_level} = 0 if $self->{indent_level} < 0;
+    return $self->{indent_level};
+}
+
 sub split {
     my $self = shift;
     $self->{'nosplit'}--
       if $self->{'nosplit'} > 0;
+    return $self->{'nosplit'};
 }
 
 sub no_split {
-    shift->{'nosplit'}++;
+    return shift->{'nosplit'}++;
 }
 
 sub inc_count {
@@ -71,11 +81,11 @@ sub inc_count {
     $self->{'count'} += $_[0];
 
     # this is cheating
-    $self->add();
+    return $self->add();
 }
 
 sub add {
-    my $self    = shift;
+    my ( $self, @lines ) = @_;
     my $current = $self->{'current'};
     my $nosplit = $self->{'nosplit'};
 
@@ -101,8 +111,10 @@ sub add {
         }
     }
 
-    push @$current, @_;
-    $self->{'count'} += scalar(@_);
+    my $indent = $self->indent();
+    my $spaces = $indent ? "\t" x $indent : '';
+    push @$current, map { "$spaces$_" } @lines;
+    $self->{'count'} += scalar(@lines);
 
     if ( B::C::Debug::debug('stack') ) {
         my $add_stack = 'B::C::Save'->can('_caller_comment');
@@ -173,7 +185,7 @@ sub output {
         ++$name;
     }
 
-    $return_string .= "PERL_STATIC_INLINE int ${init_name}(pTHX)\n{\n";
+    $return_string .= "\nPERL_STATIC_INLINE int ${init_name}(pTHX)\n{\n";
 
     if ( $self->name eq 'init' ) {
         $return_string .= "    perl_init0(aTHX);\n";
