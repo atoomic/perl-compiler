@@ -251,7 +251,7 @@ sub parse_argv {
     if ( defined $Options->{debug} ) {
         $Options->{debug} =~ s{^=+}{};
         $Options->{debug} = 'full' if !length $Options->{debug};
-        $Options->{debug} =~ s{,}{.}g; # comma is already used
+        $Options->{debug} =~ s{,}{.}g;    # comma is already used
         $Options->{Wb} = $Options->{Wb} ? $Options->{Wb} . ',' : '';
         $Options->{Wb} .= '-D' . $Options->{debug};
         $Options->{S} = 1;
@@ -471,6 +471,9 @@ sub compile_cstyle {
         close $cfh;    # See comment just below
     }
     vprint 3, "Writing C on $cfile" unless opt('check');
+    foreach my $toclean ( $cfile, $cfile . ".lst" ) {
+        unlink($toclean) if -e $toclean;
+    }
 
     my $max_line_len = '';
     if ( $^O eq 'MSWin32' && $Config{cc} =~ /^cl/i ) {
