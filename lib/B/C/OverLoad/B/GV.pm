@@ -10,6 +10,7 @@ use B::C::Packages qw/is_package_used/;
 use B::C::File qw/init init2 gvsect gpsect xpvgvsect/;
 use B::C::Helpers qw/get_cv_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
+use B::C::Optimizer::ForceHeavy qw/force_heavy/;
 
 my %gptable;
 
@@ -214,8 +215,6 @@ sub do_save {
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
     return $gv->save_special_gv() if $gv->is_special_gv();
 
-    return q/(SV*)&PL_sv_undef/ unless B::C::Optimizer::UnusedPackages::package_was_compiled_in( $gv->get_package() );
-
     my $sym = $gv->set_dynamic_gv;
     my $savefields = get_savefields( $gv, $gv->get_fullname(), $filter );
 
@@ -266,7 +265,7 @@ sub do_save {
             my $sharedhe_ix;
             $sharedhe_ix = $1 if $shared_he =~ qr{\[([0-9]+)\]};
             die unless defined $sharedhe_ix;
-            my $se = q{shared_he_} . $sharedhe_ix;
+            my $se = q{sHe} . $sharedhe_ix;
             xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) (&%s + sizeof(HE)) } /* %s */ ], $se, $gvname );
             1;
         }
