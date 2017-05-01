@@ -124,10 +124,10 @@ sub cleanup_stashes {
     my $use_re  = $settings->{'uses_re'};
     my $stashes = $settings->{'starting_stash'};
 
-    if ( !$uses_re ) {
-        delete $stashes->{'re::'};
-        delete $stashes->{'Regexp::'};    # unsure
-    }
+    #if ( !$uses_re ) {
+    #    delete $stashes->{'re::'};
+    #    delete $stashes->{'Regexp::'};    # unsure
+    #}
 
     # cleanup special variables
     foreach my $k ( qw{ BEGIN ARGV ENV INC STDERR STDIN STDOUT stderr stdin stdout }, 0 .. 9 ) {
