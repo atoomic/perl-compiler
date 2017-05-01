@@ -211,7 +211,7 @@ sub do_save {
         }
 
         if ( is_using_mro() && mro::get_mro($stash_name) eq 'c3' ) {
-            B::C::make_c3($stash_name);
+            B::C::make_c3($stash_name); # Is it main when we want to do it for main????
         }
 
         my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);
