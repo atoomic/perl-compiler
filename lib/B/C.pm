@@ -79,8 +79,8 @@ sub save_compile_state {
 
     $settings->{'starting_flat_stashes'} = flatten_stashes( $settings->{'starting_stash'} );
 
-    # eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
-    # eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
+    #eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
+    #eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
     #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} ); exit;
 
     return;
@@ -149,6 +149,10 @@ sub cleanup_stashes {
 
     if ( scalar keys %{ $stashes->{'Carp::'} } == 1 && exists $stashes->{'Carp::'}->{'croak'} ) {
         delete $stashes->{'Carp::'};
+    }
+
+    foreach my $lt_key ( grep { $_ =~ qr{^_<} } sort keys %$stashes ) {
+        delete $stashes->{$lt_key};
     }
 
     # too fancy for now, enable it later ???
