@@ -26,6 +26,7 @@ use B::C::File qw/init2/;
 # B::C::Packages Aliases
 
 sub descend_marked_unused {
+    return;
 
     foreach my $pack ( sort keys %INC ) {
         my $p = packname_inc($pack);
@@ -46,6 +47,7 @@ sub descend_marked_unused {
 # previously known as sub save_unused_subs
 sub optimize {
     no strict qw(refs);
+    return;
 
     my $sav_debug;
     if ( debug('unused') ) {
@@ -117,6 +119,8 @@ sub optimize {
 }
 
 sub should_save {
+    return;
+
     no strict qw(vars refs);
     my $package = shift;
     $package =~ s/::$//;
