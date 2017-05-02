@@ -632,8 +632,7 @@ sub save_stashes {
         require 'mro.pm';
     }
 
-    eval q{require Data::Dumper};
-    eval q{warn Data::Dumper::Dumper( $settings ) };
+    #eval q{require Data::Dumper}; eval q{warn Data::Dumper::Dumper( $settings ) };
 
     # do we have something else than PerlIO/scalar/scalar.so ?
     # there is something with PerlIO and PerlIO::scalar ( view in_static_core )
