@@ -33,8 +33,7 @@ sub do_save {
     }
     if ( $type == $B::C::OP_UCFIRST ) {
         verbose("enabling -ffold with ucfirst");
-        require "utf8.pm" unless $B::C::savINC{"utf8.pm"};
-        $B::C::savINC{'utf8.pm'} = 1;
+        require utf8;
         B::C::load_utf8_heavy();
 
     }

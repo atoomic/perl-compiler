@@ -90,7 +90,7 @@ our ( %dumped_package, %skip_package, %isa_cache );
 our ( $use_xsloader, $devel_peek_needed );
 
 # options and optimizations shared with B::CC
-our ( %savINC, %curINC, $mainfile );
+our ($mainfile );
 
 our @xpvav_sizes;
 our $in_endav;
@@ -122,14 +122,6 @@ sub add_to_isa_cache {
     die unless defined $k;
 
     $isa_cache{$k} = $v;
-    return;
-}
-
-sub add_to_currINC {
-    my ( $k, $v ) = @_;
-    die unless defined $k;
-
-    $curINC{$k} = $v;
     return;
 }
 
@@ -498,18 +490,7 @@ sub try_isa {
 }
 
 sub load_utf8_heavy {
-    return if $savINC{"utf8_heavy.pl"};
-
     require 'utf8_heavy.pl';
-    $curINC{'utf8_heavy.pl'} = $INC{'utf8_heavy.pl'};
-    $savINC{"utf8_heavy.pl"} = 1;
-    add_hashINC("utf8");
-
-    # FIXME: we want to use add_hashINC for utf8_heavy, inc_packname should return an array
-    # add_hashINC("utf8_heavy.pl");
-
-    # In CORE utf8::SWASHNEW is demand-loaded from utf8 with Perl_load_module()
-    # It adds about 1.6MB exe size 32-bit.
     svref_2object( \&{"utf8\::SWASHNEW"} )->save;
 
     return 1;
@@ -737,152 +718,6 @@ sub skip_pkg {
     return 0;
 }
 
-# Do not delete/ignore packages which were brought in from the script,
-# i.e. not defined in B::C or O. Just to be on the safe side.
-sub can_delete {
-    my $pkg = shift;
-    if ( exists $all_bc_deps{$pkg} ) { return 1 }
-    return undef;
-}
-
-sub inc_packname {
-    my $package = shift;
-
-    # See below at the reverse packname_inc: utf8 => utf8.pm + utf8_heavy.pl
-    $package =~ s/\:\:/\//g;
-    $package .= '.pm';
-    return $package;
-}
-
-sub packname_inc {
-    my $package = shift;
-    $package =~ s/\//::/g;
-    if ( $package =~ /^(Config_git\.pl|Config_heavy.pl)$/ ) {
-        return 'Config';
-    }
-    if ( $package eq 'utf8_heavy.pl' ) {
-        return 'utf8';
-    }
-    $package =~ s/\.p[lm]$//;
-    return $package;
-}
-
-sub delete_unsaved_hashINC {
-    my $package = shift;
-    my $incpack = inc_packname($package);
-
-    # Not already saved package, so it is not loaded again at run-time.
-    return if $dumped_package{$package};
-
-    # Never delete external packages, but this check is done before
-    return
-          if $package =~ /^DynaLoader|XSLoader$/
-      and defined $use_xsloader
-      and $use_xsloader == 0;
-    if ( $curINC{$incpack} ) {
-
-        #debug( pkg => "Deleting $package from \%INC" );
-        $savINC{$incpack} = $curINC{$incpack} if !$savINC{$incpack};
-        $curINC{$incpack} = undef;
-        delete $curINC{$incpack};
-    }
-}
-
-sub add_hashINC {
-    my $package = shift;
-    my $incpack = inc_packname($package);
-    unless ( $curINC{$incpack} ) {
-        if ( $savINC{$incpack} ) {
-            debug( pkg => "Adding $package to \%INC (again)" );
-            $curINC{$incpack} = $savINC{$incpack};
-
-            # need to check xsub
-            $use_xsloader = 1 if $package =~ /^DynaLoader|XSLoader$/;
-        }
-        else {
-            debug( pkg => "Adding $package to \%INC" );
-            for (@INC) {
-                my $p = $_ . '/' . $incpack;
-                if ( -e $p ) { $curINC{$incpack} = $p; last; }
-            }
-            $curINC{$incpack} = $incpack unless $curINC{$incpack};
-        }
-    }
-}
-
-sub walkpackages {
-    my ( $symref, $recurse, $prefix ) = @_;
-    no strict 'vars';
-    $prefix = '' unless defined $prefix;
-
-    # check if already deleted - failed since 5.15.2
-    return if $savINC{ inc_packname( substr( $prefix, 0, -2 ) ) };
-    for my $sym ( sort keys %$symref ) {
-        my $ref = $symref->{$sym};
-        next unless $ref;
-        local (*glob);
-        *glob = $ref;
-        if ( $sym =~ /::$/ ) {
-            $sym = $prefix . $sym;
-            debug( walk => "Walkpackages $sym" ) if debug('pkg');
-
-            # This walker skips main subs to avoid recursion into O compiler subs again
-            # and main syms are already handled
-            if ( $sym ne "main::" && $sym ne "<none>::" && &$recurse($sym) ) {
-                walkpackages( \%glob, $recurse, $sym );
-            }
-        }
-    }
-}
-
-sub inc_cleanup {
-    my $rec_cnt = shift;
-
-    # %INC sanity check issue 89:
-    # omit unused, unsaved packages, so that at least run-time require will pull them in.
-
-    my @deleted_inc;
-    for my $package ( sort keys %INC ) {
-        my $pkg = packname_inc($package);
-        if ( $package =~ /^(Config_git\.pl|Config_heavy.pl)$/ and !$dumped_package{'Config'} ) {
-            delete $curINC{$package};
-        }
-        elsif ( $package eq 'utf8_heavy.pl' ) {
-            delete $curINC{$package};
-            delete_unsaved_hashINC('utf8');
-        }
-    }
-
-    # sync %curINC deletions back to %INC
-    for my $p ( sort keys %INC ) {
-        if ( !exists $curINC{$p} ) {
-            delete $INC{$p};
-            push @deleted_inc, $p;
-        }
-    }
-    if ( debug('pkg') and verbose() ) {
-        debug( pkg => "\%dumped_package:  " . join( " ", grep { $dumped_package{$_} } sort keys %dumped_package ) );
-    }
-
-    # final cleanup
-    for my $p ( sort keys %INC ) {
-        my $pkg = packname_inc($p);
-        delete_unsaved_hashINC($pkg) unless exists $dumped_package{$pkg};
-
-        # sync %curINC deletions back to %INC
-        if ( !exists $curINC{$p} and exists $INC{$p} ) {
-            delete $INC{$p};
-            push @deleted_inc, $p;
-        }
-    }
-
-    if ( verbose() ) {
-        debug( pkg => "Deleted from \%INC: " . join( " ", @deleted_inc ) ) if @deleted_inc;
-        my @inc = grep !/auto\/.+\.(al|ix)$/, sort keys %INC;
-        debug( pkg => "\%INC: " . join( " ", @inc ) );
-    }
-}
-
 # global state only, unneeded for modules
 sub save_context {
 
@@ -920,7 +755,6 @@ sub save_context {
         local $B::C::const_strings = 1;
         verbose("\%INC and \@INC:");
         init()->add('/* %INC */');
-        inc_cleanup(0);
         my $inc_gv = svref_2object( \*main::INC );
         $inc_hv = $inc_gv->HV->save('main::INC');
         init()->add('/* @INC */');
@@ -990,7 +824,7 @@ sub force_saving_xsloader {
     svref_2object( \&XSLoader::load_file )->save;
     svref_2object( \&DynaLoader::dl_load_flags )->save;    # not saved as XSUB constant?
 
-    add_hashINC("DynaLoader");
+    # add_hashINC("DynaLoader");
     $use_xsloader = 0;                                     # do not load again
 }
 
@@ -1110,35 +944,32 @@ sub save_main_rest {
     my %static_ext = map { ( $_ => 1 ) } grep { m/\S/ } split( /\s+/, $Config{static_ext} );
     my @stashxsubs = map { s/::/__/g; $_ } sort keys %static_ext;
 
-    # Used to be in output_main_rest(). Seems to be trying to clean up xsub
-    foreach my $stashname ( sort keys %xsub ) {
-        my $incpack = $stashname;
-        $incpack =~ s/\:\:/\//g;
-        $incpack .= '.pm';
-        unless ( exists $B::C::curINC{$incpack} ) {    # skip deleted packages
-            debug( pkg => "skip xs_init for $stashname !\$INC{$incpack}" );
-            delete $xsub{$stashname} unless $static_ext{$stashname};
-        }
-
-        # actually boot all non-b-c dependent modules here. we assume XSLoader (Moose, List::MoreUtils)
-        if ( !exists( $xsub{$stashname} ) ) {          # and is_package_used($stashname)
-            $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
-
-            # Class::MOP without Moose: find Moose.pm
-            $xsub{$stashname} = 'Dynamic-' . $B::C::savINC{$incpack} unless $INC{$incpack};
-            if ( !$B::C::savINC{$incpack} ) {
-                eval "require $stashname;";
-                $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
-            }
-            verbose("Assuming xs loaded $stashname with $xsub{$stashname}");
-        }
-    }
+    # STATIC_HV: This code block needs to be re-written for XS.
+    ## Used to be in output_main_rest(). Seems to be trying to clean up xsub
+    #foreach my $stashname ( sort keys %xsub ) {
+    #    my $incpack = $stashname;
+    #    $incpack =~ s/\:\:/\//g;
+    #    $incpack .= '.pm';
+    #
+    #    # actually boot all non-b-c dependent modules here. we assume XSLoader (Moose, List::MoreUtils)
+    #    if ( !exists( $xsub{$stashname} ) ) {          # and is_package_used($stashname)
+    #        $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
+    #
+    #        # Class::MOP without Moose: find Moose.pm
+    #        # $xsub{$stashname} = 'Dynamic-' . $B::C::savINC{$incpack} unless $INC{$incpack};
+    #        if ( !$B::C::savINC{$incpack} ) {
+    #            eval "require $stashname;";
+    #            $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
+    #        }
+    #        verbose("Assuming xs loaded $stashname with $xsub{$stashname}");
+    #    }
+    #}
 
     # Used to be buried in output_main_rest(); Seems to be more xsub cleanup.
     delete $xsub{'DynaLoader'};
     delete $xsub{'UNIVERSAL'};
 
-    my $dynaloader_optimizer = B::C::Optimizer::DynaLoader->new( { 'xsub' => \%xsub, 'skip_package' => \%skip_package, 'curINC' => \%curINC, 'output_file' => $settings->{'output_file'}, 'staticxs' => $settings->{staticxs} } );
+    my $dynaloader_optimizer = B::C::Optimizer::DynaLoader->new( { 'xsub' => \%xsub, 'skip_package' => \%skip_package, 'output_file' => $settings->{'output_file'}, 'staticxs' => $settings->{staticxs} } );
     $dynaloader_optimizer->optimize();
 
     my $c_file_stash = build_template_stash( \%static_ext, \@stashxsubs, $dynaloader_optimizer );
@@ -1173,7 +1004,7 @@ sub build_template_stash {
         'compile_stats'         => compile_stats(),
         'nullop_count'          => $nullop_count,
         'xsub'                  => \%xsub,
-        'curINC'                => \%curINC,
+#        'curINC'                => \%curINC,
         'staticxs'              => $settings->{'staticxs'},
         'all_eval_pvs'          => \@B::C::InitSection::all_eval_pvs,
         'TAINT'                 => ( ${^TAINT} ? 1 : 0 ),

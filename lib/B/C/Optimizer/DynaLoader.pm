@@ -16,7 +16,6 @@ sub new {
 
     $self->{'xsub'}            or die;
     $self->{'skip_package'}    or die;
-    $self->{'curINC'}          or die;
     $self->{'output_file'}     or die;
     exists $self->{'staticxs'} or die;
 
@@ -63,14 +62,6 @@ sub optimize {
 
     }
     debug( cv => "\%B::C::xsub: " . join( " ", sort keys %{ $self->{'xsub'} } ) ) if verbose();
-
-    # XXX Adding DynaLoader is too late here! The sections like $init are already dumped (#125)
-    # QUESTION: What do we need to alter? cause now we're uding template, it's not too late.
-    # (Though technically I've never seen this die.)
-    # Something to do with 5.20? https://code.google.com/p/perl-compiler/issues/detail?id=125
-    if ( $dl and !$self->{'curINC'}->{'DynaLoader.pm'} ) {
-        return 0;    # die "Error: DynaLoader required but not dumped. Too late to add it.\n";
-    }
 
     return 0 if !$dl;
 

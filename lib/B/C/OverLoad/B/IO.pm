@@ -23,12 +23,9 @@ sub save_data {
     $B::C::use_xsloader = 1;    # layers are not detected as XSUB CV, so force it
 
     # STATIC_HV: This needs to be done earlier in C.pm
-    require PerlIO         unless $B::C::savINC{'PerlIO.pm'};
-    require PerlIO::scalar unless $B::C::savINC{'PerlIO/scalar.pm'};
+    require PerlIO;
+    require PerlIO::scalar;
 
-    $B::C::curINC{'PerlIO.pm'} = $INC{'PerlIO.pm'};    # as it was loaded from BEGIN
-
-    $B::C::curINC{'PerlIO/scalar.pm'} = $INC{'PerlIO/scalar.pm'};
     $B::C::xsub{'PerlIO::scalar'}     = 'Dynamic-' . $INC{'PerlIO/scalar.pm'};    # force dl_init boot
 }
 
