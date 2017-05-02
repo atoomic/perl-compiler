@@ -214,7 +214,7 @@ sub do_save {
             init2()->sadd( "mro_isa_changed_in(%s);  /* %s */", $sym, $stash_name );
         }
 
-        if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' ) {
+        if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' or $stash_name eq 'main' ) {
             B::C::make_c3($stash_name);    # Is it main when we want to do it for main????
         }
 
@@ -285,6 +285,17 @@ sub get_max_hash_from_keys {
     return $default if !$keys or $keys <= $default;    # default hash max value
 
     return 2**( int( log($keys) / log(2) ) + 1 ) - 1;
+}
+
+my @made_c3;
+
+sub make_c3 {
+    my $package = shift or die;
+
+    return if ( grep { $_ eq $package } @made_c3 );
+    push @made_c3, $package;
+
+    return init2()->sadd( 'Perl_mro_set_mro(aTHX_ HvMROMETA(%s), newSVpvs("c3"));', savestashpv($package) );
 }
 
 1;

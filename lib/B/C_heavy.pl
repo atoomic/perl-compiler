@@ -642,7 +642,7 @@ sub save_stashes {
     # We need mro to save stashes but loading it alters the mro stash.
     if ( keys %{mro::} <= 10 ) {
         svref_2object( \%mro:: )->save("mro::");
-        require mro;
+        require 'mro.pm';
     }
 
     return svref_2object( \%main:: )->save('main');
@@ -883,17 +883,6 @@ sub inc_cleanup {
     }
 }
 
-my @made_c3;
-
-sub make_c3 {
-    my $package = shift or die;
-
-    return if ( grep { $_ eq $package } @made_c3 );
-    push @made_c3, $package;
-
-    return init2()->sadd( 'Perl_mro_set_mro(aTHX_ HvMROMETA(%s), newSVpvs("c3"));', savestashpv($package) );
-}
-
 # global state only, unneeded for modules
 sub save_context {
 
@@ -913,11 +902,6 @@ sub save_context {
             # -T -1 false, -t 1 true
             "PL_taint_warn = " . ( $^{TAINT} < 0 ? "FALSE" : "TRUE" ) . ";"
         );
-    }
-
-    # need to mark assign c3 to %main::. no need to assign the default dfs
-    if ( mro::get_mro("main") eq 'c3' ) {
-        make_c3('main');
     }
 
     my ( $curpad_nam, $curpad_sym );
