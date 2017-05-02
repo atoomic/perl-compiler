@@ -6,7 +6,7 @@ use B::C::Flags ();
 
 use B qw/cstring SVf_IOK SVf_POK SVs_OBJECT/;
 use B::C::Config;
-use B::C::File qw/init init2 xpvavsect svsect/;
+use B::C::File qw/init init2 xpvavsect svsect init_magic/;
 use B::C::Helpers qw/strlen_flags/;
 use B::C::Helpers::Symtable qw/savesym/;
 
@@ -154,12 +154,17 @@ sub do_save {
         # calloc, only malloc. wmemset'ting the pointer to PL_sv_undef
         # might be faster also.
         else {
-            init()->add( "{ /* Slow array init mode. */", );
-            init()->add("\tregister int gcount;") if $count;
+
+            init_magic()->no_split;
+
+            init_magic()->add( "{ /* Slow array init mode. */", );
+            init_magic()->add("\tregister int gcount;") if $count;
             my $fill1 = $fill < 3 ? 3 : $fill + 1;
-            init()->sadd( "\tSV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
-            init()->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
-            init()->add("}");
+            init_magic()->sadd( "\tSV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
+            init_magic()->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
+            init_magic()->add("}");
+
+            init_magic()->split;
         }
 
         init()->split;

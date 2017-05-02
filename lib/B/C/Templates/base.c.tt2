@@ -195,6 +195,25 @@ TODO: REMOVE ME after 5.22.1 or 5.23.0 is released. */
 #undef PadlistNAMES
 #define PadlistNAMES(pl)       *((PADNAMELIST **)PadlistARRAY(pl))
 
+int svsize = sizeof(SV*);
+SV ** INITAv(AV * av, int count) {
+/* Bypassing Perl_safesysmalloc on darwin fails with "free from wrong pool", test 25.
+   So with DEBUGGING perls we have to track memory and use calloc. */
+    SV **svp;
+#if defined(MYMALLOC)
+    Newx(svp, count, SV*);
+#else
+  #ifdef PERL_TRACK_MEMPOOL
+    svp = (SV**)Perl_safesysmalloc(count * svsize);
+  #else
+    svp = (SV**)malloc(count * svsize);
+  #endif
+#endif
+    AvALLOC(av) = svp;
+    AvARRAY(av) = svp;
+    return svp;
+}
+
 [% IF init2_remap.size and !HAVE_DLFCN_DLOPEN %]
 XS(XS_DynaLoader_dl_load_file);
 XS(XS_DynaLoader_dl_find_symbol);
@@ -298,6 +317,8 @@ Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %
 [% END %]
 [% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
 
+[% section.init_magic.output( "    %s\n", 'perl_init_magic' ) %]
+
 void setup_perl_globals( char* argv0 ) {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
     PL_curstname = [% PL.curstname %];  /* "main" SVt_PV */
@@ -386,25 +407,6 @@ static void init_bodyless_ivs(pTHX) {
 }
 
 /* handy helpers for B::C */
-
-int svsize = sizeof(SV*);
-SV ** INITAv(AV * av, int count) {
-/* Bypassing Perl_safesysmalloc on darwin fails with "free from wrong pool", test 25.
-   So with DEBUGGING perls we have to track memory and use calloc. */
-    SV **svp;
-#if defined(MYMALLOC)
-    Newx(svp, count, SV*);
-#else
-  #ifdef PERL_TRACK_MEMPOOL
-    svp = (SV**)Perl_safesysmalloc(count * svsize);
-  #else
-    svp = (SV**)malloc(count * svsize);
-  #endif
-#endif
-    AvALLOC(av) = svp;
-    AvARRAY(av) = svp;
-    return svp;
-}
 
 PADNAME ** INITPADNAME(PADNAMELIST *padname, int count) {
     PADNAME **svp;
@@ -834,9 +836,13 @@ main(int argc, char **argv, char **env)
 
     init_pl_strtab(); /* Initialize PL_Strtab on our own before perl gets to it in perl_alloc. This allows us to use immportal constant shared HEKs */
     perl_init_stash(); /* Setup the stashes */
+    perl_init_magic(); /* Setup the stashes */
     setup_perl_globals(argv[0]);
 
 	perl_construct( &BC_unthreaded_interpreter );
+
+
+
 	PL_perl_destruct_level = 0;
 
 #ifdef DEBUG_BENCHMARK
