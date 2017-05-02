@@ -18,7 +18,7 @@ use strict;
 
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
 use B::C::Config;
-use B::C::File qw/init xpvhvsect svsect sharedhe decl init1 init2 init_stash/;
+use B::C::File qw/init xpvhvsect svsect sharedhe decl init1 init2 init_stash init_magic/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Save::Hek qw/save_shared_he/;
@@ -96,6 +96,7 @@ sub do_save {
             debug( hv => 'skipping stash ' . $stash_name );
             return q{NULL};
         }
+        warn "----- " . 'Saving stash ' . $stash_name;
         debug( hv => 'Saving stash ' . $stash_name );
     }
 
@@ -164,7 +165,7 @@ sub do_save {
         )
     );
 
-    my $init = $stash_name ? init_stash() : init();
+    my $init = $stash_name ? init_stash() : init_magic();
 
     {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
         $init->no_split;

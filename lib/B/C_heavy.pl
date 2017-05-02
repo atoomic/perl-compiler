@@ -632,6 +632,11 @@ sub save_stashes {
         require 'mro.pm';
     }
 
+    # foreach my $stash ( qw{XSLoader DynaLoader} ) {
+    #     no strict 'refs';
+    #     #svref_2object( \%{ $stash . '::' } )->save( $stash .q{::} ) if B::HV::can_save_stash( $stash );
+    # }
+
     return svref_2object( \%main:: )->save('main');
 }
 
