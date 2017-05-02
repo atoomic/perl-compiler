@@ -8,7 +8,7 @@ use B qw/SVf_ROK SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstrin
 use B::C::Save qw/savepvn savepv savestashpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init1 init2 init_magic svsect xpvmgsect xpvsect pmopsect assign_hekkey2pv/;
-use B::C::Helpers qw/mark_package read_utf8_string is_shared_hek get_index/;
+use B::C::Helpers qw/read_utf8_string is_shared_hek get_index/;
 use B::C::Save::Hek qw/save_shared_he/;
 
 sub do_save {
@@ -317,7 +317,6 @@ sub _patch_dlsym {
     # lazy load encode after walking the optree
 
     if ( $pkg eq 'Encode::XS' ) {
-        $pkg = 'Encode';
         if ( $fullname eq 'Encode::Encoding{iso-8859-1}' ) {
             $name = "iso8859_1_encoding";
         }
@@ -331,34 +330,29 @@ sub _patch_dlsym {
             $name = "ascii_encoding";
         }
 
-        if ( $name and $name =~ /^(ascii|ascii_ctrl|iso8859_1|null)/ ) {
+        $pkg = 'Encode';
+        if ( $name and $name =~ /^(ascii|ascii_ctrl|iso8859_1|null)/ ) {    # STATIC_HV: Dead code.
             my $enc = Encode::find_encoding($name);
             $name .= "_encoding" unless $name =~ /_encoding$/;
             $name =~ s/-/_/g;
             verbose("$pkg $Encode::VERSION with remap support for $name (find 1)");
-            mark_package($pkg);
-            if ( $pkg ne 'Encode' ) {
-                svref_2object( \&{"$pkg\::bootstrap"} )->save;
-                mark_package('Encode');
-            }
         }
         else {
-            for my $n ( Encode::encodings() ) {    # >=5.16 constsub without name
+            for my $n ( Encode::encodings() ) {                             # >=5.16 constsub without name
                 my $enc = Encode::find_encoding($n);
-                if ( $enc and ref($enc) ne 'Encode::XS' ) {    # resolve alias such as Encode::JP::JIS7=HASH(0x292a9d0)
+                if ( $enc and ref($enc) ne 'Encode::XS' ) {                 # resolve alias such as Encode::JP::JIS7=HASH(0x292a9d0)
                     $pkg = ref($enc);
-                    $pkg =~ s/^(Encode::\w+)(::.*)/$1/;        # collapse to the @dl_module name
+                    $pkg =~ s/^(Encode::\w+)(::.*)/$1/;                     # collapse to the @dl_module name
                     $enc = Encode->find_alias($n);
                 }
                 if ( $enc and ref($enc) eq 'Encode::XS' and $sv->IVX == $$enc ) {
                     $name = $n;
                     $name =~ s/-/_/g;
                     $name .= "_encoding" if $name !~ /_encoding$/;
-                    mark_package($pkg);
+
                     if ( $pkg ne 'Encode' ) {
-                        verbose( "saving $pkg" . "::bootstrap" );
+                        verbose( "saving $pkg" . "::bootstrap" );           # STATIC_HV: Dead code.
                         svref_2object( \&{"$pkg\::bootstrap"} )->save;
-                        mark_package('Encode');
                     }
                     last;
                 }
@@ -401,7 +395,6 @@ sub _patch_dlsym {
         verbose("Remap IOK|POK $pkg with $name");
         _save_remap( $pkg, $pkg, $name, $ivxhex, 0 );
         $ivx = "0UL /* $ivxhex => $name */";
-        mark_package( $pkg, 1 ) if $fullname =~ /^(svop const|padop)/;
     }
     else {
         WARN("Warning: Possible missing remap for compile-time XS symbol in $pkg $fullname $ivx [#305]");

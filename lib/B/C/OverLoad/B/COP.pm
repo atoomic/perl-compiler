@@ -143,11 +143,8 @@ sub do_save {
     }
 
     # our root: store all packages from this file
-    if ( !$B::C::mainfile ) {
+    if ( !$B::C::mainfile ) {    # STATIC_HV: dead code? we're trying to save stashes an OP belongs to. whitelist should make this unnecessary.
         $B::C::mainfile = $op->file if $op->stashpv eq 'main';
-    }
-    else {
-        B::C::mark_package( $op->stashpv ) if $B::C::mainfile eq $op->file and $op->stashpv ne 'main';
     }
 
     # add the cop at the end
@@ -158,8 +155,8 @@ sub do_save {
         $op->_save_common, $op->line,
 
         # we cannot store this static (attribute exit)
-        "Nullhv",    # stash
-        "Nullgv",    # filegv
+        "Nullhv",                # stash
+        "Nullgv",                # filegv
         $op->hints, get_integer_value( $op->cop_seq ), !$dynamic_copwarn ? $warn_sv : 'NULL'
     );
 

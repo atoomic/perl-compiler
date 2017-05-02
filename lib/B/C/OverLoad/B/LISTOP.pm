@@ -22,12 +22,14 @@ sub do_save {
 
     if ( $op->type == $B::C::OP_DBMOPEN ) {
 
+        die("What code even uses this?");
+
         # resolves it at compile-time, not at run-time
-        B::C::mark_package('AnyDBM_File');    # to save $INC{AnyDBM_File}
+        # STATIC_HV: Too late to require modules for compiling in at this point.
         require AnyDBM_File unless $B::C::savINC{'AnyDBM_File.pm'};
         $B::C::curINC{'AnyDBM_File.pm'} = $INC{'AnyDBM_File.pm'};
-        AnyDBM_File->import;                  # strip the @ISA
-        my $dbm = $AnyDBM_File::ISA[0];       # take the winner (only)
+        AnyDBM_File->import;    # strip the @ISA
+        my $dbm = $AnyDBM_File::ISA[0];    # take the winner (only)
         svref_2object( \&{"$dbm\::bootstrap"} )->save;
         svref_2object( \&{"$dbm\::TIEHASH"} )->save;    # called by pp_dbmopen
         B::C::add_to_currINC( "$dbm.pm" => $INC{"$dbm.pm"} );

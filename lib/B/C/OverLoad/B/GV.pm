@@ -6,7 +6,6 @@ use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8/;
 
 use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he/;
-use B::C::Packages qw/is_package_used/;
 use B::C::File qw/init init2 gvsect gpsect xpvgvsect/;
 use B::C::Helpers qw/get_cv_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
@@ -48,7 +47,7 @@ my $CORE_SYMS = {
     'main::STDERR' => 'PL_stderrgv',
 };
 
-my $CORE_SVS = {                       # special SV syms to assign to the right GvSV
+my $CORE_SVS = {    # special SV syms to assign to the right GvSV
     "main::\\" => 'PL_ors_sv',
     "main::/"  => 'PL_rs',
     "main::@"  => 'PL_errors',
@@ -673,12 +672,6 @@ sub savecv {
 
     # XXX fails and should not be needed. The B::C part should be skipped 9 lines above, but be defensive
     return if $fullname eq 'B::walksymtable' or $fullname eq 'B::C::walksymtable';
-
-    # Config is marked on any Config symbol. TIE and DESTROY are exceptions,
-    # used by the compiler itself
-    if ( $name eq 'Config' ) {
-        mark_package( 'Config', 1 ) if !is_package_used('Config');
-    }
 
     $B::C::dumped_package{$package} = 1 if !exists $B::C::dumped_package{$package} and $package !~ /::$/;
     debug( gv => "Saving GV \*$fullname 0x%x", ref $gv ? $$gv : 0 );

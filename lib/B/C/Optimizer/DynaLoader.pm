@@ -8,7 +8,6 @@ use B qw(svref_2object);
 use B::C::Flags ();
 
 use B::C::Config qw/verbose debug/;
-use B::C::Packages qw/is_package_used mark_package_deleted/;
 
 sub new {
     my $class = shift or die;
@@ -41,34 +40,7 @@ sub optimize {
     my $self = shift or die;
     ref $self eq __PACKAGE__ or die;
 
-    my ( $boot, $dl ) = ('');
-    my @dl_modules = @DynaLoader::dl_modules;
-
-    # filter out unused dynaloaded B modules, used within the compiler only.
-    for my $c (qw(B B::C)) {
-        if ( !$self->{'xsub'}->{$c} and !is_package_used($c) ) {
-
-            # (hopefully, see test 103)
-            verbose("no dl_init for $c, not marked") if !$self->{'skip_package'}->{$c};
-
-            # RT81332 pollute
-            @dl_modules = grep { $_ ne $c } @dl_modules;
-
-            # XXX Be sure to store the new @dl_modules
-            # QUESTION: WHY??? we're rendering already and done walking the code tree, right? There's no value
-        }
-    }
-
-    for my $c ( sort keys %{ $self->{'skip_package'} } ) {
-        verbose("no dl_init for $c, skipped") if $self->{'xsub'}->{$c};
-        delete $self->{'xsub'}->{$c};
-        mark_package_deleted($c);    # TODO: It's WAAAAY to late to do this?
-        @dl_modules = grep { $_ ne $c } @dl_modules;
-    }
-
-    # QUESTION: There's no readon to pump this back in if we're just rendering a template at this point.
-    @DynaLoader::dl_modules = @dl_modules;
-    verbose( "\@dl_modules: " . join( " ", @dl_modules ) );
+    my ( $boot, $dl ) = my @dl_modules = @DynaLoader::dl_modules;
 
     foreach my $stashname (@dl_modules) {
         if ( $stashname eq 'attributes' ) {
@@ -96,12 +68,12 @@ sub optimize {
     # (Though technically I've never seen this die.)
     # Something to do with 5.20? https://code.google.com/p/perl-compiler/issues/detail?id=125
     if ( $dl and !$self->{'curINC'}->{'DynaLoader.pm'} ) {
-        die "Error: DynaLoader required but not dumped. Too late to add it.\n";
+        return 0;    # die "Error: DynaLoader required but not dumped. Too late to add it.\n";
     }
 
     return 0 if !$dl;
 
-    my $xsfh;    # Will close automatically when it goes out of scope.
+    my $xsfh;        # Will close automatically when it goes out of scope.
 
     # enforce attributes at the front of dl_init, #259
     # also Encode should be booted before PerlIO::encoding

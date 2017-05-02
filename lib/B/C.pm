@@ -69,6 +69,10 @@ sub save_compile_state {
     $settings->{'needs_xs'} = scalar @{ $settings->{'so_files'} };
 
     $settings->{'uses_re'} = scalar grep { m{\Q/re/re.so\E$} } @{ $settings->{'so_files'} };
+
+    $settings->{'template_dir'} = $INC{'B/C.pm'};
+    $settings->{'template_dir'} =~ s{\.pm$}{/Templates};
+
     $settings->{'starting_INC'} = save_inc();
 
     $settings->{'starting_stash'} = starting_stash( $::{"main::"}, 1 );
@@ -99,7 +103,7 @@ my %seen;
 
 sub setup_stashes {
     no strict 'refs';
-    if ( defined( objsym( svref_2object( \*{'main::!'} ) ) ) ) {
+    if ( exists $main::{'!'} ) {
         if ( !$INC{'Errno.pm'} ) {
             eval 'require Errno';
         }

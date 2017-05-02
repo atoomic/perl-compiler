@@ -134,15 +134,8 @@ sub write {
 
     $self->{'verbose'} = $c_file_stash->{'verbose'};    # So verbose() will work. TODO: Remove me when all verbose() are gone.
 
-    my $template_dir;
-    {
-        # Scoped no warnings without loading the module.
-        local $^W;
-        BEGIN { ${^WARNING_BITS} = 0; }
-        $template_dir = $B::C::savINC{'B/C.pm'};
-    }
-    $template_dir =~ s{\.pm$}{};
-    $template_dir .= "/Templates";
+    my $template_dir = $B::C::settings->{'template_dir'};
+
     my $template_file = "$template_dir/$template_name_short";
     -e $template_file or die("Can't find or read $template_file for generating B::C C code.");
 

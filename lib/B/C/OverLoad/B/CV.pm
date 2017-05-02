@@ -7,7 +7,6 @@ use B::C::Flags ();
 use B qw/cstring svref_2object CVf_ANON CVf_ANONCONST CVf_CONST main_cv SVf_ROK SVp_POK SVf_IOK SVf_UTF8 SVs_PADSTALE CVf_WEAKOUTSIDE/;
 use B::C::Config;
 use B::C::Decimal qw/get_integer_value/;
-use B::C::Packages qw/is_package_used/;
 use B::C::Save qw/savepvn constpv/;
 use B::C::Save::Hek qw/save_shared_he/;
 use B::C::File qw/init init2 decl svsect xpvcvsect symsect/;
@@ -72,11 +71,13 @@ sub do_save {
             $$cv, $$gv, $fullname, $CvFLAGS
         );
 
+        # STATIC_HV. Everything below here is suspect. What's the flags for?
+        # skip_package isn't supported at this point.
+
         # XXX not needed, we already loaded utf8_heavy
         #return if $fullname eq 'utf8::AUTOLOAD';
         return '0' if B::C::skip_pkg($cvstashname);
         $CvFLAGS &= ~0x400;    # no CVf_CVGV_RC otherwise we cannot set the GV
-        B::C::mark_package( $cvstashname, 1 ) unless is_package_used($cvstashname);
     }
     elsif ( $cv->is_lexsub($gv) ) {
         $fullname = $cv->NAME_HEK;
@@ -100,6 +101,7 @@ sub do_save {
         $isconst = $CvFLAGS & CVf_CONST;
     }
 
+    # STATIC_HV: XS logic related to bootstrap here.
     if ( !$isconst && $cvxsub && ( $cvname ne "INIT" ) ) {
         my $egv       = $gv->EGV;
         my $stashname = $egv->STASH->NAME;
@@ -108,7 +110,6 @@ sub do_save {
             my $file = $gv->FILE;
             decl()->add("/* bootstrap $file */");
             verbose("Bootstrap $stashname $file");
-            B::C::mark_package($stashname);
 
             # Without DynaLoader we must boot and link static
             if ( !$B::C::Flags::Config{usedl} ) {
@@ -140,9 +141,6 @@ sub do_save {
             else {
                 $B::C::xsub{$stashname} = 'Dynamic';
 
-                # DynaLoader was for sure loaded, before so we execute the branch which
-                # does walk_syms and add_hashINC
-                B::C::mark_package( 'DynaLoader', 1 );
             }
 
             # INIT is removed from the symbol table, so this call must come
@@ -151,21 +149,14 @@ sub do_save {
             debug( sub => $fullname );
             return qq/NULL/;
         }
-        else {
-            # XSUBs for IO::File, IO::Handle, IO::Socket, IO::Seekable and IO::Poll
-            # are defined in IO.xs, so let's bootstrap it
+        else {    # STATIC_HV Special handling for saving a buncha packages if one is seen.
+                  # XSUBs for IO::File, IO::Handle, IO::Socket, IO::Seekable and IO::Poll
+                  # are defined in IO.xs, so let's bootstrap it
             my @IO = qw(IO::File IO::Handle IO::Socket IO::Seekable IO::Poll);
             if ( grep { $stashname eq $_ } @IO ) {
 
-                # mark_package('IO', 1);
-                # $B::C::xsub{IO} = 'Dynamic-'. $INC{'IO.pm'}; # XSLoader (issue59)
                 svref_2object( \&IO::bootstrap )->save;
-                B::C::mark_package( 'IO::Handle',  1 );
-                B::C::mark_package( 'SelectSaver', 1 );
 
-                #for (@IO) { # mark all IO packages
-                #  mark_package($_, 1);
-                #}
             }
         }
         debug( 'sub' => $fullname );

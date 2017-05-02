@@ -24,7 +24,6 @@ lib/B/C/OP.pm
 lib/B/C/Optimizer/DowngradePVXV.pm
 lib/B/C/Optimizer/DynaLoader.pm
 lib/B/C/Optimizer/ForceHeavy.pm
-lib/B/C/Optimizer/UnusedPackages.pm
 lib/B/C/OverLoad.pm
 lib/B/C/OverLoad/B/AV.pm
 lib/B/C/OverLoad/B/BINOP.pm
@@ -62,7 +61,6 @@ lib/B/C/OverLoad/B/SVOP.pm
 lib/B/C/OverLoad/B/UNOP.pm
 lib/B/C/OverLoad/B/UNOP_AUX.pm
 lib/B/C/OverLoad/B/UV.pm
-lib/B/C/Packages.pm
 lib/B/C/Save.pm
 lib/B/C/Save/Hek.pm
 lib/B/C/Save/Signals.pm
