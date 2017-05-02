@@ -34,4 +34,4 @@ export WARNINGS=$DEBUG
 
 echo -n 'Using perl: '
 which perl
-echo "BC_FLAGS: $BC_FLAGS # export BC_FLAGS='-O1'"
+echo "BC_CFLAGS: $BC_CFLAGS # export BC_FLAGS='-O1'"
