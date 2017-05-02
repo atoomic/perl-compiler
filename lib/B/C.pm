@@ -66,7 +66,7 @@ sub save_compile_state {
     setup_stashes();    # if $! then load Errno.
 
     $settings->{'dl_so_files'} = save_xsloader_so();
-    $settings->{'dl_modules'}   = save_xsloader_modules();
+    $settings->{'dl_modules'}  = save_xsloader_modules();
     $settings->{'needs_xs'}    = scalar @{ $settings->{'dl_so_files'} };
 
     $settings->{'uses_re'} = scalar grep { m{\Q/re/re.so\E$} } @{ $settings->{'dl_so_files'} };
@@ -171,6 +171,9 @@ sub cleanup_stashes {
         delete $stashes->{$lt_key};
     }
 
+    #delete $stashes->{'PerlIO::scalar::'};
+    #delete $stashes->{'PerlIO::'};
+
     # too fancy for now, enable it later ???
     # if ( ! $settings->{'needs_xs'} ) {
     #     delete $stashes->{'DynaLoader::'};
@@ -233,12 +236,12 @@ sub set_stashes_enames {
 
 sub save_xsloader_so {
     my @DL = eval '@DynaLoader::dl_shared_objects';    # Quoted eval gets rid of no warnings once issue.
-    return [ grep { $_ !~ m{/B/B\.so$} } @DL ];
+    return [ grep { $_ !~ m{/B/B\.so$} && $_ !~ qr{\QPerlIO/scalar/scalar.so\E$} } @DL ];
 }
 
 sub save_xsloader_modules {
     my @DL = eval '@DynaLoader::dl_modules';           # Quoted eval gets rid of no warnings once issue.
-    return [ grep { $_ !~ m{^B$} } @DL ];
+    return [ grep { $_ !~ m{^B$} && $_ ne 'PerlIO::scalar' } @DL ];
 }
 
 # This parses the options passed to sub compile but not until build_c_file is invoked at the end of BEGIN.
