@@ -222,7 +222,7 @@ sub do_save {
         }
 
         my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);
-        init()->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
+        $init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
 
         enames_crap( $hv, $stash_name, $sym );
     }
