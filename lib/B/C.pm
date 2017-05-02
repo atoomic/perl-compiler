@@ -102,7 +102,6 @@ sub save_inc {
 my %seen;
 
 sub setup_stashes {
-    no strict 'refs';
     if ( exists $main::{'!'} ) {
         if ( !$INC{'Errno.pm'} ) {
             eval 'require Errno';
