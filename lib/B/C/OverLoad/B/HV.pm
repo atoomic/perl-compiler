@@ -214,12 +214,7 @@ sub do_save {
             init2()->sadd( "mro_isa_changed_in(%s);  /* %s */", $sym, $stash_name );
         }
 
-        if ( keys %{mro::} <= 10 ) {
-            svref_2object( \%mro:: )->save;
-            require mro;
-        }
-
-        if ( mro::get_mro($stash_name) eq 'c3' ) {
+        if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' ) {
             B::C::make_c3($stash_name);    # Is it main when we want to do it for main????
         }
 
