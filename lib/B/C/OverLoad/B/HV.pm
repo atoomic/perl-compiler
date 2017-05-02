@@ -22,6 +22,7 @@ use B::C::File qw/init xpvhvsect svsect sharedhe decl init1 init2 init_stash/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Save::Hek qw/save_shared_he/;
+use B::C::Save qw/savestashpv/;
 
 my ($swash_ToCf);
 
@@ -214,8 +215,8 @@ sub do_save {
             init2()->sadd( "mro_isa_changed_in(%s);  /* %s */", $sym, $stash_name );
         }
 
-        if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' or $stash_name eq 'main' ) {
-            B::C::make_c3($stash_name);    # Is it main when we want to do it for main????
+        if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' ) {
+            make_c3($stash_name);    # Is it main when we want to do it for main????
         }
 
         my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);
