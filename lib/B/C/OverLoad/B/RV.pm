@@ -18,7 +18,7 @@ sub do_save {
     );
 
     my $rv = save_op( $sv, $fullname );
-    return '0' unless $rv;
+    return '0' if !$rv || $rv eq 'NULL' || $rv =~ qr{NULL$};
 
     svsect()->comment("any, refcnt, flags, sv_u");
 

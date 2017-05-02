@@ -93,7 +93,7 @@ sub do_save {
 
         if ( !can_save_stash($stash_name) ) {
             debug( hv => 'skipping stash ' . $stash_name );
-            return 'NULL';
+            return q{NULL};
         }
         debug( hv => 'Saving stash ' . $stash_name );
     }
@@ -137,6 +137,7 @@ sub do_save {
 
             debug( hv => "saving HV [ $i / len=$length ]\$" . $fullname . '{' . $key . "} 0x%0x", $sv );
             $value = $sv->save( $fullname . '{' . $key . '}' );    # Turn the hash value into a symbol
+            next if $value eq q{NULL};                             # this can comes from ourself ( view above )
 
             push @hash_content_to_save, [ $key, $value ] if defined $value;
         }

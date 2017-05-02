@@ -119,11 +119,27 @@ sub save_magic {
             # core already initialized this stash for us
             if ( $fullname ne 'main::STDOUT' ) {
                 if ( ref $pkg eq 'B::HV' ) {
-                    if ( $fullname !~ /::$/ ) {
+
+                    # FIXME can simplify this if / else as ->save is going to take care of anything stah or not
+                    if ( $fullname !~ /::$/ ) {    # not a stash
                         $pkgsym = $pkg->save($fullname);
                     }
-                    else {
+                    else {                         # this is a stash
+                                                   #$pkgsym = B::HV::can_save_stash( $pkgname ) ? savestashpv($pkgname) : 'NULL';
                         $pkgsym = savestashpv($pkgname);
+
+                        #$pkgsym = $pkg->save($fullname); # later should be come this FIXME
+
+                        if ( $pkgsym ne 'NULL' ) {
+
+                            # Q: Who is initializing our stash from XS? ->save is missing that.
+                            # A: We only need to init it when we need a CV
+                            # defer for XS loaded stashes with AMT magic
+                            init()->sadd( "SvSTASH_set(s\\_%x, (HV*)s\\_%x);", $$sv, $$pkg );
+                            init()->sadd( "SvREFCNT((SV*)s\\_%x) += 1;", $$pkg );
+                            init()->add("++PL_sv_objcount;") unless ref($sv) eq "B::IO";
+                        }
+
                     }
                 }
                 else {
@@ -131,18 +147,6 @@ sub save_magic {
                 }
 
                 debug( mg => "xmg_stash = \"%s\" as %s", $pkgname, $pkgsym );
-
-                # Q: Who is initializing our stash from XS? ->save is missing that.
-                # A: We only need to init it when we need a CV
-                # defer for XS loaded stashes with AMT magic
-                if ( ref $pkg eq 'B::HV' ) {
-                    init()->sadd( "SvSTASH_set(s\\_%x, (HV*)s\\_%x);", $$sv, $$pkg );
-                    init()->sadd( "SvREFCNT((SV*)s\\_%x) += 1;", $$pkg );
-                    init()->add("++PL_sv_objcount;") unless ref($sv) eq "B::IO";
-
-                    # XXX
-                    #push_package($pkg->NAME);  # correct code, but adds lots of new stashes
-                }
             }
 
         }
