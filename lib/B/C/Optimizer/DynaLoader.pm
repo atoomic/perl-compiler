@@ -40,7 +40,8 @@ sub optimize {
     my $self = shift or die;
     ref $self eq __PACKAGE__ or die;
 
-    my ( $boot, $dl ) = my @dl_modules = @DynaLoader::dl_modules;
+    my ( $boot, $dl ) = ( '', 0 );
+    my @dl_modules = @DynaLoader::dl_modules;
 
     foreach my $stashname (@dl_modules) {
         if ( $stashname eq 'attributes' ) {
