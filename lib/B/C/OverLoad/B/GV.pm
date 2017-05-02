@@ -144,7 +144,7 @@ sub savegp_from_gv {
     gpsect()->comment('SV, gp_io, CV, cvgen, gp_refcount, HV, AV, CV* form, GV, line, flags, HEK* file');
 
     my $gp_ix = gpsect()->sadd(
-        "(SV*) %s, %s, (CV*) %s, %d, %u, (HV*) %s, %s, (CV*) %s, %s, %u, %d, %s ",
+        "(SV*) %s, %s, (CV*) %s, %d, %u, %s, %s, (CV*) %s, %s, %u, %d, %s ",
         $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_refcount, $gp_hv, $gp_av, $gp_form, $gp_egv,
         $gp_line, $gp_flags, $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) (&$gp_file_hek + sizeof(HE))}
     );
@@ -406,7 +406,7 @@ sub save_gv_hv {                       # new function to be renamed later..
     return 'NULL' unless $gvhv && $$gvhv;
 
     # Handle HV exceptions first...
-    return 'NULL' if $fullname eq 'main::ENV' or $fullname eq 'main::INC';    # do not save %ENV
+    return 'NULL' if $fullname eq 'main::ENV';    # do not save %ENV
 
     debug( gv => "GV::save \%$fullname" );
 

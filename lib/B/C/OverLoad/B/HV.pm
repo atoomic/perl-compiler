@@ -116,6 +116,7 @@ sub do_save {
     # remove values from contents we are not going to save
     my @hash_content_to_save;
     my @contents = $hv->ARRAY;
+
     if (@contents) {
         local $B::C::const_strings = $B::C::const_strings;
         my ( $i, $length );

@@ -25,8 +25,7 @@ sub save_data {
     # STATIC_HV: This needs to be done earlier in C.pm
     require PerlIO;
     require PerlIO::scalar;
-
-    $B::C::xsub{'PerlIO::scalar'}     = 'Dynamic-' . $INC{'PerlIO/scalar.pm'};    # force dl_init boot
+    # Do some sorta magic to save the XS also.
 }
 
 sub do_save {

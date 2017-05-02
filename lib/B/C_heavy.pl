@@ -90,7 +90,7 @@ our ( %dumped_package, %skip_package, %isa_cache );
 our ( $use_xsloader, $devel_peek_needed );
 
 # options and optimizations shared with B::CC
-our ($mainfile );
+our ($mainfile);
 
 our @xpvav_sizes;
 our $in_endav;
@@ -620,6 +620,12 @@ sub walk_syms {
 
 sub save_stashes {
 
+    # We need to save the INC GV before ANYTHING else is allowed to happen or we'll corrupt it.
+    my %INC_BACKUP = %INC;
+    %INC = %{ $settings->{'starting_INC'} };
+    svref_2object( \%main::INC )->save("main::INC");
+    %INC = %INC_BACKUP;
+
     # We need mro to save stashes but loading it alters the mro stash.
     if ( keys %{mro::} <= 10 ) {
         svref_2object( \%mro:: )->save("mro::");
@@ -749,16 +755,6 @@ sub save_context {
         verbose("curpad syms:");
         init()->add("/* curpad syms */");
         $curpad_sym = ( comppadlist->ARRAY )[1]->save('curpad_syms');
-    }
-    my ( $inc_hv, $inc_av );
-    {
-        local $B::C::const_strings = 1;
-        verbose("\%INC and \@INC:");
-        init()->add('/* %INC */');
-        my $inc_gv = svref_2object( \*main::INC );
-        $inc_hv = $inc_gv->HV->save('main::INC');
-        init()->add('/* @INC */');
-        $inc_av = $inc_gv->AV->save('main::INC');
     }
 
     init1()->add(
@@ -1004,7 +1000,6 @@ sub build_template_stash {
         'compile_stats'         => compile_stats(),
         'nullop_count'          => $nullop_count,
         'xsub'                  => \%xsub,
-#        'curINC'                => \%curINC,
         'staticxs'              => $settings->{'staticxs'},
         'all_eval_pvs'          => \@B::C::InitSection::all_eval_pvs,
         'TAINT'                 => ( ${^TAINT} ? 1 : 0 ),
