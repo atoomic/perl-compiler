@@ -62,6 +62,9 @@ sub compile {
 }
 
 sub save_compile_state {
+
+    setup_stashes();    # if $! then load Errno.
+
     $settings->{'so_files'} = save_xsloader();
     $settings->{'needs_xs'} = scalar @{ $settings->{'so_files'} };
 
@@ -93,6 +96,15 @@ sub save_inc {
 }
 
 my %seen;
+
+sub setup_stashes {
+    no strict 'refs';
+    if ( defined( objsym( svref_2object( \*{'main::!'} ) ) ) ) {
+        if ( !$INC{'Errno.pm'} ) {
+            eval 'require Errno';
+        }
+    }
+}
 
 sub starting_stash {
     my ( $stash, $in_main ) = @_;
