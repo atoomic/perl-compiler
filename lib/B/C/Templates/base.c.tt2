@@ -683,12 +683,6 @@ xs_init(pTHX)
 	char *file = __FILE__;
 	dTARG; dSP;
 
-/*   Was commented out in code. not sure what the FIXME is about.
-[% IF staticxs %]
-#undef USE_DYNAMIC_LOADING
-[% END %]
-*/
-
 #ifdef USE_DYNAMIC_LOADING
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
 #endif
