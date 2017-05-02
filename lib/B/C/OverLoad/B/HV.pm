@@ -96,7 +96,6 @@ sub do_save {
             debug( hv => 'skipping stash ' . $stash_name );
             return q{NULL};
         }
-        warn "----- " . 'Saving stash ' . $stash_name;
         debug( hv => 'Saving stash ' . $stash_name );
     }
 

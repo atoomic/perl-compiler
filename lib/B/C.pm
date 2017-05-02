@@ -66,7 +66,7 @@ sub save_compile_state {
     setup_stashes();    # if $! then load Errno.
 
     $settings->{'dl_so_files'} = save_xsloader_so();
-    $settings->{'dl_moules'}   = save_xsloader_modules();
+    $settings->{'dl_modules'}   = save_xsloader_modules();
     $settings->{'needs_xs'}    = scalar @{ $settings->{'dl_so_files'} };
 
     $settings->{'uses_re'} = scalar grep { m{\Q/re/re.so\E$} } @{ $settings->{'dl_so_files'} };

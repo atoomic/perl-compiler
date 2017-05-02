@@ -631,6 +631,20 @@ sub save_stashes {
         svref_2object( \%mro:: )->save("mro::");
         require 'mro.pm';
     }
+    
+    { # Backup what we had in the DynaLoader arrays prior to C_Heavy
+        my @modules = @DynaLoader::dl_modules;
+        my @so = @DynaLoader::dl_shared_objects;
+
+        @DynaLoader::dl_modules = @{ $settings->{'dl_modules'} };
+        @DynaLoader::dl_shared_objects = @{ $settings->{'dl_so_files'} };
+
+        svref_2object( \*DynaLoader::dl_modules )->save('@DynaLoader::dl_modules');
+        svref_2object( \*DynaLoader::dl_shared_objects )->save('@DynaLoader::dl_shared_objects');
+
+        @DynaLoader::dl_modules = @modules;
+        @DynaLoader::dl_shared_objects = @so;
+    }
 
     # foreach my $stash ( qw{XSLoader DynaLoader} ) {
     #     no strict 'refs';

@@ -38,8 +38,9 @@ sub optimize {
     ref $self eq __PACKAGE__ or die;
 
     my ( $boot, $dl ) = ( '', 0 );
-    my @dl_modules    = @{ $B::C::settings->{'dl_moules'} };
-    my @dl_so_files   = @{ $B::C::settings->{'dl_so_files'} };
+
+    my @dl_modules  = @{ $B::C::settings->{'dl_modules'} };
+    my @dl_so_files = @{ $B::C::settings->{'dl_so_files'} };
     my $use_static_xs = $B::C::settings->{'staticxs'};           # user command line option: --staticxs
 
     foreach my $stashname (@dl_modules) {
