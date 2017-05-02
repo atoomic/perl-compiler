@@ -965,7 +965,7 @@ sub save_main_rest {
     delete $xsub{'DynaLoader'};
     delete $xsub{'UNIVERSAL'};
 
-    my $dynaloader_optimizer = B::C::Optimizer::DynaLoader->new( { 'xsub' => \%xsub, 'skip_package' => \%skip_package, 'output_file' => $settings->{'output_file'}, 'staticxs' => $settings->{staticxs} } );
+    my $dynaloader_optimizer = B::C::Optimizer::DynaLoader->new( { 'xsub' => \%xsub, 'output_file' => $settings->{'output_file'} } );
     $dynaloader_optimizer->optimize();
 
     my $c_file_stash = build_template_stash( \%static_ext, \@stashxsubs, $dynaloader_optimizer );

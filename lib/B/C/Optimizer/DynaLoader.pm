@@ -14,10 +14,8 @@ sub new {
     my $self  = shift or die;
     ref $self eq 'HASH' or die( ref $self );
 
-    $self->{'xsub'}            or die;
-    $self->{'skip_package'}    or die;
-    $self->{'output_file'}     or die;
-    exists $self->{'staticxs'} or die;
+    $self->{'xsub'}        or die;
+    $self->{'output_file'} or die;
 
     # Initialize in case there's no dynaloader and we return early.
     $self->{'stash'} = {
@@ -40,8 +38,9 @@ sub optimize {
     ref $self eq __PACKAGE__ or die;
 
     my ( $boot, $dl ) = ( '', 0 );
-    my @dl_modules  = @{ $B::C::settings->{'dl_moules'} };
-    my @dl_so_files = @{ $B::C::settings->{'dl_so_files'} };
+    my @dl_modules    = @{ $B::C::settings->{'dl_moules'} };
+    my @dl_so_files   = @{ $B::C::settings->{'dl_so_files'} };
+    my $use_static_xs = $B::C::settings->{'staticxs'};           # user command line option: --staticxs
 
     foreach my $stashname (@dl_modules) {
         if ( $stashname eq 'attributes' ) {
@@ -62,7 +61,7 @@ sub optimize {
         }
 
     }
-    debug( cv => "\%B::C::xsub: " . join( " ", sort keys %{ $self->{'xsub'} } ) ) if verbose();
+    debug( cv => "\%B::C::xsub: " . join( " ", sort keys %{ $self->{'xsub'} } ) );
 
     return 0 if !$dl;
 
@@ -77,40 +76,15 @@ sub optimize {
         }
     }
 
-    if ( $self->{'staticxs'} ) {
+    if ( $use_static_xs && @dl_modules ) {
         my $file = $self->{'output_file'} . '.lst';
         open( $xsfh, ">", $file ) or die("Can't open $file: $!");
     }
 
     foreach my $stashname (@dl_modules) {
         if ( exists( $self->{'xsub'}->{$stashname} ) && $self->{'xsub'}->{$stashname} =~ m/^Dynamic/ ) {
-            {
-                # Scoped no warnings without loading the module.
-                local $^W;
-                BEGIN { ${^WARNING_BITS} = 0; }
-                $B::C::use_xsloader = 1;    # TODO: This setting is totally worthless since the code that uses this variable has already been run??
-            }
-            if ( $self->{'xsub'}->{$stashname} eq 'Dynamic' ) {
-                no strict 'refs';
-                verbose("dl_init $stashname");
 
-                # just in case we missed it. DynaLoader really needs the @ISA (#308)
-                svref_2object( \@{ $stashname . "::ISA" } )->save;
-            }
-            else {                          # XS: need to fix cx for caller[1] to find auto/...
-                verbose("bootstrapping $stashname added to XSLoader dl_init");
-            }
-
-            # TODO: Why no strict refs? Also why are we doing a second save here?
-            no strict 'refs';
-            unless ( grep /^DynaLoader$/, B::C::get_isa($stashname) ) {
-                push @{ $stashname . "::ISA" }, 'DynaLoader';
-                svref_2object( \@{ $stashname . "::ISA" } )->save;
-            }
-
-            debug( gv => '@', $stashname, "::ISA=(", join( ",", @{ $stashname . "::ISA" } ), ")" );
-
-            if ( $self->{'staticxs'} ) {
+            if ( $use_static_xs && @dl_so_files ) {
                 my ($laststash) = $stashname =~ /::([^:]+)$/;
                 my $path = $stashname;
                 $path =~ s/::/\//g;
@@ -118,8 +92,6 @@ sub optimize {
                 $laststash = $stashname unless $laststash;    # without ::
                 my $sofile = "auto/" . $path . $laststash . '\.' . $B::C::Flags::Config{'dlext'};
 
-                #warn "staticxs search $sofile in @DynaLoader::dl_shared_objects\n"
-                #  if verbose() and $self->{'debug'}->{pkg};
                 for (@dl_so_files) {
                     if (m{^(.+/)$sofile$}) {
                         print $xsfh $stashname, "\t", $_, "\n";
