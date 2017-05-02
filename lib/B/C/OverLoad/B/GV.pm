@@ -164,7 +164,7 @@ sub savegp_from_gv {
         my ( $field_name, $field_ix, $field_v ) = @$check;
 
         # if the value is null or using a static list, then it's fine
-        next if $field_v =~ qr{null}i or $field_v =~ qr{list};
+        next if $field_v =~ qr{null}i or $field_v =~ qr{list} or $field_v =~ qr{^s\\_\S+$};
 
         # replace the value by a null one
         debug( gv => q{Cannot use static value '%s' for gp_list[%d].%s => postpone to init}, $field_v, $gp_ix, $field_name );
