@@ -19,7 +19,7 @@ use strict;
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
 use B::C::Config;
 use B::C::File qw/init xpvhvsect svsect sharedhe decl init1 init2 init_stash/;
-use B::C::Helpers qw/read_utf8_string strlen_flags is_using_mro/;
+use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Save::Hek qw/save_shared_he/;
 
@@ -214,7 +214,12 @@ sub do_save {
             init2()->sadd( "mro_isa_changed_in(%s);  /* %s */", $sym, $stash_name );
         }
 
-        if ( is_using_mro() && mro::get_mro($stash_name) eq 'c3' ) {
+        if ( keys %{mro::} <= 10 ) {
+            svref_2object( \%mro:: )->save;
+            require mro;
+        }
+
+        if ( mro::get_mro($stash_name) eq 'c3' ) {
             B::C::make_c3($stash_name);    # Is it main when we want to do it for main????
         }
 

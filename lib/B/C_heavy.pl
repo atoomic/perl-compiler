@@ -32,7 +32,7 @@ use B::C::File qw( init2 init1 init0 init decl free
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
   xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect sharedhe init_stash
 );
-use B::C::Helpers qw/set_curcv is_using_mro/;
+use B::C::Helpers qw/set_curcv/;
 use B::C::Helpers::Symtable qw(objsym savesym);
 
 use Exporter ();
@@ -442,11 +442,6 @@ sub get_isa ($) {
     no strict 'refs';
 
     my $name = shift;
-    if ( is_using_mro() ) {    # mro.xs loaded. c3 or dfs
-        return @{ mro::get_linear_isa($name) };
-    }
-
-    # dfs only, without loading mro
     return @{ B::C::get_linear_isa($name) };
 }
 
@@ -643,6 +638,13 @@ sub walk_syms {
 }
 
 sub save_stashes {
+
+    # We need mro to save stashes but loading it alters the mro stash.
+    if ( keys %{mro::} <= 10 ) {
+        svref_2object( \%mro:: )->save("mro::");
+        require mro;
+    }
+
     return svref_2object( \%main:: )->save('main');
 }
 
@@ -914,7 +916,7 @@ sub save_context {
     }
 
     # need to mark assign c3 to %main::. no need to assign the default dfs
-    if ( is_using_mro() && mro::get_mro("main") eq 'c3' ) {
+    if ( mro::get_mro("main") eq 'c3' ) {
         make_c3('main');
     }
 
