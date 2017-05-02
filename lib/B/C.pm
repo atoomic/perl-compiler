@@ -65,10 +65,11 @@ sub save_compile_state {
 
     setup_stashes();    # if $! then load Errno.
 
-    $settings->{'so_files'} = save_xsloader();
-    $settings->{'needs_xs'} = scalar @{ $settings->{'so_files'} };
+    $settings->{'dl_so_files'} = save_xsloader_so();
+    $settings->{'dl_moules'}   = save_xsloader_modules();
+    $settings->{'needs_xs'}    = scalar @{ $settings->{'dl_so_files'} };
 
-    $settings->{'uses_re'} = scalar grep { m{\Q/re/re.so\E$} } @{ $settings->{'so_files'} };
+    $settings->{'uses_re'} = scalar grep { m{\Q/re/re.so\E$} } @{ $settings->{'dl_so_files'} };
 
     $settings->{'template_dir'} = $INC{'B/C.pm'};
     $settings->{'template_dir'} =~ s{\.pm$}{/Templates};
@@ -230,9 +231,14 @@ sub set_stashes_enames {
     return;
 }
 
-sub save_xsloader {
+sub save_xsloader_so {
     my @DL = eval '@DynaLoader::dl_shared_objects';    # Quoted eval gets rid of no warnings once issue.
     return [ grep { $_ !~ m{/B/B\.so$} } @DL ];
+}
+
+sub save_xsloader_modules {
+    my @DL = eval '@DynaLoader::dl_modules';           # Quoted eval gets rid of no warnings once issue.
+    return [ grep { $_ !~ m{^B$} } @DL ];
 }
 
 # This parses the options passed to sub compile but not until build_c_file is invoked at the end of BEGIN.

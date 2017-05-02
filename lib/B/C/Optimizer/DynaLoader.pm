@@ -40,7 +40,8 @@ sub optimize {
     ref $self eq __PACKAGE__ or die;
 
     my ( $boot, $dl ) = ( '', 0 );
-    my @dl_modules = @DynaLoader::dl_modules;
+    my @dl_modules  = @{ $B::C::settings->{'dl_moules'} };
+    my @dl_so_files = @{ $B::C::settings->{'dl_so_files'} };
 
     foreach my $stashname (@dl_modules) {
         if ( $stashname eq 'attributes' ) {
@@ -65,7 +66,7 @@ sub optimize {
 
     return 0 if !$dl;
 
-    my $xsfh;        # Will close automatically when it goes out of scope.
+    my $xsfh;    # Will close automatically when it goes out of scope.
 
     # enforce attributes at the front of dl_init, #259
     # also Encode should be booted before PerlIO::encoding
@@ -119,7 +120,7 @@ sub optimize {
 
                 #warn "staticxs search $sofile in @DynaLoader::dl_shared_objects\n"
                 #  if verbose() and $self->{'debug'}->{pkg};
-                for (@DynaLoader::dl_shared_objects) {
+                for (@dl_so_files) {
                     if (m{^(.+/)$sofile$}) {
                         print $xsfh $stashname, "\t", $_, "\n";
                         verbose("staticxs $stashname\t$_");
