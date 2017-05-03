@@ -546,7 +546,8 @@ sub get_savefields {
     my $gvname = $gv->NAME;
 
     # default savefields
-    my $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    my $all_fields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+    my $savefields = $all_fields;
 
     $savefields = 0 if $gv->save_egv();
     $savefields = 0 if $gvname =~ /::$/;
@@ -564,16 +565,16 @@ sub get_savefields {
         $savefields = 0;
     }
     elsif ( $gvname !~ /^([^A-Za-z]|STDIN|STDOUT|STDERR|ARGV|SIG|ENV)$/ ) {
-        $savefields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+        $savefields = $all_fields;
     }
     elsif ( $fullname eq 'main::!' ) {    #Errno
         $savefields = Save_HV | Save_SV | Save_CV;
     }
     elsif ( $fullname eq 'main::ENV' or $fullname eq 'main::SIG' ) {
-        $savefields = Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
+        $savefields = $all_fields ^ Save_HV;
     }
     elsif ( $fullname eq 'main::ARGV' ) {
-        $savefields = Save_HV | Save_SV | Save_CV | Save_FORM | Save_IO;
+        $savefields = $all_fields ^ Save_AV;
     }
     elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
         $savefields = Save_FORM | Save_IO;
