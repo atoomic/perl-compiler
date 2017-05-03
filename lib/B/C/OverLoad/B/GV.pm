@@ -268,11 +268,8 @@ sub get_stash_symbol {
     my @namespace = split( '::', $gv->get_fullname() );
     pop @namespace;
     my $stash_name = join "::", @namespace;
-
-    my $symbol = $B::HV::stash_cache{$stash_name};
-    return $symbol if $symbol;
-
     $stash_name .= '::';
+
     no strict 'refs';
     return svref_2object( \%{$stash_name} )->save($stash_name);
 }
