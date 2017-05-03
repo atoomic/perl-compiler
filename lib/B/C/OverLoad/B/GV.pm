@@ -68,22 +68,22 @@ sub do_save {
 
     debug( gv => '===== GV::do_save for %s [ savefields=%s ] ', $gv->get_fullname(), _savefields_to_str($savefields) );
 
-    my $gpsym = $gv->savegp_from_gv($savefields);    # might be $gp->save( )
+    my $gpsym = $gv->savegp_from_gv($savefields);
 
     my $stash_symbol = $gv->get_stash_symbol();
 
     xpvgvsect()->comment("stash, magic, cur, len, xiv_u={.xivu_namehek=}, xnv_u={.xgv_stash=}");
     my $xpvg_ix = xpvgvsect()->sadd(
         "%s, {0}, 0, {.xpvlenu_len=0}, {.xivu_namehek=(HEK*)%s}, {.xgv_stash=%s}",
-        $stash_symbol,                               # ????????
-        'NULL',                                      # the namehek (HEK*)
-        $stash_symbol,                               # ???????
+        $stash_symbol,    # ????????
+        'NULL',           # the namehek (HEK*)
+        $stash_symbol,    # ???????
     );
     my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
     my $gv_ix;
     {
-        my $gv_refcnt = $gv->REFCNT;                 # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
+        my $gv_refcnt = $gv->REFCNT;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
         my $gv_flags  = $gv->FLAGS;
 
         gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
@@ -162,7 +162,7 @@ sub savegp_from_gv {
     my ( $gv, $savefields ) = @_;
 
     # no GP to save there...
-    return 'NULL' unless $gv->isGV_with_GP and !$gv->is_coresym() and $gv->GP;
+    return 'NULL' unless $gv->isGV_with_GP and $gv->GP;
 
     # B limitation GP is just a number not a reference so we cannot use objsym / savesym
     my $gp = $gv->GP;
@@ -179,7 +179,7 @@ sub savegp_from_gv {
     # gp_cvgen: not set, no B api ( could be done in init section )
     my ( $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_hv, $gp_av, $gp_form, $gp_egv ) = ( '(SV*)&PL_sv_undef', 'NULL', 'NULL', 0, 'NULL', 'NULL', 'NULL', 'NULL' );
 
-    # walksymtable creates an extra reference to the GV (#197)
+    # walksymtable creates an extra reference to the GV (#197): STATIC_HV: Confirm this is actually a true statement at this point.
     my $gp_refcount = $gv->GvREFCNT - 1;    # +1 for immortal ?
 
     my $gp_line = $gv->LINE;                # we want to use GvLINE from B.xs
@@ -192,20 +192,19 @@ sub savegp_from_gv {
     }
 
     my $gp_flags = $gv->GPFLAGS;            # PERL_BITFIELD32 gp_flags:1; ~ unsigned gp_flags:1
-    die("gp_flags seems used now ???") if $gp_flags;
+    die("gp_flags seems used now ???") if $gp_flags;    # STATIC_HV: Does removing this die fix any tests?
 
+    # gp_file_hek is only saved for non-stashes.
     my $gp_file_hek = q{NULL};
-    if ( ( !$B::C::stash or $fullname !~ /::$/ ) and $gv->FILE ne 'NULL' ) {    # and !$B::C::optimize_cop
-        $gp_file_hek = save_shared_he( $gv->FILE );                             # use FILE instead of FILEGV or we will save the B::GV stash
+    if ( $fullname !~ /::$/ and $gv->FILE ne 'NULL' ) {    # and !$B::C::optimize_cop
+        $gp_file_hek = save_shared_he( $gv->FILE );        # use FILE instead of FILEGV or we will save the B::GV stash
     }
 
-    # .... TODO save stuff there
-    $gp_sv = $gv->save_gv_sv($fullname) if $savefields & Save_SV;
-
+    $gp_sv   = $gv->save_gv_sv($fullname)     if $savefields & Save_SV;
     $gp_av   = $gv->save_gv_av($fullname)     if $savefields & Save_AV;
     $gp_hv   = $gv->save_gv_hv($fullname)     if $savefields & Save_HV;
     $gp_cv   = $gv->save_gv_cv($fullname)     if $savefields & Save_CV;
-    $gp_form = $gv->save_gv_format($fullname) if $savefields & Save_FORM;       # FIXME incomplete for now
+    $gp_form = $gv->save_gv_format($fullname) if $savefields & Save_FORM;    # FIXME incomplete for now
 
     my $io_sv;
     ( $gp_io, $io_sv ) = $gv->save_gv_io($fullname) if $savefields & Save_IO;    # FIXME: get rid of sym
@@ -230,6 +229,7 @@ sub savegp_from_gv {
         [ 'gp_cv', GP_IX_CV(), $gp_cv ],
     );
 
+    # Find things that can't be statically compiled and defer them
     foreach my $check (@postpone) {
         my ( $field_name, $field_ix, $field_v ) = @$check;
 
@@ -241,7 +241,7 @@ sub savegp_from_gv {
         gpsect()->update_field( $gp_ix, $field_ix, 'NULL' );
 
         # postpone the setting to init section
-        init()->sadd( q{gp_list[%d].%s = %s;}, $gp_ix, $field_name, $field_v );
+        init()->sadd( q{gp_list[%d].%s = %s; /* deferred GV initialization for %s */}, $gp_ix, $field_name, $field_v, $fullname );
     }
 
     return $saved_gps{$gp};
