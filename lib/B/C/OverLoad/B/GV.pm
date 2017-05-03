@@ -547,15 +547,10 @@ sub get_savefields {
 
     # default savefields
     my $all_fields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
-    my $savefields = $all_fields;
+    my $savefields = 0;
 
-    $savefields = 0 if $gv->save_egv();
-    $savefields = 0 if $gvname =~ /::$/;
-    $savefields = 0 if $gv->is_empty();
-
+    $gv->save_egv(); # STATIC_HV: where do save_egv actions get saved??
     my $gp = $gv->GP;
-
-    $savefields = 0 if !$gp or !exists $gptable{ 0 + $gp };    # STATIC_HV need investigation gptable is empty ( but removing it breaks )
 
     # some non-alphabetic globs require some parts to be saved
     # ( ex. %!, but not $! )
