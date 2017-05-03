@@ -1060,7 +1060,7 @@ sub build_template_stash {
     };
 
     $c_file_stash->{'global_vars'}->{'dollar_semicolon'} = cstring($;)  if $; ne "\34";     # $;
-    $c_file_stash->{'global_vars'}->{'dollar_quote'}     = cstring($")  if $" ne " ";       # $"
+                                                                                            #$c_file_stash->{'global_vars'}->{'dollar_quote'}     = cstring($")  if $" ne " ";       # $"
     $c_file_stash->{'global_vars'}->{'dollar_slash'}     = cstring($/)  if $/ ne "\n";      # $/  - RS
     $c_file_stash->{'global_vars'}->{'dollar_caret_L'}   = cstring($^L) if $^L ne "\f";     # $^L - FORMFEED
     $c_file_stash->{'global_vars'}->{'dollar_colon'}     = cstring($:)  if $: ne " \n-";    # $:  - LINE_BREAK_CHARACTERS

@@ -131,7 +131,8 @@ sub savegp_from_gv {
     }
 
     # .... TODO save stuff there
-    $gp_sv   = $gv->save_gv_sv($fullname)     if $savefields & Save_SV;
+    $gp_sv = $gv->save_gv_sv($fullname) if $savefields & Save_SV;
+
     $gp_av   = $gv->save_gv_av($fullname)     if $savefields & Save_AV;
     $gp_hv   = $gv->save_gv_hv($fullname)     if $savefields & Save_HV;
     $gp_cv   = $gv->save_gv_cv($fullname)     if $savefields & Save_CV;
@@ -369,6 +370,7 @@ sub save_gv_sv {
         $gvsv->save($fullname);    #even NULL save it, because of gp_free nonsense
                                    # we need sv magic for the core_svs (PL_rs -> gv) (#314)
 
+        # STATIC_HV this code belings in savedfield to make the decision to save it or not
         # Output record separator https://code.google.com/archive/p/perl-compiler/issues/318
         return $svsym if $gvname eq "\\";
 
@@ -551,7 +553,8 @@ sub get_savefields {
     $savefields = 0 if $gv->is_empty();
 
     my $gp = $gv->GP;
-    $savefields = 0 if !$gp or !exists $gptable{ 0 + $gp };
+
+    $savefields = 0 if !$gp or !exists $gptable{ 0 + $gp };    # STATIC_HV need investigation gptable is empty ( but removing it breaks )
 
     # some non-alphabetic globs require some parts to be saved
     # ( ex. %!, but not $! )
@@ -574,6 +577,9 @@ sub get_savefields {
     }
     elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
         $savefields = Save_FORM | Save_IO;
+    }
+    elsif ( $fullname eq 'main::"' ) {
+        $savefields = Save_SV;
     }
     elsif ( $fullname eq 'main::_' or $fullname eq 'main::@' ) {
         $savefields = 0;
