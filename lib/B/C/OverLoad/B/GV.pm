@@ -564,9 +564,6 @@ sub get_savefields {
         # https://code.google.com/archive/p/perl-compiler/issues/79 - Only save stashes for stashes.
         $savefields = 0;
     }
-    elsif ( $gvname !~ /^([^A-Za-z]|STDIN|STDOUT|STDERR|ARGV|SIG|ENV)$/ ) {
-        $savefields = $all_fields;
-    }
     elsif ( $fullname eq 'main::!' ) {    #Errno
         $savefields = Save_HV | Save_SV | Save_CV;
     }
@@ -587,6 +584,12 @@ sub get_savefields {
     }
     elsif ( $fullname eq 'main::_' or $fullname eq 'main::@' ) {
         $savefields = 0;
+    }
+    elsif ( $gvname =~ /^[^A-Za-z]$/ ) {
+        $savefields = 0;
+    }
+    else {
+        $savefields = $all_fields;
     }
 
     # avoid overly dynamic POSIX redefinition warnings: GH #335, #345
