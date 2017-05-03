@@ -51,6 +51,72 @@ my $CORE_SVS = {    # special SV syms to assign to the right GvSV
     "main::@"  => 'PL_errors',
 };
 
+sub do_save {
+    my ( $gv, $filter ) = @_;
+
+    # return earlier for special cases
+    return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
+    return $gv->save_special_gv() if $gv->is_special_gv();
+
+    my $sym = $gv->set_dynamic_gv;
+    my $savefields = get_savefields( $gv, $gv->get_fullname(), $filter );
+
+    debug( gv => '===== GV::do_save for %s [ savefields=%s ] ', $gv->get_fullname(), _savefields_to_str($savefields) );
+
+    my $gpsym = $gv->savegp_from_gv($savefields);    # might be $gp->save( )
+
+    my $stash_symbol = $gv->get_stash_symbol();
+
+    xpvgvsect()->comment("stash, magic, cur, len, xiv_u={.xivu_namehek=}, xnv_u={.xgv_stash=}");
+    my $xpvg_ix = xpvgvsect()->sadd(
+        "%s, {0}, 0, {.xpvlenu_len=0}, {.xivu_namehek=(HEK*)%s}, {.xgv_stash=%s}",
+        $stash_symbol,                               # ????????
+        'NULL',                                      # the namehek (HEK*)
+        $stash_symbol,                               # ???????
+    );
+    my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
+
+    my $gv_ix;
+    {
+        my $gv_refcnt = $gv->REFCNT;                 # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
+        my $gv_flags  = $gv->FLAGS;
+
+        gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
+        $gv_ix = gvsect()->add( sprintf( "&%s, %u, 0x%x, {.svu_gp=(GP*)%s} /* %s */", $xpvgv, $gv_refcnt, $gv_flags, $gpsym, $gv->get_fullname() ) );
+    }
+
+    my $gvsym = sprintf( '&gv_list[%d]', $gv_ix );
+
+    debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $gvsym, $gv->NAME );
+
+    # TODO: split the fullname and plug all of them in known territory...
+    # relies on template logic to preserve the hash structure...
+
+    #my @namespace = split( '::', $gv->get_fullname() );
+
+    # FIXME... need to plug it to init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ) );
+
+    if ( my $gvname = $gv->NAME ) {
+        my $shared_he = save_shared_he($gvname);    # ,....
+
+        if ( $shared_he ne 'NULL' ) {
+
+            # plug the shared_he HEK to xpvgv: GvNAME_HEK($gvsym) =~(similar to) $xpvgv.xiv_u.xivu_namehek
+            # This is the static version of
+            #  init()->sadd( "GvNAME_HEK(%s) = (HEK*) &(( (SHARED_HE*) %s)->shared_he_hek);", $gvsym, $shared_he );
+            # sharedhe_list[68] => shared_he_68
+            my $sharedhe_ix;
+            $sharedhe_ix = $1 if $shared_he =~ qr{\[([0-9]+)\]};
+            die unless defined $sharedhe_ix;
+            my $se = q{sHe} . $sharedhe_ix;
+            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) (&%s + sizeof(HE)) } /* %s */ ], $se, $gvname );
+            1;
+        }
+    }
+
+    return $gvsym;
+}
+
 sub get_package {
     my $gv = shift;
 
@@ -204,72 +270,6 @@ sub get_stash_symbol {
     $stash_name .= '::';
     no strict 'refs';
     return svref_2object( \%{$stash_name} )->save($stash_name);
-}
-
-sub do_save {
-    my ( $gv, $filter ) = @_;
-
-    # return earlier for special cases
-    return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
-    return $gv->save_special_gv() if $gv->is_special_gv();
-
-    my $sym = $gv->set_dynamic_gv;
-    my $savefields = get_savefields( $gv, $gv->get_fullname(), $filter );
-
-    debug( gv => '===== GV::do_save for %s [ savefields=%s ] ', $gv->get_fullname(), _savefields_to_str($savefields) );
-
-    my $gpsym = $gv->savegp_from_gv($savefields);    # might be $gp->save( )
-
-    my $stash_symbol = $gv->get_stash_symbol();
-
-    xpvgvsect()->comment("stash, magic, cur, len, xiv_u={.xivu_namehek=}, xnv_u={.xgv_stash=}");
-    my $xpvg_ix = xpvgvsect()->sadd(
-        "%s, {0}, 0, {.xpvlenu_len=0}, {.xivu_namehek=(HEK*)%s}, {.xgv_stash=%s}",
-        $stash_symbol,                               # ????????
-        'NULL',                                      # the namehek (HEK*)
-        $stash_symbol,                               # ???????
-    );
-    my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
-
-    my $gv_ix;
-    {
-        my $gv_refcnt = $gv->REFCNT;                 # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
-        my $gv_flags  = $gv->FLAGS;
-
-        gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
-        $gv_ix = gvsect()->add( sprintf( "&%s, %u, 0x%x, {.svu_gp=(GP*)%s} /* %s */", $xpvgv, $gv_refcnt, $gv_flags, $gpsym, $gv->get_fullname() ) );
-    }
-
-    my $gvsym = sprintf( '&gv_list[%d]', $gv_ix );
-
-    debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $gvsym, $gv->NAME );
-
-    # TODO: split the fullname and plug all of them in known territory...
-    # relies on template logic to preserve the hash structure...
-
-    #my @namespace = split( '::', $gv->get_fullname() );
-
-    # FIXME... need to plug it to init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ) );
-
-    if ( my $gvname = $gv->NAME ) {
-        my $shared_he = save_shared_he($gvname);    # ,....
-
-        if ( $shared_he ne 'NULL' ) {
-
-            # plug the shared_he HEK to xpvgv: GvNAME_HEK($gvsym) =~(similar to) $xpvgv.xiv_u.xivu_namehek
-            # This is the static version of
-            #  init()->sadd( "GvNAME_HEK(%s) = (HEK*) &(( (SHARED_HE*) %s)->shared_he_hek);", $gvsym, $shared_he );
-            # sharedhe_list[68] => shared_he_68
-            my $sharedhe_ix;
-            $sharedhe_ix = $1 if $shared_he =~ qr{\[([0-9]+)\]};
-            die unless defined $sharedhe_ix;
-            my $se = q{sHe} . $sharedhe_ix;
-            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) (&%s + sizeof(HE)) } /* %s */ ], $se, $gvname );
-            1;
-        }
-    }
-
-    return $gvsym;
 }
 
 =pod
