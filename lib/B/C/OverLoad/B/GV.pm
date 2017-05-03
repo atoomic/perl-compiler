@@ -58,7 +58,7 @@ sub do_save {
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
     return $gv->save_special_gv() if $gv->is_special_gv();
 
-    my $sym = $gv->set_dynamic_gv;
+    my $sym = $gv->save_dynamic_gv_sym;
     my $savefields = get_savefields( $gv, $gv->get_fullname(), $filter );
 
     debug( gv => '===== GV::do_save for %s [ savefields=%s ] ', $gv->get_fullname(), _savefields_to_str($savefields) );
@@ -242,7 +242,7 @@ sub savegp_from_gv {
     return $saved_gps{$gp};
 }
 
-sub set_dynamic_gv {
+sub save_dynamic_gv_sym {
     my $gv = shift;
 
     # need to savesym earlier
@@ -320,7 +320,7 @@ sub save_special_gv {
     my $type = 'SVt_PVGV';
     $type = 'SVt_PV' if $fullname eq 'main::0';
 
-    my $sym = $gv->set_dynamic_gv;    # use a dynamic slot from there + cache
+    my $sym = $gv->save_dynamic_gv_sym;    # use a dynamic slot from there + cache
     init()->sadd( '%s = gv_fetchpv(%s, %s, %s);', $sym, $cname, $notqual, $type );
     init()->sadd( "SvREFCNT(%s) = %u;", $sym, $gv->REFCNT );
 
