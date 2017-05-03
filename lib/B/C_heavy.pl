@@ -1048,30 +1048,9 @@ sub build_template_stash {
     # Some of the vars are only put in the stash if they meet certain coditions.
 
     $c_file_stash->{'global_vars'} = {
-        'dollar_0'             => $0,
-        'dollar_caret_A'       => $^A,
         'dollar_caret_H'       => $^H,
-        'dollar_caret_X'       => cstring($^X),
         'dollar_caret_UNICODE' => ${^UNICODE},
-        'dollar_comma'         => ${,},
-        'dollar_backslash'     => ${\},
-        'dollar_pipe'          => $|,
-        'dollar_percent'       => $%,
     };
-
-    $c_file_stash->{'global_vars'}->{'dollar_semicolon'} = cstring($;)  if $; ne "\34";     # $;
-                                                                                            #$c_file_stash->{'global_vars'}->{'dollar_quote'}     = cstring($")  if $" ne " ";       # $"
-    $c_file_stash->{'global_vars'}->{'dollar_slash'}     = cstring($/)  if $/ ne "\n";      # $/  - RS
-    $c_file_stash->{'global_vars'}->{'dollar_caret_L'}   = cstring($^L) if $^L ne "\f";     # $^L - FORMFEED
-    $c_file_stash->{'global_vars'}->{'dollar_colon'}     = cstring($:)  if $: ne " \n-";    # $:  - LINE_BREAK_CHARACTERS
-    $c_file_stash->{'global_vars'}->{'dollar_minus'} = $- unless ( $- == 0 or $- == 60 );   # $-  - LINES_LEFT
-    $c_file_stash->{'global_vars'}->{'dollar_equal'} = $= if $= != 60;                      # $=  - LINES_PER_PAGE
-
-    # Need more than just the cstring.
-    $c_file_stash->{'global_vars'}->{'dollar_caret'} = { 'str' => cstring($^), 'len' => length($^) } if $^ ne "STDOUT_TOP";
-    $c_file_stash->{'global_vars'}->{'dollar_tilde'} = { 'str' => cstring($~), 'len' => length($~) } if $~ ne "STDOUT";
-
-    $[ and die 'Since the variable is deprecated, B::C does not support setting $[ to anything other than 0';
 
     # PL_strtab's hash size
     $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, 511 ) + 1;
