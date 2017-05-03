@@ -50,10 +50,6 @@ my $CORE_SYMS = {
     'main::stderr' => 'PL_stderrgv',
 };
 
-my $CORE_SVS = {    # special SV syms to assign to the right GvSV
-    "main::@" => 'PL_errors',
-};
-
 sub do_save {
     my ( $gv, $filter ) = @_;
 
@@ -325,42 +321,21 @@ sub save_gv_sv {
     my $gvsv = $gv->SV;
     return 'NULL' unless $$gvsv;
 
-    # rely on final replace to get the symbol name, it s fine
-    my $svsym = sprintf( "s\\_%x", $$gvsv );
-
-    my $package = $gv->get_package();
-    my $gvname  = $gv->NAME;
-
-    if ( my $pl_core_sv = $CORE_SVS->{$fullname} ) {
-        savesym( $gvsv, $pl_core_sv );
-    }
-
+    #my $gvname  = $gv->NAME;
     # STATIC_HV: We think this special case needs to go away but don't have proof yet.
     # Reported in https://code.google.com/archive/p/perl-compiler/issues/91
-    if ( $gvname && $gvname eq 'VERSION' and $gvsv->FLAGS & SVf_ROK ) {
-        die("STATIC_HV: DEAD CODE??");
-        debug( gv => "Strip overload from $package\::VERSION, fails to xs boot (issue 91)" );
-        my $rv     = $gvsv->object_2svref();
-        my $origsv = $$rv;
-        no strict 'refs';
-        ${$fullname} = "$origsv";
-        svref_2object( \${$fullname} )->save($fullname);
-    }
-    else {
-        $gvsv->save($fullname);    #even NULL save it, because of gp_free nonsense
-                                   # we need sv magic for the core_svs (PL_rs -> gv) (#314)
+    #if ( $gvname && $gvname eq 'VERSION' and $gvsv->FLAGS & SVf_ROK ) {
+    #    die ("STATIC_HV: DEAD CODE??");
+    #    my $package = $gv->get_package();
+    #    debug( gv => "Strip overload from $package\::VERSION, fails to xs boot (issue 91)" );
+    #    my $rv     = $gvsv->object_2svref();
+    #    my $origsv = $$rv;
+    #    no strict 'refs';
+    #    ${$fullname} = "$origsv";
+    #    return svref_2object( \${$fullname} )->save($fullname);
+    #}
 
-        # STATIC_HV this code belings in savedfield to make the decision to save it or not
-        # Output record separator https://code.google.com/archive/p/perl-compiler/issues/318
-        return $svsym if $gvname eq "\\";
-
-        if ( exists $CORE_SVS->{"main::$gvname"} ) {
-            $gvsv->save_magic($fullname) if ref($gvsv) eq 'B::PVMG';
-            init()->sadd( "SvREFCNT(s\\_%x) += 1;", $$gvsv );
-        }
-    }
-
-    return $svsym;
+    return $gvsv->save($fullname); 
 }
 
 sub save_gv_av {    # new function to be renamed later..
