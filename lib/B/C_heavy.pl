@@ -1049,6 +1049,7 @@ sub build_template_stash {
 
     $c_file_stash->{'global_vars'} = {
         'dollar_caret_H'       => $^H,
+        'dollar_caret_X'       => cstring($^X),
         'dollar_caret_UNICODE' => ${^UNICODE},
     };
 

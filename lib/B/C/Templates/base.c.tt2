@@ -906,6 +906,8 @@ benchmark_time("pre global setup");
     PL_unicode = [% global_vars.dollar_caret_UNICODE %];
     [% END %]
 
+    sv_setpv_mg(get_sv("\030", GV_ADD|GV_NOTQUAL), [% global_vars.dollar_caret_X %]); /* $^X - EXECUTABLE_NAME */
+
     TAINT_NOT;
 
     /* PL_compcv used during compilation. */

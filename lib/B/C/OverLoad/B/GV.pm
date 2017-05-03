@@ -581,6 +581,9 @@ sub get_savefields {
     elsif ( $fullname eq 'main::"' ) {
         $savefields = Save_SV;
     }
+    elsif ( $fullname eq "main::\030" ) {
+        $savefields = Save_SV;
+    }
     elsif ( $fullname eq 'main::_' or $fullname eq 'main::@' ) {
         $savefields = 0;
     }
