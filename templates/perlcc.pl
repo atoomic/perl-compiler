@@ -225,6 +225,7 @@ sub parse_argv {
         'dryrun|n',         # only print commands, do not execute
         'c',                # Compile to C only, no linking
         'check',            # pass -c to B::C and exit
+        'g',                # -g option for gcc
         'help|h',           # Help me
         'S',                # Keep generated C file
         'T',                # run the backend using perl -T
@@ -255,6 +256,11 @@ sub parse_argv {
         $Options->{Wb} = $Options->{Wb} ? $Options->{Wb} . ',' : '';
         $Options->{Wb} .= '-D' . $Options->{debug};
         $Options->{S} = 1;
+    }
+
+    if ( $Options->{'g'} || $ENV{BC_CFLAGS} =~ qr{^-?g$} ) {
+        vprint 3, q{Using gcc '-g' compilation option.};
+        $Options->{'g'} = 1;
     }
 
     $Options->{v} += 0;
@@ -717,6 +723,7 @@ sub cc_harness {
     $ldopts .= " -lperl" unless $command =~ /perl/;
     $command .= " " . $ldopts;
     $command .= $B::C::Flags::extra_libs if $B::C::Flags::extra_libs;
+    $command = q{-g } . $command if $Options->{'g'};
     my $gcc = get_gcc();
     vprint 3, "Calling $gcc $command";
     vsystem("$gcc $command");

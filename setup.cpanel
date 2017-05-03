@@ -25,7 +25,8 @@ fi
 
 if [ "$DEBUG" == "1" ]; then
     export BC_CFLAGS='-g' # Optimize debugging experience.
-    #else export BC_CFLAGS='' # use default compilation option
+else
+    export BC_CFLAGS='' # use default compilation option
 fi
 
 export VERBOSE=$DEBUG
