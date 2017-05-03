@@ -75,9 +75,9 @@ sub do_save {
     xpvgvsect()->comment("stash, magic, cur, len, xiv_u={.xivu_namehek=}, xnv_u={.xgv_stash=}");
     my $xpvg_ix = xpvgvsect()->sadd(
         "%s, {0}, 0, {.xpvlenu_len=0}, {.xivu_namehek=(HEK*)%s}, {.xgv_stash=%s}",
-        $stash_symbol,    # ????????
+        $stash_symbol,    # STATIC_HV: The symbol for the HV stash. Which field is it??
         'NULL',           # the namehek (HEK*)
-        $stash_symbol,    # ???????
+        $stash_symbol,    # The symbol for the HV stash. Which field is it??
     );
     my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
@@ -101,6 +101,7 @@ sub do_save {
 
     # FIXME... need to plug it to init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ) );
 
+    # STATIC_HV: Is there a way to do this up on the xpvgvsect()->sadd line ??
     if ( my $gvname = $gv->NAME ) {
         my $shared_he = save_shared_he($gvname);    # ,....
 
@@ -274,32 +275,6 @@ sub get_stash_symbol {
     return svref_2object( \%{$stash_name} )->save($stash_name);
 }
 
-=pod
-gv_stashpvn
-
-> rm -f test test.c; configure.524 && perlcc --debug=gv -S test.pl && ./test
-
-# good
-> rm -f a.out*; configure.524; perlcc --debug=gv -S -r -e 'package A; our $x = 0; sub v { ++$x } package main; print A::v()."\n"; print eval q{A::v()}; print " <-\n"; print qq{done\n} '
-
-
-
-rm -f a.out*; configure.524; perlcc --debug=gv -S -r -e 'package A; sub v { "a" if -e q{/} } package A::B; sub v { "a::b" if -e q{/} } package C; sub v {42 if $ENV{214} }package main; print A::v(); print eval q{A::v()}; print "\n"; print eval q{A::B::v()}."\n"'
-
-rm -f a.out*; configure.524; perlcc --debug=gv -S -r -e 'package A; our $x = 0; sub v { ++$x } package main; print A::v()."\n"; '
-
-
-
-=cut
-
-=pod
-
-rm -f a.out; configure.524; perlcc -v4 -S --Wc=-Og --debug=gv -e 'package main; *one = sub { return 1 if -e q{/tmp} }; print one() . "\n" ' && ./a.out
-rm -f a.out; configure.524; perlcc -v4 -S --Wc=-Og --debug=gv -e 'package main; sub one { return 1 if -e q{/tmp} }; our $one = 42; print one() . "\n" ' && ./a.out
-
-rm -f a.out; configure.524; perlcc -v4 -S --Wc=-Og --debug=gv -e 'package main; our $XYZ; open($XYZ, ">", "/tmp/xyz" ); @XYZ = (1..4); print ref $XYZ'
-=cut
-
 sub is_special_gv {
     my $gv = shift;
 
@@ -360,7 +335,10 @@ sub save_gv_sv {
         savesym( $gvsv, $pl_core_sv );
     }
 
-    if ( $gvname && $gvname eq 'VERSION' and $B::C::xsub{$package} and $gvsv->FLAGS & SVf_ROK ) {
+    # STATIC_HV: We think this special case needs to go away but don't have proof yet.
+    # Reported in https://code.google.com/archive/p/perl-compiler/issues/91
+    if ( $gvname && $gvname eq 'VERSION' and $gvsv->FLAGS & SVf_ROK ) {
+        die("STATIC_HV: DEAD CODE??");
         debug( gv => "Strip overload from $package\::VERSION, fails to xs boot (issue 91)" );
         my $rv     = $gvsv->object_2svref();
         my $origsv = $$rv;
