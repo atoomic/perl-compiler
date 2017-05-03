@@ -3,7 +3,7 @@ package B::PADNAMELIST;
 use strict;
 our @ISA = qw(B::AV);
 
-use B::C::File qw/init padnamelistsect/;
+use B::C::File qw/init init_magic padnamelistsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
 sub add_to_section {
@@ -28,13 +28,13 @@ sub add_to_init {
 
     my $fill1 = $self->fill + 1;
 
-    init()->no_split;
-    init()->add("{");
-    init()->add("\tregister int gcount;") if $acc =~ qr{\bgcount\b};
-    init()->sadd( "\tPADNAME **svp = INITPADNAME($sym, %d);", $fill1 );
-    init()->add( substr( $acc, 0, -2 ) );
-    init()->add("}");
-    init()->split;
+    init_magic()->no_split;
+    init_magic()->add("{");
+    init_magic()->add("\tregister int gcount;") if $acc =~ qr{\bgcount\b};
+    init_magic()->sadd( "\tPADNAME **svp = INITPADNAME($sym, %d);", $fill1 );
+    init_magic()->add( substr( $acc, 0, -2 ) );
+    init_magic()->add("}");
+    init_magic()->split;
 
     return;
 }

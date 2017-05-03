@@ -311,6 +311,27 @@ Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %
 
 [% END %]
 
+/* handy helpers for B::C */
+
+PADNAME ** INITPADNAME(PADNAMELIST *padname, int count) {
+    PADNAME **svp;
+    PADNAMELIST *padnl = padname;
+    Newxz(svp, count, PADNAME *);
+    PadnamelistARRAY(padnl) = svp;
+    return svp;
+}
+
+PAD ** INITPADLIST(PADLIST *pad, int count) {
+    PAD **svp;
+    PADLIST *padl = pad;
+    Newxz(svp, count, PAD *);
+    PadlistARRAY(padl) = svp;
+    return svp;
+}
+
+/* end of handy helpers */
+
+
 
 [% IF section.init_stash.comment() %]
     /* [% section.init_stash.comment() %] */
@@ -405,26 +426,6 @@ static void init_bodyless_ivs(pTHX) {
 [% END %]
 
 }
-
-/* handy helpers for B::C */
-
-PADNAME ** INITPADNAME(PADNAMELIST *padname, int count) {
-    PADNAME **svp;
-    PADNAMELIST *padnl = padname;
-    Newxz(svp, count, PADNAME *);
-    PadnamelistARRAY(padnl) = svp;
-    return svp;
-}
-
-PAD ** INITPADLIST(PADLIST *pad, int count) {
-    PAD **svp;
-    PADLIST *padl = pad;
-    Newxz(svp, count, PAD *);
-    PadlistARRAY(padl) = svp;
-    return svp;
-}
-
-/* end of handy helpers */
 
 static void perl_init0(pTHX) { /* fixup_ppaddr */
 [% section.init0.output( "    %s\n" ) %]
