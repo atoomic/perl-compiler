@@ -45,10 +45,13 @@ my $CORE_SYMS = {
     'main::ARGV'   => 'PL_argvgv',
     'main::STDIN'  => 'PL_stdingv',
     'main::STDERR' => 'PL_stderrgv',
+    'main::stdin'  => 'PL_stdingv',
+    'main::stdout' => 'PL_defoutgv',
+    'main::stderr' => 'PL_stderrgv',
 };
 
 my $CORE_SVS = {    # special SV syms to assign to the right GvSV
-    "main::@"  => 'PL_errors',
+    "main::@" => 'PL_errors',
 };
 
 sub do_save {
@@ -56,6 +59,8 @@ sub do_save {
 
     # return earlier for special cases
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
+
+    # This is probably dead code.
     return $gv->save_special_gv() if $gv->is_special_gv();
 
     my $sym = $gv->save_dynamic_gv_sym;
@@ -313,6 +318,8 @@ sub save_special_gv {
     my $gvname   = $gv->NAME();
     my $fullname = $gv->get_fullname();
 
+    die("DEAD CODE") unless $fullname eq 'main::0';
+
     # package is main
     my $cname   = cstring($gvname);
     my $notqual = 'GV_NOTQUAL';
@@ -547,7 +554,7 @@ sub get_savefields {
     my $all_fields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
     my $savefields = 0;
 
-    $gv->save_egv(); # STATIC_HV: where do save_egv actions get saved??
+    $gv->save_egv();    # STATIC_HV: where do save_egv actions get saved??
     my $gp = $gv->GP;
 
     # some non-alphabetic globs require some parts to be saved
