@@ -48,8 +48,6 @@ my $CORE_SYMS = {
 };
 
 my $CORE_SVS = {    # special SV syms to assign to the right GvSV
-    "main::\\" => 'PL_ors_sv',
-    "main::/"  => 'PL_rs',
     "main::@"  => 'PL_errors',
 };
 
@@ -571,17 +569,11 @@ sub get_savefields {
     elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
         $savefields = Save_FORM | Save_IO;
     }
-    elsif ( $fullname eq 'main::"' ) {
-        $savefields = Save_SV;
-    }
-    elsif ( $fullname eq "main::\030" ) {
-        $savefields = Save_SV;
-    }
     elsif ( $fullname eq 'main::_' or $fullname eq 'main::@' ) {
         $savefields = 0;
     }
     elsif ( $gvname =~ /^[^A-Za-z]$/ ) {
-        $savefields = 0;
+        $savefields = Save_SV;
     }
     else {
         $savefields = $all_fields;
@@ -608,8 +600,6 @@ sub get_savefields {
     }
 
     $savefields |= Save_FILE if ( $is_gvgp and !$is_coresym );
-
-    $savefields &= Save_SV if $gvname eq '\\';
 
     return $savefields;
 }
