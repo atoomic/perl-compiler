@@ -108,6 +108,7 @@ sub setup_stashes {
             eval 'require Errno';
         }
     }
+    return;
 }
 
 sub starting_stash {
@@ -139,6 +140,29 @@ sub starting_stash {
 sub cleanup_stashes {
     my $use_re  = $settings->{'uses_re'};
     my $stashes = $settings->{'starting_stash'};
+
+    # cleanup stashes from command line client option -U
+    if ( ref $settings->{'skip_packages'} ) {
+        foreach my $k ( sort keys %{ $settings->{'skip_packages'} } ) {
+            my $to_skip = "$k";      # do a copy
+            $to_skip =~ s{::$}{};    # remove the trailing :: if client provide it
+
+            my @namespace = split( qr{::}, $to_skip );
+            my $cursor = $stashes;
+            while ( my $ns = shift @namespace ) {
+                $ns .= q{::};
+
+                # stash is not defined, no need to remove it
+                next unless ref $cursor && ref $cursor->{$ns};
+                if ( scalar @namespace ) {    # let's move deeper
+                    $cursor = $cursor->{$ns};
+                }
+                else {                        # we found it, we remove it from our whitelist
+                    delete $cursor->{$ns};
+                }
+            }
+        }
+    }
 
     #if ( !$uses_re ) {
     #    delete $stashes->{'re::'};
