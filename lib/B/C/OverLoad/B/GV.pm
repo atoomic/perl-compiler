@@ -335,7 +335,7 @@ sub save_gv_sv {
     #    return svref_2object( \${$fullname} )->save($fullname);
     #}
 
-    return $gvsv->save($fullname); 
+    return $gvsv->save($fullname);
 }
 
 sub save_gv_av {    # new function to be renamed later..
@@ -370,20 +370,21 @@ sub save_gv_hv {                       # new function to be renamed later..
     # skip static %Encode::Encoding since 5.20. GH #200. sv_upgrade cannot upgrade itself.
     # Let it be initialized by boot_Encode/Encode_XSEncodingm with exceptions.
     # GH #200 and t/testc.sh 75
-    # if ( $fullname eq 'Encode::Encoding' ) {
-    #     debug( gv => "skip some %Encode::Encoding - XS initialized" );
-    #     my %tmp_Encode_Encoding = %Encode::Encoding;
-    #     %Encode::Encoding = ();    # but we need some non-XS encoding keys
-    #     foreach my $k (qw(utf8 utf-8-strict Unicode Internal Guess)) {
-    #         $Encode::Encoding{$k} = $tmp_Encode_Encoding{$k} if exists $tmp_Encode_Encoding{$k};
-    #     }
-    #     $gvhv->save($fullname);
-    #     init()->add("/* deferred some XS enc pointers for \%Encode::Encoding */");
-    #     init()->sadd( "GvHV(%s) = s\\_%x;", $sym, $$gvhv );
+    if ( $fullname eq 'Encode::Encoding' ) {
+        debug( gv => "skip some %Encode::Encoding - XS initialized" );
+        my %tmp_Encode_Encoding = %Encode::Encoding;
+        %Encode::Encoding = ();    # but we need some non-XS encoding keys
+        foreach my $k (qw(utf8 utf-8-strict Unicode Internal Guess)) {
+            $Encode::Encoding{$k} = $tmp_Encode_Encoding{$k} if exists $tmp_Encode_Encoding{$k};
+        }
+        my $sym = $gvhv->save($fullname);
+        init()->add("/* deferred some XS enc pointers for \%Encode::Encoding */");
 
-    #     %Encode::Encoding = %tmp_Encode_Encoding;
-    #     return;
-    # }
+        #         init()->sadd( "GvHV(%s) = s\\_%x;", $sym, $$gvhv );
+
+        %Encode::Encoding = %tmp_Encode_Encoding;
+        return $sym;
+    }
 
     return $gvhv->save($fullname);
 }
