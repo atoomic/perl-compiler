@@ -122,7 +122,7 @@ sub do_save {
     }
 
     my $stash = savestashpv( $op->stashpv );
-    init()->sadd( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash );
+    init()->sadd( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash ) if $stash ne 'NULL';
 
     if ($B::C::const_strings) {
         my $constpv = constpv($file);
@@ -195,7 +195,7 @@ __END__
      /* label for this construct is now stored in cop_hints_hash */
      HV *    cop_stash;  /* package line was compiled in */
      GV *    cop_filegv; /* file the following line # is from */
- 
+
      U32     cop_hints;  /* hints bits from pragmata */
      U32     cop_seq;    /* parse sequence number */
      /* Beware. mg.c and warnings.pl assume the type of this is STRLEN *:  */
