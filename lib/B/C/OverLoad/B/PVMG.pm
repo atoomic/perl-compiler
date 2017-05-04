@@ -53,10 +53,13 @@ sub do_save {
         $static  = 1;
     }
 
+    my $stash = $sv->SvSTASH->save;
+    $stash = q{Nullhv} if $stash eq 'NULL';
+
     xpvmgsect()->comment("STASH, MAGIC, cur, len, xiv_u, xnv_u");
     my $xpvmg_ix = xpvmgsect()->sadd(
-        "Nullhv, {0}, %u, {%u}, {%s}, {%s}",
-        $cur, $len, $ivx, $nvx
+        "%s, {0}, %u, {%u}, {%s}, {%s}",
+        $stash, $cur, $len, $ivx, $nvx
     );
 
     my $sv_u = $savesym eq 'NULL' ? 0 : ".svu_pv=(char*) $savesym";
@@ -82,7 +85,9 @@ sub save_magic {
     my ( $sv, $fullname ) = @_;
     my $sv_flags = $sv->FLAGS;
     my $pkg;
-    return if $fullname && $fullname eq '%B::C::';
+
+    #return if $fullname && $fullname eq '%B::C::';
+
     if ( debug('mg') ) {
         my $flagspv = "";
         $fullname = '' unless $fullname;
@@ -117,37 +122,38 @@ sub save_magic {
 
             # 361 do not force dynaloading IO via IO::Handle upon us
             # core already initialized this stash for us
-            if ( $fullname ne 'main::STDOUT' ) {
-                if ( ref $pkg eq 'B::HV' ) {
+            #if ( $fullname ne 'main::STDOUT' ) {
+            if ( ref $pkg eq 'B::HV' ) {
 
-                    # FIXME can simplify this if / else as ->save is going to take care of anything stah or not
-                    if ( $fullname !~ /::$/ ) {    # not a stash
-                        $pkgsym = $pkg->save($fullname);
-                    }
-                    else {                         # this is a stash
-                                                   #$pkgsym = B::HV::can_save_stash( $pkgname ) ? savestashpv($pkgname) : 'NULL';
-                        $pkgsym = savestashpv($pkgname);
-
-                        #$pkgsym = $pkg->save($fullname); # later should be come this FIXME
-
-                        if ( $pkgsym ne 'NULL' ) {
-
-                            # Q: Who is initializing our stash from XS? ->save is missing that.
-                            # A: We only need to init it when we need a CV
-                            # defer for XS loaded stashes with AMT magic
-                            init()->sadd( "SvSTASH_set(s\\_%x, (HV*)s\\_%x);", $$sv, $$pkg );
-                            init()->sadd( "SvREFCNT((SV*)s\\_%x) += 1;", $$pkg );
-                            init()->add("++PL_sv_objcount;") unless ref($sv) eq "B::IO";
-                        }
-
-                    }
+                # FIXME can simplify this if / else as ->save is going to take care of anything stah or not
+                if ( $fullname !~ /::$/ ) {    # not a stash
+                    $pkgsym = $pkg->save($fullname);
                 }
-                else {
-                    $pkgsym = 'NULL';
-                }
+                else {                         # this is a stash
+                                               #$pkgsym = B::HV::can_save_stash( $pkgname ) ? savestashpv($pkgname) : 'NULL';
+                    $pkgsym = savestashpv($pkgname);
 
-                debug( mg => "xmg_stash = \"%s\" as %s", $pkgname, $pkgsym );
+                    #$pkgsym = $pkg->save($fullname); # later should be come this FIXME
+
+                    if ( $pkgsym ne 'NULL' ) {
+
+                        # Q: Who is initializing our stash from XS? ->save is missing that.
+                        # A: We only need to init it when we need a CV
+                        # defer for XS loaded stashes with AMT magic
+                        #init()->sadd( "SvSTASH_set(s\\_%x, (HV*)s\\_%x);", $$sv, $$pkg );
+                        #init()->sadd( "SvREFCNT((SV*)s\\_%x) += 1;", $$pkg );
+                        #init()->add("++PL_sv_objcount;") unless ref($sv) eq "B::IO";
+                    }
+
+                }
             }
+            else {
+                $pkgsym = 'NULL';
+            }
+
+            debug( mg => "xmg_stash = \"%s\" as %s", $pkgname, $pkgsym );
+
+            #}
 
         }
     }
