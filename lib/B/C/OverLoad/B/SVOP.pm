@@ -25,13 +25,7 @@ sub do_save {
         # 96 do not save a gvsv->cv if just checked for defined'ness
         my $gv   = $op->sv;
         my $gvsv = B::C::svop_name($op);
-        if ( $gvsv !~ /^DynaLoader::/ ) {
-            debug( gv => "skip saving defined(&$gvsv)" );    # defer to run-time
-            $svsym = '(SV*)' . $gv->save(8);                 # ~Save_CV in B::GV::save
-        }
-        else {
-            $svsym = '(SV*)' . $gv->save();
-        }
+        $svsym = '(SV*)' . $gv->save();
     }
     else {
         my $sv = $op->sv;

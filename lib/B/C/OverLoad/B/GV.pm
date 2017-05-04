@@ -51,7 +51,7 @@ my $CORE_SYMS = {
 };
 
 sub do_save {
-    my ( $gv, $filter ) = @_;
+    my ( $gv, $name ) = @_;
 
     # return earlier for special cases
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
@@ -60,7 +60,7 @@ sub do_save {
     return $gv->save_special_gv() if $gv->is_special_gv();
 
     my $sym = $gv->save_dynamic_gv_sym;
-    my $savefields = get_savefields( $gv, $gv->get_fullname(), $filter );
+    my $savefields = get_savefields( $gv, $gv->get_fullname() );
 
     debug( gv => '===== GV::do_save for %s [ savefields=%s ] ', $gv->get_fullname(), _savefields_to_str($savefields) );
 
@@ -378,8 +378,8 @@ sub save_gv_hv {                       # new function to be renamed later..
             $Encode::Encoding{$k} = $tmp_Encode_Encoding{$k} if exists $tmp_Encode_Encoding{$k};
         }
         my $sym = $gvhv->save($fullname);
-        init()->add("/* deferred some XS enc pointers for \%Encode::Encoding */");
 
+        #         init()->add("/* deferred some XS enc pointers for \%Encode::Encoding */");
         #         init()->sadd( "GvHV(%s) = s\\_%x;", $sym, $$gvhv );
 
         %Encode::Encoding = %tmp_Encode_Encoding;
@@ -398,6 +398,7 @@ sub save_gv_cv {
     my $gvcv    = $gv->CV;
     if ( !$$gvcv ) {
 
+        # STATIC_HV: We're not expanding AUTOLOAD and missing stuff.
         #debug( gv => "Empty CV $fullname, AUTOLOAD and try again" );
         #no strict 'refs';
 
@@ -497,7 +498,7 @@ sub save_gv_io {
 }
 
 sub get_savefields {
-    my ( $gv, $fullname, $filter ) = @_;
+    my ( $gv, $fullname ) = @_;
 
     my $gvname = $gv->NAME;
 
@@ -517,6 +518,9 @@ sub get_savefields {
     }
     elsif ( $fullname eq 'main::!' ) {    #Errno
         $savefields = Save_HV | Save_SV | Save_CV;
+    }
+    elsif ( $fullname =~ /^DynaLoader::dl_(require_symbols|resolve_using|librefs)$/ ) {    # no need to assign any SV/AV/HV to them (172)
+        $savefields = Save_CV | Save_FORM | Save_IO;
     }
     elsif ( $fullname eq 'main::ENV' or $fullname eq 'main::SIG' ) {
         $savefields = $all_fields ^ Save_HV;
@@ -542,14 +546,6 @@ sub get_savefields {
         $savefields &= ~Save_CV;
     }
 
-    # compute filter
-    $filter = normalize_filter( $filter, $fullname );
-
-    # apply filter
-    if ( $filter and $filter =~ qr{^[0-9]$} ) {
-        $savefields &= ~$filter;
-    }
-
     my $is_gvgp    = $gv->isGV_with_GP;
     my $is_coresym = $gv->is_coresym();
     if ( !$is_gvgp or $is_coresym ) {
@@ -560,24 +556,6 @@ sub get_savefields {
     $savefields |= Save_FILE if ( $is_gvgp and !$is_coresym );
 
     return $savefields;
-}
-
-sub normalize_filter {
-    my ( $filter, $fullname ) = @_;
-
-    if ( $filter and $filter =~ m/ :pad/ ) {
-        $filter = 0;
-    }
-
-    # no need to assign any SV/AV/HV to them (172)
-    if ( $fullname =~ /^DynaLoader::dl_(require_symbols|resolve_using|librefs)/ ) {
-        $filter = Save_SV | Save_AV | Save_HV;
-    }
-    if ( $fullname =~ /^main::([1-9])$/ ) {    # ignore PV regexp captures with -O2
-        $filter = Save_SV;
-    }
-
-    return $filter;
 }
 
 sub savecv {
