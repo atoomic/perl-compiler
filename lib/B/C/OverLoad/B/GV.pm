@@ -79,7 +79,7 @@ sub do_save {
 
     my $gv_ix;
     {
-        my $gv_refcnt = $gv->REFCNT;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
+        my $gv_refcnt = $gv->REFCNT;    #  + 1;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
         my $gv_flags  = $gv->FLAGS;
 
         gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
@@ -111,7 +111,10 @@ sub do_save {
             $sharedhe_ix = $1 if $shared_he =~ qr{\[([0-9]+)\]};
             die unless defined $sharedhe_ix;
             my $se = q{sHe} . $sharedhe_ix;
-            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) (&%s + sizeof(HE)) } /* %s */ ], $se, $gvname );
+
+            # Note: the namehek here is the HEK and not the hek_key
+            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) (&%s + 3*sizeof(void*)) } /* %s */ ], $se, $gvname );
+
             1;
         }
     }
