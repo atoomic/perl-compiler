@@ -2,7 +2,7 @@ package B::COP;
 
 use strict;
 
-use B qw/cstring/;
+use B qw/cstring svref_2object/;
 use B::C::Config;
 use B::C::File qw/init copsect decl/;
 use B::C::Save qw/constpv savestashpv/;
@@ -121,29 +121,12 @@ sub do_save {
         }
     }
 
-    #my $stash = savestashpv( $op->stashpv );
-    #init()->sadd( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash ) if $stash ne 'NULL';
-
-    if ($B::C::const_strings) {
-        my $constpv = constpv($file);
-
-        # define CopFILE_set(c,pv)     CopFILEGV_set((c), gv_fetchfile(pv))
-        # cache gv_fetchfile
-        if ( !$copgvtable{$constpv} ) {
-            $copgvtable{$constpv} = B::GV::inc_index();
-            init()->sadd( "dynamic_gv_list[%d] = gv_fetchfile(%s);", $copgvtable{$constpv}, $constpv );
-        }
-        init()->sadd(
-            "CopFILEGV_set(&cop_list[%d], dynamic_gv_list[%d]); /* %s */",
-            $ix, $copgvtable{$constpv}, cstring($file)
-        );
-    }
-    else {
-        init()->sadd( "CopFILE_set(&cop_list[%d], %s);", $ix, cstring($file) );
-    }
+    # we should have already saved the GV for the file (exception for B and O)
+    my $filegv = exists $main::{qq[_<$file]} ? svref_2object( \$main::{qq[_<$file]} )->save : 'Nullgv';
+    $filegv = 'Nullgv' if $filegv eq 'NULL';    # STATIC_HV
 
     # our root: store all packages from this file
-    if ( !$B::C::mainfile ) {    # STATIC_HV: dead code? we're trying to save stashes an OP belongs to. whitelist should make this unnecessary.
+    if ( !$B::C::mainfile ) {                   # STATIC_HV: dead code? we're trying to save stashes an OP belongs to. whitelist should make this unnecessary.
         $B::C::mainfile = $op->file if $op->stashpv eq 'main';
     }
 
@@ -156,13 +139,8 @@ sub do_save {
         $ix,
         "%s, %u, (HV*) %s, (GV*) %s, %u, %s, %s, NULL",
         $op->_save_common, $op->line,
-
-        # we cannot store this static (attribute exit)
-        $stash,
-
-        #"Nullhv",                # stash
-        "Nullgv",    # filegv
-        $op->hints, get_integer_value( $op->cop_seq ), !$dynamic_copwarn ? $warn_sv : 'NULL'
+        $stash,            $filegv,
+        $op->hints,        get_integer_value( $op->cop_seq ), !$dynamic_copwarn ? $warn_sv : 'NULL'
     );
 
     return "(OP*)&cop_list[$ix]";

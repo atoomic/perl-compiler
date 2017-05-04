@@ -13,10 +13,6 @@ use B::C::Optimizer::ForceHeavy qw/force_heavy/;
 
 my %gptable;
 
-sub inc_index {
-    return $B::C::gv_index++;
-}
-
 sub Save_HV()   { 1 }
 sub Save_AV()   { 2 }
 sub Save_SV()   { 4 }
@@ -57,9 +53,13 @@ sub do_save {
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
 
     # This is probably dead code.
-    return $gv->save_special_gv() if $gv->is_special_gv();
 
-    my $sym = $gv->save_dynamic_gv_sym;
+    # STATIC_HV need to handle $0
+
+    my $gv_ix = gvsect()->add('FAKE_GV');
+    my $gvsym = sprintf( '&gv_list[%d]', $gv_ix );
+    savesym( $gv, $gvsym );    # cache it
+
     my $savefields = get_savefields( $gv, $gv->get_fullname() );
 
     debug( gv => '===== GV::do_save for %s [ savefields=%s ] ', $gv->get_fullname(), _savefields_to_str($savefields) );
@@ -77,16 +77,15 @@ sub do_save {
     );
     my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
-    my $gv_ix;
     {
         my $gv_refcnt = $gv->REFCNT;    #  + 1;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
         my $gv_flags  = $gv->FLAGS;
 
         gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
-        $gv_ix = gvsect()->add( sprintf( "&%s, %u, 0x%x, {.svu_gp=(GP*)%s} /* %s */", $xpvgv, $gv_refcnt, $gv_flags, $gpsym, $gv->get_fullname() ) );
-    }
 
-    my $gvsym = sprintf( '&gv_list[%d]', $gv_ix );
+        # replace our FAKE entry above
+        gvsect()->update( $gv_ix, sprintf( "&%s, %u, 0x%x, {.svu_gp=(GP*)%s} /* %s */", $xpvgv, $gv_refcnt, $gv_flags, $gpsym, $gv->get_fullname() ) );
+    }
 
     debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $gvsym, $gv->NAME );
 
@@ -247,13 +246,6 @@ sub savegp_from_gv {
     return $saved_gps{$gp};
 }
 
-sub save_dynamic_gv_sym {
-    my $gv = shift;
-
-    # need to savesym earlier
-    return savesym( $gv, sprintf( "dynamic_gv_list[%s]", inc_index() ) );
-}
-
 # hardcode the order of GV elements, so we can use macro instead of indexes
 sub GV_IX_STASH ()     { 0 }
 sub GV_IX_MAGIC ()     { 1 }
@@ -272,37 +264,6 @@ sub get_stash_symbol {
 
     no strict 'refs';
     return svref_2object( \%{$stash_name} )->save($stash_name);
-}
-
-sub is_special_gv {
-    my $gv = shift;
-
-    my $fullname = $gv->get_fullname();
-    return 1 if $fullname =~ /^main::std(in|out|err)$/;    # same as uppercase above
-    return 1 if $fullname eq 'main::0';                    # dollar_0 already handled before, so don't overwrite it
-    return;
-}
-
-sub save_special_gv {
-    my $gv = shift;
-
-    my $gvname   = $gv->NAME();
-    my $fullname = $gv->get_fullname();
-
-    die("DEAD CODE") unless $fullname eq 'main::0';
-
-    # package is main
-    my $cname   = cstring($gvname);
-    my $notqual = 'GV_NOTQUAL';
-
-    my $type = 'SVt_PVGV';
-    $type = 'SVt_PV' if $fullname eq 'main::0';
-
-    my $sym = $gv->save_dynamic_gv_sym;    # use a dynamic slot from there + cache
-    init()->sadd( '%s = gv_fetchpv(%s, %s, %s);', $sym, $cname, $notqual, $type );
-    init()->sadd( "SvREFCNT(%s) = %u;", $sym, $gv->REFCNT );
-
-    return $sym;
 }
 
 sub save_egv {
@@ -534,7 +495,8 @@ sub get_savefields {
     elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
         $savefields = Save_FORM | Save_IO;
     }
-    elsif ( $fullname eq 'main::_' or $fullname eq 'main::@' ) {
+    elsif ($fullname eq 'main::_'
+        or $fullname eq 'main::@' ) {
         $savefields = 0;
     }
     elsif ( $gvname =~ /^[^A-Za-z]$/ ) {
