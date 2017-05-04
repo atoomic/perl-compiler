@@ -29,7 +29,7 @@ sub do_save {
     # 5.10 has no struct xrv anymore, just sv_u.svu_rv. static or dynamic?
     # initializer element is computable at load time
     my $ix = svsect()->sadd(
-        "ptr_undef, %Lu, 0x%x, {%s}", $sv->REFCNT, $flags,
+        "NULL, %Lu, 0x%x, {%s}", $sv->REFCNT, $flags,    # the SvANY is set just below at init time
         ( is_constant($rv) ? ".svu_rv=$rv" : "0 /* $rv */" )
     );
 
