@@ -6,7 +6,7 @@ use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8/;
 
 use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he/;
-use B::C::File qw/init init2 gvsect gpsect xpvgvsect/;
+use B::C::File qw/init init2 init_magic gvsect gpsect xpvgvsect/;
 use B::C::Helpers qw/get_cv_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Optimizer::ForceHeavy qw/force_heavy/;
@@ -238,7 +238,7 @@ sub savegp_from_gv {
         gpsect()->update_field( $gp_ix, $field_ix, 'NULL' );
 
         # postpone the setting to init section
-        init()->sadd( q{gp_list[%d].%s = %s; /* deferred GV initialization for %s */}, $gp_ix, $field_name, $field_v, $fullname );
+        init_magic()->sadd( q{gp_list[%d].%s = %s; /* deferred GV initialization for %s */}, $gp_ix, $field_name, $field_v, $fullname );
     }
 
     return $saved_gps{$gp};
