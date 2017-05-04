@@ -87,9 +87,9 @@ sub save_compile_state {
 
     $settings->{'starting_flat_stashes'} = flatten_stashes( $settings->{'starting_stash'} );
 
-    #eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
-    #eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
-    #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} ); exit;
+    # eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
+    # eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
+    # print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} ); exit;
 
     return;
 }
@@ -191,8 +191,18 @@ sub cleanup_stashes {
         delete $stashes->{'Carp::'};
     }
 
-    foreach my $lt_key ( grep { $_ =~ qr{^_<} } sort keys %$stashes ) {
-        delete $stashes->{$lt_key};
+    # STATIC_HV - need more love to make it dynamic
+    # preserve the file location but remove our bloat and the special -e to avoid a reparse
+    foreach my $f (
+        map { q{_<} . $_ }
+        qw{
+        /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/B.pm
+        /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/O.pm
+        /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/cpanel_lib/x86_64-linux-64int/B/C.pm
+        -e
+        }
+      ) {
+        delete $stashes->{$f};
     }
 
     #delete $stashes->{'PerlIO::scalar::'};
