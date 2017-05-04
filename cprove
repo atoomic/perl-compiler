@@ -16,7 +16,7 @@ my @BLACKLIST = (
     qr{\Q.subtest.\E},    # blacklist any cruft remaining from a previous or current run
 );
 
-run(@ARGV) unless caller;
+exit( run(@ARGV) // 0 ) unless caller;
 
 sub run {
     my (@args) = @_;
@@ -32,6 +32,21 @@ sub run {
     @args = grep { $_ !~ qr{^-+u(ncompiled)?$} } @args;
 
     my $saving_state;
+
+    if ( grep { $_ =~ qr{^--?c(onfig)?$} } @args ) {
+        @args = grep { $_ !~ qr{^--?c(onfig)$} } @args;
+        say '# Running: Makefile.PL + make install for B::C';
+        system('./configure.cpanel') == 0 or do { warn $!; return $?};
+        say '# Ok: B::C is updated.';
+    }
+
+    if ( grep { $_ eq q{-t} } @args ) {
+        @args = grep { $_ ne q{-t}} @args;
+        qx{git checkout t};
+        say '# git checkout t - ', $? ? 'failure !' : 'ok';
+    }
+
+
     if ( !grep { $_ =~ qr{^--state} } @args ) {
         unshift @args, '--state=save';
         unlink '.prove';
@@ -110,7 +125,7 @@ sub run {
     my @cmd = ( 'prove', @args, @tests );
     if ( int( grep { $_ !~ qr{^-} } @cmd ) < 2 ) {    # should have at least one test to run
         say "# Nothing to run";
-        return 0;
+        return 1;
     }
 
     say "# Running: ", join( ' ', @cmd );
@@ -122,7 +137,7 @@ sub run {
     system( join ' ', @cmd );
     $restart->() if $run_compile_version && $call_restart && $?;
 
-    return 1;
+    return 0;
 }
 
 # cprove --new only run new errors detected on the file
@@ -183,6 +198,17 @@ sub usage {
 
 # run multiple compiled tests
 > cprove op/*.t
+
+# recompile B::C before running one or more tests
+> cprove -c -v extra/*.t
+> cprove --config -v extra/*.t
+
+# run 'git checkout t' before running tests
+> cprove -t extra/something.t
+
+# combo: recompile B::C and git checkout t before running one or more tests
+> cprove -c -v -t extra/const-array.t
+> cprove -c -v -t extra/*.t
 
 # run only tests known as broken
 > cprove --errors
