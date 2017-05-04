@@ -70,9 +70,9 @@ sub save_pv_or_rv {
     if ( $shared_hek && !$static ) {
         my $savesym = 'NULL';
         my ( $is_utf8, $cur ) = read_utf8_string( $sv->PV );
-        my $len = 0;                                                                                     # hek should have len 0
+        my $len = 0;    # hek should have len 0
 
-        my $pv = $sv->PV;                                                                                # we know that a shared_hek as POK
+        my $pv = $sv->PV;    # we know that a shared_hek as POK
 
         return ( $savesym, $cur, $len, $pv, $static, $flags );
     }
@@ -100,8 +100,6 @@ sub save_pv_or_rv {
         $static = 1;                                          # ??
     }
     else {
-        $flags |= SVf_IsCOW;                                  # only flags as COW if it's not a reference
-
         if ($pok) {
             $pv = pack "a*", $sv->PV;                         # XXX!
             $cur = ( $sv and $sv->can('CUR') and ref($sv) ne 'B::GV' ) ? $sv->CUR : length($pv);
@@ -115,7 +113,14 @@ sub save_pv_or_rv {
             }
         }
 
-        ( $savesym, $cur, $len ) = savecowpv($pv) if $pok;
+        if ($pok) {
+            ( $savesym, $cur, $len ) = savecowpv($pv);    # if $pok;
+                                                          # only flags as COW if it's not a reference and not an empty string
+            $flags |= SVf_IsCOW;
+        }
+        else {
+            $flags ^= SVf_IsCOW;
+        }
     }
 
     $fullname = '' if !defined $fullname;
