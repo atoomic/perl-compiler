@@ -141,7 +141,7 @@ sub stack_flat {
     return join "\n", @stack;
 }
 
-sub savestashpv {
+sub savestashpv {                    # save a stash from a string (pv)
     my $name = shift;
     no strict 'refs';
     return svref_2object( \%{ $name . '::' } )->save;

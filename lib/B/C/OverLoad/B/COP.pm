@@ -121,8 +121,8 @@ sub do_save {
         }
     }
 
-    my $stash = savestashpv( $op->stashpv );
-    init()->sadd( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash ) if $stash ne 'NULL';
+    #my $stash = savestashpv( $op->stashpv );
+    #init()->sadd( "CopSTASH_set(&cop_list[%d], %s);", $ix, $stash ) if $stash ne 'NULL';
 
     if ($B::C::const_strings) {
         my $constpv = constpv($file);
@@ -147,6 +147,9 @@ sub do_save {
         $B::C::mainfile = $op->file if $op->stashpv eq 'main';
     }
 
+    my $stash = savestashpv( $op->stashpv );    # $op->STASH->save
+    $stash = 'Nullhv' if $stash eq 'NULL';
+
     # add the cop at the end
     copsect()->comment_common("?, line_t line, HV* stash, GV* filegv, U32 hints, U32 seq, STRLEN* warn_sv, COPHH* hints_hash");
     copsect()->supdate(
@@ -155,8 +158,10 @@ sub do_save {
         $op->_save_common, $op->line,
 
         # we cannot store this static (attribute exit)
-        "Nullhv",                # stash
-        "Nullgv",                # filegv
+        $stash,
+
+        #"Nullhv",                # stash
+        "Nullgv",    # filegv
         $op->hints, get_integer_value( $op->cop_seq ), !$dynamic_copwarn ? $warn_sv : 'NULL'
     );
 

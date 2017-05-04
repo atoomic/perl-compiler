@@ -8,8 +8,6 @@
 #define DEBUG_BENCHMARK 1
 [% END -%]
 
-#define CopSTASHPVN_set(c,pv, len, flags)    CopSTASH_set((c), gv_stashpvn(pv,len,flags|GV_ADD))
-
 #define PERL_CORE /* Needed for some extensions perl core refeses to export (win32 only)*/
 #include "EXTERN.h" /* Embedded interface */
 #include "perl.h"   /* API interface */
