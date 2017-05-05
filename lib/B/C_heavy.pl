@@ -28,7 +28,7 @@ use B::C::Config;          # import everything
 use B::C::Debug ();        # used for setting debug levels from cmdline
 
 use B::C::File qw( init2 init1 init0 init decl free
-  heksect binopsect condopsect copsect padopsect listopsect logopsect
+  heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
   xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect sharedhe init_stash
 );

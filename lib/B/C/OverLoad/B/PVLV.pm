@@ -18,12 +18,13 @@ sub do_save {
     my ( $pvsym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
     my ( $lvtarg, $lvtarg_sym );    # XXX missing
 
+    # STATIC HV: Static stash please.
     xpvlvsect()->comment('STASH, MAGIC, CUR, LEN, GvNAME, xnv_u, TARGOFF, TARGLEN, TARG, TYPE');
     xpvlvsect()->add(
         sprintf(
-            "Nullhv, {0}, %u, %d, 0/*GvNAME later*/, %s, %u, %u, Nullsv, %s",
-            $cur,         $len,         get_double_value( $sv->NVX ),
-            $sv->TARGOFF, $sv->TARGLEN, cchar( $sv->TYPE )
+            "Nullhv, %s, %u, %d, 0/*GvNAME later*/, %s, %u, %u, Nullsv, %s",
+            $sv->save_magic($fullname), $cur,         $len, get_double_value( $sv->NVX ),
+            $sv->TARGOFF,               $sv->TARGLEN, cchar( $sv->TYPE )
         )
     );
     my $ix = svsect()->add(
@@ -34,7 +35,6 @@ sub do_save {
     );
 
     svsect()->debug( $fullname, $sv );
-    $sv->save_magic($fullname);
 
     return "&sv_list[" . $ix . "]";
 }

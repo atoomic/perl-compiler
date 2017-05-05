@@ -25,6 +25,7 @@ sub save_data {
     # STATIC_HV: This needs to be done earlier in C.pm
     require PerlIO;
     require PerlIO::scalar;
+
     # Do some sorta magic to save the XS also.
 }
 
@@ -55,13 +56,14 @@ sub do_save {
 
     # IFP in sv.sv_u.svu_fp
     xpviosect()->comment("STASH, xmg_u, cur, len, xiv_u, xio_ofp, xio_dirpu, page, page_len, ..., type, flags");
-    my $tmpl =
-      "Nullhv, /*STASH later*/\n\t{0}, /*MAGIC later*/\n\t%u, /*cur*/\n\t{%u}, /*len*/\n\t{%d}, /*LINES*/\n\t0, /*OFP later*/\n\t{0}, /*dirp_u later*/\n\t%d, /*PAGE*/\n\t%d, /*PAGE_LEN*/\n\t%d, /*LINES_LEFT*/\n\t%s, /*TOP_NAME*/\n\tNullgv, /*top_gv later*/\n\t%s, /*fmt_name*/\n\tNullgv, /*fmt_gv later*/\n\t%s, /*bottom_name*/\n\tNullgv, /*bottom_gv later*/\n\t%s, /*type*/\n\t0x%x /*flags*/";
+
+    # STATIC HV: Static stashes here.
+    my $tmpl = "Nullhv, %s, \n\t%u, /*cur*/\n\t{%u}, /*len*/\n\t{%d}, /*LINES*/\n\t0, /*OFP later*/\n\t{0}, /*dirp_u later*/\n\t%d, /*PAGE*/\n\t%d, /*PAGE_LEN*/\n\t%d, /*LINES_LEFT*/\n\t%s, /*TOP_NAME*/\n\tNullgv, /*top_gv later*/\n\t%s, /*fmt_name*/\n\tNullgv, /*fmt_gv later*/\n\t%s, /*bottom_name*/\n\tNullgv, /*bottom_gv later*/\n\t%s, /*type*/\n\t0x%x /*flags*/";
     $tmpl =~ s{ /\*.+?\*/\n\t}{}g unless verbose();
     $tmpl =~ s{ /\*flags\*/$}{}   unless verbose();
     xpviosect()->sadd(
-        $tmpl,
-        $cur, $len,
+        $io->save_magic($fullname), $tmpl,
+        $cur,                       $len,
         $io->LINES,    # moved to IVX with 5.11.1
         $io->PAGE,            $io->PAGE_LEN,
         $io->LINES_LEFT,      "NULL",
@@ -93,9 +95,9 @@ sub do_save {
             init()->sadd( "Io%s(%s) = savepvn(%s, %u);", $field, $sym, cstring($fsym), length $fsym );
         }
     }
-    $io->save_magic($fullname);    # This handle the stash also (we need to inc the refcnt)
-    if ( !$is_DATA ) {             # PerlIO
-                                   # deal with $x = *STDIN/STDOUT/STDERR{IO} and aliases
+
+    if ( !$is_DATA ) {    # PerlIO
+                          # deal with $x = *STDIN/STDOUT/STDERR{IO} and aliases
         my $perlio_func;
 
         # Note: all single-direction fp use IFP, just bi-directional pipes and

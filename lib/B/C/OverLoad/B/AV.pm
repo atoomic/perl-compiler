@@ -36,7 +36,7 @@ sub do_save {
     my $fill    = $av->fill();
     my $svpcast = $av->cast_sv();
 
-    my ( $magic, $av_index ) = ('');
+    my $av_index;
 
     if ( $av->can('add_to_section') ) {    # PADLIST or PADNAMELIST
         $sym = $av->add_to_section($cv);    # $cv is currently unused
@@ -44,13 +44,14 @@ sub do_save {
     else {
         # 5.14
         # 5.13.3: STASH, MAGIC, fill max ALLOC
-        my $line = "Nullhv, {0}, $fill, $fill, 0";
-        xpvavsect()->add($line);
-        svsect()->sadd(
-            "&xpvav_list[%d], %Lu, 0x%x, {%s}",
-            xpvavsect()->index, $av->REFCNT, $av->FLAGS,
-            '0'
-        );
+
+        xpvavsect()->comment('xmg_stash, xmg_u, xav_fill, xav_max, xav_alloc');
+
+        # STATIC HV: xmg_stash static.
+        my $xpvavsym_ix = xpvavsect()->sadd( "Nullhv, %s, %d, %d, 0", $av->save_magic($fullname), $fill, $fill );
+        my $xpvavsym = sprintf( '&xpvav_list[%d]', $xpvavsym_ix );
+
+        svsect()->sadd( "%s, %Lu, 0x%x, {%s}", $xpvavsym, $av->REFCNT, $av->FLAGS, 0 );
 
         svsect()->debug( $fullname, $av );
         my $sv_ix = svsect()->index;
@@ -58,13 +59,13 @@ sub do_save {
 
         # protect against recursive self-references (Getopt::Long)
         $sym = savesym( $av, "(AV*)&sv_list[$sv_ix]" );
-        $magic = $av->save_magic($fullname);
     }
 
     debug( av => "saving AV %s 0x%x [%s] FILL=%d", $fullname, $$av, ref($av), $fill );
 
     # XXX AVf_REAL is wrong test: need to save comppadlist but not stack
-    if ( $fill > -1 and defined $magic and $magic !~ /D/ ) {
+    # STATIC HV: We used to block save on @- and @+ by checking for magic of type D. save_magic doesn't advertize this now so we don't have the "same" blocker.
+    if ( $fill > -1 and $fullname !~ m/^(main::)?[-+]$/ ) {
         my @array = $av->ARRAY;    # crashes with D magic (Getopt::Long)
         if ( debug('av') ) {
             my $i = 0;

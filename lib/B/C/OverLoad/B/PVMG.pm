@@ -7,7 +7,7 @@ use B::C::Config;
 use B qw/SVf_ROK SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
 use B::C::Save qw/savepvn savepv savestashpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
-use B::C::File qw/init init1 init2 init_static_assignments svsect xpvmgsect xpvsect pmopsect assign_hekkey2pv/;
+use B::C::File qw/init init1 init2 init_static_assignments svsect xpvmgsect xpvsect pmopsect assign_hekkey2pv magicsect init_vtables/;
 use B::C::Helpers qw/read_utf8_string is_shared_hek get_index/;
 use B::C::Save::Hek qw/save_shared_he/;
 
@@ -58,8 +58,8 @@ sub do_save {
 
     xpvmgsect()->comment("STASH, MAGIC, cur, len, xiv_u, xnv_u");
     my $xpvmg_ix = xpvmgsect()->sadd(
-        "%s, {0}, %u, {%u}, {%s}, {%s}",
-        $stash, $cur, $len, $ivx, $nvx
+        "(HV*) %s, %s, %u, {%u}, {%s}, {%s}",
+        $stash, $sv->save_magic($fullname), $cur, $len, $ivx, $nvx
     );
 
     my $sv_u = $savesym eq 'NULL' ? 0 : ".svu_pv=(char*) $savesym";
@@ -77,235 +77,122 @@ sub do_save {
         }
     }
 
-    $sv->save_magic($fullname);
     return sprintf( q{&sv_list[%d]}, $sv_ix );
 }
+
+# https://metacpan.org/pod/distribution/perl/pod/perlguts.pod
+my $perl_magic_vtable_map = {
+
+    # There is no corresponding PL_vtbl_ for these entries.
+    '%' => undef,    # Extra data for restricted hashes - PERL_MAGIC_rhash
+    ':' => undef,    # Extra data for symbol tables - toke.c - PERL_MAGIC_symtab
+    'L' => undef,    # Debugger %_<filename - PERL_MAGIC_dbfile
+    'S' => undef,    # %SIG hash - PERL_MAGIC_sig
+    'V' => undef,    # SV was vstring literal - PERL_MAGIC_vstring
+
+    # Die if we get these? Strip the magic and hope bootstrap puts them back??
+    'u' => 0,        # Reserved for use by extensions - PERL_MAGIC_uvar_elem
+    '~' => 0,        # Available for use by extensions - PERL_MAGIC_ext
+
+    # All of these are PL_vtbl_$value so easily assigned on startup.
+    '\0' => 'sv',               # Special scalar variable
+    '#'  => 'arylen',           # Array length ($#ary)
+    '*'  => 'debugvar',         # $DB::single, signal, trace vars
+    '.'  => 'pos',              # pos() lvalue
+    '<'  => 'backref',          # For weak ref data
+    '@'  => 'arylen_p',         # To move arylen out of XPVAV
+    'B'  => 'bm',               # Boyer-Moore (fast string search)
+    'c'  => 'ovrld',            # Holds overload table (AMT) on stash - PERL_MAGIC_overload_table
+    'D'  => 'regdata',          # Regex match position data (@+ and @- vars)
+    'd'  => 'regdatum',         # Regex match position data element
+    'E'  => 'env',              # %ENV hash
+    'e'  => 'envelem',          # %ENV hash element
+    'f'  => 'fm',               # Formline ('compiled' format)
+    'g'  => 'mglob',            # m//g target - PERL_MAGIC_regex_global
+    'H'  => 'hints',            # %^H hash
+    'h'  => 'hintselem',        # %^H hash element
+    'I'  => 'isa',              # @ISA array
+    'i'  => 'isaelem',          # @ISA array element
+    'k'  => 'nkeys',            # scalar(keys()) lvalue
+    'l'  => 'dbline',           # Debugger %_<filename element
+    'N'  => 'shared',           # Shared between threads
+    'n'  => 'shared_scalar',    # Shared between threads
+    'o'  => 'collxfrm',         # Locale transformation
+    'P'  => 'pack',             # Tied array or hash - PERL_MAGIC_tied
+    'p'  => 'packelem',         # Tied array or hash element - PERL_MAGIC_tiedelem
+    'q'  => 'packelem',         # Tied scalar or handle - PERL_MAGIC_tiedscalar
+    'r'  => 'regexp',           # Precompiled qr// regex - PERL_MAGIC_qr
+    's'  => 'sigelem',          # %SIG hash element
+    't'  => 'taint',            # Taintedness
+    'U'  => 'uvar',             # Available for use by extensions
+    'v'  => 'vec',              # vec() lvalue
+    'w'  => 'utf8',             # Cached UTF-8 information
+    'x'  => 'substr',           # substr() lvalue
+    'y'  => 'defelem',          # Shadow "foreach" iterator variable smart parameter vivification
+    '\\' => 'lvref',            # Lvalue reference constructor
+    ']'  => 'checkcall',        # Inlining/mutation of call to this CV
+};
 
 sub save_magic {
     my ( $sv, $fullname ) = @_;
     my $sv_flags = $sv->FLAGS;
     my $pkg;
 
-    #return if $fullname && $fullname eq '%B::C::';
-
-    if ( debug('mg') ) {
-        my $flagspv = "";
-        $fullname = '' unless $fullname;
-        $flagspv = $sv->flagspv if debug('flags') and !$sv->MAGICAL;
-
-        debug(
-            mg => "saving magic for %s %s (0x%x) flags=0x%x%s  - called from %s:%s",
-            class($sv), $fullname, $$sv, $sv_flags,
-            debug('flags') ? "(" . $flagspv . ")" : "",
-            @{ [ ( caller(1) )[3] ] }, @{ [ ( caller(1) )[2] ] }
-        );
-    }
-
-    # crashes on STASH=0x18 with HV PERL_MAGIC_overload_table stash %version:: flags=0x3280000c
-    # issue267 GetOpt::Long SVf_AMAGIC|SVs_RMG|SVf_OOK
-    # crashes with %Class::MOP::Instance:: flags=0x2280000c also
-    if ( ref($sv) eq 'B::HV' and $sv->MAGICAL and $fullname =~ /::$/ ) {
-        WARN sprintf( "skip SvSTASH for overloaded HV %s flags=0x%x\n", $fullname, $sv->FLAGS || 0 );
-    }
-    elsif ( ref($sv) eq 'B::HV' and $fullname =~ /(version|File)::$/ ) {
-        debug( mg => "skip SvSTASH for %s flags=0x%x\n", $fullname, $sv->FLAGS );
-    }
-    elsif ( ref($sv) eq 'B::HV' and $fullname =~ m/^%Cpanel::Class::Meta::Method::$/ ) {
-        debug( mg => "skip SvSTASH for %s flags=0x%x\n", $fullname, $sv->FLAGS );
-    }
-    else {
-        my $pkgsym;
-        $pkg = $sv->SvSTASH;
-        if ( $pkg and $$pkg ) {
-            my $pkgname = $pkg->can('NAME') ? $pkg->NAME : $pkg->NAME_HEK . "::DESTROY";
-            debug( [qw/mg gv/] => sprintf( "stash isa class \"%s\" (%s)\n", $pkgname, ref $pkg ) );
-
-            # 361 do not force dynaloading IO via IO::Handle upon us
-            # core already initialized this stash for us
-            #if ( $fullname ne 'main::STDOUT' ) {
-            if ( ref $pkg eq 'B::HV' ) {
-
-                # FIXME can simplify this if / else as ->save is going to take care of anything stah or not
-                if ( $fullname !~ /::$/ ) {    # not a stash
-                    $pkgsym = $pkg->save($fullname);
-                }
-                else {                         # this is a stash
-                                               #$pkgsym = B::HV::can_save_stash( $pkgname ) ? savestashpv($pkgname) : 'NULL';
-                    $pkgsym = savestashpv($pkgname);
-
-                    #$pkgsym = $pkg->save($fullname); # later should be come this FIXME
-
-                    if ( $pkgsym ne 'NULL' ) {
-
-                        # Q: Who is initializing our stash from XS? ->save is missing that.
-                        # A: We only need to init it when we need a CV
-                        # defer for XS loaded stashes with AMT magic
-                        #init()->sadd( "SvSTASH_set(s\\_%x, (HV*)s\\_%x);", $$sv, $$pkg );
-                        #init()->sadd( "SvREFCNT((SV*)s\\_%x) += 1;", $$pkg );
-                        #init()->add("++PL_sv_objcount;") unless ref($sv) eq "B::IO";
-                    }
-
-                }
-            }
-            else {
-                $pkgsym = 'NULL';
-            }
-
-            debug( mg => "xmg_stash = \"%s\" as %s", $pkgname, $pkgsym );
-
-            #}
-
-        }
-    }
-
-    init()->sadd( "SvREADONLY_off((SV*)s\\_%x);", $$sv )
-      if $sv_flags & SVf_READONLY and ref($sv) ne 'B::HV';
-
     # Protect our SVs against non-magic or SvPAD_OUR. Fixes tests 16 and 14 + 23
-    if ( !( $sv->MAGICAL or $sv_flags & SVf_AMAGIC ) ) {
-        debug(
-            mg => "Skipping non-magical PVMG type=%d, flags=0x%x%s\n",
-            $sv_flags && 0xff, $sv_flags, debug('flags') ? "(" . $sv->flagspv . ")" : ""
-        );
-        return '';
-    }
+    return 'NULL' if ( !$sv->MAGICAL );
 
-    #if ( $sv_flags & SVf_AMAGIC ) {
-    #    my $name = $fullname;
-    #    $name =~ s/^%(.*)::$/$1/;
-    #    $name = $pkg->NAME if $pkg and $$pkg;
-    #    debug( [qw/mg gv/], "initialize overload cache for %s", $fullname );
-    # This is destructive, it removes the magic instead of adding it.
-    #    init1()->sadd( "Gv_AMG(%s); /* init overload cache for %s */", savestashpv($name), $fullname );
-    #}
+    my @mgchain    = $sv->MAGIC;
+    my $last_magic = 'NULL';
+    foreach my $mg ( reverse @mgchain ) {    # reverse because we're assigning down the chain, not up.
+        my $type = $mg->TYPE;
+        my $ptr  = $mg->PTR;
+        my $len  = $mg->LENGTH;
 
-    my @mgchain = $sv->MAGIC;
-    my ( $mg, $type, $obj, $ptr, $len, $ptrsv );
-    my $magic = '';
-    foreach $mg (@mgchain) {
-        $type = $mg->TYPE;
-        $ptr  = $mg->PTR;
-        $len  = $mg->LENGTH;
-        $magic .= $type;
+        my $vtable = $perl_magic_vtable_map->{$type};
+        if ( defined $vtable and $vtable == 0 ) {
+            next;                            # STATIC HV: We need to know how to handle "extensions" or XS
+        }
+        $vtable = 'NULL' if !defined $vtable;
 
-        debug( mg => "%s %s magic\n", $fullname, cchar($type) );
-
-        #eval {
-        #  warn sprintf( "magic %s (0x%x), obj %s (0x%x), type %s, ptr %s\n",
-        #                class($sv), $$sv, class($obj), $$obj, cchar($type),
-        #		      cstring($ptr) );
-        #};
-
-        unless ( $type =~ /^[rDn]$/ ) {    # r - test 23 / D - Getopt::Long
-                                           # 5.10: Can't call method "save" on unblessed reference
-                                           #warn "Save MG ". $obj . "\n" if $PERL510;
-                                           # 5.11 'P' fix in B::IV::save, IV => RV
-            $obj = $mg->OBJ;
-            $obj->save($fullname) if ( ref $obj ne 'SCALAR' );
+        # Save the object if there is one.
+        my $obj = 'NULL';
+        if ( $type !~ /^[rDn]$/ ) {
+            my $o = $mg->OBJ;
+            $obj = $o->save($fullname) if ( ref $o ne 'SCALAR' );
         }
 
+        my $ptrsv = 'NULL';
         if ( $len == HEf_SVKEY ) {
 
             # The pointer is an SV* ('s' sigelem e.g.)
             # XXX On 5.6 ptr might be a SCALAR ref to the PV, which was fixed later
-            if ( ref($ptr) eq 'SCALAR' ) {
-                $ptrsv = svref_2object($ptr)->save($fullname);
-            }
-            elsif ( $ptr and ref $ptr ) {
-                $ptrsv = $ptr->save($fullname);
-            }
-            else {
+            if ( !defined $ptr ) {
                 $ptrsv = 'NULL';
             }
-            debug( mg => "MG->PTR is an SV*" );
-            init_static_assignments()->sadd(
-                "sv_magic((SV*)s\\_%x, (SV*)s\\_%x, %s, (char *)%s, %d);",
-                $$sv, $$obj, cchar($type), $ptrsv, $len
-            );
-        }
+            elsif ( ref($ptr) eq 'SCALAR' ) {
 
-        # coverage $Template::Stash::PRIVATE
-        elsif ( $type eq 'r' ) {    # qr magic, for 5.6 done in C.xs. test 20
-            my $rx = $mg->REGEX;
+                # STATIC HV: We don't think anything happens here. Would like to test with a die();
+                $ptrsv = "SvPVX(" . svref_2object($ptr)->save($fullname) . ")";
+            }
+            elsif ( ref $ptr ) {
 
-            # stored by some PMOP *pm = cLOGOP->op_other (pp_ctl.c) in C.xs
-            my $pmop = $B::C::Regexp{$rx};
-            if ( !$pmop ) {
-                warn "Warning: C.xs PMOP missing for QR\n";
+                # STATIC HV: We don't think anything happens here. Would like to test with a die();
+                $ptrsv = "SvPVX(" . $ptr->save($fullname) . ")";
             }
             else {
-                my ( $resym, $relen );
-                ( $resym, $relen ) = _savere( $mg->precomp );
-
-                my $pmsym = $pmop->save( 0, $fullname );
-                init_static_assignments()->add(
-                    split /\n/,
-                    sprintf <<CODE1, $resym, $pmop->pmflags, $$sv, cchar($type), cstring($ptr), $len );
-{
-    REGEXP* rx = CALLREGCOMP((SV* const)%s, %d);
-    sv_magic((SV*)s\\_%x, (SV*)rx, %s, %s, %d);
-}
-CODE1
+                $ptrsv = cstring($ptr);    # Nico thinks everything will happen here.
             }
         }
-        elsif ( $type eq 'D' ) {    # XXX regdata AV - coverage? i95, 903
-                                    # see Perl_mg_copy() in mg.c
-            init_static_assignments()->sadd(
-                "sv_magic((SV*)s\\_%x, (SV*)s\\_%x, %s, %s, %d);",
-                $$sv, $fullname eq 'main::-' ? 0 : $$sv, "'D'", cstring($ptr), $len
-            );
-        }
-        elsif ( $type eq 'n' ) {    # shared_scalar is from XS dist/threads-shared
-                                    # XXX check if threads is loaded also? otherwise it is only stubbed
-            init_static_assignments()->sadd(
-                "sv_magic((SV*)s\\_%x, Nullsv, %s, %s, %d);",
-                $$sv, "'n'", cstring($ptr), $len
-            );
-        }
-        elsif ( $type eq 'c' ) {
-            init()->sadd(
-                "/* AMT overload table for the stash %s s\\_%x is generated dynamically */",
-                $fullname, $$sv
-            );
-        }
-        elsif ( $type eq ':' ) {    # symtab magic
-                                    # search $ptr in list of pmops and replace it. e.g. (char*)&pmop_list[0]
-            my $pmop_ptr = unpack( "J", $mg->PTR );
-            my $pmop;
-            $pmop = $B::C::Regexp{$pmop_ptr} if defined $pmop_ptr;
-            my $pmsym =
-                $pmop
-              ? $pmop->save( 0, $fullname )
-              : '';                 #sprintf('&pmop_list[%u]', pmopsect()->index);
-            warn sprintf( "pmop 0x%x not found in our B::C Regexp hash\n", $pmop_ptr || 'undef' )
-              if !$pmop and verbose();
 
-            init_static_assignments()->add(
-                "{\tU32 elements;",    # toke.c: PL_multi_open == '?'
-                sprintf( "\tMAGIC *mg = sv_magicext((SV*)s\\_%x, 0, ':', 0, 0, 0);", $$sv ),
-                "\telements = mg->mg_len / sizeof(PMOP**);",
-                "\tRenewc(mg->mg_ptr, elements + 1, PMOP*, char);",
-                (
-                    $pmop
-                    ? ( sprintf( "\t((OP**)mg->mg_ptr) [elements++] = (OP*)%s;", $pmsym ) )
-                    : ( defined $pmop_ptr ? sprintf( "\t((OP**)mg->mg_ptr) [elements++] = (OP*)s\\_%x;", $pmop_ptr ) : '' )
-                ),
-                "\tmg->mg_len = elements * sizeof(PMOP**);",
-                "}"
-            );
-        }
-        else {
-            #      sv_magic((SV*)(HV*)&sv_list[15], (SV*)&sv_list[151], 'P', 0, 0);
-            my $init = $type ne 'P' ? init_static_assignments() : init();
-            $init->sadd(
-                "sv_magic((SV*)s\\_%x, (SV*)s\\_%x, %s, %s, %d);",
-                $$sv, $$obj, cchar($type), cstring($ptr), $len
-            );
-        }
+        magicsect->comment('mg_moremagic, mg_virtual, mg_private, mg_type, mg_flags, mg_len, mg_obj, mg_ptr');
+        my $last_magic_ix = magicsect->sadd( " (MAGIC*) %s, (MGVTBL*) %s, %s, %s, %d, %s, (SV*) %s, %s", $last_magic, 'NULL', $mg->PRIVATE, cchar($type), $mg->FLAGS, $len, $obj, $ptrsv );
+        $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
+
+        init_vtables()->sadd( '%s.mg_virtual = %s;', $last_magic, $vtable ) unless $vtable eq 'NULL';
+        $last_magic = "&" . $last_magic;
     }
-    init()->sadd( "SvREADONLY_on((SV*)s\\_%x);", $$sv )
-      if $sv_flags & SVf_READONLY and ref($sv) ne 'B::HV';
-    $magic;
+
+    return $last_magic;
 }
 
 # TODO: This was added to PVMG because we thought it was only used in this op but

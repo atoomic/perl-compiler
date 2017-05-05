@@ -19,7 +19,8 @@ sub do_save {
     my $cstr = cstring($pv);
 
     # Unfortunately this XPV is needed temp. Later replaced by struct regexp.
-    my $xpv_ix = xpvsect()->sadd( "Nullhv, {0}, %u, {%u}", $cur, 0 );
+    # STATIC HV: Static stash please.
+    my $xpv_ix = xpvsect()->sadd( "Nullhv, %s, %u, {%u}", $sv->save_magic($fullname), $cur, 0 );
     my $ix = svsect()->sadd(
         "&xpv_list[%d], %Lu, 0x%x, {NULL}",
         $xpv_ix, $sv->REFCNT, $sv->FLAGS
@@ -39,7 +40,6 @@ sub do_save {
     init()->add("sv_list[$ix].sv_u.svu_rx = (struct regexp*)sv_list[$ix].sv_any;");
 
     svsect()->debug( $fullname, $sv );
-    $sv->save_magic($fullname);
 
     return sprintf( "&sv_list[%d]", $ix );
 }

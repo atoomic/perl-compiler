@@ -87,7 +87,6 @@ sub do_save {
 
     $fullname ||= '';
     my $stash_name = $hv->NAME;
-    my $magic;
 
     #debug( hv => "XXXX HV fullname %s // name %s", $fullname, $stash_name );
     if ($stash_name) {
@@ -151,7 +150,11 @@ sub do_save {
     my $hv_total_keys = scalar(@hash_content_to_save);
     my $max           = get_max_hash_from_keys($hv_total_keys);
     xpvhvsect()->comment("HV* xmg_stash, union _xmgu mgu, STRLEN xhv_keys, STRLEN xhv_max");
-    xpvhvsect()->sadd( "Nullhv, {0}, %d, %d", $hv_total_keys, $max );
+    xpvhvsect()->sadd(
+        "Nullhv, %s, %d, %d",
+        $hv->save_magic( length $stash_name ? '%' . $stash_name . '::' : $fullname ),
+        $hv_total_keys, $max
+    );
 
     my $flags = $hv->FLAGS & ~SVf_READONLY & ~SVf_PROTECT;
 
@@ -200,7 +203,6 @@ sub do_save {
         $init->split;
     }
 
-    $magic = $hv->save_magic( length $stash_name ? '%' . $stash_name . '::' : $fullname );
     $init->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;
 
     # Special stuff we want to do for stashes.

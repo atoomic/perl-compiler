@@ -514,8 +514,8 @@ sub do_save {
 
       # stash magic cur len cvstash start root cvgv cvfile cvpadlist     outside outside_seq cvflags cvdepth
       (
-        "Nullhv, {0}, %u, {%u}, %s, {%s}, {s\\_%x}, {%s}, %s, {%s}, (CV*)%s, %s, 0x%x, %d",
-        $cur, $len, "Nullhv",    #CvSTASH later
+        "Nullhv, %s, %u, {%u}, %s, {%s}, {s\\_%x}, {%s}, %s, {%s}, (CV*)%s, %s, 0x%x, %d",
+        $cv->save_magic($fullname), $cur, $len, "Nullhv",    #CvSTASH later
         $startfield, $$root,
         "0",                     #GV later
         "NULL",                  #cvfile later (now a HEK)
@@ -646,10 +646,6 @@ sub do_save {
         init()->add("++PL_sv_objcount;") if $cvname eq 'DESTROY';
 
         debug( gv => "done saving STASH 0x%x for CV 0x%x\n", $$stash, $$cv ) if debug('cv');
-    }
-    my $magic = $cv->MAGIC;
-    if ( $magic and $$magic ) {
-        $cv->save_magic($fullname);    # XXX will this work?
     }
 
     symsect()->sadd(
