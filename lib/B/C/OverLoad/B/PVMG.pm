@@ -149,10 +149,10 @@ sub save_magic {
         my $len  = $mg->LENGTH;
 
         my $vtable = $perl_magic_vtable_map->{$type};
-        if ( defined $vtable and $vtable == 0 ) {
+
+        if ( defined $vtable and $vtable eq '0' ) {
             next;                            # STATIC HV: We need to know how to handle "extensions" or XS
         }
-        $vtable = 'NULL' if !defined $vtable;
 
         # Save the object if there is one.
         my $obj = 'NULL';
@@ -188,7 +188,7 @@ sub save_magic {
         my $last_magic_ix = magicsect->sadd( " (MAGIC*) %s, (MGVTBL*) %s, %s, %s, %d, %s, (SV*) %s, %s", $last_magic, 'NULL', $mg->PRIVATE, cchar($type), $mg->FLAGS, $len, $obj, $ptrsv );
         $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
 
-        init_vtables()->sadd( '%s.mg_virtual = %s;', $last_magic, $vtable ) unless $vtable eq 'NULL';
+        init_vtables()->sadd( '%s.mg_virtual = (MGVTBL*) &PL_vtbl_%s;', $last_magic, $vtable ) if $vtable;
         $last_magic = "&" . $last_magic;
     }
 
