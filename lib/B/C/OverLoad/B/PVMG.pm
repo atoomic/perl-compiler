@@ -7,7 +7,7 @@ use B::C::Config;
 use B qw/SVf_ROK SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
 use B::C::Save qw/savepvn savepv savestashpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
-use B::C::File qw/init init1 init2 init_magic svsect xpvmgsect xpvsect pmopsect assign_hekkey2pv/;
+use B::C::File qw/init init1 init2 init_static_assignments svsect xpvmgsect xpvsect pmopsect assign_hekkey2pv/;
 use B::C::Helpers qw/read_utf8_string is_shared_hek get_index/;
 use B::C::Save::Hek qw/save_shared_he/;
 
@@ -218,7 +218,7 @@ sub save_magic {
                 $ptrsv = 'NULL';
             }
             debug( mg => "MG->PTR is an SV*" );
-            init_magic()->sadd(
+            init_static_assignments()->sadd(
                 "sv_magic((SV*)s\\_%x, (SV*)s\\_%x, %s, (char *)%s, %d);",
                 $$sv, $$obj, cchar($type), $ptrsv, $len
             );
@@ -238,7 +238,7 @@ sub save_magic {
                 ( $resym, $relen ) = _savere( $mg->precomp );
 
                 my $pmsym = $pmop->save( 0, $fullname );
-                init_magic()->add(
+                init_static_assignments()->add(
                     split /\n/,
                     sprintf <<CODE1, $resym, $pmop->pmflags, $$sv, cchar($type), cstring($ptr), $len );
 {
@@ -250,14 +250,14 @@ CODE1
         }
         elsif ( $type eq 'D' ) {    # XXX regdata AV - coverage? i95, 903
                                     # see Perl_mg_copy() in mg.c
-            init_magic()->sadd(
+            init_static_assignments()->sadd(
                 "sv_magic((SV*)s\\_%x, (SV*)s\\_%x, %s, %s, %d);",
                 $$sv, $fullname eq 'main::-' ? 0 : $$sv, "'D'", cstring($ptr), $len
             );
         }
         elsif ( $type eq 'n' ) {    # shared_scalar is from XS dist/threads-shared
                                     # XXX check if threads is loaded also? otherwise it is only stubbed
-            init_magic()->sadd(
+            init_static_assignments()->sadd(
                 "sv_magic((SV*)s\\_%x, Nullsv, %s, %s, %d);",
                 $$sv, "'n'", cstring($ptr), $len
             );
@@ -280,7 +280,7 @@ CODE1
             warn sprintf( "pmop 0x%x not found in our B::C Regexp hash\n", $pmop_ptr || 'undef' )
               if !$pmop and verbose();
 
-            init_magic()->add(
+            init_static_assignments()->add(
                 "{\tU32 elements;",    # toke.c: PL_multi_open == '?'
                 sprintf( "\tMAGIC *mg = sv_magicext((SV*)s\\_%x, 0, ':', 0, 0, 0);", $$sv ),
                 "\telements = mg->mg_len / sizeof(PMOP**);",
@@ -296,7 +296,7 @@ CODE1
         }
         else {
             #      sv_magic((SV*)(HV*)&sv_list[15], (SV*)&sv_list[151], 'P', 0, 0);
-            my $init = $type ne 'P' ? init_magic() : init();
+            my $init = $type ne 'P' ? init_static_assignments() : init();
             $init->sadd(
                 "sv_magic((SV*)s\\_%x, (SV*)s\\_%x, %s, %s, %d);",
                 $$sv, $$obj, cchar($type), cstring($ptr), $len

@@ -336,7 +336,7 @@ PAD ** INITPADLIST(PADLIST *pad, int count) {
 [% END %]
 [% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
 
-[% section.init_magic.output( "    %s\n", 'perl_init_magic' ) %]
+[% section.init_static_assignments.output( "    %s\n", 'perl_init_static_assignments' ) %]
 
 void setup_perl_globals( char* argv0 ) {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
@@ -829,7 +829,7 @@ main(int argc, char **argv, char **env)
 
     init_pl_strtab(); /* Initialize PL_Strtab on our own before perl gets to it in perl_alloc. This allows us to use immportal constant shared HEKs */
     perl_init_stash(); /* Setup the stashes */
-    perl_init_magic(); /* Setup the stashes */
+    perl_init_static_assignments(); /* Setup the stashes */
     setup_perl_globals(argv[0]);
 
 	perl_construct( &BC_unthreaded_interpreter );
