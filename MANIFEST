@@ -10,7 +10,6 @@ Copying
 cpanfile
 hints/darwin.pl
 hints/openbsd.pl
-lib/B/Bblock.pm
 lib/B/C.pm
 lib/B/C/Config.pm
 lib/B/C/Debug.pm
@@ -27,7 +26,6 @@ lib/B/C/Optimizer/ForceHeavy.pm
 lib/B/C/OverLoad.pm
 lib/B/C/OverLoad/B/AV.pm
 lib/B/C/OverLoad/B/BINOP.pm
-lib/B/C/OverLoad/B/BM.pm
 lib/B/C/OverLoad/B/COP.pm
 lib/B/C/OverLoad/B/CV.pm
 lib/B/C/OverLoad/B/GV.pm
