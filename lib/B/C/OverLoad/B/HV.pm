@@ -171,7 +171,7 @@ sub do_save {
 
     {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
         $init->no_split;
-        my $comment = $stash_name ? "/* STASH declaration for $stash_name */" : '';
+        my $comment = $stash_name ? "/* STASH declaration for ${stash_name}:: */" : '';
         $init->sadd( '{ %s', $comment );
         $init->indent(+1);
         $init->sadd( q{HvSETUP(%s, %d);}, $sym, $max + 1 );
