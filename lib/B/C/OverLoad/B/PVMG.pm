@@ -148,9 +148,9 @@ sub save_magic {
         my $ptr  = $mg->PTR;
         my $len  = $mg->LENGTH;
 
+        exists $perl_magic_vtable_map->{$type} or die sprintf( "Unknown magic type '0x%s' / '%s' [check your mapping table dude]", unpack( 'H*', $type ), $type );
         my $vtable = $perl_magic_vtable_map->{$type};
 
-        #warn sprintf( "===== Type '%s' --- vtable: %s", unpack( 'H*', $type ), $vtable );
         if ( defined $vtable and $vtable eq '0' ) {
             next;                            # STATIC HV: We need to know how to handle "extensions" or XS
         }
@@ -164,7 +164,6 @@ sub save_magic {
 
         my $ptrsv = 'NULL';
         {                                    # was if $len == HEf_SVKEY
-                                             # ...
 
             # The pointer is an SV* ('s' sigelem e.g.)
             # XXX On 5.6 ptr might be a SCALAR ref to the PV, which was fixed later
