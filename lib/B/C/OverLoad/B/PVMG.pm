@@ -95,42 +95,42 @@ my $perl_magic_vtable_map = {
     '~' => 0,        # Available for use by extensions - PERL_MAGIC_ext
 
     # All of these are PL_vtbl_$value so easily assigned on startup.
-    '\0' => 'sv',               # Special scalar variable
-    '#'  => 'arylen',           # Array length ($#ary)
-    '*'  => 'debugvar',         # $DB::single, signal, trace vars
-    '.'  => 'pos',              # pos() lvalue
-    '<'  => 'backref',          # For weak ref data
-    '@'  => 'arylen_p',         # To move arylen out of XPVAV
-    'B'  => 'bm',               # Boyer-Moore (fast string search)
-    'c'  => 'ovrld',            # Holds overload table (AMT) on stash - PERL_MAGIC_overload_table
-    'D'  => 'regdata',          # Regex match position data (@+ and @- vars)
-    'd'  => 'regdatum',         # Regex match position data element
-    'E'  => 'env',              # %ENV hash
-    'e'  => 'envelem',          # %ENV hash element
-    'f'  => 'fm',               # Formline ('compiled' format)
-    'g'  => 'mglob',            # m//g target - PERL_MAGIC_regex_global
-    'H'  => 'hints',            # %^H hash
-    'h'  => 'hintselem',        # %^H hash element
-    'I'  => 'isa',              # @ISA array
-    'i'  => 'isaelem',          # @ISA array element
-    'k'  => 'nkeys',            # scalar(keys()) lvalue
-    'l'  => 'dbline',           # Debugger %_<filename element
-    'N'  => 'shared',           # Shared between threads
-    'n'  => 'shared_scalar',    # Shared between threads
-    'o'  => 'collxfrm',         # Locale transformation
-    'P'  => 'pack',             # Tied array or hash - PERL_MAGIC_tied
-    'p'  => 'packelem',         # Tied array or hash element - PERL_MAGIC_tiedelem
-    'q'  => 'packelem',         # Tied scalar or handle - PERL_MAGIC_tiedscalar
-    'r'  => 'regexp',           # Precompiled qr// regex - PERL_MAGIC_qr
-    's'  => 'sigelem',          # %SIG hash element
-    't'  => 'taint',            # Taintedness
-    'U'  => 'uvar',             # Available for use by extensions
-    'v'  => 'vec',              # vec() lvalue
-    'w'  => 'utf8',             # Cached UTF-8 information
-    'x'  => 'substr',           # substr() lvalue
-    'y'  => 'defelem',          # Shadow "foreach" iterator variable smart parameter vivification
-    '\\' => 'lvref',            # Lvalue reference constructor
-    ']'  => 'checkcall',        # Inlining/mutation of call to this CV
+    chr(0) => 'sv',               # Special scalar variable ( \0 )
+    '#'    => 'arylen',           # Array length ($#ary)
+    '*'    => 'debugvar',         # $DB::single, signal, trace vars
+    '.'    => 'pos',              # pos() lvalue
+    '<'    => 'backref',          # For weak ref data
+    '@'    => 'arylen_p',         # To move arylen out of XPVAV
+    'B'    => 'bm',               # Boyer-Moore (fast string search)
+    'c'    => 'ovrld',            # Holds overload table (AMT) on stash - PERL_MAGIC_overload_table
+    'D'    => 'regdata',          # Regex match position data (@+ and @- vars)
+    'd'    => 'regdatum',         # Regex match position data element
+    'E'    => 'env',              # %ENV hash
+    'e'    => 'envelem',          # %ENV hash element
+    'f'    => 'fm',               # Formline ('compiled' format)
+    'g'    => 'mglob',            # m//g target - PERL_MAGIC_regex_global
+    'H'    => 'hints',            # %^H hash
+    'h'    => 'hintselem',        # %^H hash element
+    'I'    => 'isa',              # @ISA array
+    'i'    => 'isaelem',          # @ISA array element
+    'k'    => 'nkeys',            # scalar(keys()) lvalue
+    'l'    => 'dbline',           # Debugger %_<filename element
+    'N'    => 'shared',           # Shared between threads
+    'n'    => 'shared_scalar',    # Shared between threads
+    'o'    => 'collxfrm',         # Locale transformation
+    'P'    => 'pack',             # Tied array or hash - PERL_MAGIC_tied
+    'p'    => 'packelem',         # Tied array or hash element - PERL_MAGIC_tiedelem
+    'q'    => 'packelem',         # Tied scalar or handle - PERL_MAGIC_tiedscalar
+    'r'    => 'regexp',           # Precompiled qr// regex - PERL_MAGIC_qr
+    's'    => 'sigelem',          # %SIG hash element
+    't'    => 'taint',            # Taintedness
+    'U'    => 'uvar',             # Available for use by extensions
+    'v'    => 'vec',              # vec() lvalue
+    'w'    => 'utf8',             # Cached UTF-8 information
+    'x'    => 'substr',           # substr() lvalue
+    'y'    => 'defelem',          # Shadow "foreach" iterator variable smart parameter vivification
+    '\\'   => 'lvref',            # Lvalue reference constructor
+    ']'    => 'checkcall',        # Inlining/mutation of call to this CV
 };
 
 sub save_magic {
@@ -150,6 +150,7 @@ sub save_magic {
 
         my $vtable = $perl_magic_vtable_map->{$type};
 
+        #warn sprintf( "===== Type '%s' --- vtable: %s", unpack( 'H*', $type ), $vtable );
         if ( defined $vtable and $vtable eq '0' ) {
             next;                            # STATIC HV: We need to know how to handle "extensions" or XS
         }
@@ -162,7 +163,8 @@ sub save_magic {
         }
 
         my $ptrsv = 'NULL';
-        if ( $len == HEf_SVKEY ) {
+        {                                    # was if $len == HEf_SVKEY
+                                             # ...
 
             # The pointer is an SV* ('s' sigelem e.g.)
             # XXX On 5.6 ptr might be a SCALAR ref to the PV, which was fixed later
