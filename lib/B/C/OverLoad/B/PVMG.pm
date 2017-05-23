@@ -155,6 +155,10 @@ sub save_magic {
             next;                            # STATIC HV: We need to know how to handle "extensions" or XS
         }
 
+        ### view Perl_magic_freeovrld: contains a list of memory addresses to CVs...
+        ###     this need to be recomputed at init time, do not save them
+        next if $type eq 'c';
+
         # Save the object if there is one.
         my $obj = 'NULL';
         if ( $type !~ /^[rDn]$/ ) {
@@ -163,7 +167,7 @@ sub save_magic {
         }
 
         my $ptrsv = 'NULL';
-        {                                    # was if $len == HEf_SVKEY
+        {    # was if $len == HEf_SVKEY
 
             # The pointer is an SV* ('s' sigelem e.g.)
             # XXX On 5.6 ptr might be a SCALAR ref to the PV, which was fixed later
@@ -186,7 +190,10 @@ sub save_magic {
         }
 
         magicsect->comment('mg_moremagic, mg_virtual, mg_private, mg_type, mg_flags, mg_len, mg_obj, mg_ptr');
-        my $last_magic_ix = magicsect->sadd( " (MAGIC*) %s, (MGVTBL*) %s, %s, %s, %d, %s, (SV*) %s, %s", $last_magic, 'NULL', $mg->PRIVATE, cchar($type), $mg->FLAGS, $len, $obj, $ptrsv );
+        my $last_magic_ix = magicsect->sadd(
+            " (MAGIC*) %s, (MGVTBL*) %s, %s, %s, %d, %s, (SV*) %s, %s",
+            $last_magic, 'NULL', $mg->PRIVATE, cchar($type), $mg->FLAGS, $len, $obj, $ptrsv
+        );
         $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
 
         init_vtables()->sadd( '%s.mg_virtual = (MGVTBL*) &PL_vtbl_%s;', $last_magic, $vtable ) if $vtable;
