@@ -179,7 +179,7 @@ sub savegp_from_gv {
     my ( $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_hv, $gp_av, $gp_form, $gp_egv ) = ( '(SV*)&PL_sv_undef', 'NULL', 'NULL', 0, 'NULL', 'NULL', 'NULL', 'NULL' );
 
     # walksymtable creates an extra reference to the GV (#197): STATIC_HV: Confirm this is actually a true statement at this point.
-    my $gp_refcount = $gv->GvREFCNT - 1;    # +1 for immortal ?
+    my $gp_refcount = $gv->GvREFCNT + 1;    # +1 for immortal: do not free our static GVs
 
     my $gp_line = $gv->LINE;                # we want to use GvLINE from B.xs
                                             # present only in perl 5.22.0 and higher. this flag seems unused ( saving 0 for now should be similar )
