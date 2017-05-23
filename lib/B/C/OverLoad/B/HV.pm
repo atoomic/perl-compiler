@@ -198,9 +198,6 @@ sub do_save {
 
         # save the iterator in hv_aux (and malloc it)
         $init->sadd( "HvRITER_set(%s, %d);", $sym, -1 );    # saved $hv->RITER
-        $init->indent(-1);
-        $init->add("}");
-        $init->split;
     }
 
     $init->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;
@@ -227,6 +224,11 @@ sub do_save {
 
         enames_crap( $hv, $stash_name, $sym );
     }
+
+    # close our HvSETUP block
+    $init->indent(-1);
+    $init->add('}');
+    $init->split;
 
     return $sym;
 }
