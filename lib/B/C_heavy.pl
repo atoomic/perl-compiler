@@ -632,6 +632,18 @@ sub save_stashes {
         require 'mro.pm';
     }
 
+    # NOTE: We're saving $_, @_, $@ early but you can't really save an empty @_ for sure because it's polluted by the call to
+    # svref_2object and later do_save where the save actually happens.
+    # STATIC_HV - We'd need a special case in AV.pm to fix it.
+    {
+        $_ = undef;
+        @_ = ();
+        svref_2object( \*_ )->save('_');
+
+        $@ = undef;
+        svref_2object( \*@ )->save('@');
+    }
+
     #eval q{require Data::Dumper}; eval q{warn Data::Dumper::Dumper( $settings ) };
 
     # do we have something else than PerlIO/scalar/scalar.so ?

@@ -495,9 +495,11 @@ sub get_savefields {
     elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
         $savefields = Save_FORM | Save_IO;
     }
-    elsif ($fullname eq 'main::_'
-        or $fullname eq 'main::@' ) {
-        $savefields = 0;
+    elsif ( $fullname eq 'main::_' ) {
+        $savefields = Save_AV | Save_SV;
+    }
+    elsif ( $fullname eq 'main::@' ) {
+        $savefields = Save_SV;
     }
     elsif ( $gvname =~ /^[^A-Za-z]$/ ) {
         $savefields = Save_SV;
