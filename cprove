@@ -135,9 +135,10 @@ sub run {
 
     # allow glob...
     system( join ' ', @cmd );
-    $restart->() if $run_compile_version && $call_restart && $?;
+    my $status = $?;
+    $restart->() if $run_compile_version && $call_restart && $status;
 
-    return 0;
+    return $status == 0 ? 0 : 1;
 }
 
 # cprove --new only run new errors detected on the file
