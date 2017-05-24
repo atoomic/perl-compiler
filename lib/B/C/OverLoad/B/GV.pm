@@ -112,7 +112,7 @@ sub do_save {
             my $se = q{sHe} . $sharedhe_ix;
 
             # Note: the namehek here is the HEK and not the hek_key
-            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) (&%s + 3*sizeof(void*)) } /* %s */ ], $se, $gvname );
+            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) ((void*) &%s + 3*sizeof(void*)) } /* %s */ ], $se, $gvname );
 
             1;
         }
