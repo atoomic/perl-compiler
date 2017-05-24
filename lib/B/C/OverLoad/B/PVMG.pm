@@ -156,7 +156,9 @@ sub save_magic {
         }
 
         ### view Perl_magic_freeovrld: contains a list of memory addresses to CVs...
-        ###     this need to be recomputed at init time, do not save them
+        ###     the first call to Gv_AMG should recompute the cache
+        ###     we are saving (( and other '(*' overload methods, like for example ("" for the str overload
+        ### maybe we simply want to run Gv_AMG on the stash at init time
         next if $type eq 'c';
 
         # Save the object if there is one.
