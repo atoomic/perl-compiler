@@ -214,7 +214,7 @@ sub savegp_from_gv {
     my $gp_ix = gpsect()->sadd(
         "(SV*) %s, %s, (CV*) %s, %d, %u, %s, %s, (CV*) %s, %s, %u, %d, %s ",
         $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_refcount, $gp_hv, $gp_av, $gp_form, $gp_egv,
-        $gp_line, $gp_flags, $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) (&$gp_file_hek + sizeof(HE))}
+        $gp_line, $gp_flags, $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) ((void*)&$gp_file_hek + sizeof(HE))}
     );
     $saved_gps{$gp} = sprintf( "&gp_list[%d]", $gp_ix );
 
