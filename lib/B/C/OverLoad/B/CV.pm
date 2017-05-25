@@ -57,7 +57,9 @@ sub do_save {
         $cv->DEPTH                                # xcv_depth
     );
 
-    # we are not saving the svu for a CV, all evidence indicates that the value is null (always?) - CVf_NAMED ?
+    # STATIC_HV: We don't think the sv_u is ever set in the SVCV so this check might be wrong
+    # we are not saving the svu for a CV, all evidence indicates that the value is null (always?)
+    # CVf_NAMED flag lets you know to use the HEK for the name
     die qq{Unsaved PV for a CV - $origname} if length( $cv->PV );
 
     # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
@@ -155,10 +157,10 @@ sub get_full_name {
 sub get_xcv_gv_u {
     my ($cv) = @_;
 
-    if ( $cv->CvFLAGS & CVf_NAMED ) {    #HEK (.xcv_hek)
-        my $pv = $cv->PV || "unknownERROR";
-        my $xcv_gv_u = defined $pv ? sprintf( "{.xcv_hek=(HEK*) ((void*) %s + sizeof(HE)) }", save_shared_he($pv) ) : "{0}";    # xcv_gv_u
-        $xcv_gv_u =~ s/sharedhe_list\[(\d+)\]/&sHe$1/;
+    # $cv->CvFLAGS & CVf_NAMED
+    if ( my $pv = $cv->NAME_HEK ) {    #HEK (.xcv_hek)
+        my $xcv_gv_u = sprintf( "{.xcv_hek=(HEK*) ((void*) %s + sizeof(HE)) }", save_shared_he($pv) );    # xcv_gv_u
+        $xcv_gv_u =~ s/sharedhe_list\[(\d+)\]/&sHe$1/;                                                    # monkey regexp
         return $xcv_gv_u;
     }
 
