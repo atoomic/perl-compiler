@@ -57,6 +57,9 @@ sub do_save {
         $cv->DEPTH                                # xcv_depth
     );
 
+    # we are not saving the svu for a CV, all evidence indicates that the value is null (always?) - CVf_NAMED ?
+    die qq{Unsaved PV for a CV - $origname} if length( $cv->PV );
+
     # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
     svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {0}", $xpvcv_ix, $cv->REFCNT + 1, $cv->FLAGS );
 
