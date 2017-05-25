@@ -60,7 +60,7 @@ sub do_save {
 
     xpvmgsect()->comment("STASH, MAGIC, cur, len, xiv_u, xnv_u");
     my $xpvmg_ix = xpvmgsect()->sadd(
-        "(HV*) %s, %s, %u, {%u}, {%s}, {%s}",
+        "(HV*) %s, {%s}, %u, {%u}, {%s}, {%s}",
         $stash, $sv->save_magic($fullname), $cur, $len, $ivx, $nvx
     );
 
@@ -141,10 +141,10 @@ sub save_magic {
     my $pkg;
 
     # Protect our SVs against non-magic or SvPAD_OUR. Fixes tests 16 and 14 + 23
-    return 'NULL' if ( !$sv->MAGICAL );
+    return '0' if ( !$sv->MAGICAL );
 
     my @mgchain    = $sv->MAGIC;
-    my $last_magic = 'NULL';
+    my $last_magic = '0';
     foreach my $mg ( reverse @mgchain ) {    # reverse because we're assigning down the chain, not up.
         my $type = $mg->TYPE;
         my $ptr  = $mg->PTR;
@@ -164,19 +164,19 @@ sub save_magic {
         next if $type eq 'c';
 
         # Save the object if there is one.
-        my $obj = 'NULL';
+        my $obj = '0';
         if ( $type !~ /^[rDn]$/ ) {
             my $o = $mg->OBJ;
             $obj = $o->save($fullname) if ( ref $o ne 'SCALAR' );
         }
 
-        my $ptrsv = 'NULL';
+        my $ptrsv = '0';
         {    # was if $len == HEf_SVKEY
 
             # The pointer is an SV* ('s' sigelem e.g.)
             # XXX On 5.6 ptr might be a SCALAR ref to the PV, which was fixed later
             if ( !defined $ptr ) {
-                $ptrsv = 'NULL';
+                $ptrsv = '0';
             }
             elsif ( ref($ptr) eq 'SCALAR' ) {
 
@@ -196,7 +196,7 @@ sub save_magic {
         magicsect->comment('mg_moremagic, mg_virtual, mg_private, mg_type, mg_flags, mg_len, mg_obj, mg_ptr');
         my $last_magic_ix = magicsect->sadd(
             " (MAGIC*) %s, (MGVTBL*) %s, %s, %s, %d, %s, (SV*) %s, %s",
-            $last_magic, 'NULL', $mg->PRIVATE, cchar($type), $mg->FLAGS | MGf_IMMORTAL(), $len, $obj, $ptrsv
+            $last_magic, '0', $mg->PRIVATE, cchar($type), $mg->FLAGS | MGf_IMMORTAL(), $len, $obj, $ptrsv
         );
         $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
 

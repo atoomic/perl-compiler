@@ -47,7 +47,7 @@ sub do_save {
 
     xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
     my $xpvcv_ix = xpvcvsect->sadd(
-        "%s, %s, %u, {%u}, %s, {%s}, {s\\_%x}, %s, (char*) %s, {%s}, (CV*)%s, %s, 0x%x, %d",
+        "%s, {%s}, %u, {%u}, %s, {%s}, {s\\_%x}, %s, (char*) %s, {%s}, (CV*)%s, %s, 0x%x, %d",
         $xmg_stash,                               # xmg_stash
         $cv->save_magic($origname),               # xmg_u
         $cur,                                     # xpv_cur
