@@ -29,13 +29,6 @@ sub do_save {
     my $xmg_stash = typecast_stash_save( $cv->SvSTASH->save );
     my $cv_stash  = typecast_stash_save( $cv->STASH->save );
 
-    my $pv = $cv->PV;
-
-    my ( $savesym, $cur, $len ) = ( q{'NULL'}, 0, 0 );
-    if ( $cv->CUR ) {
-        ( $savesym, $cur, $len ) = savecowpv($pv);
-    }
-
     # need to survive cv_undef as there is no protection against static CVs
     my $refcnt = $cv->REFCNT + 1;
 
@@ -50,8 +43,8 @@ sub do_save {
         "%s, {%s}, %u, {%u}, %s, {%s}, {s\\_%x}, %s, (char*) %s, {%s}, (CV*)%s, %s, 0x%x, %d",
         $xmg_stash,                               # xmg_stash
         $cv->save_magic($origname),               # xmg_u
-        $cur,                                     # xpv_cur
-        $len,                                     # xpv_len_u
+        $cv->CUR,                                 # xpv_cur -- warning this is not CUR and LEN for the pv
+        $cv->LEN,                                 # xpv_len_u -- warning this is not CUR and LEN for the pv
         $cv_stash,                                # xcv_stash
         $startfield,                              # xcv_start_u
         $$root,                                   # xcv_root_u
@@ -64,11 +57,8 @@ sub do_save {
         $cv->DEPTH                                # xcv_depth
     );
 
-    my $flags = $cv->FLAGS;
-    $flags &= SVf_IsCOW if $len;
-
-    # svsect()->comment("any, refcnt, flags, sv_u");
-    svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {0}", $xpvcv_ix, $cv->REFCNT + 1, $flags, $savesym );
+    # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
+    svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {0}", $xpvcv_ix, $cv->REFCNT + 1, $cv->FLAGS );
 
     return $sym;
 }
