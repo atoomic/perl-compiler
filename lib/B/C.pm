@@ -205,8 +205,56 @@ sub cleanup_stashes {
         delete $stashes->{$f};
     }
 
-    #delete $stashes->{'PerlIO::scalar::'};
-    #delete $stashes->{'PerlIO::'};
+    # PerlIO
+    # root_stash name keys_to_clear
+    my $clear_stash_keys = sub {
+        my ( $root_stash, $name, $keys_to_clear ) = @_;
+
+        return unless ref $root_stash->{$name};    # maybe die during devel
+
+        foreach my $k (@$keys_to_clear) {
+            delete $root_stash->{$name}->{$k};
+        }
+        delete $root_stash->{$name} if !scalar keys %{ $root_stash->{$name} };
+
+        return;
+    };
+
+    # order matters
+    $clear_stash_keys->( $stashes->{'PerlIO::'}, 'Layer::', [qw{NoWarnings find}] );
+
+    ### view universal.c - static const struct xsub_details details[]
+    $clear_stash_keys->( $stashes, 'UNIVERSAL::', [qw{DOES VERSION can isa}] );
+
+    # --- view vxs.inc
+    $clear_stash_keys->( $stashes, 'version::',   [qw{("" () (* (*= (+ (+= (- (-= (/ (/= (0+ (<=> (abs (bool (cmp (nomethod AUTOLOAD _VERSION boolean declare is_alpha is_qv new noop normal numify parse qv stringify vcmp}] );
+    $clear_stash_keys->( $stashes, 'utf8::',      [qw{decode downgrade encode is_utf8 native_to_unicode unicode_to_native upgrade valid}] );
+    $clear_stash_keys->( $stashes, 'Internals::', [qw{SvREADONLY SvREFCNT V hv_clear_placeholders}] );
+    $clear_stash_keys->( $stashes, 'PerlIO::',    [qw{get_layers}] );                                                                                                                                                              # need to be done after PerlIO::Layer
+    $clear_stash_keys->( $stashes, 'constant::',  [qw{_make_const}] );
+    $clear_stash_keys->( $stashes, 're::',        [qw{is_regexp regname regnames regnames_count regexp_pattern}] );
+    ## end of universal.c boot
+
+    $clear_stash_keys->( $stashes, 'mro::',    [qw{method_changed_in}] );
+    $clear_stash_keys->( $stashes, 'Regexp::', [qw{DESTROY}] );
+
+    # B::C provides its own DynaLoader boot
+    $clear_stash_keys->(
+        $stashes,
+        'DynaLoader::',
+        [
+            qw{boot_DynaLoader dl_load_file dl_unload_file dl_find_symbol dl_undef_symbols
+              dl_install_xsub dl_error
+              }
+        ]
+    );
+
+    ### we are leaving(/saving) these DynaLoader functions for now - TODO ?
+    # 'bootstrap_inherit'
+    # 'dl_librefs'
+    # 'dl_modules'
+    # 'dl_require_symbols'
+    # 'dl_shared_objects'
 
     # too fancy for now, enable it later ???
     # if ( ! $settings->{'needs_xs'} ) {
@@ -214,6 +262,7 @@ sub cleanup_stashes {
     #     delete $stashes->{'XSLoader::'};
     # }
 
+    return;
 }
 
 sub _flatten_stashes {
