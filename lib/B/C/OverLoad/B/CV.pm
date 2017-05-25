@@ -4,7 +4,7 @@ use strict;
 
 use B::C::Flags ();
 
-use B qw/cstring svref_2object CVf_ANON CVf_ANONCONST CVf_CONST CVf_NAMED main_cv SVf_ROK SVp_POK SVf_IOK SVf_UTF8 SVs_PADSTALE CVf_WEAKOUTSIDE/;
+use B qw/cstring svref_2object CVf_ANON CVf_ANONCONST CVf_CONST CVf_NAMED main_cv SVf_IsCOW SVf_ROK SVp_POK SVf_IOK SVf_UTF8 SVs_PADSTALE CVf_WEAKOUTSIDE/;
 use B::C::Config;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Save qw/savepvn constpv savecowpv/;
@@ -31,7 +31,7 @@ sub do_save {
 
     my $pv = $cv->PV;
 
-    my ( $savesym, $cur, $len );
+    my ( $savesym, $cur, $len ) = ( q{'NULL'}, 0, 0 );
     if ( $cv->CUR ) {
         ( $savesym, $cur, $len ) = savecowpv($pv);
     }
@@ -64,8 +64,11 @@ sub do_save {
         $cv->DEPTH                                # xcv_depth
     );
 
+    my $flags = $cv->FLAGS;
+    $flags &= SVf_IsCOW if $len;
+
     # svsect()->comment("any, refcnt, flags, sv_u");
-    svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {0}", $xpvcv_ix, $cv->REFCNT + 1, $cv->FLAGS, $savesym );
+    svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {0}", $xpvcv_ix, $cv->REFCNT + 1, $flags, $savesym );
 
     return $sym;
 }

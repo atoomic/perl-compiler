@@ -70,15 +70,16 @@ sub do_save {
 
     xpvgvsect()->comment("stash, magic, cur, len, xiv_u={.xivu_namehek=}, xnv_u={.xgv_stash=}");
     my $xpvg_ix = xpvgvsect()->sadd(
-        "%s, {0}, 0, {.xpvlenu_len=0}, {.xivu_namehek=(HEK*)%s}, {.xgv_stash=%s}",
+        "%s, {%s}, 0, {.xpvlenu_len=0}, {.xivu_namehek=(HEK*)%s}, {.xgv_stash=%s}",
         $stash_symbol,    # STATIC_HV: The symbol for the HV stash. Which field is it??
+        $gv->save_magic($name),
         'NULL',           # the namehek (HEK*)
         $stash_symbol,    # The symbol for the HV stash. Which field is it??
     );
     my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
     {
-        my $gv_refcnt = $gv->REFCNT;    #  + 1;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
+        my $gv_refcnt = $gv->REFCNT + 1;    #  + 1;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
         my $gv_flags  = $gv->FLAGS;
 
         gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");

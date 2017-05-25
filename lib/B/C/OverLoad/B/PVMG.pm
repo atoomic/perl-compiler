@@ -11,6 +11,8 @@ use B::C::File qw/init init1 init2 init_static_assignments svsect xpvmgsect xpvs
 use B::C::Helpers qw/read_utf8_string is_shared_hek get_index/;
 use B::C::Save::Hek qw/save_shared_he/;
 
+sub MGf_IMMORTAL { 0x100 }
+
 sub do_save {
     my ( $sv, $fullname ) = @_;
 
@@ -194,7 +196,7 @@ sub save_magic {
         magicsect->comment('mg_moremagic, mg_virtual, mg_private, mg_type, mg_flags, mg_len, mg_obj, mg_ptr');
         my $last_magic_ix = magicsect->sadd(
             " (MAGIC*) %s, (MGVTBL*) %s, %s, %s, %d, %s, (SV*) %s, %s",
-            $last_magic, 'NULL', $mg->PRIVATE, cchar($type), $mg->FLAGS, $len, $obj, $ptrsv
+            $last_magic, 'NULL', $mg->PRIVATE, cchar($type), $mg->FLAGS | MGf_IMMORTAL(), $len, $obj, $ptrsv
         );
         $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
 
