@@ -1072,6 +1072,8 @@ sub found_xs_sub {
     my $mod = $sub;
     $mod =~ s{::[^:]+$}{};
 
+    return if $mod eq 'UNIVERSAL';    # more exceptions to come
+
     return if $settings->{'starting_flat_stashes'}->{ $mod . "::" };
     $Config{static_ext} //= '';
 
