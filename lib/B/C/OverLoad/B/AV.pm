@@ -6,7 +6,7 @@ use B::C::Flags ();
 
 use B qw/cstring SVf_IOK SVf_POK SVs_OBJECT/;
 use B::C::Config;
-use B::C::File qw/init init2 xpvavsect svsect init_static_assignments/;
+use B::C::File qw/init init2 xpvavsect svsect init_static_assignments init_bootstraplink/;
 use B::C::Helpers qw/strlen_flags/;
 use B::C::Helpers::Symtable qw/savesym/;
 
@@ -156,7 +156,7 @@ sub do_save {
         # might be faster also.
         else {
 
-            my $deferred_init = $acc =~ qr{BOOTSTRAP_XS_}m ? init() : init_static_assignments();
+            my $deferred_init = $acc =~ qr{BOOTSTRAP_XS_}m ? init_bootstraplink() : init_static_assignments();
             $deferred_init->no_split;
 
             $deferred_init->add( "{ /* Slow array init mode. */", );

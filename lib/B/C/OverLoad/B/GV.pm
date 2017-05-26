@@ -234,7 +234,8 @@ sub savegp_from_gv {
         my ( $field_name, $field_ix, $field_v ) = @$check;
 
         # if the value is null or using a static list, then it's fine
-        next if $field_v =~ qr{null}i or $field_v =~ qr{list} or $field_v =~ qr{^s\\_\S+$};
+        # when it s a bootstrap XS CV no need to set it later, the init_bootstraplink is going to do it for us (no need to redo it)
+        next if $field_v =~ qr{null}i or $field_v =~ qr{list} or $field_v =~ qr{^s\\_\S+$} or $field_v =~ qr{BOOTSTRAP_XS_};
 
         # replace the value by a null one
         debug( gv => q{Cannot use static value '%s' for gp_list[%d].%s => postpone to init}, $field_v, $gp_ix, $field_name );

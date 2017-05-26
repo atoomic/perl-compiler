@@ -220,27 +220,48 @@ sub cleanup_stashes {
         return;
     };
 
+    my $CORE_subs             = {};
+    my $clear_stash_keys_core = sub {
+        my ( $name_stash, $name, $keys_to_clear ) = @_;
+
+        my $root_stash = $stashes;
+        my $full_stash = $name;
+
+        if ( $name_stash && $name_stash ne 'main' ) {
+            $root_stash = $stashes->{$name_stash};
+            $full_stash = $name_stash . $name;
+
+            #$full_stash =~ s{::^}{};
+        }
+
+        foreach my $k (@$keys_to_clear) {
+            $CORE_subs->{ $full_stash . $k } = 1;
+        }
+
+        #return $clear_stash_keys->( $root_stash, $name, $keys_to_clear );
+    };
+
     # order matters
-    $clear_stash_keys->( $stashes->{'PerlIO::'}, 'Layer::', [qw{NoWarnings find}] );
+    $clear_stash_keys_core->( 'PerlIO::', 'Layer::', [qw{NoWarnings find}] );
 
     ### view universal.c - static const struct xsub_details details[]
-    $clear_stash_keys->( $stashes, 'UNIVERSAL::', [qw{DOES VERSION can isa}] );
+    $clear_stash_keys_core->( 'main', 'UNIVERSAL::', [qw{DOES VERSION can isa}] );
 
     # --- view vxs.inc
-    $clear_stash_keys->( $stashes, 'version::',   [qw{("" () (* (*= (+ (+= (- (-= (/ (/= (0+ (<=> (abs (bool (cmp (nomethod AUTOLOAD _VERSION boolean declare is_alpha is_qv new noop normal numify parse qv stringify vcmp}] );
-    $clear_stash_keys->( $stashes, 'utf8::',      [qw{decode downgrade encode is_utf8 native_to_unicode unicode_to_native upgrade valid}] );
-    $clear_stash_keys->( $stashes, 'Internals::', [qw{SvREADONLY SvREFCNT V hv_clear_placeholders}] );
-    $clear_stash_keys->( $stashes, 'PerlIO::',    [qw{get_layers}] );                                                                                                                                                              # need to be done after PerlIO::Layer
-    $clear_stash_keys->( $stashes, 'constant::',  [qw{_make_const}] );
-    $clear_stash_keys->( $stashes, 're::',        [qw{is_regexp regname regnames regnames_count regexp_pattern}] );
+    $clear_stash_keys_core->( 'main', 'version::',   [qw{("" () (* (*= (+ (+= (- (-= (/ (/= (0+ (<=> (abs (bool (cmp (nomethod AUTOLOAD _VERSION boolean declare is_alpha is_qv new noop normal numify parse qv stringify vcmp}] );
+    $clear_stash_keys_core->( 'main', 'utf8::',      [qw{decode downgrade encode is_utf8 native_to_unicode unicode_to_native upgrade valid}] );
+    $clear_stash_keys_core->( 'main', 'Internals::', [qw{SvREADONLY SvREFCNT V hv_clear_placeholders}] );
+    $clear_stash_keys_core->( 'main', 'PerlIO::',    [qw{get_layers}] );                                                                                                                                                              # need to be done after PerlIO::Layer
+    $clear_stash_keys_core->( 'main', 'constant::',  [qw{_make_const}] );
+    $clear_stash_keys_core->( 'main', 're::',        [qw{is_regexp regname regnames regnames_count regexp_pattern}] );
     ## end of universal.c boot
 
-    $clear_stash_keys->( $stashes, 'mro::',    [qw{method_changed_in}] );
-    $clear_stash_keys->( $stashes, 'Regexp::', [qw{DESTROY}] );
+    $clear_stash_keys_core->( 'main', 'mro::',    [qw{method_changed_in}] );                                                                                                                                                          # mro_core.c
+    $clear_stash_keys_core->( 'main', 'Regexp::', [qw{DESTROY}] );
 
     # B::C provides its own DynaLoader boot
-    $clear_stash_keys->(
-        $stashes,
+    $clear_stash_keys_core->(
+        'main',
         'DynaLoader::',
         [
             qw{boot_DynaLoader dl_load_file dl_unload_file dl_find_symbol dl_undef_symbols
@@ -248,6 +269,9 @@ sub cleanup_stashes {
               }
         ]
     );
+
+    # we are saving subs defined by CORE at startup
+    $settings->{CORE_subs} = $CORE_subs;
 
     ### we are leaving(/saving) these DynaLoader functions for now - TODO ?
     # 'bootstrap_inherit'

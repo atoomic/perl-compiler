@@ -340,7 +340,8 @@ PAD ** INITPADLIST(PADLIST *pad, int count) {
 
 [% section.init_vtables.output( "    %s\n", 'perl_init_vtables' ) %]
 
-[% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplinks' ) %]
+[% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
+[% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
 
 void setup_perl_globals( char* argv0 ) {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
@@ -879,9 +880,10 @@ main(int argc, char **argv, char **env)
     if (exitstatus)
 	exit( exitstatus );
 
-    TAINT;
+    /* link the CORE CVs to the bootstrapped ones loaded by perl_parse  -- maybe xs_init ?? */
+    perl_init_COREbootstraplink( aTHX );
 
-    perl_init_bootstraplinks( aTHX ); /* maybe move to a better place */
+    TAINT;
 
     benchmark_time("pre global setup");
 
@@ -919,7 +921,10 @@ main(int argc, char **argv, char **env)
     perl_init1(aTHX);
 
     benchmark_time("init1 done");
+    /* load the XS modules */
     dl_init(aTHX);
+    /* link the CVs to the bootstrapped ones */
+    perl_init_bootstraplink( aTHX );
 
     /* We need to output evals after dl_init, in init2  */
     [% FOREACH eval_pv IN all_eval_pvs %]

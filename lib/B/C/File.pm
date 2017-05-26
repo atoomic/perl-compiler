@@ -58,7 +58,7 @@ sub assign_sections {
 }
 
 # These populate the init sections and have a special header.
-sub init_section_names { return qw /init init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink/ }
+sub init_section_names { return qw /init init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink/ }
 
 sub op_sections {
     return qw { binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};
@@ -124,7 +124,7 @@ sub replace_xs_bootstrap_to_init {
 
     my @structs = struct_names();
     foreach my $section ( sort @structs ) {
-        next if $section eq 'gv';    # gv are replaced when loading bootstrap (we do not want to replace them)
+        next if $section eq 'gp';    # or $section eq 'gv';    # gv are replaced when loading bootstrap (we do not want to replace them)
                                      #next unless $section eq 'magic';
 
         my $field = $section eq 'magic' ? q{mg_obj} : q{sv_u.svu_rv};    # move to section ?
@@ -133,8 +133,10 @@ sub replace_xs_bootstrap_to_init {
         foreach my $subname ( sort keys %$bs_rows ) {
             foreach my $ix ( @{ $bs_rows->{$subname} } ) {
 
+                my $init = B::C::get_bootstrap_section($subname);
+
                 # replace the cv to the one freshly loaded by XS
-                init_bootstraplink()->sadd(
+                $init->sadd(
                     '%s_list[%d].%s = (SV*) GvCV( gv_fetchpv(%s, 0, SVt_PVCV) );',
                     $section, $ix, $field, cstring($subname)
                 );

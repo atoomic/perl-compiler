@@ -31,12 +31,14 @@ use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
   xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect sharedhe init_stash
+
+  init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers qw/set_curcv/;
 use B::C::Helpers::Symtable qw(objsym savesym);
 
 use Exporter ();
-use Errno    ();           #needed since 5.14
+use Errno ();    #needed since 5.14
 our %Regexp;
 
 # Caller was populated in C.pm
@@ -1005,6 +1007,10 @@ sub save_main_rest {
     return;
 }
 
+### TODO:
+##### remove stuff from boot  add use the template for EXTERN_C declaration
+#####
+
 sub build_template_stash {
     my ( $static_ext, $stashxsubs, $dynaloader_optimizer ) = @_;
     no strict 'refs';
@@ -1064,15 +1070,16 @@ sub found_xs_sub {
 
     return unless defined $sub;
     $sub =~ s{^main::}{};
+    next if $sub eq 'attributes::{bootstrap}';    # "main::attributes::{bootstrap}"
 
-    return unless $sub =~ qr{::};    # the sub should not be in main
+    return unless $sub =~ qr{::};                 # the sub should not be in main
 
     return if $sub =~ qr{:pad};
 
     my $stashname = $sub;
     $stashname =~ s{::[^:]+$}{};
 
-    return if $stashname eq 'UNIVERSAL';    # more exceptions to come
+    return if $stashname eq 'UNIVERSAL';          # more exceptions to come
 
     # %xsub is now global to the package
     return if exists $xsub{$stashname};
@@ -1083,6 +1090,22 @@ sub found_xs_sub {
 
     $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
 
+    return;
+}
+
+sub get_bootstrap_section {
+    my $subname = shift;
+
+    return init_COREbootstraplink() if $settings->{CORE_subs}->{$subname};
+
+    # TODO
+    return init_bootstraplink();
+}
+
+sub is_bootstrapped_cv {
+    my $str = shift;
+
+    return $1 if $str =~ m{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP};
     return;
 }
 
