@@ -768,19 +768,6 @@ dl_init(pTHX)
     mXPUSHp("[% stashname %]", [% stashname.length %]);
 
 /* XSLoader has the 2nd insanest API in whole Perl, right after make_warnings_object() */
-#ifndef STATICXS
-      [% IF xsub.$stashname == 'Dynamic' %]
-    PUTBACK;
-    call_method("DynaLoader::bootstrap_inherit", G_VOID|G_DISCARD);
-      [% ELSE %]
-        [% stashfile = xsub.$stashname.remove('^Dynamic-') %]
-        [% IF stashfile %]
-    mXPUSHp("[% stashfile %]", [% stashfile.length %]);
-        [% END %]
-    PUTBACK;
-    call_pv("XSLoader::load_file", G_VOID|G_DISCARD);
-      [% END %]
-#else
     PUTBACK;
     /* CvSTASH(CvGV(cv)) is invalid without (issue 86) */
     /* TODO: utf8 stashname */
@@ -790,7 +777,7 @@ dl_init(pTHX)
         cv->sv_any->xcv_padlist_u.xcv_hscxt = &PL_stack_sp; /* xs_handshake */
         boot_[% stashname.replace('::', '__') %](aTHX_ cv);
     }
-#endif
+
     SPAGAIN;
 /*    PUTBACK;*/
   [% END %]
