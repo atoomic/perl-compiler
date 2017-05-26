@@ -119,7 +119,7 @@ sub run_code {
             $Output = "$BinPerl $Output";
         }
     }
-    if ( opt('staticxs') and $extra_libs ) {
+    if ( $extra_libs ) {
         my $path = '';
         my $PATHSEP = $^O eq 'MSWin32' ? ';' : ':';
         for ( split / /, $extra_libs ) {
@@ -235,7 +235,6 @@ sub parse_argv {
         'U=s@',             # skip packages (new since 2.13)
         'static',           # Link to static libperl (default, new since 2.11)
         'shared',           # Link to shared libperl (new since 2.07)
-        'staticxs',         # Link static XSUBs (new since 2.07)
         'sharedxs',         # Link shared XSUBs (default, new since 2.07))
         'stash',            # Detect external packages via B::Stash
         'log:s',            # where to log compilation process information
@@ -439,12 +438,10 @@ sub compile_cstyle {
         $addoptions .= "-c,";
     }
 
-    my $staticxs = opt('staticxs') ? "-staticxs," : '';
-    warn "Warning: --staticxs on darwin is very experimental\n"
-      if $staticxs and $^O eq 'darwin';
+    warn "Warning: staticxs on darwin is very experimental\n"
+      if $^O eq 'darwin';
     if ( opt('check') ) {
         $cfile    = "";
-        $staticxs = "";
     }
     elsif ( opt('o') ) {
         $cfile = opt('o') . ".c";
@@ -486,7 +483,7 @@ sub compile_cstyle {
         $max_line_len = '-l2000,';
     }
 
-    my $options = "$addoptions$max_line_len$staticxs$stash";
+    my $options = "$addoptions$max_line_len$stash";
     $options .= "-o$cfile" unless opt('check');
     $options = substr( $options, 0, -1 ) if substr( $options, -1, 1 ) eq ",";
 
@@ -520,7 +517,7 @@ sub compile_cstyle {
     vprint -1, "c time: $elapsed" if opt('time');
     $extra_libs = '';
     my %rpath;
-    if ( $staticxs and open( XS, "<", $cfile . ".lst" ) ) {
+    if ( open( XS, "<", $cfile . ".lst" ) ) {
         while (<XS>) {
             my ( $s, $l ) = m/^([^\t]+)(.*)$/;
             next if grep { $s eq $_ } @{ $Options->{U} };
@@ -587,7 +584,6 @@ sub cc_harness_msvc {
     my $link    = "-out:$Output $obj";
     $compile .= $B::C::Flags::extra_cflags;
     $compile .= " -I" . $_ for split /\s+/, opt('I');
-    $compile .= " -DSTATICXS"   if opt('staticxs');
     $compile .= " " . opt('Wc') if opt('Wc');
 
     $link .= " -libpath:" . $_ for split /\s+/, opt('L');
@@ -607,21 +603,19 @@ sub cc_harness_msvc {
         $link =~ s/ -opt:ref,icf//;
     }
     $link .= " " . opt('Wl') if opt('Wl');
-    if ( opt('staticxs') ) {    # TODO: can msvc link to dll's directly? otherwise use dlltool
-        $extra_libs =~ s/^\s+|\s+$//g;    # code by stengcode@gmail.com
-        foreach ( split /\.dll(?:\s+|$)/, $extra_libs ) {
-            $_ .= '.lib';
-            if ( !-e $_ ) {
-                die "--staticxs requires $_, you should copy it from build area";
-            }
-            else {
-                $link .= ' ' . $_;
-            }
+
+    # staticxs
+    $extra_libs =~ s/^\s+|\s+$//g;    # code by stengcode@gmail.com
+    foreach ( split /\.dll(?:\s+|$)/, $extra_libs ) {
+        $_ .= '.lib';
+        if ( !-e $_ ) {
+            die "--staticxs requires $_, you should copy it from build area";
+        }
+        else {
+            $link .= ' ' . $_;
         }
     }
-    else {
-        $link .= $extra_libs;
-    }
+
     $link .= " perl5$Config{PERL_VERSION}.lib kernel32.lib msvcrt.lib";
     $link .= $B::C::Flags::extra_libs;
     vprint 3, "Calling $Config{cc} $compile";
@@ -638,7 +632,6 @@ sub cc_harness {
     $command .= $B::C::Flags::extra_cflags if $B::C::Flags::extra_cflags;
     $command .= " -I" . $_ for split /\s+/, opt('I');
     $command .= " -L" . $_ for split /\s+/, opt('L');
-    $command .= " -DSTATICXS"   if opt('staticxs');
     $command .= " " . opt('Wc') if opt('Wc');
     my $ccflags = $command;
 
@@ -821,7 +814,7 @@ sub checkopts_byte {
 
     _die("Please choose one of either -B and -O.\n") if opt('O');
 
-    for my $o (qw[shared sharedxs static staticxs]) {
+    for my $o (qw[shared sharedxs static]) {
         if ( exists( $Options->{$o} ) && $Options->{$o} ) {
             warn "$0: --$o incompatible with -B\n";
             delete $Options->{$o};
@@ -970,7 +963,7 @@ Usage:
 $0 [-o executable] [-h][-r] [-O|-B|-c|-S] [-I /foo] [-L /foo] [--log log] [source[.pl] | -e code]
 More options (see perldoc perlcc)
   -v[1-4]
-  --stash     --staticxs --shared --static
+  --stash --shared --static
   --time
 EOU
 }
@@ -1030,7 +1023,7 @@ END {
         vprint 4, "Unlinking $cfile";
         unlink $cfile;
     }
-    if ( opt('staticxs') and !opt('S') ) {
+    if ( !opt('S') ) {
         vprint 4, "Unlinking $cfile.lst";
         unlink "$cfile.lst";
     }
@@ -1055,8 +1048,7 @@ perlcc - generate executables from Perl programs
     perlcc -c file.pl          # Creates a C file, 'file.c'
     perlcc -S -o hello file.pl # Keep C file
     perlcc -c out.c file.pl    # Creates a C file, 'out.c' from 'file'
-    perlcc --staticxs -r -o hello hello.pl # Compiles,links and runs with
-                               # XS modules static/dynaloaded
+    perlcc -r -o hello hello.pl # Compiles,links and runs with XS modules static/dynaloaded
 
     perlcc -e 'print q//'      # Compiles a one-liner into 'a.out'
     perlcc -c -e 'print q//'   # Creates a C file 'a.out.c'
@@ -1214,15 +1206,6 @@ Detect external packages automatically via B::Stash
 =item --static
 
 Link to static libperl.a
-
-=item --staticxs
-
-Link to static XS if available.
-If the XS libs are only available as shared libs link to those ("prelink").
-
-Systems without rpath (windows, cygwin) must be extend LD_LIBRARY_PATH/PATH at run-time.
-Together with -static, purely static modules and no run-time eval or
-require this will gain no external dependencies.
 
 =item --shared
 

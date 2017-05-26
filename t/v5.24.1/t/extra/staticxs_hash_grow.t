@@ -1,6 +1,6 @@
 #!/usr/local/cpanel/3rdparty/bin/perl
 
-# > rm -f ./cpkeyclt; perlcc -UB::C --staticxs cpkeyclt.pl; ./cpkeyclt
+# > rm -f ./cpkeyclt; perlcc -UB::C cpkeyclt.pl; ./cpkeyclt
 
 package MyPackage;
 

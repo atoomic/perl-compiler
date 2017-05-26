@@ -41,7 +41,7 @@ sub optimize {
 
     my @dl_modules  = @{ $B::C::settings->{'dl_modules'} };
     my @dl_so_files = @{ $B::C::settings->{'dl_so_files'} };
-    my $use_static_xs = $B::C::settings->{'staticxs'};           # user command line option: --staticxs
+    my $use_static_xs = 1;
 
     foreach my $stashname (@dl_modules) {
         if ( $stashname eq 'attributes' ) {

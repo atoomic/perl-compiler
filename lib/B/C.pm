@@ -384,9 +384,6 @@ sub parse_options {
             $arg ||= shift @opts;
             $settings->{'output_file'} = $arg;
         }
-        elsif ( $opt eq "s" and $arg eq "taticxs" ) {
-            $settings->{'staticxs'} = 1;
-        }
         elsif ( $opt eq "n" ) {
             $arg ||= shift @opts;
             $settings->{'init_name'} = $arg;
@@ -488,12 +485,6 @@ Ignore all subs from Package to be compiled.
 
 Certain packages might not be needed at run-time, even if the pessimistic
 walker detects it.
-
-=item B<-staticxs>
-
-Dump a list of bootstrapped XS package names to F<outfile.lst>
-needed for C<perlcc --staticxs>.
-Add code to DynaLoader to add the .so/.dll path to PATH.
 
 =item B<-D>C<[OPTIONS]>
 

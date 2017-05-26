@@ -638,7 +638,7 @@ sub save_stashes {
 
     # do we have something else than PerlIO/scalar/scalar.so ?
     # there is something with PerlIO and PerlIO::scalar ( view in_static_core )
-    if ( $settings->{'staticxs'} && scalar @{ $settings->{'dl_modules'} } && scalar @{ $settings->{'dl_so_files'} } ) {    # Backup what we had in the DynaLoader arrays prior to C_Heavy
+    if ( scalar @{ $settings->{'dl_modules'} } && scalar @{ $settings->{'dl_so_files'} } ) {    # Backup what we had in the DynaLoader arrays prior to C_Heavy
         my @modules = @DynaLoader::dl_modules;
         my @so      = @DynaLoader::dl_shared_objects;
 
@@ -1029,7 +1029,6 @@ sub build_template_stash {
         'compile_stats'         => compile_stats(),
         'nullop_count'          => $nullop_count,
         'xsub'                  => \%xsub,
-        'staticxs'              => $settings->{'staticxs'},
         'all_eval_pvs'          => \@B::C::InitSection::all_eval_pvs,
         'TAINT'                 => ( ${^TAINT} ? 1 : 0 ),
         'devel_peek_needed'     => $devel_peek_needed,
