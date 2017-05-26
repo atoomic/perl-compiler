@@ -136,8 +136,7 @@ define AvFILL
    print ((XPVAV*)  ($arg0)->sv_any)->xav_fill
 end
 
-define dump_av
-    p (XPVAV*)  ($arg0)->sv_any
+define dumpav
     set $n = ((XPVAV*)  ($arg0)->sv_any)->xav_fill
     set $i = 0
     while $i <= $n
@@ -317,6 +316,27 @@ end
 define dump_defstash
   print "# PL_defstash:\n"
   dump_hv PL_defstash
+end
+
+
+define dump_sv
+  set $sv   = (SV*) $arg0
+  svflags $sv
+  print *(SV*) $sv
+
+  set $flags = ((SV*) ($sv))->sv_flags
+  set $type = 0xf & $flags
+; if $type == 1
+;   printf "SVt_IV"
+; end
+;     if $type == 2
+;         printf "SVt_NV"
+;     end
+  ; if $type == 3
+  ;   printf "SVt_PV"
+  ; end
+
+
 end
 
 define dump_hv
