@@ -258,7 +258,7 @@ sub parse_argv {
         $Options->{S} = 1;
     }
 
-    if ( $Options->{'g'} || $ENV{BC_CFLAGS} =~ qr{^-?g$} ) {
+    if ( $Options->{'g'} || defined $ENV{BC_CFLAGS} && $ENV{BC_CFLAGS} =~ qr{^-?g$} ) {
         vprint 3, q{Using gcc '-g' compilation option.};
         $Options->{'g'} = 1;
     }
