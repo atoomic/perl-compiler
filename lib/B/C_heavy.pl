@@ -1069,18 +1069,19 @@ sub found_xs_sub {
 
     return if $sub =~ qr{:pad};
 
-    my $mod = $sub;
-    $mod =~ s{::[^:]+$}{};
+    my $stashname = $sub;
+    $stashname =~ s{::[^:]+$}{};
 
-    return if $mod eq 'UNIVERSAL';    # more exceptions to come
+    return if $stashname eq 'UNIVERSAL';    # more exceptions to come
 
-    return if $settings->{'starting_flat_stashes'}->{ $mod . "::" };
-    $Config{static_ext} //= '';
+    # %xsub is now global to the package
+    return if exists $xsub{$stashname};
 
-    # is t already known ?
-    return if grep { $_ eq $mod } split( /\s+/, $Config{static_ext} );
-    $Config{static_ext} .= ' ' if length $Config{static_ext};
-    $Config{static_ext} .= $mod;
+    my $incpack = $stashname;
+    $incpack =~ s/\:\:/\//g;
+    $incpack .= '.pm';
+
+    $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
 
     return;
 }
