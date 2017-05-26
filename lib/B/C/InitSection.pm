@@ -6,6 +6,7 @@ use warnings;
 use parent 'B::C::Section';
 
 use B::C::Debug ();
+use B qw(cstring);
 
 # All objects inject into this shared variable.
 our @all_eval_pvs;
@@ -154,6 +155,11 @@ sub add_initav {
     push @{ $self->{'initav'} }, @_;
 }
 
+sub fixup_assignments {
+    my $self = shift;
+
+}
+
 sub output {
     my ( $self, $format, $init_name ) = @_;
     my $sym = $self->symtable || {};
@@ -175,6 +181,12 @@ sub output {
         foreach my $j (@$i) {
             $j =~ s{(s\\_[0-9a-f]+)}
                    { exists($sym->{$1}) ? $sym->{$1} : $default; }ge;
+
+            while ( $j =~ m{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP} ) {
+                my $sub = $1;
+                my $getcv = sprintf( q{GvCV( gv_fetchpv(%s, 0, SVt_PVCV) )}, cstring($sub) );
+                $j =~ s{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP}{$getcv};
+            }
 
             $return_string .= "    $j\n";
 

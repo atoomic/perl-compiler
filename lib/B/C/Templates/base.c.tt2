@@ -340,6 +340,8 @@ PAD ** INITPADLIST(PADLIST *pad, int count) {
 
 [% section.init_vtables.output( "    %s\n", 'perl_init_vtables' ) %]
 
+[% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplinks' ) %]
+
 void setup_perl_globals( char* argv0 ) {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
     PL_curstname = [% PL.curstname %];  /* "main" SVt_PV */
@@ -691,8 +693,8 @@ xs_init(pTHX)
     SAVETMPS;
     targ=sv_newmortal();
 
-[% FOREACH stashname IN static_ext.keys.sort %]
-    newXS("[% stashname %]\::bootstrap", boot_[% stashname.replace('::', '__') %], file);
+[% FOREACH stashname IN static_ext.keys.sort -%]
+    newXS("[% stashname %]::bootstrap", boot_[% stashname.replace('::', '__') %], file);
 [% END %]
 
 #ifdef USE_DYNAMIC_LOADING
@@ -837,8 +839,6 @@ main(int argc, char **argv, char **env)
 
 	perl_construct( &BC_unthreaded_interpreter );
 
-
-
 	PL_perl_destruct_level = 0;
 
 #ifdef DEBUG_BENCHMARK
@@ -894,7 +894,9 @@ main(int argc, char **argv, char **env)
 
     TAINT;
 
-benchmark_time("pre global setup");
+    perl_init_bootstraplinks( aTHX ); /* maybe move to a better place */
+
+    benchmark_time("pre global setup");
 
     /* WARNING: get_sv messes with $0 in the stash?? */
     sv_setpv_mg(get_sv("0", GV_ADD|GV_NOTQUAL), argv[0]);
@@ -940,7 +942,6 @@ benchmark_time("pre global setup");
 
     perl_init2(aTHX);
     benchmark_time("init2 done.");
-
 
     exitstatus = perl_run( &BC_unthreaded_interpreter );
     benchmark_time("program complete");

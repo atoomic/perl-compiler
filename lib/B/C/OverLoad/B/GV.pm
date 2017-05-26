@@ -241,7 +241,8 @@ sub savegp_from_gv {
         gpsect()->update_field( $gp_ix, $field_ix, 'NULL' );
 
         # postpone the setting to init section
-        init_static_assignments()->sadd( q{gp_list[%d].%s = %s; /* deferred GV initialization for %s */}, $gp_ix, $field_name, $field_v, $fullname );
+        my $deferred_init = $field_name eq 'gp_cv' ? init() : init_static_assignments();
+        $deferred_init->sadd( q{gp_list[%d].%s = %s; /* deferred GV initialization for %s */}, $gp_ix, $field_name, $field_v, $fullname );
     }
 
     return $saved_gps{$gp};

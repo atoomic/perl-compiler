@@ -19,9 +19,19 @@ my $cv_index      = 0;
 my $initsub_index = 0;
 my $anonsub_index = 0;
 
+#define CVf_ISXSUB      0x0008  /* CV is an XSUB, not pure perl.  */
+# from B::
+# CvISXSUB
+# CvXSUB
+
 sub do_save {
     my ( $cv, $origname ) = @_;
     debug( cv => "CV ==  %s", $origname );
+
+    if ( $cv->XSUB ) {    # xs function
+        B::C::found_xs_sub($origname);
+        return "BOOTSTRAP_XS_[[${origname}]]_XS_BOOTSTRAP";
+    }
 
     my $sv_ix = svsect()->add('FAKE_GV');
     my $sym = savesym( $cv, "&sv_list[$sv_ix]" );

@@ -632,18 +632,6 @@ sub save_stashes {
         require 'mro.pm';
     }
 
-    # NOTE: We're saving $_, @_, $@ early but you can't really save an empty @_ for sure because it's polluted by the call to
-    # svref_2object and later do_save where the save actually happens.
-    # STATIC_HV - We'd need a special case in AV.pm to fix it.
-    {
-        $_ = undef;
-        @_ = ();
-        svref_2object( \*_ )->save('_');
-
-        $@ = undef;
-        svref_2object( \*@ )->save('@');
-    }
-
     #eval q{require Data::Dumper}; eval q{warn Data::Dumper::Dumper( $settings ) };
 
     # do we have something else than PerlIO/scalar/scalar.so ?
@@ -1069,6 +1057,30 @@ sub build_template_stash {
     $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, 511 ) + 1;
 
     return $c_file_stash;
+}
+
+sub found_xs_sub {
+    my $sub = shift;
+
+    return unless defined $sub;
+    $sub =~ s{^main::}{};
+
+    return unless $sub =~ qr{::};    # the sub should not be in main
+
+    return if $sub =~ qr{:pad};
+
+    my $mod = $sub;
+    $mod =~ s{::[^:]+$}{};
+
+    return if $settings->{'starting_flat_stashes'}->{ $mod . "::" };
+    $Config{static_ext} //= '';
+
+    # is t already known ?
+    return if grep { $_ eq $mod } split( /\s+/, $Config{static_ext} );
+    $Config{static_ext} .= ' ' if length $Config{static_ext};
+    $Config{static_ext} .= $mod;
+
+    return;
 }
 
 # init op addrs must be the last action, otherwise

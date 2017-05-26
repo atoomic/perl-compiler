@@ -6,6 +6,10 @@ use strict;
 use B::C::Debug ();
 my %sections;
 
+sub BOOTSTRAP_marker {
+    return q{BOOTSTRAP_XS_};
+}
+
 sub new {
     my ( $class, $section, $symtable, $default ) = @_;
 
@@ -119,6 +123,24 @@ sub get {
     my ( $self, $row ) = @_;
 
     return $self->{'values'}->[$row];
+}
+
+sub get_bootstrapsub_rows {
+    my ($self) = @_;
+
+    my $bs_rows = {};
+
+    my $ix = -1;
+    foreach my $v ( @{ $self->{'values'} } ) {
+        ++$ix;
+        if ( $v =~ qr{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP} ) {
+            my $bs = $1;
+            $bs_rows->{$bs} //= [];
+            push @{ $bs_rows->{$bs} }, $ix;
+        }
+    }
+
+    return $bs_rows;
 }
 
 sub get_field {
@@ -246,6 +268,8 @@ sub output {
         if ( $dodbg and $self->{'dbg'}->[$i] ) {
             $dbg = " /* " . $self->{'dbg'}->[$i] . " " . $ref . " */";
         }
+
+        $val =~ s{BOOTSTRAP_XS_\Q[[\E.+?\Q]]\E_XS_BOOTSTRAP}{0};
 
         {
             # Scoped no warnings without loading the module.

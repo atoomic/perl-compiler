@@ -58,7 +58,7 @@ sub assign_sections {
 }
 
 # These populate the init sections and have a special header.
-sub init_section_names { return qw /init init1 init2 init_stash init_vtables init_static_assignments/ }
+sub init_section_names { return qw /init init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink/ }
 
 sub op_sections {
     return qw { binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};
@@ -118,10 +118,43 @@ sub AUTOLOAD {
 my $cfh;
 my %static_ext;
 
+sub replace_xs_bootstrap_to_init {
+
+    # play with global sections to alter them before rendering
+
+    my @structs = struct_names();
+    foreach my $section ( sort @structs ) {
+        next if $section eq 'gv';    # gv are replaced when loading bootstrap (we do not want to replace them)
+                                     #next unless $section eq 'magic';
+
+        my $field = $section eq 'magic' ? q{mg_obj} : q{sv_u.svu_rv};    # move to section ?
+
+        my $bs_rows = $self->{$section}->get_bootstrapsub_rows();        # [ 42 => q{json::xs::encode},  ]
+        foreach my $subname ( sort keys %$bs_rows ) {
+            foreach my $ix ( @{ $bs_rows->{$subname} } ) {
+
+                # replace the cv to the one freshly loaded by XS
+                init_bootstraplink()->sadd(
+                    '%s_list[%d].%s = (SV*) GvCV( gv_fetchpv(%s, 0, SVt_PVCV) );',
+                    $section, $ix, $field, cstring($subname)
+                );
+
+            }
+        }
+    }
+
+    #foreach my $section ( sort ) {
+    #$self->{init}->fixup_assignments;
+    #}
+
+    return;
+}
+
 sub write {
     my $c_file_stash = shift or die;
     my $template_name_short = shift || 'base.c.tt2';
 
+    # TODO: refactor move section group logic outside of the 'write' which is the main purpose of File
     # Controls the rendering order of the sections.
     $c_file_stash->{section_list} = [
         struct_names(),
@@ -131,6 +164,8 @@ sub write {
     foreach my $section ( code_section_names(), init_section_names() ) {
         $c_file_stash->{'section'}->{$section} = $self->{$section};
     }
+
+    replace_xs_bootstrap_to_init();
 
     $self->{'verbose'} = $c_file_stash->{'verbose'};    # So verbose() will work. TODO: Remove me when all verbose() are gone.
 

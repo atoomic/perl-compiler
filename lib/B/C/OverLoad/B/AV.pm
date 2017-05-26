@@ -156,16 +156,17 @@ sub do_save {
         # might be faster also.
         else {
 
-            init_static_assignments()->no_split;
+            my $deferred_init = $acc =~ qr{BOOTSTRAP_XS_}m ? init() : init_static_assignments();
+            $deferred_init->no_split;
 
-            init_static_assignments()->add( "{ /* Slow array init mode. */", );
-            init_static_assignments()->add("\tregister int gcount;") if $count;
+            $deferred_init->add( "{ /* Slow array init mode. */", );
+            $deferred_init->add("\tregister int gcount;") if $count;
             my $fill1 = $fill < 3 ? 3 : $fill + 1;
-            init_static_assignments()->sadd( "\tSV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
-            init_static_assignments()->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
-            init_static_assignments()->add("}");
+            $deferred_init->sadd( "\tSV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
+            $deferred_init->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
+            $deferred_init->add("}");
 
-            init_static_assignments()->split;
+            $deferred_init->split;
         }
 
         init()->split;
