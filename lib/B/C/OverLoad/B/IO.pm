@@ -4,195 +4,56 @@ use strict;
 
 use B qw/cstring cchar svref_2object/;
 use B::C::Config;
-use B::C::Save qw(savepv);
+use B::C::Save qw/savepv savecowpv/;
 use B::C::File qw/init init2 svsect xpviosect/;
-
-sub save_data {
-    my ( $io, $sym, $globname, @data ) = @_;
-    my $data = join '', @data;
-
-    my $ref = svref_2object( \$data )->save;
-    init()->add("/* save $globname in RV ($ref) */") if verbose();
-    init()->add("GvSVn( $sym ) = (SV*)$ref;");
-
-    # force inclusion of PerlIO::scalar as it was loaded in BEGIN.
-    init2()->add_eval( sprintf 'open(%s, \'<:scalar\', \\\\$%s);', $globname, $globname );
-
-    # => eval_pv("open(main::DATA, '<:scalar', $main::DATA);",1); DATA being a ref to $data
-    init()->pre_destruct( sprintf 'eval_pv("close %s;", 1);', $globname );
-    $B::C::use_xsloader = 1;    # layers are not detected as XSUB CV, so force it
-
-    # STATIC_HV: This needs to be done earlier in C.pm
-    require PerlIO;
-    require PerlIO::scalar;
-
-    # Do some sorta magic to save the XS also.
-}
+use B::C::Helpers::Symtable qw/savesym/;
 
 sub do_save {
-    my ( $io, $fullname, $is_DATA ) = @_;
+    my ( $io, $fullname ) = @_;
 
-    my $pv = $io->PV;
-    $pv = '' unless defined $pv;
-    my ( $pvsym, $len, $cur );
-    if ($pv) {
-        $pvsym = savepv($pv);
-        $cur   = $io->CUR;
-    }
-    else {
-        $pvsym = 'NULL';
-        $cur   = 0;
-    }
-    if ($cur) {
-        $len = $cur + 1;
-        $len++ if B::C::IsCOW($io);
-    }
-    else {
-        $len = 0;
-    }
-    debug( sv => "IO $fullname sv_list[%d] 0x%x (%s) = '%s'\n", svsect()->index + 1, $$io, $io->SvTYPE, $pv );
+    #return 'NULL' if $io->IsSTD($fullname);
 
-    # no method "SvTYPE" via package "B::IO"
+    my $xmg_stash = B::CV::typecast_stash_save( $io->SvSTASH->save );
 
-    # IFP in sv.sv_u.svu_fp
-    xpviosect()->comment("STASH, xmg_u, cur, len, xiv_u, xio_ofp, xio_dirpu, page, page_len, ..., type, flags");
 
-    # STATIC HV: Static stashes here.
-    my $tmpl = "Nullhv, {%s}, \n\t%u, /*cur*/\n\t{%u}, /*len*/\n\t{%d}, /*LINES*/\n\t0, /*OFP later*/\n\t{0}, /*dirp_u later*/\n\t%d, /*PAGE*/\n\t%d, /*PAGE_LEN*/\n\t%d, /*LINES_LEFT*/\n\t%s, /*TOP_NAME*/\n\tNullgv, /*top_gv later*/\n\t%s, /*fmt_name*/\n\tNullgv, /*fmt_gv later*/\n\t%s, /*bottom_name*/\n\tNullgv, /*bottom_gv later*/\n\t%s, /*type*/\n\t0x%x /*flags*/";
-    $tmpl =~ s{ /\*.+?\*/\n\t}{}g unless verbose();
-    $tmpl =~ s{ /\*flags\*/$}{}   unless verbose();
-    xpviosect()->sadd(
-        $tmpl, $io->save_magic($fullname),
-        $cur,  $len,
-        $io->LINES,    # moved to IVX with 5.11.1
-        $io->PAGE,            $io->PAGE_LEN,
-        $io->LINES_LEFT,      "NULL",
-        "NULL",               "NULL",
-        cchar( $io->IoTYPE ), $io->IoFLAGS
-    );
-    svsect()->sadd(
-        "&xpvio_list[%d], %Lu, 0x%x, {%s}",
-        xpviosect()->index, $io->REFCNT, $io->FLAGS, 0
+    my ( $xio_top_name,    undef, undef ) = savecowpv( $io->TOP_NAME    || '' );
+    my ( $xio_fmt_name,    undef, undef ) = savecowpv( $io->FMT_NAME    || '' );
+    my ( $xio_bottom_name, undef, undef ) = savecowpv( $io->BOTTOM_NAME || '' );
+
+    my $top_gv    = $io->TOP_GV->save;
+    my $fmt_gv    = $io->FMT_GV->save;
+    my $bottom_gv = $io->BOTTOM_GV->save;
+    foreach ( $top_gv, $fmt_gv, $bottom_gv ) {
+        $_ = 'NULL' if ( $_ eq 'Nullsv' );
+    }
+
+    xpviosect()->comment( 'xmg_stash, xmg_u, xpv_cur, xpv_len_u, xiv_u, xio_ofp, xio_dirpu, xio_page, xio_page_len, xio_lines_left, xio_top_name, ' . 'xio_top_gv, xio_fmt_name, xio_fmt_gv, xio_bottom_name, xio_bottom_gv, xio_type, xio_flags' );
+    my $xpvio_ix = xpviosect()->sadd(
+        "%s, {%s}, %u, %u, /*end of head*/ {.xivu_uv=0}/*xiv_u ???*/, (PerlIO*) 0, {.xiou_any =(void*)NULL} /* dirpu ??? */, %d, %d, %d, (char*)%s, (GV*)%s, (char*)%s, (GV*)%s, (char*)%s, (GV*) %s, '%s', 0x%x",
+        $xmg_stash,                    # xmg_stash
+        $io->save_magic($fullname),    # xmg_u
+        $io->CUR,                      # xpv_cur
+        $io->LEN,                      # xpv_len_u
+                                       # xiv_u
+                                       # xio_ofp
+                                       # xio_dirpu
+        $io->PAGE,                     # xio_page
+        $io->PAGE_LEN,                 # xio_page_len
+        $io->LINES_LEFT,               # xio_lines_left
+        $xio_top_name,                 # xio_top_name
+        $top_gv,                       # xio_top_gv
+        $xio_fmt_name,                 # xio_fmt_name
+        $fmt_gv,                       # xio_fmt_gv
+        $xio_bottom_name,              # xio_bottom_name
+        $bottom_gv,                    # xio_bottom_gv
+        $io->IoTYPE,                   # xio_type
+        $io->IoFLAGS,                  # xio_flags
     );
 
-    svsect()->debug( $fullname, $io );
-    my $sym = sprintf( "(IO*)&sv_list[%d]", svsect()->index );
+    # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
+    my $sv_ix = svsect->sadd( "(XPVIO*)&xpvio_list[%u], %Lu, 0x%x, {%s}", $xpvio_ix, $io->REFCNT + 1, $io->FLAGS, '0' );
 
-    if ($cur) {
-        init()->sadd( "SvPVX(sv_list[%d]) = %s;", svsect()->index, $pvsym );
-    }
-    my ($field);
-    foreach $field (qw(TOP_GV FMT_GV BOTTOM_GV)) {
-        my $fsym = $io->$field();
-        if ($$fsym) {
-            init()->sadd( "Io%s(%s) = (GV*)s\\_%x;", $field, $sym, $$fsym );
-            $fsym->save;
-        }
-    }
-    foreach $field (qw(TOP_NAME FMT_NAME BOTTOM_NAME)) {
-        my $fsym = $io->$field;
-        if ($fsym) {
-            init()->sadd( "Io%s(%s) = savepvn(%s, %u);", $field, $sym, cstring($fsym), length $fsym );
-        }
-    }
-
-    if ( !$is_DATA ) {    # PerlIO
-                          # deal with $x = *STDIN/STDOUT/STDERR{IO} and aliases
-        my $perlio_func;
-
-        # Note: all single-direction fp use IFP, just bi-directional pipes and
-        # sockets use OFP also. But we need to set both, pp_print checks OFP.
-        my $o = $io->object_2svref();
-        eval "require " . ref($o) . ";";
-        my $fd = $o->fileno();
-
-        # use IO::Handle ();
-        # my $fd = IO::Handle::fileno($o);
-        my $i = 0;
-        foreach (qw(stdin stdout stderr)) {
-            if ( $io->IsSTD($_) or ( defined($fd) and $fd == -$i ) ) {
-                $perlio_func = $_;
-            }
-            $i++;
-        }
-        if ($perlio_func) {
-            init()->add("IoIFP(${sym}) = IoOFP(${sym}) = PerlIO_${perlio_func}();");
-
-            #if ($fd < 0) { # fd=-1 signals an error
-            # XXX print may fail at flush == EOF, wrong init-time?
-            #}
-        }
-        else {
-            my $iotype  = $io->IoTYPE;
-            my $ioflags = $io->IoFLAGS;
-
-            # If an IO handle was opened at BEGIN, we try to re-init it, based on fd and IoTYPE.
-            # IOTYPE:
-            #  -    STDIN/OUT           HANDLE IoIOFP alias
-            #  I    STDIN/OUT/ERR       HANDLE IoIOFP alias
-            #  <    read-only           HANDLE fdopen
-            #  >    write-only          HANDLE if fd<3 or IGNORE warn and comment
-            #  a    append              HANDLE     -"-
-            #  +    read and write      HANDLE fdopen
-            #  s    socket              DIE
-            #  |    pipe                DIE
-            #  #    NUMERIC             HANDLE fdopen
-            #  space closed             IGNORE
-            #  \0   ex/closed?          IGNORE
-            if ( $iotype eq "\c@" or $iotype eq " " ) {
-                debug(
-                    gv => "Ignore closed IO Handle %s %s (%d)\n",
-                    cstring($iotype), $fullname, $ioflags
-                );
-            }
-            elsif ( $iotype =~ /[a>]/ ) {    # write-only
-                WARN("Warning: Write BEGIN-block $fullname to FileHandle $iotype \&$fd")
-                  if $fd >= 3 or verbose();
-                my $mode = $iotype eq '>' ? 'w' : 'a';
-
-                init()->sadd(
-                    "%sIoIFP(%s) = IoOFP(%s) = PerlIO_fdopen(%d, %s);%s",
-                    $fd < 3 ? '' : '/*', $sym, $sym, $fd, cstring($mode), $fd < 3 ? '' : '*/'
-                );
-            }
-            elsif ( $iotype =~ /[<#\+]/ ) {
-
-                # skips warning if it's one of our PerlIO::scalar __DATA__ handles
-                WARN("Warning: Read BEGIN-block $fullname from FileHandle $iotype \&$fd")
-                  if $fd >= 3 or verbose();    # need to setup it up before
-                init()->add(
-                    "/* XXX WARNING: Read BEGIN-block $fullname from FileHandle */",
-                    "IoIFP($sym) = IoOFP($sym) = PerlIO_fdopen($fd, \"r\");"
-                );
-                my $tell;
-                if ( $io->can("tell") and $tell = $io->tell() ) {
-                    init()->add("PerlIO_seek(IoIFP($sym), $tell, SEEK_SET);");
-                }
-            }
-            else {
-                # XXX We should really die here
-                FATAL(
-                    "ERROR: Unhandled BEGIN-block IO Handle %s\&%d (%d) from %s\n",
-                    cstring($iotype), $fd, $ioflags, $fullname
-                );
-                init()->add(
-                    "/* XXX WARNING: Unhandled BEGIN-block IO Handle ",
-                    "IoTYPE=$iotype SYMBOL=$fullname, IoFLAGS=$ioflags */",
-                    "IoIFP($sym) = IoOFP($sym) = PerlIO_fdopen($fd, \"$iotype\");"
-                );
-            }
-        }
-    }
-
-    my $stash = $io->SvSTASH;
-    if ( $stash and $$stash ) {
-        my $stsym = $stash->save( "%" . $stash->NAME );
-        init()->sadd( "SvREFCNT(%s) += 1;", $stsym );
-        init()->sadd( "SvSTASH_set(%s, %s);", $sym, $stsym );
-        debug( gv => "done saving STASH %s %s for IO %s", $stash->NAME, $stsym, $sym );
-    }
-
-    return $sym;
+    return savesym( $io, "&sv_list[$sv_ix]" );
 }
 
 1;

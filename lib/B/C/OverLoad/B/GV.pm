@@ -205,15 +205,12 @@ sub savegp_from_gv {
     $gp_hv   = $gv->save_gv_hv($fullname)     if $savefields & Save_HV;
     $gp_cv   = $gv->save_gv_cv($fullname)     if $savefields & Save_CV;
     $gp_form = $gv->save_gv_format($fullname) if $savefields & Save_FORM;    # FIXME incomplete for now
-
-    my $io_sv;
-    ( $gp_io, $io_sv ) = $gv->save_gv_io($fullname) if $savefields & Save_IO;    # FIXME: get rid of sym
-    $gp_sv = $io_sv if $io_sv;
+    $gp_io   = $gv->save_gv_io($fullname)     if $savefields & Save_IO;
 
     gpsect()->comment('SV, gp_io, CV, cvgen, gp_refcount, HV, AV, CV* form, GV, line, flags, HEK* file');
 
     my $gp_ix = gpsect()->sadd(
-        "(SV*) %s, %s, (CV*) %s, %d, %u, %s, %s, (CV*) %s, %s, %u, %d, %s ",
+        "(SV*) %s, (IO*) %s, (CV*) %s, %d, %u, %s, %s, (CV*) %s, %s, %u, %d, %s ",
         $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_refcount, $gp_hv, $gp_av, $gp_form, $gp_egv,
         $gp_line, $gp_flags, $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) ((void*)&$gp_file_hek + sizeof(HE))}
     );
@@ -449,19 +446,7 @@ sub save_gv_io {
     my $gvio = $gv->IO;
     return 'NULL' unless $$gvio;
 
-    my $is_data;
-    my $sv;
-    if ( $fullname eq 'main::DATA' or ( $fullname =~ m/::DATA$/ ) ) {
-        no strict 'refs';
-        my $fh = *{$fullname}{IO};
-        use strict 'refs';
-        $is_data = 'is_DATA';
-
-        # TODO: save_data only used for GV... can probably use it there
-        $sv = $gvio->save_data( $fullname, <$fh> ) if $fh->opened;
-    }
-
-    return ( $gvio->save( $fullname, $is_data ), $sv );
+    return $gvio->save($fullname);
 }
 
 sub get_savefields {
