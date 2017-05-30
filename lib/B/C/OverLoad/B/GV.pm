@@ -42,6 +42,7 @@ my $CORE_SYMS = {
     'main::STDIN'  => 'PL_stdingv',
     'main::STDERR' => 'PL_stderrgv',
     'main::stdin'  => 'PL_stdingv',
+    'main::STDOUT' => 'PL_defoutgv',
     'main::stdout' => 'PL_defoutgv',
     'main::stderr' => 'PL_stderrgv',
 };
