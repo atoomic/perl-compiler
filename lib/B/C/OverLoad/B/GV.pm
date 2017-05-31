@@ -39,12 +39,12 @@ sub _savefields_to_str {
 my $CORE_SYMS = {
     'main::ENV'    => 'PL_envgv',
     'main::ARGV'   => 'PL_argvgv',
-    'main::STDIN'  => 'PL_stdingv',
-    'main::STDERR' => 'PL_stderrgv',
-    'main::stdin'  => 'PL_stdingv',
-    'main::STDOUT' => 'PL_defoutgv',
-    'main::stdout' => 'PL_defoutgv',
-    'main::stderr' => 'PL_stderrgv',
+#    'main::STDIN'  => 'PL_stdingv',
+#    'main::STDERR' => 'PL_stderrgv',
+#    'main::stdin'  => 'PL_stdingv',
+#    'main::STDOUT' => 'PL_defoutgv',
+#    'main::stdout' => 'PL_defoutgv',
+#    'main::stderr' => 'PL_stderrgv',
 };
 
 sub do_save {
@@ -446,6 +446,7 @@ sub save_gv_io {
 
     my $gvio = $gv->IO;
     return 'NULL' unless $$gvio;
+    return 'NULL' if $fullname =~ m/^(?:main::)?(stdout|stderr|stdin)/i;
 
     return $gvio->save($fullname);
 }
