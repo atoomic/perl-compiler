@@ -28,9 +28,9 @@ sub do_save {
     my ( $cv, $origname ) = @_;
     debug( cv => "CV ==  %s", $origname );
 
-    if ( $cv->XSUB && $origname !~ qr{^Carp::} ) {    # xs function
-        $origname =~ s{^main::}{};                    # main::attributes::*
-        $origname =~ s[{(.+?)}][$1]g;                 # main::Internals::{V}
+    if ( ( $cv->XSUB && $origname !~ qr{^Carp::} ) ) {    # xs function
+        $origname =~ s{^main::}{};                        # main::attributes::*
+        $origname =~ s[{(.+?)}][$1]g;                     # main::Internals::{V}
 
         B::C::found_xs_sub($origname);
         return "BOOTSTRAP_XS_[[${origname}]]_XS_BOOTSTRAP";
@@ -39,28 +39,42 @@ sub do_save {
     my $sv_ix = svsect()->add('FAKE_GV');
     my $sym = savesym( $cv, "&sv_list[$sv_ix]" );
 
+    my $presumed_package = $origname;
+    $presumed_package =~ s/::[^:]+$//;
+
     my $xmg_stash = typecast_stash_save( $cv->SvSTASH->save );
-    my $cv_stash  = typecast_stash_save( $cv->STASH->save );
+    my $cv_stash = typecast_stash_save( $presumed_package eq 'Fcntl' ? svref_2object( \%Fcntl:: )->save( $presumed_package . "::" ) : $cv->STASH->save );
 
     # need to survive cv_undef as there is no protection against static CVs
     my $refcnt = $cv->REFCNT + 1;
 
-    my $root = $cv->ROOT;
+    my $root = $cv->get_ROOT;
 
     my $startfield = $cv->save_optree();
 
-    my ( $xcv_file, undef, undef  ) = savecowpv( $cv->FILE || '' );
+    # Setup the PV for the SV here cause we need to set cur and len.
+    my $pv    = 'NULL';
+    my $flags = $cv->FLAGS;
+    my $cur   = $cv->CUR;
+    my $len   = $cv->LEN;
+    if ( defined $cv->PV ) {
+        ( $pv, $cur, $len ) = savecowpv( $cv->PV );
+        $pv    = "(char *) $pv";
+        $flags = $flags | SVf_IsCOW;
+    }
+
+    my ( $xcv_file, undef, undef ) = savecowpv( $cv->FILE || '' );
 
     xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
     my $xpvcv_ix = xpvcvsect->sadd(
         "%s, {%s}, %u, {%u}, %s, {%s}, {s\\_%x}, %s, (char*) %s, {%s}, (CV*)%s, %s, 0x%x, %d",
-        $xmg_stash,                               # xmg_stash
-        $cv->save_magic($origname),               # xmg_u
-        $cv->CUR,                                 # xpv_cur -- warning this is not CUR and LEN for the pv
-        $cv->LEN,                                 # xpv_len_u -- warning this is not CUR and LEN for the pv
-        $cv_stash,                                # xcv_stash
-        $startfield,                              # xcv_start_u
-        $$root,                                   # xcv_root_u
+        $xmg_stash,                    # xmg_stash
+        $cv->save_magic($origname),    # xmg_u
+        $cur,                          # xpv_cur -- warning this is not CUR and LEN for the pv
+        $len,                          # xpv_len_u -- warning this is not CUR and LEN for the pv
+        $cv_stash,                     # xcv_stash
+        $startfield,                   # xcv_start_u
+        $root ? $$root : 'NULL',       # xcv_root_u
         $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
         $xcv_file,                                # xcv_file
         $cv->cv_save_padlist($origname),          # xcv_padlist_u
@@ -76,9 +90,8 @@ sub do_save {
     #warn qq{======= Unsaved PV for a CV - $origname - } . $cv->PV if ( length( $cv->PV ) );
 
     # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
-    my $pvstr = $cv->PV ? cstring( $cv->PV ) : 0;
 
-    svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT + 1, $cv->FLAGS, $pvstr );
+    svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, %s", $xpvcv_ix, $cv->REFCNT + 1, $flags, $pv );
 
     return $sym;
 }
@@ -187,12 +200,19 @@ sub get_xcv_gv_u {
     return sprintf( "{ .xcv_gv = %s }", $xcv_gv_u );
 }
 
-sub save_optree {
+sub get_ROOT {
     my ($cv) = @_;
 
     my $root = $cv->ROOT;
+    return ref $root eq 'B::NULL' ? undef : $root,
+}
 
-    return 0 unless ($$root);
+sub save_optree {
+    my ($cv) = @_;
+
+    my $root = $cv->get_ROOT;
+
+    return 0 unless ( $root && $$root );
 
     my $gv = $cv->GV;
 
