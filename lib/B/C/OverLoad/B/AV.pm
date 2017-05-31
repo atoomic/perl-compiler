@@ -48,8 +48,9 @@ sub do_save {
         xpvavsect()->comment('xmg_stash, xmg_u, xav_fill, xav_max, xav_alloc');
 
         # STATIC HV: xmg_stash static.
-        my $xpvavsym_ix = xpvavsect()->sadd( "Nullhv, {%s}, %d, %d, 0", $av->save_magic($fullname), $fill, $fill );
-        my $xpvavsym = sprintf( '&xpvav_list[%d]', $xpvavsym_ix );
+        my $xmg_stash   = B::CV::typecast_stash_save( $av->SvSTASH->save );
+        my $xpvavsym_ix = xpvavsect()->sadd( "%s, {%s}, %d, %d, 0", $xmg_stash, $av->save_magic($fullname), $fill, $fill );
+        my $xpvavsym    = sprintf( '&xpvav_list[%d]', $xpvavsym_ix );
 
         svsect()->sadd( "%s, %Lu, 0x%x, {%s}", $xpvavsym, $av->REFCNT, $av->FLAGS, 0 );
 
