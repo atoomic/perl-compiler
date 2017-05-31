@@ -159,7 +159,7 @@ sub do_save {
             my $deferred_init = $acc =~ qr{BOOTSTRAP_XS_}m ? init_bootstraplink() : init_static_assignments();
             $deferred_init->no_split;
 
-            $deferred_init->add( "{ /* Slow array init mode. */", );
+            $deferred_init->sadd( "{ /* Initialize array %s */", $fullname );
             $deferred_init->add("\tregister int gcount;") if $count;
             my $fill1 = $fill < 3 ? 3 : $fill + 1;
             $deferred_init->sadd( "\tSV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
