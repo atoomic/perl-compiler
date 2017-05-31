@@ -173,7 +173,7 @@ sub cleanup_stashes {
     #}
 
     # cleanup special variables
-    foreach my $k ( qw{ BEGIN ARGV ENV + - }, 1 .. 9 ) {
+    foreach my $k ( qw{ BEGIN ARGV ENV STDERR STDIN STDOUT stderr stdin stdout + - }, 1 .. 9 ) {
         delete $stashes->{$k};
     }
 
