@@ -44,7 +44,7 @@ sub singleton {
 
 # The objects in quotes do not have any special logic.
 sub code_section_names {
-    return qw{const decl init0 free sym hek sharedhe}, struct_names(), op_sections();
+    return qw{const decl init0 free sym hek sharedhe sharedhestructs}, struct_names(), op_sections();
 }
 
 # These objects will end up in an array of structs in the template and be auto-declared.
@@ -162,6 +162,8 @@ sub write {
         struct_names(),
         op_sections(),
     ];
+
+    $self->{'sharedhestructs'}->sort();    # sort them for human readability
 
     foreach my $section ( code_section_names(), init_section_names() ) {
         $c_file_stash->{'section'}->{$section} = $self->{$section};
