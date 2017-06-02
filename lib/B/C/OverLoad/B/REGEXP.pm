@@ -20,7 +20,7 @@ sub do_save {
 
     # Unfortunately this XPV is needed temp. Later replaced by struct regexp.
     # STATIC HV: Static stash please.
-    my $xpv_ix = xpvsect()->sadd( "Nullhv, %s, %u, {%u}", $sv->save_magic($fullname), $cur, 0 );
+    my $xpv_ix = xpvsect()->sadd( "Nullhv, {%s}, %u, {%u}", $sv->save_magic($fullname), $cur, 0 );
     my $ix = svsect()->sadd(
         "&xpv_list[%d], %Lu, 0x%x, {NULL}",
         $xpv_ix, $sv->REFCNT, $sv->FLAGS

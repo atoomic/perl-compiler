@@ -720,6 +720,7 @@ xs_init(pTHX)
 
 [% optimizer.dynaloader.boot %]
 
+[% IF optimizer.dynaloader.dl && optimizer.dynaloader.dl_modules.size > 0 %]
 typedef void (*bootFunc)(pTHX_ CV* cv);
 static void do_bootstrap(pTHX_ const char *name, int len, const char *bootstrap, bootFunc boot) {
     dTARG;
@@ -745,6 +746,7 @@ static void do_bootstrap(pTHX_ const char *name, int len, const char *bootstrap,
 
     return;
 }
+[% END %]
 
 static void
 dl_init(pTHX)
