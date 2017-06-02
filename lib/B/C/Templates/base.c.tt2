@@ -343,7 +343,7 @@ PAD ** INITPADLIST(PADLIST *pad, int count) {
 [% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
 [% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
 
-void setup_perl_globals( char* argv0 ) {
+void setup_perl_globals() {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
     PL_curstname = [% PL.curstname %];  /* "main" SVt_PV */
     PL_incgv = [% PL.incgv %];             /* *main::INC SVt_PVGV hv and AV must be set! */
@@ -353,9 +353,6 @@ void setup_perl_globals( char* argv0 ) {
     PL_replgv = [% PL.replgv %];           /* *main::^R SVt_PVGV */
     PL_debstash = [% PL.debstash %];       /* *main::DB:: SVt_PVHV */
     PL_globalstash = [% PL.globalstash %]; /* *main::CORE::GLOBAL:: SVt_PVHV */
-
-    /* setup $0 on execution */
-    CopFILE_set(&PL_compiling, argv0);
 }
 
 static void init_pl_strtab(pTHX) {
@@ -831,10 +828,13 @@ main(int argc, char **argv, char **env)
     assert(PL_do_undump == 0);
 
     init_pl_strtab(); /* Initialize PL_Strtab on our own before perl gets to it in perl_alloc. This allows us to use immportal constant shared HEKs */
+    setup_perl_globals();
     perl_init_stash(); /* Setup the stashes */
     perl_init_vtables(); /* assign runtime vtables to magic structs since they point to C functions */
     perl_init_static_assignments(); /* Setup the stashes */
-    setup_perl_globals(argv[0]);
+
+    /* setup $0 on execution */
+    CopFILE_set(&PL_compiling, argv[0]);
 
 	perl_construct( &BC_unthreaded_interpreter );
 

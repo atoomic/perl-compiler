@@ -87,9 +87,11 @@ sub save_compile_state {
 
     $settings->{'starting_flat_stashes'} = flatten_stashes( $settings->{'starting_stash'} );
 
-    # eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
-    # eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
-    # print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} ); exit;
+    #eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
+    #eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
+    #eval q { print STDERR Data::Dumper::Dumper(\%seen) };
+    #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} );
+    #exit;
 
     # Upgrade the SVRV for main::AUTOLOAD to an SVGV. WHY IS THIS NOT A SVGV???
     eval '$main::AUTOLOAD = undef' if $settings->{starting_stash}->{'AUTOLOAD'};
@@ -129,7 +131,7 @@ sub starting_stash {
                 $hash{$key}  = starting_stash($goto);
             }
             else {
-                $hash{$key} = 1 unless ( $in_main && $key eq 'main::' );
+                $hash{$key} = 1;
             }
         }
         else {

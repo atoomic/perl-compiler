@@ -219,8 +219,9 @@ sub do_save {
             make_c3($stash_name);    # Is it main when we want to do it for main????
         }
 
-        my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);
-        $init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
+        # Having this in place was making method lookups fail.
+        #my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);
+        #$init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
 
         enames_crap( $hv, $stash_name, $sym );
     }
