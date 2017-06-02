@@ -87,6 +87,7 @@ sub do_save {
 
     $fullname ||= '';
     my $stash_name = $hv->NAME;
+    $stash_name =~ s/^main::(.+)$/$1/; # Strip off main:: on everything but main::
 
     #debug( hv => "XXXX HV fullname %s // name %s", $fullname, $stash_name );
     if ($stash_name) {
@@ -220,8 +221,8 @@ sub do_save {
         }
 
         # Having this in place was making method lookups fail.
-        #my ( $cstring, $cur, $utf8 ) = strlen_flags($fullname);
-        #$init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
+        my ( $cstring, $cur, $utf8 ) = strlen_flags($stash_name);
+        $init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
 
         enames_crap( $hv, $stash_name, $sym );
     }
