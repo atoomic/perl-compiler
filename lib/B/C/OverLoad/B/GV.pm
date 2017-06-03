@@ -6,7 +6,7 @@ use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8/;
 
 use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he/;
-use B::C::File qw/init init2 init_static_assignments gvsect gpsect xpvgvsect/;
+use B::C::File qw/init init2 init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
 use B::C::Helpers qw/get_cv_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Optimizer::ForceHeavy qw/force_heavy/;
@@ -37,14 +37,8 @@ sub _savefields_to_str {
 }
 
 my $CORE_SYMS = {
-    'main::ENV'    => 'PL_envgv',
-    'main::ARGV'   => 'PL_argvgv',
-#    'main::STDIN'  => 'PL_stdingv',
-#    'main::STDERR' => 'PL_stderrgv',
-#    'main::stdin'  => 'PL_stdingv',
-#    'main::STDOUT' => 'PL_defoutgv',
-#    'main::stdout' => 'PL_defoutgv',
-#    'main::stderr' => 'PL_stderrgv',
+    'main::ENV'  => 'PL_envgv',
+    'main::ARGV' => 'PL_argvgv',
 };
 
 sub do_save {
@@ -201,12 +195,12 @@ sub savegp_from_gv {
         $gp_file_hek = save_shared_he( $gv->FILE );        # use FILE instead of FILEGV or we will save the B::GV stash
     }
 
-    $gp_sv   = $gv->save_gv_sv($fullname)     if $savefields & Save_SV;
-    $gp_av   = $gv->save_gv_av($fullname)     if $savefields & Save_AV;
-    $gp_hv   = $gv->save_gv_hv($fullname)     if $savefields & Save_HV;
-    $gp_cv   = $gv->save_gv_cv($fullname)     if $savefields & Save_CV;
-    $gp_form = $gv->save_gv_format($fullname) if $savefields & Save_FORM;    # FIXME incomplete for now
-    $gp_io   = $gv->save_gv_io($fullname)     if $savefields & Save_IO;
+    $gp_sv = $gv->save_gv_sv($fullname) if $savefields & Save_SV;
+    $gp_av = $gv->save_gv_av($fullname) if $savefields & Save_AV;
+    $gp_hv = $gv->save_gv_hv($fullname) if $savefields & Save_HV;
+    $gp_cv   = $gv->save_gv_cv( $fullname, gpsect()->index + 1 ) if $savefields & Save_CV;
+    $gp_form = $gv->save_gv_format($fullname)                    if $savefields & Save_FORM;    # FIXME incomplete for now
+    $gp_io   = $gv->save_gv_io($fullname)                        if $savefields & Save_IO;
 
     gpsect()->comment('SV, gp_io, CV, cvgen, gp_refcount, HV, AV, CV* form, GV, line, flags, HEK* file');
 
@@ -355,7 +349,7 @@ sub save_gv_hv {                       # new function to be renamed later..
 }
 
 sub save_gv_cv {
-    my ( $gv, $fullname ) = @_;
+    my ( $gv, $fullname, $gp_ix ) = @_;
 
     debug( gv => ".... save_gv_cv $fullname" );
 
@@ -387,44 +381,38 @@ sub save_gv_cv {
 
     # Can't locate object method "EGV" via package "B::SPECIAL" at /usr/local/cpanel/3rdparty/perl/520/lib/perl5/cpanel_lib/i386-linux-64int/B/C/OverLoad/B/GV.pm line 450.
     {
-        my $package  = $gvcv->GV->EGV->STASH->NAME;    # is it the same than package earlier ??
-        my $oname    = $gvcv->GV->EGV->NAME;
-        my $origname = $package . "::" . $oname;
-
-        if ( $gvcv->XSUB and $oname ne '__ANON__' and $fullname ne $origname ) {    #XSUB CONSTSUB alias
-
-            # TODO
-            #die "TODO";
-
-            # {
-            #     no strict 'refs';
-            #     svref_2object( \&{"$package\::bootstrap"} )->save
-            #       if $package and defined &{"$package\::bootstrap"};
-            # }
-
-            # # XXX issue 57: incomplete xs dependency detection
-            # my %hack_xs_detect = (
-            #     'Scalar::Util'  => 'List::Util',
-            #     'Sub::Exporter' => 'Params::Util',
-            # );
-            # if ( my $dep = $hack_xs_detect{$package} ) {
-            #     svref_2object( \&{"$dep\::bootstrap"} )->save;
-            # }
-
-            # # must save as a 'stub' so newXS() has a CV to populate
-            # debug( gv => "save stub CvGV for $sym GP assignments $origname" );
-            #init2()->sadd( "if ((sv = (SV*)%s))", get_cv_string( $origname, "GV_ADD" ) );
-            #init2()->sadd( "    GvCV_set(%s, (CV*)SvREFCNT_inc_simple_NN(sv));", $sym );
-        }
-        elsif ($gp) {
+        if ($gp) {
             if ( $fullname eq 'Internals::V' ) {
                 $gvcv = svref_2object( \&__ANON__::_V );
             }
             $cvsym = $gvcv->save($fullname);
         }
+        my $origname = $gv->cv_needs_import_after_bootstrap( $cvsym, $fullname );
+        if ($origname) {
+            warn("$fullname == $origname\n");
+            init_bootstraplink()->sadd( 'gp_list[%d].gp_cv = GvCV( gv_fetchpv(%s, 0, SVt_PVCV) );', $gp_ix, cstring($origname) );
+        }
+
     }
 
     return $cvsym;
+}
+
+sub cv_needs_import_after_bootstrap {
+    my ( $gv, $cvsym, $fullname ) = @_;
+
+    return 0 unless $cvsym && $cvsym =~ m{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP};
+    my $bootstrapped_xs_sub = $1;
+
+    my $package  = $gv->CV->GV->STASH->NAME;    # is it the same than package earlier ??
+    my $oname    = $gv->CV->GV->NAME;
+    my $origname = $package . "::" . $oname;
+
+    return '' if $origname =~ m/::__ANON__$/;    # How do we bootstrap __ANON__ XSUBs?
+
+    my $ret = $fullname eq $origname ? '' : $origname;
+
+    return $ret;
 }
 
 sub save_gv_format {
