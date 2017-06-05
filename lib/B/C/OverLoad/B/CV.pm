@@ -66,22 +66,22 @@ sub do_save {
     my ( $xcv_file, undef, undef ) = savecowpv( $cv->FILE || '' );
 
     xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
-    my $xpvcv_ix = xpvcvsect->sadd(
-        "%s, {%s}, %u, {%u}, %s, {%s}, {s\\_%x}, %s, (char*) %s, {%s}, (CV*)%s, %s, 0x%x, %d",
-        $xmg_stash,                    # xmg_stash
-        $cv->save_magic($origname),    # xmg_u
-        $cur,                          # xpv_cur -- warning this is not CUR and LEN for the pv
-        $len,                          # xpv_len_u -- warning this is not CUR and LEN for the pv
-        $cv_stash,                     # xcv_stash
-        $startfield,                   # xcv_start_u
-        $root ? $$root : 0,            # xcv_root_u
-        $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
-        $xcv_file,                                # xcv_file
-        $cv->cv_save_padlist($origname),          # xcv_padlist_u
-        $cv->get_cv_outside(),                    # xcv_outside
-        get_integer_value( $cv->OUTSIDE_SEQ ),    # xcv_outside_seq
-        $cv->CvFLAGS,                             # xcv_flags
-        $cv->DEPTH                                # xcv_depth
+
+    my $xpvcv_ix = xpvcvsect->saddl(
+        '%s'          => $xmg_stash,                               # xmg_stash
+        '{%s}'        => $cv->save_magic($origname),               # xmg_u
+        '%u'          => $cur,                                     # xpv_cur -- warning this is not CUR and LEN for the pv
+        '{%u}'        => $len,                                     # xpv_len_u -- warning this is not CUR and LEN for the pv
+        '%s'          => $cv_stash,                                # xcv_stash
+        '{%s}'        => $startfield,                              # xcv_start_u
+        "{s\\_%x}"    => $root ? $$root : 0,                       # xcv_root_u
+        q{%s}         => $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
+        q{(char*) %s} => $xcv_file,                                # xcv_file
+        '{%s}'        => $cv->cv_save_padlist($origname),          # xcv_padlist_u
+        '(CV*)%s'     => $cv->get_cv_outside(),                    # xcv_outside
+        '%d'          => get_integer_value( $cv->OUTSIDE_SEQ ),    # xcv_outside_seq
+        '0x%x'        => $cv->CvFLAGS,                             # xcv_flags
+        '%d'          => $cv->DEPTH                                # xcv_depth
     );
 
     # STATIC_HV: We don't think the sv_u is ever set in the SVCV so this check might be wrong

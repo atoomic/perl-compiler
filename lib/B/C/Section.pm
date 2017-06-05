@@ -45,8 +45,28 @@ sub add {
 }
 
 # simple add using sprintf: avoid boilerplates
+# ex: sadd( "%d, %s", 1234, q{abcd} )
 sub sadd {
     my ( $self, $pattern, @args ) = @_;
+    return $self->add( sprintf( $pattern, @args ) );
+}
+
+# simple add using sprintf, but formatted as a list
+# ex: saddl( "%d" => 1234, "%s" => q{abcd} )
+sub saddl {
+    my ( $self, @list ) = @_;
+
+    my $pattern = q{};
+    my @args;
+
+    die "saddl should be called with an odd number of argument" unless scalar @list % 2 == 0;
+
+    while ( my ( $k, $v ) = splice( @list, 0, 2 ) ) {
+        $pattern .= "$k, ";
+        push @args, $v;
+    }
+    chop($pattern) for 1 .. 2;
+
     return $self->add( sprintf( $pattern, @args ) );
 }
 
