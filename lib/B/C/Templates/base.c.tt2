@@ -93,6 +93,13 @@ EXTERN_C void boot_[% xsub %] (pTHX_ CV* cv);
 *
 *************************************************************************************************************/
 
+/* get a HEK* from a shared_he */
+//      (HEK*) ( (void*) &sHe + 3 * sizeof(void*) )
+// or maybe
+//      (HEK*) &(( (SHARED_HE*) &sHe)->shared_he_hek);"
+
+#define get_sHe_HEK(sHe) (HEK*) ( (void*) &sHe + 3 * sizeof(void*) )
+
 /* macro to ceate the struct (can be protected in C to define it once) */
 #define DEFINE_STATIC_SHARED_HE_STRUCT(len) \
     struct _sHeS_##len { HE *hent_next; HEK *hent_hek; union { SV *hent_val;  Size_t hent_refcount; } he_valu;  U32 hek_hash;  I32 hek_len;  char hek_key[ len + 1]; char flags; };

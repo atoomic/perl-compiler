@@ -8,7 +8,7 @@ use B qw/cstring svref_2object CVf_ANON CVf_ANONCONST CVf_CONST CVf_NAMED main_c
 use B::C::Config;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Save qw/savepvn constpv savecowpv/;
-use B::C::Save::Hek qw/save_shared_he/;
+use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init2 decl svsect xpvcvsect symsect init_static_assignments/;
 use B::C::Helpers qw/get_cv_string strlen_flags set_curcv/;
 use B::C::Helpers::Symtable qw/objsym savesym delsym/;
@@ -186,9 +186,9 @@ sub get_xcv_gv_u {
     my ($cv) = @_;
 
     # $cv->CvFLAGS & CVf_NAMED
-    if ( my $pv = $cv->NAME_HEK ) {    #HEK (.xcv_hek)
-        my $xcv_gv_u = sprintf( "{.xcv_hek=(HEK*) ((void*) %s + sizeof(HE)) }", save_shared_he($pv) );    # xcv_gv_u
-        $xcv_gv_u =~ s/sharedhe_list\[(\d+)\]/&sHe$1/;                                                    # monkey regexp
+    if ( my $pv = $cv->NAME_HEK ) {
+        my $share_he = save_shared_he($pv);
+        my $xcv_gv_u = sprintf( "{.xcv_hek=%s }", get_sHe_HEK($share_he) );    # xcv_gv_u
         return $xcv_gv_u;
     }
 

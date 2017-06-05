@@ -5,7 +5,7 @@ use strict;
 use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8/;
 
 use B::C::Config;
-use B::C::Save::Hek qw/save_shared_he/;
+use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init2 init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
 use B::C::Helpers qw/get_cv_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
@@ -95,20 +95,16 @@ sub do_save {
     # STATIC_HV: Is there a way to do this up on the xpvgvsect()->sadd line ??
     if ( my $gvname = $gv->NAME ) {
         my $shared_he = save_shared_he($gvname);    # ,....
-
-        if ( $shared_he ne 'NULL' ) {
+        my $hek       = get_sHe_HEK($shared_he);
+        if ( $hek ne q{NULL} ) {
 
             # plug the shared_he HEK to xpvgv: GvNAME_HEK($gvsym) =~(similar to) $xpvgv.xiv_u.xivu_namehek
             # This is the static version of
             #  init()->sadd( "GvNAME_HEK(%s) = (HEK*) &(( (SHARED_HE*) %s)->shared_he_hek);", $gvsym, $shared_he );
             # sharedhe_list[68] => shared_he_68
-            my $sharedhe_ix;
-            $sharedhe_ix = $1 if $shared_he =~ qr{\[([0-9]+)\]};
-            die unless defined $sharedhe_ix;
-            my $se = q{sHe} . $sharedhe_ix;
 
             # Note: the namehek here is the HEK and not the hek_key
-            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=(HEK*) ((void*) &%s + 3*sizeof(void*)) } /* %s */ ], $se, $gvname );
+            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=%s } /* %s */ ], $hek, $gvname );
 
             1;
         }
@@ -219,7 +215,7 @@ sub savegp_from_gv {
         "%s"       => $gp_egv,
         "%u"       => $gp_line,
         "0x%x"     => $gp_flags,
-        "%s"       => $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) ((void*)&$gp_file_hek + sizeof(HE))},
+        "%s"       => get_sHe_HEK($gp_file_hek),
     );
     $saved_gps{$gp} = sprintf( "&gp_list[%d]", $gp_ix );
 
