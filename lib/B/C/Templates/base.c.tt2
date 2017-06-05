@@ -365,7 +365,7 @@ PAD ** INITPADLIST(PADLIST *pad, int count) {
 
 void setup_perl_globals() {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
-    PL_curstname = [% PL.curstname %];  /* "main" SVt_PV */
+
     PL_incgv = [% PL.incgv %];             /* *main::INC SVt_PVGV hv and AV must be set! */
     PL_hintgv = [% PL.hintgv %];           /* *main::^H SVt_PVGV */
     PL_defgv = [% PL.defgv %];             /* *main::_ SVt_PVGV must have SV and AV setup?? */
@@ -373,6 +373,9 @@ void setup_perl_globals() {
     PL_replgv = [% PL.replgv %];           /* *main::^R SVt_PVGV */
     PL_debstash = [% PL.debstash %];       /* *main::DB:: SVt_PVHV */
     PL_globalstash = [% PL.globalstash %]; /* *main::CORE::GLOBAL:: SVt_PVHV */
+
+    PL_curstname = newSVpvs_share("main"); /* we do not want the SVf_READONLY flag */
+    // PL_curstname = [% PL.curstname %];  /* "main" SVt_PV */
 }
 
 static void init_pl_strtab(pTHX) {
