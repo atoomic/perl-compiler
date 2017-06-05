@@ -28,6 +28,7 @@ sub do_save {
     if ( ref $custom ) {    # used when downgrading a PVIV / PVNV to IV
         $flags  = $custom->{flags}  if defined $custom->{flags};
         $refcnt = $custom->{refcnt} if defined $custom->{refcnt};
+        $flags &= $custom->{update_flags} if defined $custom->{update_flags};
     }
 
     # static pv, do not destruct. test 13 with pv0 "3".

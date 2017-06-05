@@ -55,7 +55,7 @@ BEGIN {
 use B qw(minus_c sv_undef walkoptree walkoptree_slow main_root main_start peekop
   class cchar svref_2object compile_stats comppadlist hash
   init_av end_av opnumber cstring
-  HEf_SVKEY SVf_POK SVf_ROK SVf_IOK SVf_NOK SVf_IVisUV SVf_READONLY);
+  HEf_SVKEY SVf_POK SVf_ROK SVf_IOK SVf_NOK SVf_IVisUV SVf_READONLY SVf_PROTECT);
 
 BEGIN {
     @B::NV::ISA = 'B::IV';    # add IVX to nv. This fixes test 23 for Perl 5.8
@@ -1036,10 +1036,11 @@ sub build_template_stash {
             'dynaloader' => $dynaloader_optimizer->stash(),
         },
         'PL' => {
-            'defstash'    => save_stashes(),                                              # Re-uses the cache.
-            'curstname'   => svref_2object( \'main' )->save(),
+            'defstash'    => save_stashes(),                                                                              # Re-uses the cache.
+                                                                                                                          # we do not want the SVf_READONLY and SVf_PROTECT flags to be set to PL_curstname : newSVpvs_share("main")
+            'curstname'   => svref_2object( \'main' )->save( undef, { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),
             'incgv'       => svref_2object( \*main::INC )->save("main::INC"),
-            'hintgv'      => svref_2object( \*^H )->save("^H"),                           # This shouldn't even exist at run time!!!
+            'hintgv'      => svref_2object( \*^H )->save("^H"),                                                           # This shouldn't even exist at run time!!!
             'defgv'       => svref_2object( \*_ )->save("_"),
             'errgv'       => svref_2object( \*@ )->save("@"),
             'replgv'      => svref_2object( \*^R )->save("^R"),
@@ -1047,7 +1048,7 @@ sub build_template_stash {
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
         },
     };
-    chomp $c_file_stash->{'compile_stats'};                                               # Injects a new line when you call compile_stats()
+    chomp $c_file_stash->{'compile_stats'};                                                                               # Injects a new line when you call compile_stats()
 
     # main() .c generation needs a buncha globals to be determined so the stash can access them.
     # Some of the vars are only put in the stash if they meet certain coditions.
