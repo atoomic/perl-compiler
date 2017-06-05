@@ -63,7 +63,6 @@ op/sub_lval.t                TESTS     BC issue #277 - sub declaration with :lva
 op/svleak.t                  COMPAT    This test uses XS::APItest, which we don't install during perl install?
 op/threads-dirh.t            COMPAT    We don't support threaded perl in this branch.
 op/threads.t                 COMPAT    We don't support threaded perl in this branch.
-op/universal.t               TESTS     BC issue #300 - PVFM not compiled
 op/vec.t                     TESTS     BC issue #269
 op/warn.t                    TESTS     BC issue #219 - overload issue
 op/write.t                   SIG       BC issue #219 - overload issue + BC issue #281 (nested format)
@@ -126,7 +125,6 @@ xtestc/0278.t                TESTS     Output is: ""
 xtestc/0281.t                TESTS     Output is: ""
 xtestc/0293.t                TESTS     Output is: ""
 xtestc/0295.t                TESTS     Output is: ""
-xtestc/0300.t                TESTS     Output is: "IO::File "
 xtestc/0304.t                TESTS     Output is: "0304.bin: pp.c:177: Perl pp ..."
 xtestc/0309.t                TESTS     Output is: ""
 xtestc/0317.t                TESTS     Output is: ""
