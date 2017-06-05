@@ -171,6 +171,7 @@ sub save_magic {
         }
 
         my $ptrsv = '0';
+        my $init_ptrsv;
         {    # was if $len == HEf_SVKEY
 
             # The pointer is an SV* ('s' sigelem e.g.)
@@ -181,12 +182,12 @@ sub save_magic {
             elsif ( ref($ptr) eq 'SCALAR' ) {
 
                 # STATIC HV: We don't think anything happens here. Would like to test with a die();
-                $ptrsv = "SvPVX(" . svref_2object($ptr)->save($fullname) . ")";
+                $init_ptrsv = "SvPVX(" . svref_2object($ptr)->save($fullname) . ")";
             }
             elsif ( ref $ptr ) {
 
                 # STATIC HV: We don't think anything happens here. Would like to test with a die();
-                $ptrsv = "SvPVX(" . $ptr->save($fullname) . ")";
+                $init_ptrsv = "SvPVX(" . $ptr->save($fullname) . ")";
             }
             else {
                 $ptrsv = cstring($ptr);    # Nico thinks everything will happen here.
@@ -199,6 +200,10 @@ sub save_magic {
             $last_magic, '0', $mg->PRIVATE, cchar($type), $mg->FLAGS | MGf_IMMORTAL(), $len, $obj, $ptrsv
         );
         $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
+
+        if ($init_ptrsv) {
+            init_static_assignments()->sadd( q{%s.mg_ptr = (char*) %s;}, $last_magic, $init_ptrsv );
+        }
 
         init_vtables()->sadd( '%s.mg_virtual = (MGVTBL*) &PL_vtbl_%s;', $last_magic, $vtable ) if $vtable;
         $last_magic = "&" . $last_magic;
