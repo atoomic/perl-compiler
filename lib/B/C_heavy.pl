@@ -1087,7 +1087,7 @@ sub found_xs_sub {
     $incpack =~ s/\:\:/\//g;
     $incpack .= '.pm';
 
-    $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
+    $xsub{$stashname} = 'Dynamic-' . ( $INC{$incpack} // '' );
 
     return;
 }

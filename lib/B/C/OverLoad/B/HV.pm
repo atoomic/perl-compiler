@@ -87,10 +87,11 @@ sub do_save {
 
     $fullname ||= '';
     my $stash_name = $hv->NAME;
-    $stash_name =~ s/^main::(.+)$/$1/; # Strip off main:: on everything but main::
 
     #debug( hv => "XXXX HV fullname %s // name %s", $fullname, $stash_name );
     if ($stash_name) {
+
+        $stash_name =~ s/^main::(.+)$/$1/;    # Strip off main:: on everything but main::
 
         if ( !can_save_stash($stash_name) ) {
             debug( hv => 'skipping stash ' . $stash_name );

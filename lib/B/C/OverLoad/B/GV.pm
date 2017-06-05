@@ -195,16 +195,19 @@ sub savegp_from_gv {
         $gp_file_hek = save_shared_he( $gv->FILE );        # use FILE instead of FILEGV or we will save the B::GV stash
     }
 
+    my $gp_ix = gpsect()->add('FAKE_GP');
+
     $gp_sv = $gv->save_gv_sv($fullname) if $savefields & Save_SV;
     $gp_av = $gv->save_gv_av($fullname) if $savefields & Save_AV;
     $gp_hv = $gv->save_gv_hv($fullname) if $savefields & Save_HV;
-    $gp_cv   = $gv->save_gv_cv( $fullname, gpsect()->index + 1 ) if $savefields & Save_CV;
-    $gp_form = $gv->save_gv_format($fullname)                    if $savefields & Save_FORM;    # FIXME incomplete for now
-    $gp_io   = $gv->save_gv_io($fullname)                        if $savefields & Save_IO;
+    $gp_cv   = $gv->save_gv_cv( $fullname, $gp_ix ) if $savefields & Save_CV;
+    $gp_form = $gv->save_gv_format($fullname)       if $savefields & Save_FORM;    # FIXME incomplete for now
+    $gp_io   = $gv->save_gv_io($fullname)           if $savefields & Save_IO;
 
     gpsect()->comment('SV, gp_io, CV, cvgen, gp_refcount, HV, AV, CV* form, GV, line, flags, HEK* file');
 
-    my $gp_ix = gpsect()->sadd(
+    gpsect()->supdate(
+        $gp_ix,
         "(SV*) %s, (IO*) %s, (CV*) %s, %d, %u, %s, %s, (CV*) %s, %s, %u, %d, %s ",
         $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_refcount, $gp_hv, $gp_av, $gp_form, $gp_egv,
         $gp_line, $gp_flags, $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) ((void*)&$gp_file_hek + sizeof(HE))}
@@ -389,7 +392,7 @@ sub save_gv_cv {
         }
         my $origname = $gv->cv_needs_import_after_bootstrap( $cvsym, $fullname );
         if ($origname) {
-            warn("$fullname == $origname\n");
+            debug( gv => "bootstrap CV $fullname using $origname\n" );
             init_bootstraplink()->sadd( 'gp_list[%d].gp_cv = GvCV( gv_fetchpv(%s, 0, SVt_PVCV) );', $gp_ix, cstring($origname) );
         }
 

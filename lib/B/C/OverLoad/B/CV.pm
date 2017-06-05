@@ -40,10 +40,10 @@ sub do_save {
     my $sym = savesym( $cv, "&sv_list[$sv_ix]" );
 
     my $presumed_package = $origname;
-    $presumed_package =~ s/::[^:]+$//;
+    $presumed_package =~ s/::[^:]+$// if $presumed_package;
 
     my $xmg_stash = typecast_stash_save( $cv->SvSTASH->save );
-    my $cv_stash = typecast_stash_save( $presumed_package eq 'Fcntl' ? svref_2object( \%Fcntl:: )->save( $presumed_package . "::" ) : $cv->STASH->save );
+    my $cv_stash = typecast_stash_save( defined $presumed_package && $presumed_package eq 'Fcntl' ? svref_2object( \%Fcntl:: )->save("Fcntl::") : $cv->STASH->save );
 
     # need to survive cv_undef as there is no protection against static CVs
     my $refcnt = $cv->REFCNT + 1;
@@ -74,7 +74,7 @@ sub do_save {
         $len,                          # xpv_len_u -- warning this is not CUR and LEN for the pv
         $cv_stash,                     # xcv_stash
         $startfield,                   # xcv_start_u
-        $root ? $$root : 'NULL',       # xcv_root_u
+        $root ? $$root : 0,            # xcv_root_u
         $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
         $xcv_file,                                # xcv_file
         $cv->cv_save_padlist($origname),          # xcv_padlist_u
