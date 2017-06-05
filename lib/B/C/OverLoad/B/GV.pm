@@ -206,11 +206,20 @@ sub savegp_from_gv {
 
     gpsect()->comment('SV, gp_io, CV, cvgen, gp_refcount, HV, AV, CV* form, GV, line, flags, HEK* file');
 
-    gpsect()->supdate(
+    gpsect()->supdatel(
         $gp_ix,
-        "(SV*) %s, (IO*) %s, (CV*) %s, %d, %u, %s, %s, (CV*) %s, %s, %u, %d, %s ",
-        $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_refcount, $gp_hv, $gp_av, $gp_form, $gp_egv,
-        $gp_line, $gp_flags, $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) ((void*)&$gp_file_hek + sizeof(HE))}
+        "(SV*) %s" => $gp_sv,
+        "(IO*) %s" => $gp_io,
+        "(CV*) %s" => $gp_cv,
+        "%d"       => $gp_cvgen,
+        "%u"       => $gp_refcount,
+        "%s"       => $gp_hv,
+        "%s"       => $gp_av,
+        "(CV*) %s" => $gp_form,
+        "%s"       => $gp_egv,
+        "%u"       => $gp_line,
+        "0x%x"     => $gp_flags,
+        "%s"       => $gp_file_hek eq 'NULL' ? 'NULL' : qq{(HEK*) ((void*)&$gp_file_hek + sizeof(HE))},
     );
     $saved_gps{$gp} = sprintf( "&gp_list[%d]", $gp_ix );
 

@@ -44,6 +44,23 @@ sub add {
     return $self->index();
 }
 
+sub _convert_list_to_sprintf {
+    my (@list) = @_;
+
+    my @patterns;
+    my @args;
+
+    die "saddl should be called with an even number of arguments" unless scalar @list % 2 == 0;
+
+    while ( my ( $k, $v ) = splice( @list, 0, 2 ) ) {
+        push @patterns, $k;
+        push @args,     $v;
+    }
+    my $pattern = join( ', ', @patterns );
+
+    return sprintf( $pattern, @args );
+}
+
 # simple add using sprintf: avoid boilerplates
 # ex: sadd( "%d, %s", 1234, q{abcd} )
 sub sadd {
@@ -51,29 +68,26 @@ sub sadd {
     return $self->add( sprintf( $pattern, @args ) );
 }
 
-# simple add using sprintf, but formatted as a list
+# simple add using sprintf using input formatted as a list
 # ex: saddl( "%d" => 1234, "%s" => q{abcd} )
 sub saddl {
     my ( $self, @list ) = @_;
 
-    my $pattern = q{};
-    my @args;
-
-    die "saddl should be called with an odd number of argument" unless scalar @list % 2 == 0;
-
-    while ( my ( $k, $v ) = splice( @list, 0, 2 ) ) {
-        $pattern .= "$k, ";
-        push @args, $v;
-    }
-    chop($pattern) for 1 .. 2;
-
-    return $self->add( sprintf( $pattern, @args ) );
+    return $self->add( _convert_list_to_sprintf(@list) );
 }
 
 # simple update using sprintf: avoid boilerplates
+# ex: supdate( 1, "%d, %s", 1234, q{str} )
 sub supdate {
     my ( $self, $row, $pattern, @args ) = @_;
     return $self->update( $row, sprintf( $pattern, @args ) );
+}
+
+# simple update using sprintf using input formatted as a list
+# ex: supdatel( 1, "%d" => 1234, "%s" => q{str} )
+sub supdatel {
+    my ( $self, $row, @list ) = @_;
+    return $self->update( $row, _convert_list_to_sprintf(@list) );
 }
 
 sub update {
