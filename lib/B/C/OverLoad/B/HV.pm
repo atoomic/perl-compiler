@@ -151,11 +151,13 @@ sub do_save {
 
     my $hv_total_keys = scalar(@hash_content_to_save);
     my $max           = get_max_hash_from_keys($hv_total_keys);
+    my $xmg_stash     = B::CV::typecast_stash_save( $hv->SvSTASH->save );
     xpvhvsect()->comment("HV* xmg_stash, union _xmgu mgu, STRLEN xhv_keys, STRLEN xhv_max");
-    xpvhvsect()->sadd(
-        "Nullhv, {%s}, %d, %d",
-        $hv->save_magic( length $stash_name ? '%' . $stash_name . '::' : $fullname ),
-        $hv_total_keys, $max
+    xpvhvsect()->saddl(
+        '%s'   => $xmg_stash,                                                                      # xmg_stash
+        '{%s}' => $hv->save_magic( length $stash_name ? '%' . $stash_name . '::' : $fullname ),    # mgu
+        '%d'   => $hv_total_keys,                                                                  # xhv_keys
+        '%d'   => $max                                                                             # xhv_max
     );
 
     my $flags = $hv->FLAGS & ~SVf_READONLY & ~SVf_PROTECT;
