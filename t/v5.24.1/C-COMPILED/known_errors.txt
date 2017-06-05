@@ -138,12 +138,9 @@ xtestc/0374.t                BC        xtestc/0374.c is generated (-O3,-fno-fold
 xtestc/1960.t                TESTS     Output is: ""
 xtestc/2052.t                TESTS     Output is: ""
 xtestc/2201.t                TESTS     Output is: ""
-xtestc/2381.t                TESTS     Output is: "Undefined subroutine ..."
-xtestc/2511.t                TESTS     Output is: ""
 xtestc/2540.t                TESTS     Output is: ""
 xtestc/2741.t                TESTS     Output is: "SV = PVHV(0x800320) at ..." expect "ok"
 xtestc/2900.t                TESTS     Output is: "19518210 "
-xtestc/2901.t                TESTS     Output is: ""
 xtestc/2990.t                TESTS     Output is: ""
 xtestc/3170.t                SKIP      IO::Socket::SSL test that's taking up 100% memory right now.
 xtestc/3200.t                TESTS     Output is: ""
