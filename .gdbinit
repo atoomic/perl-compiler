@@ -9,6 +9,11 @@ set print pretty on
 set pagination off
 set confirm off
 
+# experimental
+# https://sourceware.org/gdb/onlinedocs/gdb/Print-Settings.html
+set print array on
+set print array-indexes on
+
 # unsafe but can load .gdbinit from a local directory
 #set auto-load safe-path /
 
@@ -318,24 +323,73 @@ define dump_defstash
   dump_hv PL_defstash
 end
 
+define _show_index_for
+  set $svany = (int) $arg0
+  set $name  = $arg1
+  set $list  = $arg2
+  set $max   = (int) $arg3
+
+  set $first = (int) &($list[0])
+  set $size  = (int) sizeof($list[0])
+  set $last = $first + $max
+
+  #printf "first:%d ; last:%d ; size:%d ; SV:%d", $first, $last, $size, $svany
+
+  if $svany && $svany >= $first && $svany <= $last
+    printf "%s[%d] = ", $name, (int) ( ($svany - $first) / $size )
+  end
+
+end
+
 
 define dump_sv
-  set $sv   = (SV*) $arg0
+  set $sv        = (SV*) $arg0
+  set $showxpv = 1
+
+  if $argc >= 2
+    set $showxpv = (int) $arg1
+  end
+
   svflags $sv
+  printf "====== SV =====\n"
+  _show_index_for $sv "sv_list" sv_list sizeof(sv_list)
   print *(SV*) $sv
 
   set $flags = ((SV*) ($sv))->sv_flags
   set $type = 0xf & $flags
-; if $type == 1
-;   printf "SVt_IV"
-; end
-;     if $type == 2
-;         printf "SVt_NV"
-;     end
-  ; if $type == 3
-  ;   printf "SVt_PV"
-  ; end
+  set $svany = $sv->sv_any
 
+  if $svany > 0 && $showxpv
+    if $type == 2
+        printf "====== SvANY:XPVNV =====\nSvANY(sv) = "
+        _show_index_for $svany "xpvnv_list" xpvnv_list sizeof(xpvnv_list)
+        p *(XPVNV*) $svany
+    end
+
+    if $type == 3
+        printf "====== SvANY:XPV =====\nSvANY(sv) = "
+        _show_index_for $svany "xpv_list" xpv_list sizeof(xpv_list)
+        p *(XPV*) $svany
+    end
+
+    if $type == 11
+        printf "====== SvANY:XPVAV =====\nSvANY(sv) = "
+        _show_index_for $svany "xpvav_list" xpvav_list sizeof(xpvav_list)
+        p *(XPVAV*) $svany
+    end
+
+    if $type == 12
+        printf "====== SvANY:XPVHV =====\n"
+        _show_index_for $svany "xpvhv_list" xpvhv_list sizeof(xpvhv_list)
+        p *(XPVHV*) $svany
+    end
+
+    if $type == 13
+        printf "====== SvANY:XPVCV =====\n"
+        _show_index_for $svany "xpvcv_list" xpvcv_list sizeof(xpvcv_list)
+        p *(XPVCV*) $svany
+    end
+  end
 
 end
 
@@ -435,6 +489,7 @@ define dump_gv
   set $xpvgv = (XPVGV*) $gv->sv_any
   # p *(GP*) ((GV*) ((HE*) 0x69a528)->he_valu.hent_val)->sv_u.svu_gp
   printf "GV: 0x%x = ", $gv
+  _show_index_for $gv "gv_list" gv_list sizeof(gv_list)
   # could also use a simple print
   #p *$gv
   printf "{ sv_any=0x%x, refcnt=%d, flags=0x%x, gp=0x%x}\n", $gv->sv_any, $gv->sv_refcnt, $gv->sv_flags, $gv->sv_u.svu_gp
@@ -446,11 +501,29 @@ define dump_gv
   end
   #p *$xpvgv
   printf "GP: 0x%x -> ", $gp
-  p *$gp
-  # .... show keys from the hash
-  set $gp_hv = (HV*) $gp->gp_hv
-  printf "\nKeys from gp_hv=0x%x\n", $gp_hv
-  dump_hv $gp_hv
+  if $gp
+    p *$gp
+
+    _show_index_for $gp "gp_list" gp_list sizeof(gp_list)
+    printf "sv.gp\n"
+
+    _show_index_for $gp.gp_sv "sv_list" sv_list sizeof(sv_list)
+    printf "sv.gp.gp_sv\n"
+
+    _show_index_for $gp.gp_cv "sv_list" sv_list sizeof(sv_list)
+    printf "sv.gp.gp_cv\n"
+
+    _show_index_for $gp.gp_hv "sv_list" sv_list sizeof(sv_list)
+    printf "sv.gp.gp_hv\n"
+
+    _show_index_for $gp.gp_av "sv_list" sv_list sizeof(sv_list)
+    printf "sv.gp.gp_av\n"
+
+    # .... show keys from the hash
+    set $gp_hv = (HV*) $gp->gp_hv
+    printf "\nKeys from gp_hv=0x%x\n", $gp_hv
+    dump_hv $gp_hv
+  end
 end
 
 define hvfetch
