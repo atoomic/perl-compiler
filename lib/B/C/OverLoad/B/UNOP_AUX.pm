@@ -4,7 +4,7 @@ use strict;
 
 use B::C::Config;
 use B::C::File qw/unopauxsect init decl free/;
-use B::C::Helpers qw/do_labels is_constant curcv/;
+use B::C::Helpers qw/do_labels is_constant/;
 
 sub _clear_stack {
 

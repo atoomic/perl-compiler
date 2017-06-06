@@ -34,11 +34,10 @@ use B::C::File qw( init2 init1 init0 init decl free
 
   init_COREbootstraplink init_bootstraplink
 );
-use B::C::Helpers qw/set_curcv/;
 use B::C::Helpers::Symtable qw(objsym savesym);
 
 use Exporter ();
-use Errno ();    #needed since 5.14
+use Errno    ();           #needed since 5.14
 our %Regexp;
 
 # Caller was populated in C.pm
@@ -771,7 +770,6 @@ sub save_optree {
     verbose("Walking optree");
     %Exporter::Cache = ();                # avoid B::C and B symbols being stored
     _delete_macros_vendor_undefined();
-    set_curcv(B::main_cv);
 
     if ( debug('walk') ) {
         verbose("Enabling B::debug / B::walkoptree_debug");

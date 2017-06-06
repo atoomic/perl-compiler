@@ -4,8 +4,8 @@ use Exporter ();
 use B::C::Config;
 use B qw/SVf_POK SVp_POK/;
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw/svop_name padop_name do_labels read_utf8_string get_cv_string
-  is_constant strlen_flags curcv set_curcv cow_strlen_flags is_shared_hek
+our @EXPORT_OK = qw/svop_name padop_name do_labels read_utf8_string
+  is_constant strlen_flags cow_strlen_flags is_shared_hek
   cstring_cow get_index
   /;
 
@@ -86,35 +86,6 @@ sub read_utf8_string {
     }
 
     return ( $is_utf8, $cur );
-}
-
-# previously known as:
-# get_cv() returns a CV*
-sub get_cv_string {
-    my ( $name, $flags ) = @_;
-    warn 'undefined flags' unless defined $flags;
-    $name = "" if $name eq "__ANON__";
-    my $cname = cstring($name);
-
-    my ( $is_utf8, $length ) = read_utf8_string($name);
-
-    $flags = '' unless defined $flags;
-    $flags .= "|SVf_UTF8" if $is_utf8;
-    $flags =~ s/^\|//;
-
-    if ( $flags =~ qr{^0?$} ) {
-        return qq/get_cv($cname, 0)/;
-    }
-    else {
-        return qq/get_cvn_flags($cname, $length, $flags)/;
-    }
-}
-
-{
-    my $curcv;
-
-    sub curcv { return $curcv }
-    sub set_curcv($) { $curcv = shift }
 }
 
 sub _load_mro {

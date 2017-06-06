@@ -95,6 +95,7 @@ sub save_pv_or_rv {
 
         my $newsym = B::RV::save_op( $sv, $fullname );
 
+        #
         # newsym can be a get_cv call from get_cv_string
         if ( $newsym =~ qr{(?:get_cv|get_cvn_flags)\(} ) {    # Moose::Util::TypeConstraints::Builtins::_RegexpRef xtest #350
             $static = 0;
