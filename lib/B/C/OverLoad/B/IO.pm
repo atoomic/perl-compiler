@@ -4,7 +4,7 @@ use strict;
 
 use B qw/cstring cchar svref_2object/;
 use B::C::Config;
-use B::C::Save qw/savepv savecowpv/;
+use B::C::Save qw/savecowpv/;
 use B::C::File qw/init init2 svsect xpviosect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
@@ -14,7 +14,6 @@ sub do_save {
     #return 'NULL' if $io->IsSTD($fullname);
 
     my $xmg_stash = B::CV::typecast_stash_save( $io->SvSTASH->save );
-
 
     my ( $xio_top_name,    undef, undef ) = savecowpv( $io->TOP_NAME    || '' );
     my ( $xio_fmt_name,    undef, undef ) = savecowpv( $io->FMT_NAME    || '' );

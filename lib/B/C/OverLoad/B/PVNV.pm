@@ -4,7 +4,6 @@ use strict;
 
 use B qw{SVf_NOK SVp_NOK SVs_OBJECT};
 use B::C::Config;
-use B::C::Save qw/savepvn/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/xpvnvsect svsect init/;
 use B::C::Optimizer::DowngradePVXV qw/downgrade_pvnv/;

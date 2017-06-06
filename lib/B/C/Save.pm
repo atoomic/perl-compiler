@@ -11,7 +11,7 @@ use B::C::Save::Hek qw/save_shared_he/;
 use Exporter ();
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/savepvn constpv savepv savecowpv inc_pv_index savestashpv/;
+our @EXPORT_OK = qw/savepv savecowpv inc_pv_index savestashpv/;
 
 my %strtable;
 my %cowtable;
@@ -47,10 +47,6 @@ sub savecowpv {
     return ( $pvsym, $cur, $len );    # NOTE: $cur is total size of the perl string. len would be the length of the C string.
 }
 
-sub constpv {                         # could also safely use a cowpv
-    return savepv( shift, 1 );
-}
-
 sub savepv {
     my $pv    = shift;
     my $const = shift;
@@ -72,46 +68,6 @@ sub savepv {
         }
     }
     return $pvsym;
-}
-
-sub savepvn {
-    my ( $dest, $pv, $sv, $cur ) = @_;
-    my @init;
-
-    my $maxlen = 0;
-
-    $pv = pack "a*", $pv if defined $pv;
-    if ( $maxlen && length($pv) > $maxlen ) {
-        push @init, sprintf( "Newx(%s,%u,char);", $dest, length($pv) + 2 );
-        my $offset = 0;
-        while ( length $pv ) {
-            my $str = substr $pv, 0, $maxlen, '';
-            push @init, sprintf( 'Copy(%s, %s+%d, %u, char);', cstring($str), $dest, $offset, length($str) );
-            $offset += length $str;
-        }
-        push @init, sprintf( "%s[%u] = '\\0';", $dest, $offset );
-        debug( pv => "Copying overlong PV %s to %s\n", cstring($pv), $dest );
-    }
-    else {
-        # If READONLY and FAKE use newSVpvn_share instead. (test 75)
-        if ( $sv and is_shared_hek($sv) ) {
-            debug( sv => "Saving shared HEK %s to %s\n", cstring($pv), $dest );
-            my $shared_he = save_shared_he($pv);
-            push @init, sprintf( "%s = %s->shared_he_hek.hek_key;", $dest, $shared_he ) unless $shared_he eq 'NULL';
-        }
-        else {
-            my $cstr = cstring($pv);
-            my $cur ||= ( $sv and ref($sv) and $sv->can('CUR') and ref($sv) ne 'B::GV' ) ? $sv->CUR : length( pack "a*", $pv );
-            if ( $sv and B::C::IsCOW($sv) ) {
-                $cstr = cstring_cow( $pv, q{\000\001} );
-                $cur += 2;
-            }
-            debug( sv => "Saving PV %s:%d to %s", $cstr, $cur, $dest );
-            $cur = 0 if $cstr eq "" and $cur == 7;    # 317
-            push @init, sprintf( "%s = savepvn(%s, %u); " . _caller_comment(), $dest, $cstr, $cur );
-        }
-    }
-    return @init;
 }
 
 sub _caller_comment {

@@ -5,7 +5,6 @@ use strict;
 use B q/cchar/;
 
 use B::C::Config;
-use B::C::Save qw/savepvn/;
 use B::C::File qw/xpvlvsect svsect init/;
 use B::C::Decimal qw/ get_double_value/;
 

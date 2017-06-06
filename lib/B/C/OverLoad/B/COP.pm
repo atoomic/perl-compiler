@@ -5,7 +5,7 @@ use strict;
 use B qw/cstring svref_2object/;
 use B::C::Config;
 use B::C::File qw/init copsect decl/;
-use B::C::Save qw/constpv savestashpv/;
+use B::C::Save qw/savestashpv/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 
@@ -113,7 +113,7 @@ sub do_save {
         if ($copw) {
             my $dest = "cop_list[$ix].cop_warnings";
 
-            # with DEBUGGING savepvn returns ptr + PERL_MEMORY_DEBUG_HEADER_SIZE
+            # with DEBUGGING save_pvn returns ptr + PERL_MEMORY_DEBUG_HEADER_SIZE
             # which is not the address which will be freed in S_cop_free.
             # Need to use old-style PerlMemShared_, see S_cop_free in op.c (#362)
             # lexwarn<n> might be also be STRLEN* 0

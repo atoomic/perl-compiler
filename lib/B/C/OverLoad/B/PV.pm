@@ -4,7 +4,7 @@ use strict;
 
 use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVs_SMG SVf_READONLY SVs_OBJECT/;
 use B::C::Config;
-use B::C::Save qw/savepvn savecowpv/;
+use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he/;
 use B::C::File qw/xpvsect svsect free assign_hekkey2pv/;
 use B::C::Helpers qw/is_shared_hek read_utf8_string get_index/;
@@ -34,7 +34,7 @@ sub do_save {
     # static pv, do not destruct. test 13 with pv0 "3".
     if ( $B::C::const_strings and !$shared_hek and $flags & SVf_READONLY and !$len ) {
         $flags &= ~0x01000000;
-        debug( pv => "constpv turn off SVf_FAKE %s %s\n", cstring($pv), $fullname );
+        debug( pv => "turn off SVf_FAKE %s %s\n", cstring($pv), $fullname );
     }
 
     xpvsect()->comment("stash, magic, cur, len");
