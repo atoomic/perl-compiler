@@ -27,26 +27,26 @@ sub do_save {
     }
 
     xpviosect()->comment( 'xmg_stash, xmg_u, xpv_cur, xpv_len_u, xiv_u, xio_ofp, xio_dirpu, xio_page, xio_page_len, xio_lines_left, xio_top_name, ' . 'xio_top_gv, xio_fmt_name, xio_fmt_gv, xio_bottom_name, xio_bottom_gv, xio_type, xio_flags' );
-    my $xpvio_ix = xpviosect()->sadd(
-        "%s, {%s}, %u, %u, /*end of head*/ {.xivu_uv=0}/*xiv_u ???*/, (PerlIO*) 0, {.xiou_any =(void*)NULL} /* dirpu ??? */, %d, %d, %d, (char*)%s, (GV*)%s, (char*)%s, (GV*)%s, (char*)%s, (GV*) %s, '%s', 0x%x",
-        $xmg_stash,                    # xmg_stash
-        $io->save_magic($fullname),    # xmg_u
-        $io->CUR,                      # xpv_cur
-        $io->LEN,                      # xpv_len_u
-                                       # xiv_u
-                                       # xio_ofp
-                                       # xio_dirpu
-        $io->PAGE,                     # xio_page
-        $io->PAGE_LEN,                 # xio_page_len
-        $io->LINES_LEFT,               # xio_lines_left
-        $xio_top_name,                 # xio_top_name
-        $top_gv,                       # xio_top_gv
-        $xio_fmt_name,                 # xio_fmt_name
-        $fmt_gv,                       # xio_fmt_gv
-        $xio_bottom_name,              # xio_bottom_name
-        $bottom_gv,                    # xio_bottom_gv
-        $io->IoTYPE,                   # xio_type
-        $io->IoFLAGS,                  # xio_flags
+    my $xpvio_ix = xpviosect()->saddl(
+        "%s"                      => $xmg_stash,                    # xmg_stash
+        "{%s}"                    => $io->save_magic($fullname),    # xmg_u
+        "%u"                      => $io->CUR,                      # xpv_cur
+        "%u"                      => $io->LEN,                      # xpv_len_u
+                                                                    # end of head
+        "{.xivu_uv=%d}"           => 0,                             # xiv_u
+        "(PerlIO*) %d"            => 0,                             # xio_ofp
+        "{.xiou_any =(void*) %s}" => q{NULL},                       # xio_dirpu
+        "%d"                      => $io->PAGE,                     # xio_page
+        "%d"                      => $io->PAGE_LEN,                 # xio_page_len
+        "%d"                      => $io->LINES_LEFT,               # xio_lines_left
+        "(char*) %s"              => $xio_top_name,                 # xio_top_name
+        "(GV*)%s"                 => $top_gv,                       # xio_top_gv
+        "(char*)%s"               => $xio_fmt_name,                 # xio_fmt_name
+        "(GV*)%s"                 => $fmt_gv,                       # xio_fmt_gv
+        "(char*)%s"               => $xio_bottom_name,              # xio_bottom_name
+        "(GV*) %s"                => $bottom_gv,                    # xio_bottom_gv
+        '%s'                      => $io->IoTYPE,                   # xio_type
+        "0x%x"                    => $io->IoFLAGS,                  # xio_flags
     );
 
     # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
