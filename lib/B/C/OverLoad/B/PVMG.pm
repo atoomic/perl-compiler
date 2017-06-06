@@ -44,7 +44,7 @@ sub do_save {
             and $ivx > LOWEST_IMAGEBASE    # some crazy heuristic for a sharedlibrary ptr in .data (> image_base)
             and ref( $sv->SvSTASH ) ne 'B::SPECIAL'
           ) {
-            $ivx = _patch_dlsym( $sv, $fullname, $ivx );
+            warn("_patch_dlsym isn't supported.")
         }
     }
 
@@ -210,140 +210,6 @@ sub save_magic {
     }
 
     return $last_magic;
-}
-
-# TODO: This was added to PVMG because we thought it was only used in this op but
-# as of 5.18, it's used in B::CV::save
-sub _patch_dlsym {
-    my ( $sv, $fullname, $ivx ) = @_;
-    my $pkg = '';
-    if ( ref($sv) eq 'B::PVMG' ) {
-        my $stash = $sv->SvSTASH;
-        $pkg = $stash->can('NAME') ? $stash->NAME : '';
-    }
-    my $name = $sv->FLAGS & SVp_POK() ? $sv->PVX : "";
-    my $ivxhex = sprintf( "0x%x", $ivx );
-
-    # lazy load encode after walking the optree
-
-    if ( $pkg eq 'Encode::XS' ) {
-        if ( $fullname eq 'Encode::Encoding{iso-8859-1}' ) {
-            $name = "iso8859_1_encoding";
-        }
-        elsif ( $fullname eq 'Encode::Encoding{null}' ) {
-            $name = "null_encoding";
-        }
-        elsif ( $fullname eq 'Encode::Encoding{ascii-ctrl}' ) {
-            $name = "ascii_ctrl_encoding";
-        }
-        elsif ( $fullname eq 'Encode::Encoding{ascii}' ) {
-            $name = "ascii_encoding";
-        }
-
-        $pkg = 'Encode';
-        if ( $name and $name =~ /^(ascii|ascii_ctrl|iso8859_1|null)/ ) {    # STATIC_HV: Dead code.
-            my $enc = Encode::find_encoding($name);
-            $name .= "_encoding" unless $name =~ /_encoding$/;
-            $name =~ s/-/_/g;
-            verbose("$pkg $Encode::VERSION with remap support for $name (find 1)");
-        }
-        else {
-            for my $n ( Encode::encodings() ) {                             # >=5.16 constsub without name
-                my $enc = Encode::find_encoding($n);
-                if ( $enc and ref($enc) ne 'Encode::XS' ) {                 # resolve alias such as Encode::JP::JIS7=HASH(0x292a9d0)
-                    $pkg = ref($enc);
-                    $pkg =~ s/^(Encode::\w+)(::.*)/$1/;                     # collapse to the @dl_module name
-                    $enc = Encode->find_alias($n);
-                }
-                if ( $enc and ref($enc) eq 'Encode::XS' and $sv->IVX == $$enc ) {
-                    $name = $n;
-                    $name =~ s/-/_/g;
-                    $name .= "_encoding" if $name !~ /_encoding$/;
-
-                    if ( $pkg ne 'Encode' ) {
-                        verbose( "saving $pkg" . "::bootstrap" );           # STATIC_HV: Dead code.
-                        svref_2object( \&{"$pkg\::bootstrap"} )->save;
-                    }
-                    last;
-                }
-            }
-            if ($name) {
-                verbose("$pkg $Encode::VERSION remap found for constant $name");
-            }
-            else {
-                verbose("Warning: Possible missing remap for compile-time XS symbol in $pkg $fullname $ivxhex [#305]");
-            }
-        }
-    }
-
-    # Encode-2.59 uses a different name without _encoding
-    elsif ( 'Encode'->can('find_encoding') && Encode::find_encoding($name) ) {
-        my $enc = Encode::find_encoding($name);
-        $pkg = ref($enc) if ref($enc) ne 'Encode::XS';
-
-        $name .= "_encoding";
-        $name =~ s/-/_/g;
-        $pkg = 'Encode' unless $pkg;
-        verbose("$pkg $Encode::VERSION with remap support for $name (find 2)");
-    }
-
-    # now that is a weak heuristic, which misses #305
-    elsif ( defined($Net::DNS::VERSION)
-        and $Net::DNS::VERSION =~ /^0\.(6[789]|7[1234])/ ) {
-        if ( $fullname eq 'svop const' ) {
-            $name = "ascii_encoding";
-            $pkg = 'Encode' unless $pkg;
-            WARN("Warning: Patch Net::DNS external XS symbol $pkg\::$name $ivxhex [RT #94069]");
-        }
-    }
-    elsif ( $pkg eq 'Net::LibIDN' ) {
-        $name = "idn_to_ascii";    # ??
-    }
-
-    # new API (only Encode so far)
-    if ( $pkg and $name and $name =~ /^[a-zA-Z_0-9-]+$/ ) {    # valid symbol name
-        verbose("Remap IOK|POK $pkg with $name");
-        _save_remap( $pkg, $pkg, $name, $ivxhex, 0 );
-        $ivx = "0UL /* $ivxhex => $name */";
-    }
-    else {
-        WARN("Warning: Possible missing remap for compile-time XS symbol in $pkg $fullname $ivx [#305]");
-    }
-    return $ivx;
-}
-
-sub _save_remap {
-    my ( $key, $pkg, $name, $ivx, $mandatory ) = @_;
-    my $id = xpvmgsect()->index + 1;
-
-    #my $svid = svsect()->index + 1;
-    verbose("init remap for ${key}: $name $ivx in xpvmg_list[$id]");
-    my $props = { NAME => $name, ID => $id, MANDATORY => $mandatory };
-    $B::C::init2_remap{$key}{MG} = [] unless $B::C::init2_remap{$key}{'MG'};
-    push @{ $B::C::init2_remap{$key}{MG} }, $props;
-
-    return;
-}
-
-sub _savere {
-    my $re = shift;
-    my $flags = shift || 0;
-    my $sym;
-    my $pv = $re;
-    my ( $is_utf8, $cur ) = read_utf8_string($pv);
-    my $len = 0;    # static buffer
-
-    # TODO: add a die and see if it s triggered
-    # QUESTION: this code looks dead
-    #   at least not triggered by the core unit tests
-
-    my $refcnt = 1;    # ???? WTF
-
-    my $xpv_ix = xpvsect()->sadd( "Nullhv, {0}, %u, {.xpvlenu_len=%u}", $cur, $len );    # 0 or $len ?
-    my $sv_ix = svsect()->sadd( "&xpv_list[%d], %d, %x, {.svu_pv=(char*)%s}", $xpv_ix, $refcnt, 0x4405, savepv($pv) );
-    $sym = sprintf( "&sv_list[%d]", $sv_ix );
-
-    return ( $sym, $cur );
 }
 
 1;
