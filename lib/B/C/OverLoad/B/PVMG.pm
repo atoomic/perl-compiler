@@ -44,7 +44,7 @@ sub do_save {
             and $ivx > LOWEST_IMAGEBASE    # some crazy heuristic for a sharedlibrary ptr in .data (> image_base)
             and ref( $sv->SvSTASH ) ne 'B::SPECIAL'
           ) {
-            warn("_patch_dlsym isn't supported.")
+            die("This code  used to call _patch_dlsym. The logic didn't make sense after the CV re-factor so it's been removed here.")
         }
     }
 
