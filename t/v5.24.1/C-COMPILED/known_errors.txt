@@ -92,7 +92,6 @@ xtestc/0015.t               TESTS     Output is: "a\nb\n\n"
 xtestc/0095.t               SKIP      Test is running out of memory and breaking tests - IO::Socket::SSL
 xtestc/0135.t               TESTS     Output is: ""
 xtestc/0163.t               TESTS     Output is: ""
-xtestc/0167.t               TESTS     Output is: "Wide character in crypt at ..."
 xtestc/0169.t               TESTS     Output is: "42\n"
 xtestc/0173.t               TESTS     Output is: "ok 1\nok 2\nok 3\n"
 xtestc/0174.t               TESTS     Output is: "\C is deprecated in regex; ..."

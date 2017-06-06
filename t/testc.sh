@@ -642,7 +642,7 @@ foreach my $chr (60, 200, 600, 6000, 60000) {
 tests[167]='$a = "a\xFF\x{100}";
 eval {$b = crypt($a, "cd")};
 print $@;'
-result[167]='Wide character in crypt at ccode167.pl line 2.'
+result[167]='Wide character in crypt at xtestc/0167.pl line 2.'
 tests[168]='my $start_time = time;
 eval {
     local $SIG{ALRM} = sub { die "ALARM !\n" };
@@ -1325,7 +1325,7 @@ $foo->method;'
 tests[350]='#TODO 5.18-5.22 dbg
 package Foo::Moose; use Moose; has bar => (is => "rw", isa => "Int");
 package main; my $moose = Foo::Moose->new; print "ok" if 32 == $moose->bar(32);'
-tests[351]='{ BEGIN { *Mover:: = *Mover2::; *Mover2:: = *foo;} 
+tests[351]='{ BEGIN { *Mover:: = *Mover2::; *Mover2:: = *foo;}
 package Mover;
 @ISA = "door"; sub door::dohtem { "dohtem" } print "ok\n";}'
 tests[352]='package Foo;my $rand = 0;INIT { *reader = sub () { $rand };}
