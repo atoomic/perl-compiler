@@ -22,7 +22,6 @@ lib/B/C/InitSection.pm
 lib/B/C/OP.pm
 lib/B/C/Optimizer/DowngradePVXV.pm
 lib/B/C/Optimizer/DynaLoader.pm
-lib/B/C/Optimizer/ForceHeavy.pm
 lib/B/C/OverLoad.pm
 lib/B/C/OverLoad/B/AV.pm
 lib/B/C/OverLoad/B/BINOP.pm

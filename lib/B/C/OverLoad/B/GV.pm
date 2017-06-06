@@ -8,7 +8,6 @@ use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init2 init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
-use B::C::Optimizer::ForceHeavy qw/force_heavy/;
 
 my %gptable;
 
@@ -551,10 +550,12 @@ sub savecv {
         return;
     }
 
-    # load utf8 and bytes on demand.
-    if ( my $newgv = force_heavy( $package, $fullname ) ) {
-        $gv = $newgv;
-    }
+    # STATIC_HV: This code was removed because white listing doesn't really work with force_heavy any more.
+    # What is done here has not been analyzed to see if we need to fix it.
+    ## load utf8 and bytes on demand.
+    #if ( my $newgv = force_heavy( $package, $fullname ) ) {
+    #    $gv = $newgv;
+    #}
 
     # XXX fails and should not be needed. The B::C part should be skipped 9 lines above, but be defensive
     return if $fullname eq 'B::walksymtable' or $fullname eq 'B::C::walksymtable';
