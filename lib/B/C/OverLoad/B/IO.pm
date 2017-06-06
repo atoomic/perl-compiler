@@ -31,7 +31,7 @@ sub do_save {
         "%s"                      => $xmg_stash,                    # xmg_stash
         "{%s}"                    => $io->save_magic($fullname),    # xmg_u
         "%u"                      => $io->CUR,                      # xpv_cur
-        "%u"                      => $io->LEN,                      # xpv_len_u
+        "{.xpvlenu_len=%u}"       => $io->LEN,                      # xpv_len_u
                                                                     # end of head
         "{.xivu_uv=%d}"           => 0,                             # xiv_u
         "(PerlIO*) %d"            => 0,                             # xio_ofp
@@ -45,7 +45,7 @@ sub do_save {
         "(GV*)%s"                 => $fmt_gv,                       # xio_fmt_gv
         "(char*)%s"               => $xio_bottom_name,              # xio_bottom_name
         "(GV*) %s"                => $bottom_gv,                    # xio_bottom_gv
-        '%s'                      => $io->IoTYPE,                   # xio_type
+        '%s'                      => cchar( $io->IoTYPE ),          # xio_type
         "0x%x"                    => $io->IoFLAGS,                  # xio_flags
     );
 
