@@ -15,6 +15,7 @@ sub inc_index {
 package B::HV;
 
 use strict;
+require mro;
 
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
 use B::C::Config;
@@ -214,13 +215,13 @@ sub do_save {
         # the flag if its not actually needed.
         # fix overload stringify
         # Gv_AMG: potentially removes the AMG flag
-
-        if ( $hv->FLAGS & SVf_AMAGIC and $hv->Gv_AMG ) {
-            init2()->sadd( "mro_isa_changed_in(%s);  /* %s */", $sym, $stash_name );
+        if ( $hv->FLAGS & SVf_AMAGIC ) {    #and $hv->Gv_AMG
+            my $do_mro_isa_changed = eval { $hv->Gv_AMG };
+            $do_mro_isa_changed = 1 if $@;    # fallback - view xtestc/0184.t
+            init2()->sadd( "mro_isa_changed_in(%s);  /* %s */", $sym, $stash_name ) if $do_mro_isa_changed;
         }
-
         if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' ) {
-            make_c3($stash_name);    # Is it main when we want to do it for main????
+            make_c3($stash_name);             # Is it main when we want to do it for main????
         }
 
         # Having this in place was making method lookups fail.
