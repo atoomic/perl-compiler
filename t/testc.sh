@@ -722,7 +722,7 @@ $SIG{__WARN__} = sub { print$_[0] . "\n" };
 print q(ok)'
 tests[182]='#TODO stash-magic delete renames to ANON
 my @c; sub foo { @c = caller(0); print $c[3] } my $fooref = delete $::{foo}; $fooref -> ();'
-result[182]='main::__ANON__'
+result[182]='main::foo'
 tests[183]='main->import(); print q(ok)'
 tests[184]='use warnings;
 sub xyz { no warnings "redefine"; *xyz = sub { $a <=> $b }; &xyz }
