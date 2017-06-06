@@ -15,16 +15,21 @@ sub do_save {
     # save the PVIV
     my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
 
-    xpvivsect()->comment('STASH, MAGIC, cur, len, IVX');
-    xpvivsect()->sadd(
-        "Nullhv, {0}, %u, {%u}, {%s}",
-        $cur, $len, get_integer_value( $sv->IVX )
-    );    # IVTYPE long
+    my $xpv_sym = 'NULL';
+    if ( $sv->HAS_ANY ) {
+        xpvivsect()->comment('STASH, MAGIC, cur, len, IVX');
+        my $xpv_ix = xpvivsect()->sadd(
+            "Nullhv, {0}, %u, {%u}, {%s}",
+            $cur, $len, get_integer_value( $sv->IVX )
+        );    # IVTYPE long
+
+        $xpv_sym = sprintf( "&xpviv_list[%d]", $xpv_ix );
+    }
 
     # save the pv
     my $ix = svsect()->sadd(
-        "&xpviv_list[%d], %u, 0x%x, {.svu_pv=(char*) %s}",
-        xpvivsect()->index, $sv->REFCNT, $flags, $savesym
+        "%s, %u, 0x%x, {.svu_pv=(char*) %s}",
+        $xpv_sym, $sv->REFCNT, $flags, $savesym
     );
     svsect()->debug( $fullname, $sv );
     return "&sv_list[" . $ix . "]";

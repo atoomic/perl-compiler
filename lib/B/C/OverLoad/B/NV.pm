@@ -26,9 +26,14 @@ sub do_save {
     # IVX is invalid in B.xs and unused
     my $iv = $svflags & SVf_IOK ? $sv->IVX : 0;
 
-    xpvnvsect()->comment('STASH, MAGIC, cur, len, IVX, NVX');
-    my $xpvn_ix = xpvnvsect()->sadd( 'Nullhv, {0}, 0, {0}, {%ld}, {%s}', $iv, $nv );
-    my $sv_ix = svsect()->sadd( '&xpvnv_list[%d], %Lu, 0x%x , {0}', $xpvn_ix, $refcnt, $svflags );
+    my $xpv_sym = 'NULL';
+    if ($sv->HAS_ANY) {
+        xpvnvsect()->comment('STASH, MAGIC, cur, len, IVX, NVX');
+        my $xpv_ix = xpvnvsect()->sadd( 'Nullhv, {0}, 0, {0}, {%ld}, {%s}', $iv, $nv );
+
+        $xpv_sym = sprintf("&xpvnv_list[%d]", $xpv_ix);
+    }
+    my $sv_ix = svsect()->sadd( '%s, %Lu, 0x%x , {0}', $xpv_sym, $refcnt, $svflags );
 
     svsect()->debug( $fullname, $sv );
     debug(

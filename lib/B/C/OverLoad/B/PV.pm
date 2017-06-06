@@ -37,16 +37,21 @@ sub do_save {
         debug( pv => "turn off SVf_FAKE %s %s\n", cstring($pv), $fullname );
     }
 
-    xpvsect()->comment("stash, magic, cur, len");
-    my $xpv_ix = xpvsect()->sadd( "Nullhv, {0}, %u, {%u}", $cur, $len );
+    my $xpv_sym = 'NULL';
+    if ( $sv->HAS_ANY ) {
+        xpvsect()->comment("stash, magic, cur, len");
+        my $xpv_ix = xpvsect()->sadd( "Nullhv, {0}, %u, {%u}", $cur, $len );
+
+        $xpv_sym = sprintf( '&xpv_list[%d]', $xpv_ix );
+    }
 
     svsect()->comment("any, refcnt, flags, sv_u");
     $savesym = $savesym eq 'NULL' ? '0' : ".svu_pv=(char*) $savesym";
     my $sv_ix = svsect()->saddl(
-        '&xpv_list[%d]' => $xpv_ix,    # SvANY = XPV
-        '%Lu'           => $refcnt,
-        '0x%x'          => $flags,
-        '{%s}'          => $savesym
+        '%s'   => $xpv_sym,
+        '%Lu'  => $refcnt,
+        '0x%x' => $flags,
+        '{%s}' => $savesym
     );
 
     if ( $shared_hek and !$static ) {

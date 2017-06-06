@@ -6,7 +6,7 @@ use B qw/peekop cstring threadsv_names opnumber/;
 
 use B::C::Config;
 use B::C::Debug::Walker qw/walkoptree_debug/;
-use B::C::File qw/svsect init copsect opsect/;
+use B::C::File qw/init copsect opsect/;
 use B::C::Helpers qw/do_labels/;
 
 my $OP_CUSTOM = opnumber('custom');

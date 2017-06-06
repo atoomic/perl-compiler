@@ -46,13 +46,15 @@ sub do_save {
         # 5.13.3: STASH, MAGIC, fill max ALLOC
 
         xpvavsect()->comment('xmg_stash, xmg_u, xav_fill, xav_max, xav_alloc');
+        my $xpv_ix = xpvavsect()->saddl(
+            "%s"   => $av->save_magic_stash,         # xmg_stash
+            "{%s}" => $av->save_magic($fullname),    # xmg_u
+            "0x%x" => $fill,                         # xav_fill
+            "0x%x" => $fill,                         # xav_max
+            "%s"   => "NULL",                        # xav_alloc  /* pointer to beginning of C array of SVs */ This has to be dynamically setup at init().
+        );
 
-        # STATIC HV: xmg_stash static.
-        my $xmg_stash   = B::CV::typecast_stash_save( $av->SvSTASH->save );
-        my $xpvavsym_ix = xpvavsect()->sadd( "%s, {%s}, %d, %d, 0", $xmg_stash, $av->save_magic($fullname), $fill, $fill );
-        my $xpvavsym    = sprintf( '&xpvav_list[%d]', $xpvavsym_ix );
-
-        svsect()->sadd( "%s, %Lu, 0x%x, {%s}", $xpvavsym, $av->REFCNT, $av->FLAGS, 0 );
+        svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
 
         svsect()->debug( $fullname, $av );
         my $sv_ix = svsect()->index;

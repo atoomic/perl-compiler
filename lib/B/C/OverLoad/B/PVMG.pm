@@ -7,7 +7,7 @@ use B::C::Config;
 use B qw/SVf_ROK SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
 use B::C::Save qw/savepv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
-use B::C::File qw/init init1 init2 init_static_assignments svsect xpvmgsect xpvsect pmopsect assign_hekkey2pv magicsect init_vtables/;
+use B::C::File qw/init init_static_assignments svsect xpvmgsect assign_hekkey2pv magicsect init_vtables/;
 use B::C::Helpers qw/read_utf8_string is_shared_hek get_index/;
 use B::C::Save::Hek qw/save_shared_he/;
 
@@ -44,7 +44,7 @@ sub do_save {
             and $ivx > LOWEST_IMAGEBASE    # some crazy heuristic for a sharedlibrary ptr in .data (> image_base)
             and ref( $sv->SvSTASH ) ne 'B::SPECIAL'
           ) {
-            die("This code  used to call _patch_dlsym. The logic didn't make sense after the CV re-factor so it's been removed here.")
+            die("This code  used to call _patch_dlsym. The logic didn't make sense after the CV re-factor so it's been removed here.");
         }
     }
 
@@ -55,13 +55,10 @@ sub do_save {
         $static  = 1;
     }
 
-    my $stash = $sv->SvSTASH->save;
-    $stash = q{Nullhv} if $stash eq 'NULL';
-
     xpvmgsect()->comment("STASH, MAGIC, cur, len, xiv_u, xnv_u");
     my $xpvmg_ix = xpvmgsect()->sadd(
         "(HV*) %s, {%s}, %u, {%u}, {%s}, {%s}",
-        $stash, $sv->save_magic($fullname), $cur, $len, $ivx, $nvx
+        $sv->save_magic_stash, $sv->save_magic($fullname), $cur, $len, $ivx, $nvx
     );
 
     my $sv_u = $savesym eq 'NULL' ? 0 : ".svu_pv=(char*) $savesym";
@@ -212,4 +209,13 @@ sub save_magic {
     return $last_magic;
 }
 
+sub save_magic_stash {
+    my $sv = shift or die("save_magic_stash is a method call!");
+
+    my $symbol = $sv->SvSTASH->save || return q{0};
+
+    return q{0} if $symbol eq 'Nullsv';
+    return q{0} if $symbol eq 'Nullhv';
+    return "(HV*) $symbol";
+}
 1;

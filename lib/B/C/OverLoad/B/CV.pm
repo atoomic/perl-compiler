@@ -33,7 +33,6 @@ sub do_save {
     my $presumed_package = $origname;
     $presumed_package =~ s/::[^:]+$// if $presumed_package;
 
-    my $xmg_stash = typecast_stash_save( $cv->SvSTASH->save );
     my $cv_stash = typecast_stash_save( defined $presumed_package && $presumed_package eq 'Fcntl' ? svref_2object( \%Fcntl:: )->save("Fcntl::") : $cv->STASH->save );
 
     # need to survive cv_undef as there is no protection against static CVs
@@ -59,7 +58,7 @@ sub do_save {
     xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
 
     my $xpvcv_ix = xpvcvsect->saddl(
-        '%s'          => $xmg_stash,                               # xmg_stash
+        '%s'          => $cv->save_magic_stash,                    # xmg_stash
         '{%s}'        => $cv->save_magic($origname),               # xmg_u
         '%u'          => $cur,                                     # xpv_cur -- warning this is not CUR and LEN for the pv
         '{%u}'        => $len,                                     # xpv_len_u -- warning this is not CUR and LEN for the pv

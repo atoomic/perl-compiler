@@ -19,6 +19,7 @@ typedef struct p5rx  *B__REGEXP;
 typedef COP  *B__COP;
 typedef OP   *B__OP;
 typedef HV   *B__HV;
+typedef SV   *B__SV;
 
 STATIC U32 a_hash = 0;
 
@@ -409,6 +410,16 @@ MODULE = B	PACKAGE = B::REGEXP	PREFIX = RX_
 U32
 RX_EXTFLAGS(rx)
 	  B::REGEXP rx
+
+MODULE = B     PACKAGE = B::SV        PREFIX = Sv
+
+bool
+SvHAS_ANY(sv)
+    B::SV   sv
+    CODE:
+	RETVAL = SvANY(sv) ? TRUE : FALSE;
+    OUTPUT:
+        RETVAL
 
 MODULE = B__CC	PACKAGE = B::CC
 

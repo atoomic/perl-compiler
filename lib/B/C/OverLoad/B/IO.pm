@@ -13,8 +13,6 @@ sub do_save {
 
     #return 'NULL' if $io->IsSTD($fullname);
 
-    my $xmg_stash = B::CV::typecast_stash_save( $io->SvSTASH->save );
-
     my ( $xio_top_name,    undef, undef ) = savecowpv( $io->TOP_NAME    || '' );
     my ( $xio_fmt_name,    undef, undef ) = savecowpv( $io->FMT_NAME    || '' );
     my ( $xio_bottom_name, undef, undef ) = savecowpv( $io->BOTTOM_NAME || '' );
@@ -26,9 +24,9 @@ sub do_save {
         $_ = 'NULL' if ( $_ eq 'Nullsv' );
     }
 
-    xpviosect()->comment( 'xmg_stash, xmg_u, xpv_cur, xpv_len_u, xiv_u, xio_ofp, xio_dirpu, xio_page, xio_page_len, xio_lines_left, xio_top_name, ' . 'xio_top_gv, xio_fmt_name, xio_fmt_gv, xio_bottom_name, xio_bottom_gv, xio_type, xio_flags' );
+    xpviosect()->comment( 'xmg_stash, xmg_u, xpv_cur, xpv_len_u, xiv_u, xio_ofp, xio_dirpu, xio_page, xio_page_len, xio_lines_left, xio_top_name, xio_top_gv, xio_fmt_name, xio_fmt_gv, xio_bottom_name, xio_bottom_gv, xio_type, xio_flags' );
     my $xpvio_ix = xpviosect()->saddl(
-        "%s"                      => $xmg_stash,                    # xmg_stash
+        "%s"                      => $io->save_magic_stash,         # xmg_stash
         "{%s}"                    => $io->save_magic($fullname),    # xmg_u
         "%u"                      => $io->CUR,                      # xpv_cur
         "{.xpvlenu_len=%u}"       => $io->LEN,                      # xpv_len_u
