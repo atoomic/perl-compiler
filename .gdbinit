@@ -19,6 +19,53 @@ set print array-indexes on
 
 macro define __builtin_offsetof(T, F) ((int) &(((T *) 0)->F))
 
+define set_program_name
+  set logging file /tmp/tmp.gdb
+  set logging overwrite on
+  set logging redirect on
+  set logging on
+  python print "set $programname = \"%s\"" % gdb.current_progspace().filename
+  set logging off
+  set logging redirect off
+  set logging overwrite off
+  source /tmp/tmp.gdb
+end
+
+define get_program_name
+  init-if-undefined $_set_name = 0
+  if $_set_name == 0
+    set_program_name
+  end
+  set $return = $programname
+end
+
+define gdb_strcmp
+        dont-repeat
+        set $result = 1
+        set $_i = 0
+        if ($arg0[0] == 0x0 && $arg1[0] != 0x0)
+                set $result = 0
+        end
+        if ($arg0[0] != 0x0 && $arg1[0] == 0x0)
+                set $result = 0
+        end
+        while ($result == 1 && $arg0[$_i] != 0x0 && $arg1[$_i] != 0x0)
+                if ($arg0[$_i] != $arg1[$_i])
+                        set $result = 0
+                end
+                set $_i = $_i + 1
+        end
+end
+document gdb_strcmp
+Determines if two C strings match
+end
+
+define check_is_perl
+  get_program_name
+  gdb_strcmp $return "/usr/local/cpanel/3rdparty/perl/524/bin/perl"
+  set $return = $result
+end
+
 define dumphv
     set $n = ((XPVHV*)  ($arg0)->sv_any)->xhv_keys
     set $i = 0
@@ -359,34 +406,47 @@ define dump_sv
   set $type = 0xf & $flags
   set $svany = $sv->sv_any
 
+  check_is_perl
+  set $is_perl = $return
+
   if $svany > 0 && $showxpv
     if $type == 2
         printf "====== SvANY:XPVNV =====\nSvANY(sv) = "
-        _show_index_for $svany "xpvnv_list" xpvnv_list sizeof(xpvnv_list)
+        if !$is_perl
+          _show_index_for $svany "xpvnv_list" xpvnv_list sizeof(xpvnv_list)
+        end
         p *(XPVNV*) $svany
     end
 
     if $type == 3
         printf "====== SvANY:XPV =====\nSvANY(sv) = "
-        _show_index_for $svany "xpv_list" xpv_list sizeof(xpv_list)
+        if !$is_perl
+          _show_index_for $svany "xpv_list" xpv_list sizeof(xpv_list)
+        end
         p *(XPV*) $svany
     end
 
     if $type == 11
         printf "====== SvANY:XPVAV =====\nSvANY(sv) = "
-        _show_index_for $svany "xpvav_list" xpvav_list sizeof(xpvav_list)
+        if !$is_perl
+          _show_index_for $svany "xpvav_list" xpvav_list sizeof(xpvav_list)
+        end
         p *(XPVAV*) $svany
     end
 
     if $type == 12
         printf "====== SvANY:XPVHV =====\n"
-        _show_index_for $svany "xpvhv_list" xpvhv_list sizeof(xpvhv_list)
+        if !$is_perl
+          _show_index_for $svany "xpvhv_list" xpvhv_list sizeof(xpvhv_list)
+        end
         p *(XPVHV*) $svany
     end
 
     if $type == 13
         printf "====== SvANY:XPVCV =====\n"
-        _show_index_for $svany "xpvcv_list" xpvcv_list sizeof(xpvcv_list)
+        if !$is_perl
+          _show_index_for $svany "xpvcv_list" xpvcv_list sizeof(xpvcv_list)
+        end
         p *(XPVCV*) $svany
     end
   end
@@ -489,7 +549,12 @@ define dump_gv
   set $xpvgv = (XPVGV*) $gv->sv_any
   # p *(GP*) ((GV*) ((HE*) 0x69a528)->he_valu.hent_val)->sv_u.svu_gp
   printf "GV: 0x%x = ", $gv
-  _show_index_for $gv "gv_list" gv_list sizeof(gv_list)
+
+  check_is_perl
+  set $is_perl = $return
+  if !$is_perl
+    _show_index_for $gv "gv_list" gv_list sizeof(gv_list)
+  end
   # could also use a simple print
   #p *$gv
   printf "{ sv_any=0x%x, refcnt=%d, flags=0x%x, gp=0x%x}\n", $gv->sv_any, $gv->sv_refcnt, $gv->sv_flags, $gv->sv_u.svu_gp
@@ -504,20 +569,22 @@ define dump_gv
   if $gp
     p *$gp
 
-    _show_index_for $gp "gp_list" gp_list sizeof(gp_list)
-    printf "sv.gp\n"
+    if !$is_perl
+      _show_index_for $gp "gp_list" gp_list sizeof(gp_list)
+      printf "sv.gp\n"
 
-    _show_index_for $gp.gp_sv "sv_list" sv_list sizeof(sv_list)
-    printf "sv.gp.gp_sv\n"
+      _show_index_for $gp.gp_sv "sv_list" sv_list sizeof(sv_list)
+      printf "sv.gp.gp_sv\n"
 
-    _show_index_for $gp.gp_cv "sv_list" sv_list sizeof(sv_list)
-    printf "sv.gp.gp_cv\n"
+      _show_index_for $gp.gp_cv "sv_list" sv_list sizeof(sv_list)
+      printf "sv.gp.gp_cv\n"
 
-    _show_index_for $gp.gp_hv "sv_list" sv_list sizeof(sv_list)
-    printf "sv.gp.gp_hv\n"
+      _show_index_for $gp.gp_hv "sv_list" sv_list sizeof(sv_list)
+      printf "sv.gp.gp_hv\n"
 
-    _show_index_for $gp.gp_av "sv_list" sv_list sizeof(sv_list)
-    printf "sv.gp.gp_av\n"
+      _show_index_for $gp.gp_av "sv_list" sv_list sizeof(sv_list)
+      printf "sv.gp.gp_av\n"
+    end
 
     # .... show keys from the hash
     set $gp_hv = (HV*) $gp->gp_hv
