@@ -61,7 +61,19 @@ BEGIN {
     B->import(qw(regex_padav SVp_NOK SVp_IOK CVf_CONST CVf_ANON SVt_PVGV));
 }
 
-use FileHandle;
+# this is crazyness.... and just working around a program which blacklist Carp.pm - view xtestc/0235.t
+BEGIN {
+    my $carp;
+    if ( $INC{'Carp.pm'} && $INC{'Carp.pm'} !~ qr{\.pm$} ) {
+        #### warn "Remove Carp.pm";
+        $carp = $INC{'Carp.pm'};
+        delete $INC{'Carp.pm'};
+    }
+
+    require FileHandle;
+
+    $INC{'Carp.pm'} = $carp if $carp;
+}
 
 use B::FAKEOP  ();
 use B::STASHGV ();
