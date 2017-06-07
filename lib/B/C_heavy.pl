@@ -75,7 +75,6 @@ use B::STASHGV ();
 use B::C::Optimizer::DynaLoader ();
 use B::C::OverLoad              ();
 use B::C::Save qw(savepv savestashpv);
-use B::C::Save::Signals ();
 
 # FIXME: this part can now be dynamic
 # exclude all not B::C:: prefixed subs
@@ -732,9 +731,6 @@ sub save_context {
     # forbid run-time extends of curpad syms, names and INC
     verbose("save context:");
 
-    my $warner = $SIG{__WARN__};
-    B::C::Save::Signals::save($warner);    # FIXME ? $warner seems useless arg to save_sig call
-                                           # honour -w and %^H
     init()->add("/* honor -w */");
     init()->sadd( "PL_dowarn = ( %s ) ? G_WARN_ON : G_WARN_OFF;", $^W );
     if ( $^{TAINT} ) {
