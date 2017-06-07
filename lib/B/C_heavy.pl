@@ -63,16 +63,10 @@ BEGIN {
 
 # this is crazyness.... and just working around a program which blacklist Carp.pm - view xtestc/0235.t
 BEGIN {
-    my $carp;
-    if ( $INC{'Carp.pm'} && $INC{'Carp.pm'} !~ qr{\.pm$} ) {
-        #### warn "Remove Carp.pm";
-        $carp = $INC{'Carp.pm'};
-        delete $INC{'Carp.pm'};
-    }
-
+    # rather than updating %INC and force Carp to being loaded,
+    #   just make sure that croak is defined so we can load IO::Seekable
+    local *Carp::croak = sub { die "Carp is unsupported by B::C during this stage." };
     require FileHandle;
-
-    $INC{'Carp.pm'} = $carp if $carp;
 }
 
 use B::FAKEOP  ();
