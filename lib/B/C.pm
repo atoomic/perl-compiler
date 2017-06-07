@@ -93,9 +93,6 @@ sub save_compile_state {
     #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} );
     #exit;
 
-    # Upgrade the SVRV for main::AUTOLOAD to an SVGV. WHY IS THIS NOT A SVGV???
-    eval '$main::AUTOLOAD = undef' if $settings->{starting_stash}->{'AUTOLOAD'};
-
     return;
 }
 
