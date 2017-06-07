@@ -470,7 +470,7 @@ sub get_savefields {
     elsif ( $fullname =~ /^DynaLoader::dl_(require_symbols|resolve_using|librefs)$/ ) {    # no need to assign any SV/AV/HV to them (172)
         $savefields = Save_CV | Save_FORM | Save_IO;
     }
-    elsif ( $fullname eq 'main::ENV' or $fullname eq 'main::SIG' ) {
+    elsif ( $fullname eq 'main::ENV' ) {
         $savefields = $all_fields ^ Save_HV;
     }
     elsif ( $fullname eq 'main::ARGV' ) {
