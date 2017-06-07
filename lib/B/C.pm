@@ -107,6 +107,9 @@ my %seen;
 sub setup_stashes {
     if ( exists $main::{'!'} ) {
         if ( !$INC{'Errno.pm'} ) {
+
+            # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
+            # problems. Ideally this code should be removed in favor of a better solution.
             eval 'require Errno';
         }
     }

@@ -33,6 +33,9 @@ sub do_save {
     }
     if ( $type == $B::C::OP_UCFIRST ) {
         verbose("enabling -ffold with ucfirst");
+
+        # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
+        # problems. Ideally this code should be removed in favor of a better solution.
         require utf8;
         B::C::load_utf8_heavy();
 

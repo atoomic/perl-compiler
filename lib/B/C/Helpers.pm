@@ -89,6 +89,9 @@ sub read_utf8_string {
 }
 
 sub _load_mro {
+
+    # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
+    # problems. Ideally this code should be removed in favor of a better solution.
     eval q/require mro; 1/ or die;
     no warnings 'redefine';
     *_load_mro = sub { };

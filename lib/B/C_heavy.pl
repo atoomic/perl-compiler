@@ -65,6 +65,8 @@ BEGIN {
 BEGIN {
     # rather than updating %INC and force Carp to being loaded,
     #   just make sure that croak is defined so we can load IO::Seekable
+    # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
+    # problems. Ideally this code should be removed in favor of a better solution.
     local *Carp::croak = sub { die "Carp is unsupported by B::C during this stage." };
     require FileHandle;
 }
