@@ -397,17 +397,19 @@ define dump_sv
     set $showxpv = (int) $arg1
   end
 
+  check_is_perl
+  set $is_perl = $return
+
   svflags $sv
   printf "====== SV =====\n"
-  _show_index_for $sv "sv_list" sv_list sizeof(sv_list)
+  if !$is_perl
+    _show_index_for $sv "sv_list" sv_list sizeof(sv_list)
+  end
   print *(SV*) $sv
 
   set $flags = ((SV*) ($sv))->sv_flags
   set $type = 0xf & $flags
   set $svany = $sv->sv_any
-
-  check_is_perl
-  set $is_perl = $return
 
   if $svany > 0 && $showxpv
     if $type == 2
