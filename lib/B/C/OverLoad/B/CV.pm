@@ -33,7 +33,11 @@ sub do_save {
     my $presumed_package = $origname;
     $presumed_package =~ s/::[^:]+$// if $presumed_package;
 
-    my $cv_stash = typecast_stash_save( defined $presumed_package && $presumed_package eq 'Fcntl' ? svref_2object( \%Fcntl:: )->save("Fcntl::") : $cv->STASH->save );
+    # We only have a stash if NAME_HEK isn't in place. this happens when we're off an RV instead of a GV.
+    my $cv_stash = 'NULL';
+    if ( !$cv->NAME_HEK ) {
+        $cv_stash = typecast_stash_save( defined $presumed_package && $presumed_package eq 'Fcntl' ? svref_2object( \%Fcntl:: )->save("Fcntl::") : $cv->STASH->save );
+    }
 
     # need to survive cv_undef as there is no protection against static CVs
     my $refcnt = $cv->REFCNT + 1;
