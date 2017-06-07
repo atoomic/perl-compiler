@@ -917,7 +917,7 @@ tests[225]='$_ = $dx = "\x{10f2}"; s/($dx)/$dx$1/; $ok = 1 if $_ eq "$dx$dx"; $_
 result[225]='end'
 tests[226]='# WontFix
 @INC = (); dbmopen(%H, $file, 0666)'
-result[226]='No dbm on this machine at -e line 1.'
+result[226]='No dbm on this machine at xtestc/0226.pl line 2.'
 tests[227]='open IN, "/dev/null" or die $!; *ARGV = *IN; foreach my $x (<>) { print $x; } close IN; print qq{ok\n}'
 tests[229]='sub yyy () { "yyy" } print "ok\n" if( eval q{yyy} eq "yyy");'
 #issue 30
