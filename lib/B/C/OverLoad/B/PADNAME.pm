@@ -32,6 +32,9 @@ sub do_save {
     # Track the largest padname length to determine the size of the struct.
     my $xpadn_len = $pn->LEN;
     $MAX_PADNAME_LENGTH = $xpadn_len if $xpadn_len > $MAX_PADNAME_LENGTH;
+    if ( $xpadn_len > 60 ) {
+        die "ERROR Overlong name of lexical variable $pv for $fullname. This causes all pads to have to be overly large. Please shrink the variable name's length and try again.";
+    }
 
     # 5.22 needs the buffer to be at the end, and the pv pointing to it.
     # We allocate a static buffer, and for uniformity of the list pre-alloc.
