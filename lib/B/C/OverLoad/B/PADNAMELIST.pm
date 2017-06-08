@@ -13,7 +13,7 @@ sub add_to_section {
 
     # TODO: max_named walk all names and look for non-empty names
     my $refcnt   = $self->REFCNT + 1;    # XXX defer free to global destruction: 28
-    my $fill     = $self->fill;
+    my $fill     = $self->MAX;
     my $maxnamed = $self->MAXNAMED;
 
     my $ix = padnamelistsect->add("$fill, NULL, $fill, $maxnamed, $refcnt /* +1 */");
@@ -26,26 +26,27 @@ sub add_to_section {
 sub add_to_init {
     my ( $self, $sym, $acc ) = @_;
 
-    my $fill1 = $self->fill + 1;
+    my $fill1 = $self->MAX + 1;
 
     init_static_assignments()->no_split;
     init_static_assignments()->add("{");
-    init_static_assignments()->add("\tregister int gcount;") if $acc =~ qr{\bgcount\b};
-    init_static_assignments()->sadd( "\tPADNAME **svp = INITPADNAME($sym, %d);", $fill1 );
-    init_static_assignments()->add( substr( $acc, 0, -2 ) );
+    init_static_assignments()->indent(+1);
+
+    init_static_assignments()->sadd("register int gcount;") if $acc =~ qr{\bgcount\b};
+    init_static_assignments()->sadd( "PADNAME **svp = INITPADNAME($sym, %d);", $fill1 );
+    init_static_assignments()->sadd( substr( $acc, 0, -2 ) );
+
+    init_static_assignments()->indent(-1);
     init_static_assignments()->add("}");
     init_static_assignments()->split;
 
     return;
 }
 
-sub fill {
-    my $self = shift;
-    return $self->MAX;
-}
-
 sub cast_sv {
     return "(PADNAME*)";
 }
+
+sub fill { return shift->MAX }
 
 1;
