@@ -27,42 +27,38 @@ sub cast_sv {
     return "(SV*)";
 }
 
+sub save_sv {
+    my ( $av, $fullname ) = @_;
+
+    my $fill = $av->fill();           # could be using PADLIST, PADNAMELIST, or AV method for this.
+
+    xpvavsect()->comment('xmg_stash, xmg_u, xav_fill, xav_max, xav_alloc');
+    my $xpv_ix = xpvavsect()->saddl(
+        "%s"   => $av->save_magic_stash,         # xmg_stash
+        "{%s}" => $av->save_magic($fullname),    # xmg_u
+        "0x%x" => $fill,                         # xav_fill
+        "0x%x" => $fill,                         # xav_max
+        "%s"   => "NULL",                        # xav_alloc  /* pointer to beginning of C array of SVs */ This has to be dynamically setup at init().
+    );
+
+    svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
+
+    svsect()->debug( $fullname, $av );
+    my $sv_ix    = svsect()->index;
+    my $av_index = xpvavsect()->index;
+
+    # protect against recursive self-references (Getopt::Long)
+    return savesym( $av, "(AV*)&sv_list[$sv_ix]" );
+}
+
 sub do_save {
     my ( $av, $fullname, $cv ) = @_;
 
-    my $sym;
-    $fullname = '' unless $fullname;
+    $fullname ||= '';
 
-    my $fill    = $av->fill();
-    my $svpcast = $av->cast_sv();
+    my $fill = $av->fill();
 
-    my $av_index;
-
-    if ( $av->can('save_sv') ) {    # PADLIST or PADNAMELIST
-        $sym = $av->save_sv();
-    }
-    else {
-        # 5.14
-        # 5.13.3: STASH, MAGIC, fill max ALLOC
-
-        xpvavsect()->comment('xmg_stash, xmg_u, xav_fill, xav_max, xav_alloc');
-        my $xpv_ix = xpvavsect()->saddl(
-            "%s"   => $av->save_magic_stash,         # xmg_stash
-            "{%s}" => $av->save_magic($fullname),    # xmg_u
-            "0x%x" => $fill,                         # xav_fill
-            "0x%x" => $fill,                         # xav_max
-            "%s"   => "NULL",                        # xav_alloc  /* pointer to beginning of C array of SVs */ This has to be dynamically setup at init().
-        );
-
-        svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
-
-        svsect()->debug( $fullname, $av );
-        my $sv_ix = svsect()->index;
-        $av_index = xpvavsect()->index;
-
-        # protect against recursive self-references (Getopt::Long)
-        $sym = savesym( $av, "(AV*)&sv_list[$sv_ix]" );
-    }
+    my $sym = $av->save_sv($fullname);    # could be using PADLIST, PADNAMELIST, or AV method for this.
 
     debug( av => "saving AV %s 0x%x [%s] FILL=%d", $fullname, $$av, ref($av), $fill );
 
@@ -108,7 +104,10 @@ sub do_save {
 
             @values = map { $_->save( $fullname . "[" . $count++ . "]" ) || () } @array;
         }
+
         $count = 0;
+        my $svpcast = $av->cast_sv();    # could be using PADLIST, PADNAMELIST, or AV method for this.
+
         for ( my $i = 0; $i <= $#array; $i++ ) {
             if ( $fullname =~ m/^(INIT|END)$/ and $values[$i] and ref $array[$i] eq 'B::CV' ) {
                 init()->sadd( 'SvREFCNT_inc(%s); /* bump $fullname */', $values[$i] );
@@ -145,36 +144,9 @@ sub do_save {
                 $acc .= "\t*svp++ = $svpcast" . ( $values[$i] ? $values[$i] : '&PL_sv_undef' ) . ";\n\t";
             }
         }
-        init()->no_split;
 
-        if ( $av->can('add_to_init') ) {    # PADLIST or PADNAMELIST
-            $av->add_to_init( $sym, $acc );
-        }
+        $av->add_to_init( $sym, $acc, $fill, $fullname );
 
-        # With -fav-init faster initialize the array as the initial av_extend()
-        # is very expensive.
-        # The problem was calloc, not av_extend.
-        # Since we are always initializing every single element we don't need
-        # calloc, only malloc. wmemset'ting the pointer to PL_sv_undef
-        # might be faster also.
-        else {
-
-            my $deferred_init = $acc =~ qr{BOOTSTRAP_XS_}m ? init_bootstraplink() : init_static_assignments();
-            $deferred_init->no_split;
-
-            $deferred_init->sadd( "{ /* Initialize array %s */", $fullname );
-            $deferred_init->add("\tregister int gcount;") if $count;
-            my $fill1 = $fill < 3 ? 3 : $fill + 1;
-            $deferred_init->sadd( "\tSV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
-            $deferred_init->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
-            $deferred_init->add("}");
-
-            $deferred_init->split;
-        }
-
-        init()->split;
-
-        # we really added a lot of lines ( B::C::InitSection->add
         # should really scan for \n, but that would slow
         # it down
         init()->inc_count($#array);
@@ -185,6 +157,32 @@ sub do_save {
     }
 
     return $sym;
+}
+
+# With -fav-init faster initialize the array as the initial av_extend()
+# is very expensive.
+# The problem was calloc, not av_extend.
+# Since we are always initializing every single element we don't need
+# calloc, only malloc. wmemset'ting the pointer to PL_sv_undef
+# might be faster also.
+
+sub add_to_init {
+    my ( $av, $sym, $acc, $fill, $fullname ) = @_;
+
+    my $deferred_init = $acc =~ qr{BOOTSTRAP_XS_}m ? init_bootstraplink() : init_static_assignments();
+
+    $deferred_init->no_split;
+    $deferred_init->sadd( "{ /* Initialize array %s */", $fullname );
+    $deferred_init->indent(+1);
+
+    $deferred_init->add("register int gcount;") if $acc =~ m/\(gcount=/m;
+    my $fill1 = $fill < 3 ? 3 : $fill + 1;
+    $deferred_init->sadd( "SV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
+    $deferred_init->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
+
+    $deferred_init->indent(-1);
+    $deferred_init->add("}");
+    $deferred_init->split;
 }
 
 1;

@@ -3,11 +3,11 @@ package B::PADLIST;
 use strict;
 our @ISA = qw(B::AV);
 
-use B::C::File qw/init padlistsect/;
+use B::C::File qw/init_static_assignments padlistsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
 sub save_sv {    # id+outid as U32 (PL_padlist_generation++)
-    my ( $av ) = @_;
+    my ($av) = @_;
 
     my $fill = $av->MAX;
 
@@ -23,17 +23,17 @@ sub add_to_init {
 
     my $fill1 = $av->MAX + 1;
 
-    init()->no_split;
-    init()->add("{");
-    init()->indent(+1);
+    init_static_assignments()->no_split;
+    init_static_assignments()->add("{");
+    init_static_assignments()->indent(+1);
 
-    init()->sadd("register int gcount;") if $acc =~ qr{\bgcount\b};    # only if gcount is used
-    init()->sadd( "PAD **svp = INITPADLIST($sym, %d);", $fill1 );
-    init()->sadd( substr( $acc, 0, -2 ) );
+    init_static_assignments()->sadd("register int gcount;") if $acc =~ m/\(gcount=/m;
+    init_static_assignments()->sadd( "PAD **svp = INITPADLIST($sym, %d);", $fill1 );
+    init_static_assignments()->sadd( substr( $acc, 0, -2 ) );
 
-    init()->indent(-1);
-    init()->add("}");
-    init()->split;
+    init_static_assignments()->indent(-1);
+    init_static_assignments()->add("}");
+    init_static_assignments()->split;
 
     return;
 }

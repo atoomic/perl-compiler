@@ -3,11 +3,11 @@ package B::PADNAMELIST;
 use strict;
 our @ISA = qw(B::AV);
 
-use B::C::File qw/init init_static_assignments padnamelistsect/;
+use B::C::File qw/init_static_assignments padnamelistsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
 sub save_sv {
-    my ( $av ) = @_;
+    my ($av) = @_;
 
     padnamelistsect()->comment("xpadnl_fill, xpadnl_alloc, xpadnl_max, xpadnl_max_named, xpadnl_refcnt");
 
@@ -32,7 +32,7 @@ sub add_to_init {
     init_static_assignments()->add("{");
     init_static_assignments()->indent(+1);
 
-    init_static_assignments()->sadd("register int gcount;") if $acc =~ qr{\bgcount\b};
+    init_static_assignments()->sadd("register int gcount;") if $acc =~ m/\(gcount=/m;
     init_static_assignments()->sadd( "PADNAME **svp = INITPADNAME($sym, %d);", $fill1 );
     init_static_assignments()->sadd( substr( $acc, 0, -2 ) );
 
