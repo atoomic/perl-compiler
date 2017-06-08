@@ -83,13 +83,16 @@ sub do_save {
     my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
     {
-        my $gv_refcnt = $gv->REFCNT + 1;                  #  + 1;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
-        my $gv_flags  = $gv->FLAGS;
-
         gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
 
         # replace our FAKE entry above
-        gvsect()->update( $gv_ix, sprintf( "&%s, %u, 0x%x, {.svu_gp=(GP*)%s} /* %s */", $xpvgv, $gv_refcnt, $gv_flags, $gpsym, $gv->get_fullname() ) );
+        gvsect()->supdatel(
+            $gv_ix,
+            "&%s"                                                 => $xpvgv,             # XPVGV*  sv_any
+            "%u"                                                  => $gv->REFCNT + 1,    #  sv_refcnt - +1 to make it immortal
+            "0x%x"                                                => $gv->FLAGS,         # sv_flags
+            "{.svu_gp=(GP*)%s} /* " . $gv->get_fullname() . " */" => $gpsym,             # GP* sv_u - plug the gp in our sv_u slot
+        );
     }
 
     debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $gvsym, $gv->NAME );
