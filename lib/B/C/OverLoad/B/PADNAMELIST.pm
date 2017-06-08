@@ -16,7 +16,7 @@ sub save_sv {
     my $fill     = $av->MAX;
     my $maxnamed = $av->MAXNAMED;
 
-    my $ix = padnamelistsect->add("$fill, NULL, $fill, $maxnamed, $refcnt /* +1 */");
+    my $ix = padnamelistsect->add("$fill, NULL, $fill, $maxnamed, $refcnt");
 
     my $sym = savesym( $av, "&padnamelist_list[$ix]" );
 
