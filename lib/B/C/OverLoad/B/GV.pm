@@ -65,8 +65,8 @@ sub do_save {
     my $xpvg_ix = xpvgvsect()->saddl(
         "%s"                       => $stash_symbol,
         "{%s}"                     => $gv->save_magic($name),    # STATIC_HV: The symbol for the HV stash. Which field is it??
-        '%d'                       => 0,                         #$gv->CUR,                         # cur ??? FIXME
-        '{.xpvlenu_len=%d}'        => 0,                         #$gv->LEN,                         # len ??? FIXME
+        '%d'                       => $gv->CUR,                  # cur
+        '{.xpvlenu_len=%d}'        => $gv->LEN,                  # len
         '{.xivu_namehek=(HEK*)%s}' => q{NULL},                   # the namehek (HEK*) - ??? FIXME
         '{.xgv_stash=%s}'          => $stash_symbol,             # The symbol for the HV stash. Which field is it??
     );
