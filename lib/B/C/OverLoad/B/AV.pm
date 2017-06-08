@@ -38,8 +38,8 @@ sub do_save {
 
     my $av_index;
 
-    if ( $av->can('add_to_section') ) {    # PADLIST or PADNAMELIST
-        $sym = $av->add_to_section();
+    if ( $av->can('save_sv') ) {    # PADLIST or PADNAMELIST
+        $sym = $av->save_sv();
     }
     else {
         # 5.14

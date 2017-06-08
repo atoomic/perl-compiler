@@ -6,8 +6,8 @@ our @ISA = qw(B::AV);
 use B::C::File qw/init init_static_assignments padnamelistsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
-sub add_to_section {
-    my ($av) = @_;
+sub save_sv {
+    my ( $av ) = @_;
 
     padnamelistsect()->comment("xpadnl_fill, xpadnl_alloc, xpadnl_max, xpadnl_max_named, xpadnl_refcnt");
 

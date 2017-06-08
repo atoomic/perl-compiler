@@ -6,8 +6,8 @@ our @ISA = qw(B::AV);
 use B::C::File qw/init padlistsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
-sub add_to_section {    # id+outid as U32 (PL_padlist_generation++)
-    my ($av) = @_;
+sub save_sv {    # id+outid as U32 (PL_padlist_generation++)
+    my ( $av ) = @_;
 
     my $fill = $av->MAX;
 
