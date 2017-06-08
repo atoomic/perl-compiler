@@ -61,19 +61,29 @@ sub do_save {
 
     my $stash_symbol = $gv->get_stash_symbol();
 
+    my $namehek = q{NULL};
+    if ( my $gvname = $gv->NAME ) {
+        my $share_he = save_shared_he($gvname);
+        $namehek = get_sHe_HEK($share_he);
+    }
+
     xpvgvsect()->comment("stash, magic, cur, len, xiv_u={.xivu_namehek=}, xnv_u={.xgv_stash=}");
     my $xpvg_ix = xpvgvsect()->saddl(
-        "%s"                       => $stash_symbol,
-        "{%s}"                     => $gv->save_magic($name),    # STATIC_HV: The symbol for the HV stash. Which field is it??
-        '%d'                       => $gv->CUR,                  # cur
-        '{.xpvlenu_len=%d}'        => $gv->LEN,                  # len
-        '{.xivu_namehek=(HEK*)%s}' => q{NULL},                   # the namehek (HEK*) - ??? FIXME
-        '{.xgv_stash=%s}'          => $stash_symbol,             # The symbol for the HV stash. Which field is it??
+
+        # _XPV_HEAD
+        "%s"                => $stash_symbol,             # HV* xmg_stash;      /* class package */
+        "{%s}"              => $gv->save_magic($name),    # union _xmgu xmg_u;
+        '%d'                => $gv->CUR,                  # STRLEN  xpv_cur;        /* length of svu_pv as a C string */
+        '{.xpvlenu_len=%d}' => $gv->LEN,                  # union xpv_len_u - xpvlenu_len or xpvlenu_pv
+
+        # custom fields for xpvgv
+        '{.xivu_namehek=(HEK*)%s}' => $namehek,           # union _xivu xiv_u - the namehek (HEK*)
+        '{.xgv_stash=%s}'          => $stash_symbol,      # union _xnvu xnv_u - The symbol for the HV stash. Which field is it??
     );
     my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
     {
-        my $gv_refcnt = $gv->REFCNT + 1;                         #  + 1;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
+        my $gv_refcnt = $gv->REFCNT + 1;                  #  + 1;    # TODO probably need more love for both refcnt (+1 ? extra flag immortal)
         my $gv_flags  = $gv->FLAGS;
 
         gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
@@ -92,22 +102,6 @@ sub do_save {
     # FIXME... need to plug it to init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ) );
 
     # STATIC_HV: Is there a way to do this up on the xpvgvsect()->sadd line ??
-    if ( my $gvname = $gv->NAME ) {
-        my $shared_he = save_shared_he($gvname);    # ,....
-        my $hek       = get_sHe_HEK($shared_he);
-        if ( $hek ne q{NULL} ) {
-
-            # plug the shared_he HEK to xpvgv: GvNAME_HEK($gvsym) =~(similar to) $xpvgv.xiv_u.xivu_namehek
-            # This is the static version of
-            #  init()->sadd( "GvNAME_HEK(%s) = (HEK*) &(( (SHARED_HE*) %s)->shared_he_hek);", $gvsym, $shared_he );
-            # sharedhe_list[68] => shared_he_68
-
-            # Note: the namehek here is the HEK and not the hek_key
-            xpvgvsect->supdate_field( $xpvg_ix, GV_IX_NAMEHEK(), qq[ {.xivu_namehek=%s } /* %s */ ], $hek, $gvname );
-
-            1;
-        }
-    }
 
     return $gvsym;
 }
