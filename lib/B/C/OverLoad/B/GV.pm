@@ -51,7 +51,7 @@ sub do_save {
 
     my $gv_ix = gvsect()->add('FAKE_GV');
     my $gvsym = sprintf( '&gv_list[%d]', $gv_ix );
-    savesym( $gv, $gvsym );    # cache it
+    savesym( $gv, $gvsym );    # cache it early as eGV might be ourself
 
     my $savefields = get_savefields( $gv, $gv->get_fullname() );
 
@@ -167,7 +167,9 @@ sub savegp_from_gv {
 
     # gp fields initializations
     # gp_cvgen: not set, no B api ( could be done in init section )
-    my ( $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_hv, $gp_av, $gp_form, $gp_egv ) = ( '(SV*)&PL_sv_undef', 'NULL', 'NULL', 0, 'NULL', 'NULL', 'NULL', 'NULL' );
+    my ( $gp_sv, $gp_io, $gp_cv, $gp_cvgen, $gp_hv, $gp_av, $gp_form ) = ( '(SV*)&PL_sv_undef', 'NULL', 'NULL', 0, 'NULL', 'NULL', 'NULL' );
+
+    my $gp_egv = $gv->save_egv();
 
     # walksymtable creates an extra reference to the GV (#197): STATIC_HV: Confirm this is actually a true statement at this point.
     my $gp_refcount = $gv->GvREFCNT + 1;    # +1 for immortal: do not free our static GVs
@@ -203,18 +205,18 @@ sub savegp_from_gv {
 
     gpsect()->supdatel(
         $gp_ix,
-        "(SV*) %s" => $gp_sv,
-        "(IO*) %s" => $gp_io,
-        "(CV*) %s" => $gp_cv,
-        "%d"       => $gp_cvgen,
-        "%u"       => $gp_refcount,
-        "%s"       => $gp_hv,
-        "%s"       => $gp_av,
-        "(CV*) %s" => $gp_form,
-        "%s"       => $gp_egv,
-        "%u"       => $gp_line,
-        "0x%x"     => $gp_flags,
-        "%s"       => get_sHe_HEK($gp_file_hek),
+        "(SV*) %s"           => $gp_sv,
+        "(IO*) %s"           => $gp_io,
+        "(CV*) %s"           => $gp_cv,
+        "%d"                 => $gp_cvgen,
+        "%u"                 => $gp_refcount,
+        "%s"                 => $gp_hv,
+        "%s"                 => $gp_av,
+        "(CV*) %s"           => $gp_form,
+        "(GV*) %s /* eGV */" => $gp_egv,
+        "%u"                 => $gp_line,
+        "0x%x"               => $gp_flags,
+        "%s"                 => get_sHe_HEK($gp_file_hek),
     );
     $saved_gps{$gp} = sprintf( "&gp_list[%d]", $gp_ix );
 
@@ -271,14 +273,17 @@ sub get_stash_symbol {
 sub save_egv {
     my ($gv) = @_;
 
-    return if $gv->is_empty;
+    return q{NULL} if $gv->is_empty;
 
     my $egv = $gv->EGV;
-    if ( ref($egv) ne 'B::SPECIAL' && ref( $egv->STASH ) ne 'B::SPECIAL' && $$gv != $$egv ) {
-        return $egv->save;
-    }
+    return q{NULL} if ref($egv) eq 'B::SPECIAL' || ref( $egv->STASH ) eq 'B::SPECIAL';
 
-    return;
+    # if it's the same do a static assignment ? (probably not required)
+    #if ( $$gv == $$egv ) {
+    #    warn "Same GV for ??? " . $egv->save;
+    #}
+
+    return $egv->save;
 }
 
 sub save_gv_sv {
@@ -455,7 +460,6 @@ sub get_savefields {
     my $all_fields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
     my $savefields = 0;
 
-    $gv->save_egv();    # STATIC_HV: where do save_egv actions get saved??
     my $gp = $gv->GP;
 
     # some non-alphabetic globs require some parts to be saved
