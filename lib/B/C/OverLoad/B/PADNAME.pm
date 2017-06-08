@@ -4,65 +4,57 @@ package B::PADNAME;
 
 use strict;
 
-use B qw/cstring SVf_FAKE/;
-use B::C::File qw( padnamesect init );
+use B qw/cstring/;
+use B::C::File qw( padnamesect );
 use B::C::Config;
-use B::C::Helpers qw/is_constant/;
+
+our $MAX_PADNAME_LENGTH = 1;
 
 sub do_save {
     my ( $pn, $fullname ) = @_;
 
-    my $flags = $pn->FLAGS;    # U8 + FAKE if OUTER. OUTER,STATE,LVALUE,TYPED,OUR
-    $flags = $flags & 0xff;
-    my $gen   = $pn->GEN;
-    my $stash = $pn->OURSTASH;
-    my $type  = $pn->TYPE;
-
-    my $sn = $stash->save($fullname);
-    my $tn = $type->save($fullname);
+    my $xpadn_ourstash = sprintf( "(HV*) %s", $pn->OURSTASH->save($fullname) );
+    my $xpadn_type_u   = sprintf( "(HV*) %s", $pn->TYPE->save($fullname) );
 
     my $refcnt = $pn->REFCNT;
     $refcnt++ if $refcnt < 1000;    # XXX protect from free, but allow SvREFCOUNT_IMMORTAL
 
-    my $str  = $pn->PVX;
-    my $cstr = cstring($str);       # a 5.22 padname is always utf8
-    $cstr = '{0}' if $cstr eq '0';
+    my $pv = $pn->PVX;
+    my $xpadn_str = cstring($pv) || '{0}';
 
     my $ix = padnamesect()->index + 1;
-    my $s  = "&padname_list[$ix]";
+    my $sym = sprintf( "&padname_list[%d]", $ix );
 
-    my $pnstr = "((char*)$s)+STRUCT_OFFSET(struct padname_with_str, xpadn_str[0])";
+    my $xpadn_pv = $ix ? sprintf( "((char*)%s)+STRUCT_OFFSET(struct padname_with_str, xpadn_str[0])", $sym ) : 'NULL';
+
+    my $xpadn_refcnt = $refcnt >= 1000 ? sprintf( "0x%x", $refcnt ) : $refcnt + 1;
+
+    # Track the largest padname length to determine the size of the struct.
+    my $xpadn_len = $pn->LEN;
+    $MAX_PADNAME_LENGTH = $xpadn_len if $xpadn_len > $MAX_PADNAME_LENGTH;
 
     # 5.22 needs the buffer to be at the end, and the pv pointing to it.
-    # We allocate a static buffer, and for uniformity of the list pre-alloc size 60 (WIP, improve later)
-    padnamesect()->comment(" pv, ourstash, type, low, high, refcnt, gen, len, flags, str");
+    # We allocate a static buffer, and for uniformity of the list pre-alloc.
+    # We set it to the max length of the largest variable.
+    padnamesect()->comment(" pv, ourstash, type_u, low, high, refcnt, gen, len, flags, str");
 
-    padnamesect()->sadd(
-
-        # ignore warning: initializer-string for array of chars is too long
-        "%s, %s, {%s}, %u, %u, %s, %i, %u, 0x%x, %s",
-        $ix              ? $pnstr     : 'NULL',
-        is_constant($sn) ? "(HV*)$sn" : 'Nullhv',
-        is_constant($tn) ? "(HV*)$tn" : 'Nullhv',
-        $pn->COP_SEQ_RANGE_LOW,
-        $pn->COP_SEQ_RANGE_HIGH,
-        $refcnt >= 1000 ? sprintf( "0x%x", $refcnt ) : "$refcnt /* +1 */",
-        $gen, $pn->LEN, $flags, $cstr
+    # Provided in base.c.tt2 custom to deal with xpadn_str needing to be fixed in size.
+    padnamesect()->saddl(
+        "%s"   => $xpadn_pv,                  # char *xpadn_pv;
+        "%s"   => $xpadn_ourstash,            # HV *xpadn_ourstash;
+        "{%s}" => $xpadn_type_u,              # union { HV *xpadn_typestash; CV *xpadn_protocv; } xpadn_type_u;
+        "%u"   => $pn->COP_SEQ_RANGE_LOW,     # U32 xpadn_low;
+        "%u"   => $pn->COP_SEQ_RANGE_HIGH,    # U32 xpadn_high;
+        "%s"   => $xpadn_refcnt,              # U32 xpadn_refcnt;
+        "%i"   => $pn->GEN,                   # int xpadn_gen;
+        "%u"   => $xpadn_len,                 # U8  xpadn_len;
+        "0x%x" => $pn->FLAGS & 0xff,          # U8  xpadn_flags; /* U8 + FAKE if OUTER. OUTER,STATE,LVALUE,TYPED,OUR */
+        "%s"   => $xpadn_str,                 # char xpadn_str[60]; /* longer lexical upval names are forbidden for now */
     );
 
-    if ( $pn->LEN > 60 ) {
+    padnamesect()->debug( $fullname . " " . $pv, $pn->flagspv ) if debug('flags');
 
-        # Houston we have a problem, need to allocate this padname dynamically. Not done yet
-        # either dynamic or seperate structs per size MyPADNAME(5)
-        die "Internal Error: Overlong name of lexical variable $cstr for $fullname [#229]";
-    }
-
-    padnamesect()->debug( $fullname . " " . $str, $pn->flagspv ) if debug('flags');
-
-    init()->add("SvOURSTASH_set($s, $sn);")     unless $sn eq 'Nullsv';
-    init()->add("PadnameTYPE($s) = (HV*) $tn;") unless $tn eq 'Nullsv';
-
-    return $s;
+    return $sym;
 }
 
 1;

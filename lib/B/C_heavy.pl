@@ -1006,6 +1006,7 @@ sub build_template_stash {
         'all_eval_pvs'          => \@B::C::InitSection::all_eval_pvs,
         'TAINT'                 => ( ${^TAINT} ? 1 : 0 ),
         'devel_peek_needed'     => $devel_peek_needed,
+        'MAX_PADNAME_LENGTH'    => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
         'optimizer'             => {
             'dynaloader' => $dynaloader_optimizer->stash(),
         },
