@@ -7,21 +7,21 @@ use B::C::File qw/init padlistsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
 sub add_to_section {    # id+outid as U32 (PL_padlist_generation++)
-    my ( $self, $cv ) = @_;
+    my ($av) = @_;
 
-    my $fill = $self->MAX;
+    my $fill = $av->MAX;
 
     padlistsect()->comment("xpadl_max, xpadl_alloc, xpadl_id, xpadl_outid");
-    my ( $id, $outid ) = ( $self->ID, $self->OUTID );
+    my ( $id, $outid ) = ( $av->ID, $av->OUTID );
     my $padlist_index = padlistsect()->add("$fill, {NULL}, $id, $outid");
 
-    return savesym( $self, "&padlist_list[$padlist_index]" );
+    return savesym( $av, "&padlist_list[$padlist_index]" );
 }
 
 sub add_to_init {
-    my ( $self, $sym, $acc ) = @_;
+    my ( $av, $sym, $acc ) = @_;
 
-    my $fill1 = $self->MAX + 1;
+    my $fill1 = $av->MAX + 1;
 
     init()->no_split;
     init()->add("{");
