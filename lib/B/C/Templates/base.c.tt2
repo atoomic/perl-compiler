@@ -144,26 +144,20 @@ my_share_hek( pTHX_ const char *str, I32 len, register U32 hash );
 /* unfortunately we have to override this perl5.22 struct.
    The Padname string buffer in xpadn_str is pointed by xpadn_pv.
 */
-#define _PADNAME_BASE \
-    char *     xpadn_pv;               \
-    HV *       xpadn_ourstash;         \
-    union {                            \
-       HV *    xpadn_typestash;        \
-       CV *    xpadn_protocv;          \
-    } xpadn_type_u;                    \
-    U32                xpadn_low;              \
-    U32                xpadn_high;             \
-    U32                xpadn_refcnt;           \
-    int                xpadn_gen;              \
-    U8         xpadn_len;              \
-    U8         xpadn_flags
 
 struct my_padname_with_str {
-#ifdef PERL_PADNAME_MINIMAL
-    _PADNAME_BASE;
-#else
-    struct padname     xpadn_padname;
-#endif
+    char *     xpadn_pv;
+    HV *       xpadn_ourstash;
+    union {
+       HV *    xpadn_typestash;
+       CV *    xpadn_protocv;
+    } xpadn_type_u;
+    U32        xpadn_low;
+    U32        xpadn_high;
+    U32        xpadn_refcnt;
+    int        xpadn_gen;
+    U8         xpadn_len;
+    U8         xpadn_flags;
     char               xpadn_str[60]; /* longer lexical upval names are forbidden for now */
 };
 

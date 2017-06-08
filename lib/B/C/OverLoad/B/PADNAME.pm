@@ -1,5 +1,7 @@
 package B::PADNAME;
 
+# MyPADNAME
+
 use strict;
 
 use B qw/cstring SVf_FAKE/;
