@@ -18,25 +18,13 @@ sub save_sv {    # id+outid as U32 (PL_padlist_generation++)
     return savesym( $av, "&padlist_list[$padlist_index]" );
 }
 
-sub add_to_init {
-    my ( $av, $sym, $acc ) = @_;
+sub add_malloc_line_for_array_init {
+    my ($av, $deferred_init, $sym) = @_; # Ignores $fill passed in.
 
-    my $fill1 = $av->MAX + 1;
-
-    init_static_assignments()->no_split;
-    init_static_assignments()->add("{");
-    init_static_assignments()->indent(+1);
-
-    init_static_assignments()->sadd("register int gcount;") if $acc =~ m/\(gcount=/m;
-    init_static_assignments()->sadd( "PAD **svp = INITPADLIST($sym, %d);", $fill1 );
-    init_static_assignments()->sadd( substr( $acc, 0, -2 ) );
-
-    init_static_assignments()->indent(-1);
-    init_static_assignments()->add("}");
-    init_static_assignments()->split;
-
-    return;
+    my $fill = $av->MAX + 1;
+    $deferred_init->sadd( "PAD **svp = INITPADLIST(%s, %d);", $sym, $fill );
 }
+
 
 sub cast_sv {
     return "(PAD*)";

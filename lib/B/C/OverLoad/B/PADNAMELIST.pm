@@ -23,24 +23,11 @@ sub save_sv {
     return $sym;
 }
 
-sub add_to_init {
-    my ( $av, $sym, $acc ) = @_;
+sub add_malloc_line_for_array_init {
+    my ($av, $deferred_init, $sym) = @_; # Ignores $fill passed in.
 
-    my $fill1 = $av->MAX + 1;
-
-    init_static_assignments()->no_split;
-    init_static_assignments()->add("{");
-    init_static_assignments()->indent(+1);
-
-    init_static_assignments()->sadd("register int gcount;") if $acc =~ m/\(gcount=/m;
-    init_static_assignments()->sadd( "PADNAME **svp = INITPADNAME($sym, %d);", $fill1 );
-    init_static_assignments()->sadd( substr( $acc, 0, -2 ) );
-
-    init_static_assignments()->indent(-1);
-    init_static_assignments()->add("}");
-    init_static_assignments()->split;
-
-    return;
+    my $fill = $av->MAX + 1;
+    $deferred_init->sadd( "PADNAME **svp = INITPADNAME(%s, %d);", $sym, $fill );
 }
 
 sub cast_sv {

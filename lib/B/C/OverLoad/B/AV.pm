@@ -176,13 +176,21 @@ sub add_to_init {
     $deferred_init->indent(+1);
 
     $deferred_init->add("register int gcount;") if $acc =~ m/\(gcount=/m;
-    my $fill1 = $fill < 3 ? 3 : $fill + 1;
-    $deferred_init->sadd( "SV **svp = INITAv($sym, %d);", $fill1 ) if $fill1 > -1;
+    $av->add_malloc_line_for_array_init($deferred_init, $sym, $fill );
     $deferred_init->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
 
     $deferred_init->indent(-1);
     $deferred_init->add("}");
     $deferred_init->split;
+}
+
+sub add_malloc_line_for_array_init {
+    my ($av, $deferred_init, $sym, $fill) = @_;
+    return if !defined $fill;
+
+    $fill = $fill < 3 ? 3 : $fill + 1;
+    
+    $deferred_init->sadd( "SV **svp = INITAv(%s, %d);", $sym, $fill )
 }
 
 1;
