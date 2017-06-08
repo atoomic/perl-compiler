@@ -19,9 +19,9 @@ sub do_save {
     my ( $cv, $origname ) = @_;
     debug( cv => "CV ==  %s", $origname );
 
-    if ( ( $cv->XSUB && $origname !~ qr{^Carp::} ) ) {    # xs function
-        $origname =~ s{^main::}{};                        # main::attributes::*
-        $origname =~ s[{(.+?)}][$1]g;                     # main::Internals::{V}
+    if ( $cv->XSUB && $origname !~ qr{^Carp::} && $origname !~ m/^curpad_name\[\d+\]$/ ) {    # xs function
+        $origname =~ s{^main::}{};                                                            # main::attributes::*
+        $origname =~ s[{(.+?)}][$1]g;                                                         # main::Internals::{V}
 
         B::C::found_xs_sub($origname);
         return "BOOTSTRAP_XS_[[${origname}]]_XS_BOOTSTRAP";
