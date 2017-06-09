@@ -15,7 +15,8 @@ sub save_io_and_data {
 
     # force inclusion of PerlIO::scalar as it was loaded in BEGIN. ?
     init2()->add_eval( sprintf 'open(%s, \'<:scalar\', \\\\$%s);', $globname, $globname );
-    init()->pre_destruct( sprintf 'eval_pv("close %s;", 1);', $globname );    # is this really required ?
+
+    #init()->pre_destruct( sprintf 'eval_pv("close %s;", 1);', $globname );    # is this really required ?
 
     return ( q{NULL}, $ref );
 }
