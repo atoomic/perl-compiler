@@ -2,7 +2,7 @@ package B::GV;
 
 use strict;
 
-use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8/;
+use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8 SVf_AMAGIC/;
 
 use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
@@ -61,6 +61,8 @@ sub do_save {
 
     my $stash_symbol = $gv->get_stash_symbol();
 
+    my $magic_stash = $gv->FLAGS & SVf_AMAGIC ? $stash_symbol : q{NULL};
+
     my $namehek = q{NULL};
     if ( my $gvname = $gv->NAME ) {
         my $share_he = save_shared_he($gvname);
@@ -71,7 +73,7 @@ sub do_save {
     my $xpvg_ix = xpvgvsect()->saddl(
 
         # _XPV_HEAD
-        "%s"                => $stash_symbol,             # HV* xmg_stash;      /* class package */
+        "%s"                => $magic_stash,              # HV* xmg_stash;      /* class package */
         "{%s}"              => $gv->save_magic($name),    # union _xmgu xmg_u;
         '%d'                => $gv->CUR,                  # STRLEN  xpv_cur;        /* length of svu_pv as a C string */
         '{.xpvlenu_len=%d}' => $gv->LEN,                  # union xpv_len_u - xpvlenu_len or xpvlenu_pv
@@ -194,10 +196,12 @@ sub savegp_from_gv {
     $gp_sv = $gv->save_gv_sv($fullname) if $savefields & Save_SV;
     $gp_av = $gv->save_gv_av($fullname) if $savefields & Save_AV;
     $gp_hv = $gv->save_gv_hv($fullname) if $savefields & Save_HV;
-    $gp_cv   = $gv->save_gv_cv( $fullname, $gp_ix ) if $savefields & Save_CV;
-    $gp_form = $gv->save_gv_format($fullname)       if $savefields & Save_FORM;    # FIXME incomplete for now
-    $gp_io   = $gv->save_gv_io($fullname)           if $savefields & Save_IO;
+    $gp_cv = $gv->save_gv_cv( $fullname, $gp_ix ) if $savefields & Save_CV;
+    $gp_form = $gv->save_gv_format($fullname) if $savefields & Save_FORM;    # FIXME incomplete for now
 
+    my $io_sv;
+    ( $gp_io, $io_sv ) = $gv->save_gv_io($fullname) if $savefields & Save_IO;    # FIXME: get rid of sym
+    $gp_sv = $io_sv if $io_sv;
     gpsect()->comment('SV, gp_io, CV, cvgen, gp_refcount, HV, AV, CV* form, GV, line, flags, HEK* file');
 
     gpsect()->supdatel(
@@ -445,7 +449,22 @@ sub save_gv_io {
     return 'NULL' unless $$gvio;
     return 'NULL' if $fullname =~ m/^(?:main::)?(stdout|stderr|stdin)/i;
 
-    return $gvio->save($fullname);
+    if ( $fullname =~ m/::DATA$/ ) {
+        no strict 'refs';
+        my $fh = *{$fullname}{IO};
+        use strict 'refs';
+
+        if ( $fh->opened ) {
+            my @read_data = <$fh>;
+            my $data = join '', @read_data;
+
+            return $gvio->save_io_and_data( $fullname, $data );
+        }
+
+        # Houston we have a problem there ?
+    }
+
+    return ( $gvio->save($fullname), undef );
 }
 
 sub get_savefields {

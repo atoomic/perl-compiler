@@ -933,6 +933,8 @@ main(int argc, char **argv, char **env)
     /* link the CVs to the bootstrapped ones */
     perl_init_bootstraplink( aTHX );
 
+    CopSTASH_set(&PL_compiling, PL_defstash);
+
     /* We need to output evals after dl_init, in init2  */
     [% FOREACH eval_pv IN all_eval_pvs %]
     [% eval_pv %]
