@@ -32,7 +32,6 @@ io/bom.t                    COMPAT    BC issue 312 - BOM seems to be rejected by
 io/layers.t                 SKIP      This is a known BC issue we've never cared about. use open doesn't work. See https://code.google.com/p/perl-compiler/issues/detail?id=203
 io/open.t                   TESTS     BC issue #219 (overload) - new tests in upstream since 5.14.4
 mro/overload_c3_utf8.t      TESTS     BC issue #219 - overload issue
-mro/overload_dfs.t          TESTS     BC issue #219 - overload issue
 mro/package_aliases_utf8.t  SKIP      Runs REAALY slow and many of the failures are already reported. Waiting for other BC issues to clear before researching this one.
 op/attrhand.t               PLAN      BC issue #271 - Attribute::Handlers
 op/blocks.t                 COMPAT    check order of execution of special blocks ( BEGIN included )
@@ -42,7 +41,6 @@ op/const-optree.t           PLAN      BC issue #305 - feature refaliasing
 op/coreamp.t                COMPAT    unsupported experimental::lexical_topic + BC issue #219 - overload issue
 op/coresubs.t               COMPAT    uses B::walkoptree
 op/eval.t                   SKIP      TODO: infinite loop while running the binary + BC issue #219 - overload issue
-op/exists_sub.t             SIG       BC issue #277 - empty sub with attributes
 op/glob.t                   SKIP      Occasional Flapper. Waiting for more BC issues to pass before we address it.
 op/goto_xs.t                COMPAT    needs XS::APItest
 op/lex.t                    COMPAT    Tests trigger errors at compilation time
@@ -71,7 +69,6 @@ re/pat_re_eval.t            PLAN      BC issue #219 - overload issue
 re/pat_rt_report.t          TESTS     BC issue #317 - nested Regex
 re/qr_gc.t                  TESTS     BC issue #309 - regexp destruction
 re/reg_eval_scope.t         PLAN      BC issue #295 - (?{}) should have its own lexical scope
-re/reg_mesg.t               TESTS     CM issue #26 - warnings from re.pm - Subroutine redefined
 re/reg_pmod.t               TESTS     BC issue #295 - (?{}) should have its own lexical scope
 re/rxcode.t                 TESTS     BC issue #295 - (?{}) should have its own lexical scope
 re/subst_amp.t              TESTS     BC issue #295 - (?{}) should have its own lexical scope
