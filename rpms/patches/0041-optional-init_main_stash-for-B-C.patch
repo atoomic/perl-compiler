@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Rochelemagne <rochelemagne@cpanel.net>
+Date: Tue, 7 Mar 2017 10:21:33 -0700
+Subject: [PATCH 41/43] optional init_main_stash for B-C
+
+bypass init_main_stash initialization when the compiler
+or embedder already initialized these stashes before,
+statically or pre-populated. esp. defstash and stashcache.
+idea by @toddr
+
+Author: Reini Urban
+URL: https://github.com/perl11/cperl/commit/ecd4713d97e8715f520d5d02b8b88b9aa82532b5
+---
+ SOURCES/perl/perl.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/SOURCES/perl/perl.c b/SOURCES/perl/perl.c
+index e919efe..c8cc3bf 100644
+--- a/SOURCES/perl/perl.c
++++ b/SOURCES/perl/perl.c
+@@ -3684,6 +3684,28 @@ S_init_main_stash(pTHX)
+ {
+     GV *gv;
+ 
++   /* For embedders and B-C only: There might be static or pre-populated main
++        stashes already for startup improvement. But then ensure that they did
++        init the other names also. Official B-C support since: (in-work). */
++     if (UNLIKELY(PL_defstash)) {
++         /* assert(SvTYPE(PL_defstash)    == SVt_PVHV);
++         assert(SvTYPE(PL_curstname)   == SVt_PV);
++         assert(SvTYPE(PL_incgv)       == SVt_PVGV);
++         // assert(GvAV(PL_incgv));
++         // assert(GvHV(PL_incgv));
++         assert(SvTYPE(PL_hintgv)      == SVt_PVGV);
++         assert(SvTYPE(PL_defgv)       == SVt_PVGV);
++         assert(SvTYPE(PL_errgv)       == SVt_PVGV);
++         assert(SvTYPE(PL_replgv)      == SVt_PVGV);
++         assert(SvTYPE(PL_errgv)       == SVt_PVGV);
++         // assert(GvSV(PL_errgv));
++         assert(SvTYPE(PL_debstash)    == SVt_PVHV);
++         assert(SvTYPE(PL_globalstash) == SVt_PVHV);
++         assert(&PL_compiling); */
++         PL_curstash = PL_defstash;
++         return;
++     }
++
+     PL_curstash = PL_defstash = (HV *)SvREFCNT_inc_simple_NN(newHV());
+     /* We know that the string "main" will be in the global shared string
+        table, so it's a small saving to use it rather than allocate another
