@@ -14,14 +14,14 @@ sub do_save {
     my $uvuformat = $B::C::Flags::Config{uvuformat};
     $uvuformat =~ s/"//g;    #" poor editor
 
-    my $uvx  = $sv->UVX;
-    my $suff = 'U';
-    $suff .= 'L' if $uvx > 2147483647;
+    my $uvx = $sv->UVX;
+    my $suff = $uvx > 2147483647 ? 'UL' : 'U';
 
-    my $u32fmt = u32fmt();
-    my $ix     = svsect()->sadd(
-        "NULL, $u32fmt, 0x%x, {.svu_uv=${uvx}${suff}}",
-        $sv->REFCNT, $sv->FLAGS
+    my $ix = svsect()->saddl(
+        "%s"           => 'NULL',         # sv_any
+        u32fmt()       => $sv->REFCNT,    # sv_refcnt
+        '0x%x'         => $sv->FLAGS,     # sv_flags
+        '{.svu_uv=%s}' => "$uvx$suff",    # sv_u.svu_uv
     );
 
     my $sym = sprintf( "&sv_list[%d]", $ix );
