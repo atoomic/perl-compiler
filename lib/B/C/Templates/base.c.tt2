@@ -60,14 +60,6 @@ static void dl_init (pTHX);
 
 typedef struct shared_he SHARED_HE;
 
-/* these bc_*bodyless* macros are just using an extra parens around sv, should patch perl */
-#define bc_SET_SVANY_FOR_BODYLESS_IV(sv) \
-       SvANY(sv) =   (XPVIV*)((char*)&((sv)->sv_u.svu_iv) - STRUCT_OFFSET(XPVIV, xiv_iv))
-
-#define bc_SET_SVANY_FOR_BODYLESS_UV(sv) \
-       SvANY(sv) =   (XPVUV*)((char*)&((sv)->sv_u.svu_uv) - STRUCT_OFFSET(XPVUV, xuv_uv))
-
-
 #define IMMORTAL_PL_strtab 0x7ffffff
 
 static int fast_perl_destruct( PerlInterpreter *my_perl );
@@ -161,7 +153,6 @@ struct my_padname_with_str {
 typedef struct my_padname_with_str MyPADNAME;
 
 typedef struct { U32 a; U32 b; }      ASSIGN_HEKKEY2PV;
-typedef struct { U32 from; U32 to; }  ASSIGN_BODYLESS_IV;
 
 /*
     Tricky hack for -fcog since 5.10 on !c99 compilers required. We need a char* as
@@ -405,20 +396,6 @@ static void init_assign(pTHX) {
         sv_list[assign_hekkey2pv_list[i].a].sv_u.svu_pv = sharedhe_list[assign_hekkey2pv_list[i].b]->shared_he_hek.hek_key;
     }
 [% END %]
-}
-
-/* only do this for IVs, UVs are less common, not the same win */
-static void init_bodyless_ivs(pTHX) {
-[% IF section.assign_bodyless_iv.index + 1 > 0 %]
-    U32 i, svix;
-
-    for (i=0; i < [% section.assign_bodyless_iv.index + 1 %]; i++) {
-        for (svix=assign_bodyless_iv_list[i].from; svix < assign_bodyless_iv_list[i].to + 1; svix++) {
-            bc_SET_SVANY_FOR_BODYLESS_IV(&sv_list[svix]);
-        }
-    }
-[% END %]
-
 }
 
 static void perl_init0(pTHX) { /* fixup_ppaddr */
@@ -917,9 +894,6 @@ main(int argc, char **argv, char **env)
     /* our special compiled init */
     benchmark_time("init_assign");
     init_assign(aTHX);
-
-    benchmark_time("init_bodyless_ivs");
-    init_bodyless_ivs(aTHX);
 
     benchmark_time("preinit");
     perl_init(aTHX);

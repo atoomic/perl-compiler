@@ -4,7 +4,7 @@ use strict;
 
 use B qw/SVf_ROK SVf_IOK SVp_IOK SVf_IVisUV/;
 use B::C::Config;
-use B::C::File qw/init svsect assign_bodyless_iv/;
+use B::C::File qw/svsect/;
 use B::C::Decimal qw/get_integer_value/;
 
 sub do_save {
@@ -29,8 +29,20 @@ sub do_save {
 
     svsect()->debug( $fullname, $sv );
 
-    my $ix = svsect()->sadd( "NULL, %lu, 0x%x, {.svu_iv=%s}", $refcnt, $svflags, $ivx );
-    my $sym = sprintf( "&sv_list[%d]", $ix );
+    my $sv_ix = svsect()->index + 1;
+    my $sym = sprintf( "&sv_list[%d]", $sv_ix );
+
+    # Since 5.24 we can access the IV/NV/UV value from either the union from the main SV body
+    # or also from the SvANY of it. View IV.pm for more information
+
+    my $bodyless_pointer = sprintf( "((char*)%s)+STRUCT_OFFSET(struct STRUCT_SV, sv_u) - STRUCT_OFFSET(XPVIV, xiv_iv)", $sym );
+
+    svsect()->saddl(
+        '%s'           => $bodyless_pointer,    # sv_any
+        '%lu',         => $refcnt,              # sv_refcnt
+        '0x%x'         => $svflags,             # sv_flags
+        '{.svu_iv=%s}' => $ivx,                 # sv_u.svu_uv
+    );
 
 =pod
     Since 5.24 we can access the IV/NV/UV value from either the union from the main SV body
@@ -44,29 +56,6 @@ sub do_save {
     So two differents way to access to the same memory location.
 
 =cut
-
-=pod
-    The code below is just a for loop optimization for all the bc_SET_SVANY_FOR_BODYLESS_IV calls
-
-    # the bc_SET_SVANY_FOR_BODYLESS_IV version just uses extra parens to be able to use a pointer [need to add patch to perl]
-    init()->sadd( "bc_SET_SVANY_FOR_BODYLESS_IV(%s);", $sym );
-=cut
-
-    my $add_bodyless_iv  = 1;
-    my $last_bodyless_iv = assign_bodyless_iv()->index;
-    if ( $last_bodyless_iv >= 0 ) {
-        my ( $from, $to ) = assign_bodyless_iv()->get_fields($last_bodyless_iv);
-        if ( ( $to + 1 ) == $ix ) {
-
-            # we can use the previous entry bump the 'to' from 1
-            $add_bodyless_iv = 0;
-            assign_bodyless_iv()->update( $last_bodyless_iv, "$from, $ix" );
-        }
-
-    }
-
-    # fallback to the default add
-    assign_bodyless_iv()->add( $ix, $ix ) if $add_bodyless_iv;
 
     return $sym;
 }
