@@ -32,7 +32,6 @@ sub _autoload_map {
 
     # debugging variables
     $map->{'DEBUGGING'}             = ( $B::C::Flags::Config{ccflags} =~ m/-DDEBUGGING/ );
-    $map->{'DEBUG_LEAKING_SCALARS'} = $B::C::Flags::Config{ccflags} =~ m/-DDEBUG_LEAKING_SCALARS/;
 
     return $map;
 }

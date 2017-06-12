@@ -1,9 +1,5 @@
 /* [% creator %] */
 
-[% IF debug.flags AND DEBUG_LEAKING_SCALARS -%]
-#define DEBUG_LEAKING_SCALARS 1
-[% END -%]
-
 [% IF debug.benchmark -%]
 #define DEBUG_BENCHMARK 1
 [% END -%]
@@ -539,9 +535,6 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
     dVAR;
 #ifdef DEBUGGING
     VOL signed char destruct_level;  /* see possible values in intrpvar.h */
-#endif
-#ifdef DEBUG_LEAKING_SCALARS_FORK_DUMP
-    pid_t child;
 #endif
 
     PERL_UNUSED_ARG(my_perl);

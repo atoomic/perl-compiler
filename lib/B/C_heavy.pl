@@ -990,24 +990,23 @@ sub build_template_stash {
     no strict 'refs';
 
     my $c_file_stash = {
-        'verbose'               => verbose(),
-        'debug'                 => B::C::Debug::save(),
-        'creator'               => "created at " . scalar localtime() . " with B::C $VERSION for $^X",
-        'DEBUG_LEAKING_SCALARS' => DEBUG_LEAKING_SCALARS(),
-        'static_ext'            => $static_ext,
-        'stashxsubs'            => $stashxsubs,
-        'init_name'             => $settings->{'init_name'} || "perl_init",
-        'gv_index'              => $gv_index,
-        'init2_remap'           => \%init2_remap,
-        'HAVE_DLFCN_DLOPEN'     => HAVE_DLFCN_DLOPEN(),
-        'compile_stats'         => compile_stats(),
-        'nullop_count'          => $nullop_count,
-        'xsub'                  => \%xsub,
-        'all_eval_pvs'          => \@B::C::InitSection::all_eval_pvs,
-        'TAINT'                 => ( ${^TAINT} ? 1 : 0 ),
-        'devel_peek_needed'     => $devel_peek_needed,
-        'MAX_PADNAME_LENGTH'    => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
-        'optimizer'             => {
+        'verbose'            => verbose(),
+        'debug'              => B::C::Debug::save(),
+        'creator'            => "created at " . scalar localtime() . " with B::C $VERSION for $^X",
+        'static_ext'         => $static_ext,
+        'stashxsubs'         => $stashxsubs,
+        'init_name'          => $settings->{'init_name'} || "perl_init",
+        'gv_index'           => $gv_index,
+        'init2_remap'        => \%init2_remap,
+        'HAVE_DLFCN_DLOPEN'  => HAVE_DLFCN_DLOPEN(),
+        'compile_stats'      => compile_stats(),
+        'nullop_count'       => $nullop_count,
+        'xsub'               => \%xsub,
+        'all_eval_pvs'       => \@B::C::InitSection::all_eval_pvs,
+        'TAINT'              => ( ${^TAINT} ? 1 : 0 ),
+        'devel_peek_needed'  => $devel_peek_needed,
+        'MAX_PADNAME_LENGTH' => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
+        'optimizer'          => {
             'dynaloader' => $dynaloader_optimizer->stash(),
         },
         'PL' => {
