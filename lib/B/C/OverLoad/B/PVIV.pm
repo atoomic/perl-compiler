@@ -2,7 +2,7 @@ package B::PVIV;
 
 use strict;
 use B::C::Config;
-use B::C::File qw/xpvivsect svsect init/;
+use B::C::File qw/xpvivsect svsect/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Optimizer::DowngradePVXV qw/downgrade_pviv/;
 
@@ -29,7 +29,7 @@ sub do_save {
     # save the pv
     my $ix = svsect()->sadd(
         "%s, %u, 0x%x, {.svu_pv=(char*) %s}",
-        $xpv_sym, $sv->REFCNT, $flags, $savesym
+        $xpv_sym, $sv->REFCNT + 1, $flags, $savesym
     );
     svsect()->debug( $fullname, $sv );
     return "&sv_list[" . $ix . "]";

@@ -27,7 +27,7 @@ sub do_save {
 
     svsect()->saddl(
         "%s"           => $bodyless_pointer,    # sv_any
-        u32fmt()       => $sv->REFCNT,          # sv_refcnt
+        u32fmt()       => $sv->REFCNT + 1,      # sv_refcnt
         '0x%x'         => $sv->FLAGS,           # sv_flags
         '{.svu_uv=%s}' => "$uvx$suff",          # sv_u.svu_uv
     );

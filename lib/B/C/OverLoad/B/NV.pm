@@ -13,7 +13,7 @@ sub do_save {
     my ( $sv, $fullname, $custom ) = @_;
 
     my $svflags = $sv->FLAGS;
-    my $refcnt  = $sv->REFCNT;
+    my $refcnt  = $sv->REFCNT + 1;
 
     if ( ref $custom ) {    # used when downgrading a PVIV / PVNV to IV
         $svflags = $custom->{flags}  if defined $custom->{flags};
@@ -27,11 +27,11 @@ sub do_save {
     my $iv = $svflags & SVf_IOK ? $sv->IVX : 0;
 
     my $xpv_sym = 'NULL';
-    if ($sv->HAS_ANY) {
+    if ( $sv->HAS_ANY ) {
         xpvnvsect()->comment('STASH, MAGIC, cur, len, IVX, NVX');
         my $xpv_ix = xpvnvsect()->sadd( 'Nullhv, {0}, 0, {0}, {%ld}, {%s}', $iv, $nv );
 
-        $xpv_sym = sprintf("&xpvnv_list[%d]", $xpv_ix);
+        $xpv_sym = sprintf( "&xpvnv_list[%d]", $xpv_ix );
     }
     my $sv_ix = svsect()->sadd( '%s, %Lu, 0x%x , {0}', $xpv_sym, $refcnt, $svflags );
 

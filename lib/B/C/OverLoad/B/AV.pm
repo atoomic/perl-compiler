@@ -6,7 +6,7 @@ use B::C::Flags ();
 
 use B qw/cstring SVf_IOK SVf_POK SVs_OBJECT/;
 use B::C::Config;
-use B::C::File qw/init init2 xpvavsect svsect init_static_assignments init_bootstraplink/;
+use B::C::File qw/init xpvavsect svsect init_static_assignments init_bootstraplink/;
 use B::C::Helpers qw/strlen_flags/;
 use B::C::Helpers::Symtable qw/savesym/;
 
@@ -41,7 +41,7 @@ sub save_sv {
         "%s"   => "NULL",                        # xav_alloc  /* pointer to beginning of C array of SVs */ This has to be dynamically setup at init().
     );
 
-    svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
+    svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT + 1, $av->FLAGS, 0 );
 
     svsect()->debug( $fullname, $av );
     my $sv_ix    = svsect()->index;
@@ -176,7 +176,7 @@ sub add_to_init {
     $deferred_init->indent(+1);
 
     $deferred_init->add("register int gcount;") if $acc =~ m/\(gcount=/m;
-    $av->add_malloc_line_for_array_init($deferred_init, $sym, $fill );
+    $av->add_malloc_line_for_array_init( $deferred_init, $sym, $fill );
     $deferred_init->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
 
     $deferred_init->indent(-1);
@@ -185,12 +185,12 @@ sub add_to_init {
 }
 
 sub add_malloc_line_for_array_init {
-    my ($av, $deferred_init, $sym, $fill) = @_;
+    my ( $av, $deferred_init, $sym, $fill ) = @_;
     return if !defined $fill;
 
     $fill = $fill < 3 ? 3 : $fill + 1;
-    
-    $deferred_init->sadd( "SV **svp = INITAv(%s, %d);", $sym, $fill )
+
+    $deferred_init->sadd( "SV **svp = INITAv(%s, %d);", $sym, $fill );
 }
 
 1;

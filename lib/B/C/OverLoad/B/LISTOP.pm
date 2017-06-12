@@ -5,7 +5,7 @@ use strict;
 use B qw/cstring svref_2object/;
 
 use B::C::Config;
-use B::C::File qw/init listopsect/;
+use B::C::File qw/listopsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 use B::C::Helpers qw/do_labels/;
 

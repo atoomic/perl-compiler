@@ -19,7 +19,7 @@ require mro;
 
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
 use B::C::Config;
-use B::C::File qw/init xpvhvsect svsect sharedhe decl init1 init2 init_stash init_static_assignments/;
+use B::C::File qw/init xpvhvsect svsect sharedhe decl init2 init_stash init_static_assignments/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Save::Hek qw/save_shared_he/;
@@ -167,7 +167,7 @@ sub do_save {
         $sv_list_index,
         sprintf(
             "&xpvhv_list[%d], %Lu, 0x%x, {0}",
-            xpvhvsect()->index, $hv->REFCNT, $flags
+            xpvhvsect()->index, $hv->REFCNT + 1, $flags
         )
     );
 

@@ -5,7 +5,7 @@ use strict;
 use B::C::Flags ();
 
 use B qw/cstring/;
-use B::C::File qw/init decl/;
+use B::C::File qw/decl/;
 use B::C::Save qw/inc_pv_index/;
 
 # pre vs. post 5.8.9/5.9.4 logic for lexical warnings

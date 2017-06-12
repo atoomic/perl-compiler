@@ -3,8 +3,8 @@ package B::UNOP;
 use strict;
 
 use B::C::Config;
-use B::C::File qw/unopsect init/;
-use B::C::Helpers qw/do_labels  padop_name svop_name/;
+use B::C::File qw/unopsect/;
+use B::C::Helpers qw/do_labels padop_name svop_name/;
 
 sub do_save {
     my ( $op, $level ) = @_;

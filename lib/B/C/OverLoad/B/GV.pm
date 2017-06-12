@@ -6,7 +6,7 @@ use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8 SVf_AMAGIC/;
 
 use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
-use B::C::File qw/init init2 init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
+use B::C::File qw/init init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 
 my %gptable;
