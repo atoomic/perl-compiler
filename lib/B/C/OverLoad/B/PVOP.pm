@@ -12,7 +12,7 @@ sub do_save {
 
     pvopsect()->comment_common("pv");
 
-    my $ix = pvopsect()->sadd( "%s, %s", $op->_save_common, $cow_sym );
+    my $ix = pvopsect()->sadd( "%s, (char*)%s", $op->_save_common, $cow_sym );
     pvopsect()->debug( $op->name, $op );
 
     return "(OP*)&pvop_list[$ix]";
