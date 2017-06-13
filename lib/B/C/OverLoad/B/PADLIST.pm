@@ -11,9 +11,9 @@ sub save_sv {    # id+outid as U32 (PL_padlist_generation++)
 
     my $fill = $av->MAX;
 
-    padlistsect()->comment("xpadl_max, xpadl_alloc, immortal, xpadl_id, xpadl_outid");
+    padlistsect()->comment("xpadl_max, xpadl_alloc xpadl_id, xpadl_outid");
     my ( $id, $outid ) = ( $av->ID, $av->OUTID );
-    my $padlist_index = padlistsect()->add("$fill, {NULL}, 1, $id, $outid");
+    my $padlist_index = padlistsect()->add("$fill, {NULL}, $id, $outid");
 
     return savesym( $av, "&padlist_list[$padlist_index]" );
 }
