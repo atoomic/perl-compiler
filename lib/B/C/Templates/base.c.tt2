@@ -48,12 +48,6 @@ PerlIO * PIO_stdout;
 #  define GV_NOTQUAL 0
 #endif
 
-#define XS_DynaLoader_boot_DynaLoader boot_DynaLoader
-EXTERN_C void boot_DynaLoader (pTHX_ CV* cv);
-
-static void xs_init (pTHX);
-static void dl_init (pTHX);
-
 typedef struct shared_he SHARED_HE;
 
 #define IMMORTAL_PL_strtab 0x7ffffff
@@ -657,51 +651,36 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
     return 0;
 }
 
+#define XS_DynaLoader_boot_DynaLoader boot_DynaLoader
+EXTERN_C void boot_DynaLoader (pTHX_ CV* cv);
+
+static void xs_init (pTHX);
+static void dl_init (pTHX);
+
 /* yanked from perl.c */
 static void
 xs_init(pTHX)
 {
-	char *file = __FILE__;
-	dTARG; dSP;
+    char *file = __FILE__;
+    dTARG;
+    dSP;
 
-#ifdef USE_DYNAMIC_LOADING
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
-#endif
 
-/* XS bootstrapping code*/
     SAVETMPS;
     targ=sv_newmortal();
-
-[% FOREACH stashname IN static_ext.keys.sort -%]
-    newXS("[% stashname %]::bootstrap", boot_[% stashname.replace('::', '__') %], file);
-[% END %]
-
-#ifdef USE_DYNAMIC_LOADING
+    
     PUSHMARK(sp);
     XPUSHp("DynaLoader", 10);
     PUTBACK;
     boot_DynaLoader(aTHX_ get_cv("DynaLoader::bootstrap", GV_ADD));
-    SPAGAIN;
-#endif
-
-[% FOREACH stashname IN xsub.keys.sort %]
-[% NEXT IF static_ext.$stashname OR xsub.$stashname.match('^Dynamic') %]
-[% stashxsub = stashname.replace('::', '__') %]
-    PUSHMARK(sp);
-    XPUSHp("[% stashname %]", [% stashname.length %]); /* "::bootstrap" gets appended, TODO: "strdup($stashname)" */
-    PUTBACK;
-    boot_[% stashxsub %](aTHX_ NULL);
-    SPAGAIN;
-        }
-[% END %]
-
+    SPAGAIN;    
+    
     FREETMPS;
-/* end XS bootstrapping code */
 }
 
-[% optimizer.dynaloader.boot %]
 
-[% IF optimizer.dynaloader.dl && optimizer.dynaloader.dl_modules.size > 0 %]
+[% IF XS.has_xs() -%]
 typedef void (*bootFunc)(pTHX_ CV* cv);
 static void do_bootstrap(pTHX_ const char *name, int len, const char *bootstrap, bootFunc boot) {
     dTARG;
@@ -729,54 +708,27 @@ static void do_bootstrap(pTHX_ const char *name, int len, const char *bootstrap,
 }
 [% END %]
 
-static void
-dl_init(pTHX)
+/* EXTERN_C void boot_JSON__XS(pTHX_ CV* cv); */
+[% FOREACH module IN XS.modules() -%]
+EXTERN_C void boot_[% module.replace('::', '__') %](pTHX_ CV* cv);
+[% END -%]
+
+static void dl_init(pTHX)
 {
-	/* char *file = __FILE__; */
-[% IF optimizer.dynaloader.dl %]
+    [% IF XS.has_xs() %]
     dTARG;
     PERL_UNUSED_ARG(targ);
     dSP;
-/* DynaLoader bootstrapping */
     ENTER;
     SAVETMPS;
-  [% IF optimizer.dynaloader.fixups.coro -%]
- /* needed before dl_init, and after init */
-    {
-        GV *sym;
 
-        sym = gv_fetchpv("Coro",0,SVt_PV);
-        if (sym && GvSVn(sym)) SvREADONLY_off(GvSVn(sym));
-
-        sym = gv_fetchpv("Coro::API",0,SVt_PV);
-        if (sym && GvSVn(sym)) SvREADONLY_off(GvSVn(sym));
-
-        sym = gv_fetchpv("Coro::current",0,SVt_PV);
-        if (sym && GvSVn(sym)) SvREADONLY_off(GvSVn(sym));
-
-        sym = gv_fetchpv("Coro::pool_handler)",0,SVt_PVCV);
-        if (sym && GvCV(sym)) SvREADONLY_off(GvCV(sym));
-    }
-  [% END %]
-  [% IF optimizer.dynaloader.fixups.EV -%]
-  /* EV readonly symbols in BOOT (#368) */
-    {
-        GV *sym;
-
-        sym = gv_fetchpv("EV::API",0,SVt_PV);
-        if (sym && GvSVn(sym)) SvREADONLY_off(GvSVn(sym));
-    }
-  [% END %]
-
-  [% FOREACH stashname IN optimizer.dynaloader.dl_modules -%]
-  [% NEXT IF ! xsub.$stashname.match('^Dynamic')  -%]
-  do_bootstrap( "[% stashname %]", [% stashname.length %], "[% stashname %]::bootstrap", &boot_[% stashname.replace('::', '__') %] );
-  [% END %]
+  [% FOREACH module IN XS.modules() -%]
+  do_bootstrap( "[% module %]", [% module.length %], "[% module %]::bootstrap", &boot_[% module.replace('::', '__') %] );
+  [% END -%]
 
     FREETMPS;
     LEAVE;
-/* end DynaLoader bootstrapping */
-[% END %]
+    [% END %]
 }
 
 /************************************************************************************************************
@@ -910,12 +862,13 @@ main(int argc, char **argv, char **env)
     benchmark_time("preinit");
     perl_init(aTHX);
 
-    benchmark_time("preinit1");
+    benchmark_time("init1 pre");
     perl_init1(aTHX);
-
     benchmark_time("init1 done");
+
     /* load the XS modules */
     dl_init(aTHX);
+
     /* link the CVs to the bootstrapped ones */
     perl_init_bootstraplink( aTHX );
 

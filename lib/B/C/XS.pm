@@ -1,0 +1,126 @@
+package B::C::XS;
+
+use strict;
+use warnings;
+
+use B qw(svref_2object);
+
+use B::C::Flags ();
+
+use B::C::Config qw/verbose debug/;
+
+sub new {
+    my $class = shift or die;
+    my $ARGS  = shift or die;
+    ref $ARGS eq 'HASH' or die;
+
+    my $self = bless $ARGS, $class;
+
+    $self->{'output_file'} or die;
+
+    $self->{'core_modules'} = { map { s/::[^:]+$//; ( $_ => 1 ) } sort keys %{ $self->{'core_subs'} } };
+
+    $self->{'modules_found'} = {};
+
+    return $self;
+}
+
+sub found_xs_sub {
+    my ( $self, $sub ) = @_;
+
+    return;
+
+    return unless defined $sub;
+    $sub =~ s{^main::}{};
+    return if $sub eq 'attributes::{bootstrap}';    # "main::attributes::{bootstrap}"
+    return unless $sub =~ qr{::};                   # the sub should not be in main
+    return if $sub =~ qr{:pad};
+
+    my $stashname = $sub;
+    $stashname =~ s{::[^:]+$}{};
+
+    # Skip any XS that wasn't present in starting %INC
+    my $inc_key = inc_key($stashname);
+    unless ( $self->{'starting_INC'}->{$inc_key} ) {
+        return;
+    }
+
+    return if $stashname eq 'strict';
+    return if $stashname eq 'warnings';
+    return if $self->{'core_modules'}->{$stashname};
+    $stashname = "List::Util" if $stashname eq 'Scalar::Util';
+
+    # NOT XS???
+    return if $stashname eq 'base';
+
+    $self->{'modules_found'}->{$stashname}++;
+}
+
+sub write_lst {
+    my $self = shift;
+
+    my $file = $self->{'output_file'} . '.lst';
+    open( my $fh, ">", $file ) or die("Can't open $file: $!");
+    print {$fh} '';
+    foreach my $num ( 0 .. $#{ $self->{'dl_modules'} } ) {
+
+        #        my $so_file = perl_module_to_sofile($xs_module);
+        my $xs_module = $self->{'dl_modules'}->[$num];
+        my $so_file   = $self->{'dl_so_files'}->[$num];
+        print {$fh} "$xs_module\t$so_file\n";
+    }
+    close $fh;
+}
+
+sub inc_key {
+    my $module = shift or die "missing module name";
+
+    $module =~ s{::}{/}g;
+    $module .= ".pm";
+
+    return $module;
+}
+
+sub perl_module_to_sofile {
+    my $module = shift or die "missing module name";
+
+    my $inc_key = $module;
+    $inc_key =~ s{::}{/}g;
+
+    my $inc_path = $INC{"$inc_key.pm"};
+    $inc_path =~ s/\Q$inc_key.pm\E$//;
+
+    my @module_parts = split( '/', $inc_key );
+
+    my $sofile = $inc_path . 'auto/' . $inc_key . '/' . $module_parts[-1] . '.' . $B::C::Flags::Config{'dlext'};
+    -e $sofile or die("Could not find so file for $module at $sofile");
+
+    return $sofile;
+}
+
+sub important_modules_first {
+
+    # JSON::XS uses attributes during bootstrap.
+    $a eq 'attributes' and return -1;
+    $b eq 'attributes' and return 1;
+
+    return $a cmp $b;
+}
+
+sub modules {
+    my $self = shift or die;
+    ref $self eq __PACKAGE__ or die;
+
+    my @modules = sort important_modules_first @{ $self->{'dl_modules'} };
+
+    return \@modules;
+}
+
+sub has_xs {
+    my $self = shift or die;
+    ref $self eq __PACKAGE__ or die;
+
+    return keys @{ $self->{'dl_modules'} } ? 1 : 0;
+}
+
+1;

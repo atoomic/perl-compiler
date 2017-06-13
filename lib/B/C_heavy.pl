@@ -74,8 +74,8 @@ BEGIN {
 use B::FAKEOP  ();
 use B::STASHGV ();
 
-use B::C::Optimizer::DynaLoader ();
-use B::C::OverLoad              ();
+use B::C::XS       ();
+use B::C::OverLoad ();
 use B::C::Save qw(savepv savestashpv);
 
 # FIXME: this part can now be dynamic
@@ -107,8 +107,18 @@ my %static_core_pkg;
 sub start_heavy {
     my $settings = $B::C::settings;
 
-    $settings->{'output_file'} or die("Please supply a -o option to B::C");
-    B::C::File->new( $settings->{'output_file'} );    # Singleton.
+    my $output_file = $settings->{'output_file'} or die("Please supply a -o option to B::C");
+    B::C::File->new($output_file);    # Singleton.
+
+    $settings->{'XS'} = B::C::XS->new(
+        {
+            'output_file'  => $output_file,
+            'core_subs'    => $settings->{'CORE_subs'},
+            'starting_INC' => $settings->{'starting_INC'},
+            'dl_so_files'  => $settings->{'dl_so_files'},
+            'dl_modules'   => $settings->{'dl_modules'},
+        }
+    );
 
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'} );
 
@@ -867,107 +877,8 @@ sub save_main_rest {
 
     fixup_ppaddr();
 
-    my $remap = 0;
-    for my $pkg ( sort keys %init2_remap ) {
-        if ( exists $xsub{$pkg} ) {    # check if not removed in between
-            my ($stashfile) = $xsub{$pkg} =~ /^Dynamic-(.+)$/;
-
-            # get so file from pm. Note: could switch prefix from vendor/site//
-            $init2_remap{$pkg}{FILE} = dl_module_to_sofile( $pkg, $stashfile );
-            $remap++;
-        }
-    }
-
-    if ($remap) {
-
-        # XXX now emit arch-specific dlsym code
-        init2()->no_split;
-        init2()->add("{");
-        if ( HAVE_DLFCN_DLOPEN() ) {
-            init2()->add("  #include <dlfcn.h>");
-            init2()->add("  void *handle;");
-        }
-        else {
-            init2()->add("  void *handle;");
-            init2()->add(
-                "  dTARG; dSP;",
-                "  targ=sv_newmortal();"
-            );
-        }
-        for my $pkg ( sort keys %init2_remap ) {
-            if ( exists $xsub{$pkg} ) {
-                if ( HAVE_DLFCN_DLOPEN() ) {
-                    my $ldopt = 'RTLD_NOW|RTLD_NOLOAD';
-                    $ldopt = 'RTLD_NOW' if $^O =~ /bsd/i;    # 351 (only on solaris and linux, not any bsd)
-                    init2()->sadd( "\n  handle = dlopen(%s, %s);", cstring( $init2_remap{$pkg}{FILE} ), $ldopt );
-                }
-                else {
-                    init2()->add(
-                        "  PUSHMARK(SP);",
-                        sprintf( "  XPUSHs(newSVpvs(%s));", cstring( $init2_remap{$pkg}{FILE} ) ),
-                        "  PUTBACK;",
-                        "  XS_DynaLoader_dl_load_file(aTHX_ NULL);",
-                        "  SPAGAIN;",
-                        "  handle = INT2PTR(void*,POPi);",
-                        "  PUTBACK;",
-                    );
-                }
-                for my $mg ( @{ $init2_remap{$pkg}{MG} } ) {
-                    verbose("init2 remap xpvmg_list[$mg->{ID}].xiv_iv to dlsym of $pkg\: $mg->{NAME}");
-                    if ( HAVE_DLFCN_DLOPEN() ) {
-                        init2()->sadd( "  xpvmg_list[%d].xiv_iv = PTR2IV( dlsym(handle, %s) );", $mg->{ID}, cstring( $mg->{NAME} ) );
-                    }
-                    else {
-                        init2()->add(
-                            "  PUSHMARK(SP);",
-                            "  XPUSHi(PTR2IV(handle));",
-                            sprintf( "  XPUSHs(newSVpvs(%s));", cstring( $mg->{NAME} ) ),
-                            "  PUTBACK;",
-                            "  XS_DynaLoader_dl_load_file(aTHX_ NULL);",
-                            "  SPAGAIN;",
-                            sprintf( "  xpvmg_list[%d].xiv_iv = POPi;", $mg->{ID} ),
-                            "  PUTBACK;",
-                        );
-                    }
-                }
-            }
-        }
-        init2()->add("}");
-        init2()->split;
-    }
-
-    my %static_ext = map { ( $_ => 1 ) } grep { m/\S/ } split( /\s+/, $Config{static_ext} );
-    my @stashxsubs = map { s/::/__/g; $_ } sort keys %static_ext;
-
-    # STATIC_HV: This code block needs to be re-written for XS.
-    ## Used to be in output_main_rest(). Seems to be trying to clean up xsub
-    #foreach my $stashname ( sort keys %xsub ) {
-    #    my $incpack = $stashname;
-    #    $incpack =~ s/\:\:/\//g;
-    #    $incpack .= '.pm';
-    #
-    #    # actually boot all non-b-c dependent modules here. we assume XSLoader (Moose, List::MoreUtils)
-    #    if ( !exists( $xsub{$stashname} ) ) {          # and is_package_used($stashname)
-    #        $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
-    #
-    #        # Class::MOP without Moose: find Moose.pm
-    #        # $xsub{$stashname} = 'Dynamic-' . $B::C::savINC{$incpack} unless $INC{$incpack};
-    #        if ( !$B::C::savINC{$incpack} ) {
-    #            eval "require $stashname;";
-    #            $xsub{$stashname} = 'Dynamic-' . $INC{$incpack};
-    #        }
-    #        verbose("Assuming xs loaded $stashname with $xsub{$stashname}");
-    #    }
-    #}
-
-    # Used to be buried in output_main_rest(); Seems to be more xsub cleanup.
-    delete $xsub{'DynaLoader'};
-    delete $xsub{'UNIVERSAL'};
-
-    my $dynaloader_optimizer = B::C::Optimizer::DynaLoader->new( { 'xsub' => \%xsub, 'output_file' => $settings->{'output_file'} } );
-    $dynaloader_optimizer->optimize();
-
-    my $c_file_stash = build_template_stash( \%static_ext, \@stashxsubs, $dynaloader_optimizer );
+    $settings->{'XS'}->write_lst();
+    my $c_file_stash = build_template_stash();
 
     verbose("Writing output");
     %INC = %INC_BACKUP;    # Put back %INC now we've saved everything so Template can be loaded properly.
@@ -986,30 +897,23 @@ sub save_main_rest {
 #####
 
 sub build_template_stash {
-    my ( $static_ext, $stashxsubs, $dynaloader_optimizer ) = @_;
     no strict 'refs';
 
     my $c_file_stash = {
         'verbose'            => verbose(),
         'debug'              => B::C::Debug::save(),
         'creator'            => "created at " . scalar localtime() . " with B::C $VERSION for $^X",
-        'static_ext'         => $static_ext,
-        'stashxsubs'         => $stashxsubs,
         'init_name'          => $settings->{'init_name'} || "perl_init",
         'gv_index'           => $gv_index,
         'init2_remap'        => \%init2_remap,
         'HAVE_DLFCN_DLOPEN'  => HAVE_DLFCN_DLOPEN(),
         'compile_stats'      => compile_stats(),
         'nullop_count'       => $nullop_count,
-        'xsub'               => \%xsub,
         'all_eval_pvs'       => \@B::C::InitSection::all_eval_pvs,
         'TAINT'              => ( ${^TAINT} ? 1 : 0 ),
         'devel_peek_needed'  => $devel_peek_needed,
         'MAX_PADNAME_LENGTH' => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
-        'optimizer'          => {
-            'dynaloader' => $dynaloader_optimizer->stash(),
-        },
-        'PL' => {
+        'PL'                 => {
             'defstash'    => save_stashes(),                                                                              # Re-uses the cache.
                                                                                                                           # we do not want the SVf_READONLY and SVf_PROTECT flags to be set to PL_curstname : newSVpvs_share("main")
             'curstname'   => svref_2object( \'main' )->save( undef, { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),
@@ -1021,6 +925,7 @@ sub build_template_stash {
             'debstash'    => svref_2object( \%DB:: )->save("DB::"),
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
         },
+        'XS' => $settings->{'XS'},
     };
     chomp $c_file_stash->{'compile_stats'};                                                                               # Injects a new line when you call compile_stats()
 
@@ -1042,27 +947,7 @@ sub build_template_stash {
 sub found_xs_sub {
     my $sub = shift;
 
-    return unless defined $sub;
-    $sub =~ s{^main::}{};
-    next if $sub eq 'attributes::{bootstrap}';    # "main::attributes::{bootstrap}"
-
-    return unless $sub =~ qr{::};                 # the sub should not be in main
-
-    return if $sub =~ qr{:pad};
-
-    my $stashname = $sub;
-    $stashname =~ s{::[^:]+$}{};
-
-    return if $stashname eq 'UNIVERSAL';          # more exceptions to come
-
-    # %xsub is now global to the package
-    return if exists $xsub{$stashname};
-
-    my $incpack = $stashname;
-    $incpack =~ s/\:\:/\//g;
-    $incpack .= '.pm';
-
-    $xsub{$stashname} = 'Dynamic-' . ( $INC{$incpack} // '' );
+    $settings->{'XS'}->found_xs_sub($sub);
 
     return;
 }
@@ -1093,20 +978,6 @@ sub fixup_ppaddr {
         next unless $num >= 0;
         init_op_addr( $section->name, $num + 1 );
     }
-}
-
-# needed for init2 remap and Dynamic annotation
-sub dl_module_to_sofile {
-    my $module     = shift or die "missing module name";
-    my $modlibname = shift or die "missing module filepath";
-    my @modparts = split( /::/, $module );
-    my $modfname = $modparts[-1];
-    my $modpname = join( '/', @modparts );
-    my $c        = @modparts;
-    $modlibname =~ s,[\\/][^\\/]+$,, while $c--;    # Q&D basename
-    die "missing module filepath" unless $modlibname;
-    my $sofile = "$modlibname/auto/$modpname/$modfname." . $Config{dlext};
-    return $sofile;
 }
 
 # 5.15.3 workaround [perl #101336], without .bs support
