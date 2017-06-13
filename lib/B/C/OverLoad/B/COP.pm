@@ -130,8 +130,16 @@ sub do_save {
         $B::C::mainfile = $op->file if $op->stashpv eq 'main';
     }
 
-    my $stash = savestashpv( $op->stashpv );    # $op->STASH->save
-    $stash = 'Nullhv' if $stash eq 'NULL';
+    # COP has a stash method
+    my $stash = $op->stash ? $op->stash->save : q{Nullhv};
+
+    # a COP needs to have a stash, fallback to PL_defstash when none found
+    if ( !$stash or $stash eq 'NULL' or $stash eq 'Nullhv' ) {
+
+        # view op/bless.t
+        #warn sprintf( "#### Fallback to PL_defstash - stash %s - stashpv %s - alternate %s", $op->stash, $op->stashpv, scalar savestashpv( $op->stashpv ) );
+        $stash = q{&PL_defstash};
+    }
 
     # add the cop at the end
     copsect()->comment_common("BASEOP, line_t line, HV* stash, GV* filegv, U32 hints, U32 seq, STRLEN* warn_sv, COPHH* hints_hash");
