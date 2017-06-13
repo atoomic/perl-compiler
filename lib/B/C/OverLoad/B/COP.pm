@@ -134,13 +134,17 @@ sub do_save {
     $stash = 'Nullhv' if $stash eq 'NULL';
 
     # add the cop at the end
-    copsect()->comment_common("?, line_t line, HV* stash, GV* filegv, U32 hints, U32 seq, STRLEN* warn_sv, COPHH* hints_hash");
-    copsect()->supdate(
+    copsect()->comment_common("BASEOP, line_t line, HV* stash, GV* filegv, U32 hints, U32 seq, STRLEN* warn_sv, COPHH* hints_hash");
+    copsect()->supdatel(
         $ix,
-        "%s, %u, (HV*) %s, (GV*) %s, %u, %s, %s, NULL",
-        $op->_save_common, $op->line,
-        $stash,            $filegv,
-        $op->hints,        get_integer_value( $op->cop_seq ), !$dynamic_copwarn ? $warn_sv : 'NULL'
+        '%s'       => $op->_save_common,                        # BASEOP list
+        '%u'       => $op->line,                                # /* line # of this command */
+        '(HV*) %s' => $stash,                                   # HV *    cop_stash;  /* package line was compiled in */
+        '(GV*) %s' => $filegv,                                  # GV *    cop_filegv; /* file the following line # is from */
+        '%u'       => $op->hints,                               # U32     cop_hints;  /* hints bits from pragmata */
+        '%s'       => get_integer_value( $op->cop_seq ),        # U32     cop_seq;    /* parse sequence number */
+        '%s'       => !$dynamic_copwarn ? $warn_sv : 'NULL',    # STRLEN *    cop_warnings;   /* lexical warnings bitmask */
+        '%s'       => q{NULL},                                  # COPHH * cop_hints_hash; /* compile time state of %^H. */
     );
 
     return "(OP*)&cop_list[$ix]";
