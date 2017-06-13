@@ -188,12 +188,37 @@ define AvFILL
    print ((XPVAV*)  ($arg0)->sv_any)->xav_fill
 end
 
-define dumpav
+define dump_av
     set $n = ((XPVAV*)  ($arg0)->sv_any)->xav_fill
+
+    check_is_perl
+    set $is_perl = $return
+
+    #printf "====== SV =====\n"
+    #if !$is_perl
+    #  _show_index_for (SV*) $sarg0 "sv_list" sv_list sizeof(sv_list)
+    #end
+
+    p $n
     set $i = 0
+
     while $i <= $n
         set $sv = *Perl_av_fetch($arg0, $i, 0)
-        printf "[%u] -> `%s'\n", $i, ((XPV*) ($sv)->sv_any )->xpv_pv
+        if $sv
+          set $type = 0xf & ((SV*) ($sv))->sv_flags
+          #p $sv
+          if $type == 3
+            printf "[%u] -> SvPV - '%s' - (SV*) 0x%x\n", $i, $sv->sv_u.svu_pv, $sv
+          else
+            printf "[%u] -> type:%d - '%d' - (SV*) 0x%x\n", $i, $type, $sv->sv_u.svu_iv, $sv
+          end
+
+          if !$is_perl
+            _show_index_for $sv "sv_list" sv_list sizeof(sv_list)
+          end
+
+          #printf "[%u] -> `%s'\n", $i, ((XPV*) ($sv)->sv_any )->xpv_pv
+        end
         set $i = $i + 1
     end
 end
