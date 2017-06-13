@@ -42,6 +42,23 @@ sub load_heavy {
     require $bc;
 }
 
+sub setup_stashes {
+    if ( exists $main::{'!'} ) {
+        if ( !$INC{'Errno.pm'} ) {
+
+            # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
+            # problems. Ideally this code should be removed in favor of a better solution.
+            eval 'require Errno';
+        }
+    }
+    return;
+}
+
+BEGIN {
+    # setup the stash before walking our OpTree and calling compile
+    setup_stashes();    # if $! then load Errno.
+}
+
 # This is the sub called once the BEGIN state completes.
 # We want to capture stash and %INC information before we go and corrupt it!
 my @configure_options;
@@ -62,8 +79,6 @@ sub compile {
 }
 
 sub save_compile_state {
-
-    setup_stashes();    # if $! then load Errno.
 
     $settings->{'dl_so_files'} = save_xsloader_so();
     $settings->{'dl_modules'}  = save_xsloader_modules();
@@ -103,18 +118,6 @@ sub save_inc {
 }
 
 my %seen;
-
-sub setup_stashes {
-    if ( exists $main::{'!'} ) {
-        if ( !$INC{'Errno.pm'} ) {
-
-            # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
-            # problems. Ideally this code should be removed in favor of a better solution.
-            eval 'require Errno';
-        }
-    }
-    return;
-}
 
 sub starting_stash {
     my ( $stash, $in_main ) = @_;
