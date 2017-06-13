@@ -3,7 +3,7 @@ package B::METHOP;
 use strict;
 
 use B qw/cstring SVf_FAKE/;
-use B::C::File qw( methopsect init );
+use B::C::File qw( methopsect init init2 );
 use B::C::Config;
 use B::C::Helpers::Symtable qw/savesym/;
 use B::C::Helpers qw/do_labels/;
@@ -29,7 +29,7 @@ sub do_save {
         # TODO: backref magic for next, init the next::method cache
         my $name = $op->rclass()->PV();
         my $sym  = savestashpv($name);
-        init()->sadd( "Perl_mro_method_changed_in(%s);  /* %s */", $sym, $name );
+        init2()->sadd( "Perl_mro_method_changed_in(%s);  /* %s */", $sym, $name );
     }
     my $first = $op->name eq 'method' ? $op->first->save : $op->meth_sv->save;
     if ( $first =~ /^&sv_list/ ) {
