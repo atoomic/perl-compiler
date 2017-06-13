@@ -669,13 +669,13 @@ xs_init(pTHX)
 
     SAVETMPS;
     targ=sv_newmortal();
-    
+
     PUSHMARK(sp);
     XPUSHp("DynaLoader", 10);
     PUTBACK;
     boot_DynaLoader(aTHX_ get_cv("DynaLoader::bootstrap", GV_ADD));
-    SPAGAIN;    
-    
+    SPAGAIN;
+
     FREETMPS;
 }
 
@@ -718,7 +718,6 @@ static void dl_init(pTHX)
     [% IF XS.has_xs() %]
     dTARG;
     PERL_UNUSED_ARG(targ);
-    dSP;
     ENTER;
     SAVETMPS;
 
