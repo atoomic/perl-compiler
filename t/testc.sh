@@ -1170,7 +1170,8 @@ package D1; sub testmeth { "wrong" }
 package C1; our @ISA = qw/D1/; sub testmeth { "right" }
 package B1; our @ISA = qw/D1/;
 package A1; use mro "c3"; our @ISA = qw/B1 C1/; sub testmeth { shift->next::method }
-A1->testmeth() eq "right" and print "ok\n"'
+my $str = A1->testmeth();
+$str eq "right" ? print "ok\n" : print "not ok - $str\n";'
 fi
 if [[ $v518 -gt 0 && $v524 -eq 0 ]]; then
   tests[299]='no warnings qw{experimental::lexical_topic}; my $s = "ok\n"; my $_ = "not ok\n"; my $r = $s =~ /ok(?{ print qq[$_] })/;'
