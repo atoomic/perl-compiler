@@ -202,7 +202,9 @@ static void declare_static_sections() { /* declare our static section 'blocks' t
 [% END -%]
 
 [% IF section.const.index >= 0 -%]
-    declare_static_memory( cowpv0, cowpv[% section.const.index %], 0 /* we do not know - breaks re-alloc */ );
+   [% FOREACH cow = [ 0 .. $section.const.index ] -%]
+    declare_static_memory( cowpv[% cow %], cowpv[% cow %], sizeof(cowpv[% cow %]) /* we do not know - breaks re-alloc */ );
+   [% END -%]
 [% END -%]
 
 }
