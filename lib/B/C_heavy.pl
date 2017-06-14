@@ -625,6 +625,10 @@ sub save_pre_defstash {
         require 'mro.pm';
     }
 
+    if ( keys %{next::} > 0 ) {
+        svref_2object( \%next:: )->save("next::");
+    }
+
     # do we have something else than PerlIO/scalar/scalar.so ?
     # there is something with PerlIO and PerlIO::scalar ( view in_static_core )
     if ( scalar @{ $settings->{'dl_modules'} } && scalar @{ $settings->{'dl_so_files'} } ) {    # Backup what we had in the DynaLoader arrays prior to C_Heavy
