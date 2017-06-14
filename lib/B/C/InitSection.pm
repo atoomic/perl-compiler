@@ -167,16 +167,19 @@ sub output {
 
     push @{ $self->{'chunks'} }, $self->{'current'};
 
-    my $return_string = '';
+    my $output = '';
+
+    my $comment = $self->comment;
+    $output .= q{/* } . $comment . qq{*/\n\n} if defined $comment;
 
     my $name = "aaaa";
     foreach my $i ( @{ $self->{'chunks'} } ) {
 
         # dTARG and dSP unused -nt
-        $return_string .= "static void ${init_name}_${name}(pTHX)\n{\n";
+        $output .= "static void ${init_name}_${name}(pTHX)\n{\n";
 
         foreach my $i ( @{ $self->{'initav'} } ) {
-            $return_string .= "    $i\n";
+            $output .= "    $i\n";
         }
         foreach my $j (@$i) {
             $j =~ s{(s\\_[0-9a-f]+)}
@@ -188,22 +191,22 @@ sub output {
                 $j =~ s{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP}{$getcv};
             }
 
-            $return_string .= "    $j\n";
+            $output .= "    $j\n";
 
         }
-        $return_string .= "\n}\n";
+        $output .= "\n}\n";
 
         $self->SUPER::add("${init_name}_${name}(aTHX);");
         ++$name;
     }
 
-    $return_string .= "\nPERL_STATIC_INLINE int ${init_name}(pTHX)\n{\n";
+    $output .= "\nPERL_STATIC_INLINE int ${init_name}(pTHX)\n{\n";
 
     if ( $self->name eq 'init' ) {
-        $return_string .= "    perl_init0(aTHX);\n";
+        $output .= "    perl_init0(aTHX);\n";
     }
-    $return_string .= $self->SUPER::output($format);
-    $return_string .= "    return 0;\n}\n";
+    $output .= $self->SUPER::output($format);
+    $output .= "    return 0;\n}\n";
 }
 
 1;

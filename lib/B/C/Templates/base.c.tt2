@@ -108,9 +108,6 @@ Static SHARED_HE* sharedhe_list[[% section.sharedhe.index + 1 %]] =  {
 *
 *************************************************************************************************************/
 
-[% IF section.sym.comment() %]
-    /* [% section.sym.comment() %] */
-[% END %]
 [% section.sym.output( "#define %s\n" ) %]
 
 /*  output_declarations() called by output_all() */
@@ -192,9 +189,6 @@ XS(XS_DynaLoader_dl_find_symbol);
 [% section.cowpv.output( "%s\n" ) %]
 /* end COWPVs */
 
-[% IF section.const.comment() %]
-    /* [% section.const.comment() %] */
-[% END %]
 /* <const.output> */
 [% section.const.output( "%s\n" ) %]
 /* </const.output> */
@@ -216,9 +210,6 @@ static void declare_static_sections() { /* declare our static section 'blocks' t
 
 }
 
-[% IF section.decl.comment() %]
-    /* [% section.decl.comment() %] */
-[% END %]
 /* <decl.output> */
 [% section.decl.output( "%s\n" ) %]
 /* </decl.output> */
@@ -328,10 +319,6 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
 /* end of handy helpers */
 
 
-
-[% IF section.init_stash.comment() %]
-    /* [% section.init_stash.comment() %] */
-[% END %]
 [% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
 
 [% section.init_static_assignments.output( "    %s\n", 'perl_init_static_assignments' ) %]
@@ -415,32 +402,20 @@ static void perl_init0(pTHX) { /* fixup_ppaddr */
 [% section.init0.output( "    %s\n" ) %]
 };
 
-[% IF section.init.comment() %]
-    /* [% section.init.comment() %] */
-[% END %]
+
 [% section.init.output( "    %s\n", init_name ) %]
 
 /* deferred init1 of regexp */
-[% IF section.init1.comment() %]
-    /* [% section.init1.comment() %] */
-[% END %]
 [% section.init1.output( "    %s\n", "perl_init1" ) %]
 
-[% IF verbose %]
 /* deferred init of XS/Dyna loaded modules */
-[% END %]
 
-[% IF section.init2.comment() %]
-    /* [% section.init2.comment() %] */
-[% END %]
 [% section.init2.output( "    %s\n", 'perl_init2' ) %]
 
-[% IF verbose %]
 /*
     COMPILE STATS:  [% compile_stats %]
      NULLOP count:  [% nullop_count %]
 */
-[% END %]
 
 /************************************************************************************************************
 *
