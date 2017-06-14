@@ -98,7 +98,7 @@ EXTERN_C void boot_[% xsub %] (pTHX_ CV* cv);
 
 Static SHARED_HE* sharedhe_list[[% section.sharedhe.index + 1 %]] =  {
 [%- FOREACH num IN [ 0 .. section.sharedhe.index ] %]
-    (SHARED_HE*) &sHe[% num %],
+    (SHARED_HE*) &sHe[% num %], /* sharedhe_list[[%num%]] */
 [%- END %]
 };
 
@@ -293,10 +293,7 @@ S_pp_dump(pTHX)
 [% lines = section.$sect.index + 1 %]
 [% NEXT IF lines == 0 %]
 Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %]] = {
-[% IF section.$sect.comment() %]
-    /* [% section.$sect.comment() %] */
-[% END  %]
-[% section.$sect.output("    { %s }, /* %s_list[%d] %s */%s\n") %]
+[% section.$sect.output("    { %s }, /* %s_list[%d] %s %s */\n") %]
 };
 
 [% END %]

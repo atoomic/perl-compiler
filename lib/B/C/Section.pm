@@ -24,7 +24,7 @@ sub new {
     # if sv add a dummy sv_arenaroot to support global destruction
     if ( $section eq 'sv' ) {
         $self->add("NULL, 0, SVTYPEMASK|0x01000000, {0}");    # SVf_FAKE
-        $self->{'dbg'}->[0] = "PL_sv_arenaroot";
+        $self->debug("PL_sv_arenaroot");
     }
 
     return $self;
@@ -43,7 +43,6 @@ sub add {
     # return its position in the list (first one will be 0), avoid to call index just after in most cases
     return $self->index();
 }
-
 
 sub _convert_list_to_sprintf {
     my (@list) = @_;
@@ -265,27 +264,34 @@ sub comment {
 # add debugging info - stringified flags on -DF
 my $debug_flags;
 
+sub add_extra_comments {
+
+    # maybe use another standard flag ? - B::C::Debug::debug('flags')
+    return $ENV{BC_DEVELOPING};
+}
+
 sub debug {
+    my ( $self, @what ) = @_;
 
     # disable the sub when unused
-    if ( !defined $debug_flags ) {
-        $debug_flags = B::C::Debug::debug('flags') ? 1 : 0;
-        if ( !$debug_flags ) {
+    if ( !$self->add_extra_comments ) {
 
-            # Scoped no warnings without loading the module.
-            local $^W;
-            BEGIN { ${^WARNING_BITS} = 0; }
-            *debug = sub { };
-
-            return;
-        }
+        # Scoped no warnings without loading the module.
+        local $^W;
+        BEGIN { ${^WARNING_BITS} = 0; }
+        *debug = sub { };
+        return;
     }
 
-    # debug
-    my ( $self, $op ) = @_;
+    # build our debug line for the current index
+    my $dbg = join ', ', map { defined $_ ? ( ref($_) ? ref($_) : $_ ) : 'undef' } @what;
 
-    my $dbg = ref $op && $op->can('flagspv') ? $op->flagspv : undef;
-    $self->{'dbg'}->[ $self->index ] = $dbg if $dbg;
+    if ( defined $self->{'dbg'}->[ $self->index ] ) {
+        $self->{'dbg'}->[ $self->index ] .= ', ' . $dbg;
+    }
+    else {
+        $self->{'dbg'}->[ $self->index ] = $dbg;
+    }
 
     return;
 }
@@ -296,18 +302,32 @@ sub output {
     my $default = $self->default;
 
     my $i = 0;
-    my $dodbg = 1 if B::C::Debug::debug('flags') and $self->{'dbg'};
-    if ( $self->name eq 'sv' ) {      #fixup arenaroot refcnt
+
+    if ( $self->name eq 'sv' ) {      # fixup arenaroot refcnt
         my $len = scalar @{ $self->{'values'} };
         $self->{'values'}->[0] =~ s/^NULL, 0/NULL, $len/;
     }
 
-    my $return_string = '';
+    my $comment = $self->comment;
+
+    my $output = '';
+
+    # check if the format already provide a closing comment
+    my $wrap_debug_with_comment = $format =~ qr{\Q*/\E\s+$} ? 0 : 1;
 
     foreach ( @{ $self->{'values'} } ) {
-        my $val = $_;                 # Copy so we don't overwrite on successive calls.
+        my $val = $_;    # Copy so we don't overwrite on successive calls.
         my $dbg = "";
         my $ref = "";
+
+        if ( $self->add_extra_comments() && defined $comment && $i % 10 == 0 ) {
+
+            # every 10 lines add the comment header so we can easily read it
+            $output .= qq{\n} if $i;
+            $output .= qq{\t/* } . $comment . qq{ */\n\n};
+
+        }
+
         if ( $val =~ m/(s\\_[0-9a-f]+)/ ) {
             if ( !exists( $sym->{$1} ) and $1 ne 's\_0' ) {
                 $ref = $1;
@@ -316,8 +336,15 @@ sub output {
             }
         }
         $val =~ s{(s\\_[0-9a-f]+)}{ exists($sym->{$1}) ? $sym->{$1} : $default; }ge;
-        if ( $dodbg and $self->{'dbg'}->[$i] ) {
-            $dbg = " /* " . $self->{'dbg'}->[$i] . " " . $ref . " */";
+        if ( defined $self->{'dbg'}->[$i] ) {
+            $dbg = $self->{'dbg'}->[$i] . " " . $ref;
+            if ($wrap_debug_with_comment) {
+                $dbg = " /* " . $dbg . " */";
+            }
+            else {
+                $dbg = '- ' . $dbg;
+            }
+
         }
 
         $val =~ s{BOOTSTRAP_XS_\Q[[\E.+?\Q]]\E_XS_BOOTSTRAP}{0};
@@ -326,13 +353,13 @@ sub output {
             # Scoped no warnings without loading the module.
             local $^W;
             BEGIN { ${^WARNING_BITS} = 0; }
-            $return_string .= sprintf( $format, $val, $self->name, $i, $ref, $dbg );
+            $output .= sprintf( $format, $val, $self->name, $i, $ref, $dbg );
         }
 
         ++$i;
     }
 
-    return $return_string;
+    return $output;
 }
 
 1;

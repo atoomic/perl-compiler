@@ -64,7 +64,6 @@ sub do_save {
         "&xpvmg_list[%d], %Lu, 0x%x, {%s}",
         $xpvmg_ix, $sv->REFCNT + 1, $flags, $sv_u
     );
-    svsect()->debug( $fullname, $sv );
 
     if ( defined($pv) and !$static ) {
         my $shared_hek = is_shared_hek($sv);

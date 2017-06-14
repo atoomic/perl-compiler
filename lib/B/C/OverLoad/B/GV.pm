@@ -82,6 +82,7 @@ sub do_save {
         '{.xivu_namehek=(HEK*)%s}' => $namehek,           # union _xivu xiv_u - the namehek (HEK*)
         '{.xgv_stash=%s}'          => $stash_symbol,      # union _xnvu xnv_u - The symbol for the HV stash. Which field is it??
     );
+    xpvgvsect()->debug( $gv->get_fullname() );
     my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
     {
@@ -90,11 +91,12 @@ sub do_save {
         # replace our FAKE entry above
         gvsect()->supdatel(
             $gv_ix,
-            "&%s"                                                 => $xpvgv,             # XPVGV*  sv_any
-            "%u"                                                  => $gv->REFCNT + 1,    #  sv_refcnt - +1 to make it immortal
-            "0x%x"                                                => $gv->FLAGS,         # sv_flags
-            "{.svu_gp=(GP*)%s} /* " . $gv->get_fullname() . " */" => $gpsym,             # GP* sv_u - plug the gp in our sv_u slot
+            "&%s"               => $xpvgv,                # XPVGV*  sv_any
+            "%u"                => $gv->REFCNT + 1,       #  sv_refcnt - +1 to make it immortal
+            "0x%x"              => $gv->FLAGS,            # sv_flags
+            "{.svu_gp=(GP*)%s}" => $gpsym,                # GP* sv_u - plug the gp in our sv_u slot
         );
+        gvsect()->debug( $gv->get_fullname() );
     }
 
     debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $gvsym, $gv->NAME );
@@ -219,6 +221,7 @@ sub savegp_from_gv {
         "0x%x"               => $gp_flags,
         "%s"                 => get_sHe_HEK($gp_file_hek),
     );
+    gpsect()->debug( $gv->get_fullname() );
     $saved_gps{$gp} = sprintf( "&gp_list[%d]", $gp_ix );
 
     #print STDERR "===== GP:$gp_ix SV:$gp_sv, AV:$gp_av, HV:$gp_hv, CV:$gp_cv \n";
