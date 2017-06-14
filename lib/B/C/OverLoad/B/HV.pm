@@ -19,7 +19,7 @@ require mro;
 
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
 use B::C::Config;
-use B::C::File qw/init xpvhvsect svsect sharedhe decl init2 init_stash init_static_assignments/;
+use B::C::File qw/init xpvhvsect svsect sharedhe decl init init2 init_stash init_static_assignments/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Save::Hek qw/save_shared_he/;
@@ -207,10 +207,10 @@ sub do_save {
     $init->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;
 
     # Setup xhv_name_u and xhv_name_count in the AUX section of the hash via hv_name_set.
-    my @enames = $hv->ENAMES;
+    my @enames     = $hv->ENAMES;
     my $name_count = $hv->name_count;
     warn("Found an example of a non-zero HvAUX name_count!") if $name_count;
-    if (scalar @enames and !length $enames[0] and $stash_name) {
+    if ( scalar @enames and !length $enames[0] and $stash_name ) {
         warn("Found empty ENAMES[0] for $stash_name");
     }
 
@@ -233,8 +233,9 @@ sub do_save {
             $do_mro_isa_changed = 1 if $@;    # fallback - view xtestc/0184.t
             init2()->sadd( "mro_isa_changed_in(%s);  /* %s */", $sym, $stash_name ) if $do_mro_isa_changed;
         }
-        if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' ) {
-            make_c3($stash_name);             # Is it main when we want to do it for main????
+        my $get_mro = ( scalar %main::mro:: ) ? mro->can('get_mro') : 0;
+        if ( $stash_name ne 'mro' and $get_mro and $get_mro->($stash_name) eq 'c3' ) {
+            init2()->sadd( 'Perl_mro_set_mro(aTHX_ HvMROMETA(%s), newSVpvs("c3"));', savestashpv($stash_name) );
         }
     }
 
@@ -253,17 +254,6 @@ sub get_max_hash_from_keys {
     return $default if !$keys or $keys <= $default;    # default hash max value
 
     return 2**( int( log($keys) / log(2) ) + 1 ) - 1;
-}
-
-my @made_c3;
-
-sub make_c3 {
-    my $package = shift or die;
-
-    return if ( grep { $_ eq $package } @made_c3 );
-    push @made_c3, $package;
-
-    return init2()->sadd( 'Perl_mro_set_mro(aTHX_ HvMROMETA(%s), newSVpvs("c3"));', savestashpv($package) );
 }
 
 1;

@@ -619,16 +619,17 @@ sub save_pre_defstash {
     svref_2object( \%main::INC )->save("main::INC");
     %INC = %INC_BACKUP;
 
-    # We need mro to save stashes but loading it alters the mro stash.
-    if ( keys %{mro::} <= 10 ) {
+    # We need mro to save stashes but loading it alters the mro (and next) stash.
+    # The real fix is that we need C.xs to provide mro::get_mro so we don't need to require mro at all.
+    if (%mro::) {
         svref_2object( \%mro:: )->save("mro::");
-        require 'mro.pm';
     }
 
-    if ( keys %{next::} > 0 ) {
+    if (%next::) {
         svref_2object( \%next:: )->save("next::");
     }
-    if ( keys %{maybe::next::} > 0 ) {
+
+    if ( %maybe:: && %maybe::next:: ) {
         svref_2object( \%maybe::next:: )->save("maybe::next::");
     }
 
