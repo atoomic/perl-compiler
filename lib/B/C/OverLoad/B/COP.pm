@@ -138,7 +138,7 @@ sub do_save {
 
         # view op/bless.t
         #warn sprintf( "#### Fallback to PL_defstash - stash %s - stashpv %s - alternate %s", $op->stash, $op->stashpv, scalar savestashpv( $op->stashpv ) );
-        $stash = q{&PL_defstash};
+        $stash = B::C::save_defstash();
     }
 
     # add the cop at the end
