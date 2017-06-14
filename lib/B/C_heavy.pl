@@ -628,6 +628,9 @@ sub save_pre_defstash {
     if ( keys %{next::} > 0 ) {
         svref_2object( \%next:: )->save("next::");
     }
+    if ( keys %{maybe::next::} > 0 ) {
+        svref_2object( \%maybe::next:: )->save("maybe::next::");
+    }
 
     # do we have something else than PerlIO/scalar/scalar.so ?
     # there is something with PerlIO and PerlIO::scalar ( view in_static_core )
