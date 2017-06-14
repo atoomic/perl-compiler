@@ -122,6 +122,9 @@ sub start_heavy {
 
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'} );
 
+    # Save some stuff we need to save early.
+    save_pre_defstash();
+
     # save all our stashes at startup only
     save_defstash();
 
@@ -607,57 +610,51 @@ sub walk_syms {
     $dumped_package{$package} = 1;
     walksymtable( \%{ $package . '::' }, "savecv", sub { 1 }, $package . '::' );
 }
-{
 
-    my $PL_defstash;
+sub save_pre_defstash {
 
-    # save defstash and all other stashes bellow
-    sub save_defstash {
+    # We need to save the INC GV before ANYTHING else is allowed to happen or we'll corrupt it.
+    my %INC_BACKUP = %INC;
+    %INC = %{ $settings->{'starting_INC'} };
+    svref_2object( \%main::INC )->save("main::INC");
+    %INC = %INC_BACKUP;
 
-        # run it once
-        return $PL_defstash if defined $PL_defstash;
-
-        # We need to save the INC GV before ANYTHING else is allowed to happen or we'll corrupt it.
-        my %INC_BACKUP = %INC;
-        %INC = %{ $settings->{'starting_INC'} };
-        svref_2object( \%main::INC )->save("main::INC");
-        %INC = %INC_BACKUP;
-
-        # We need mro to save stashes but loading it alters the mro stash.
-        if ( keys %{mro::} <= 10 ) {
-            svref_2object( \%mro:: )->save("mro::");
-            require 'mro.pm';
-        }
-
-        #eval q{require Data::Dumper}; eval q{warn Data::Dumper::Dumper( $settings ) };
-
-        # do we have something else than PerlIO/scalar/scalar.so ?
-        # there is something with PerlIO and PerlIO::scalar ( view in_static_core )
-        if ( scalar @{ $settings->{'dl_modules'} } && scalar @{ $settings->{'dl_so_files'} } ) {    # Backup what we had in the DynaLoader arrays prior to C_Heavy
-            my @modules = @DynaLoader::dl_modules;
-            my @so      = @DynaLoader::dl_shared_objects;
-
-            @DynaLoader::dl_modules        = @{ $settings->{'dl_modules'} };
-            @DynaLoader::dl_shared_objects = @{ $settings->{'dl_so_files'} };
-
-            svref_2object( \*DynaLoader::dl_modules )->save('@DynaLoader::dl_modules');
-            svref_2object( \*DynaLoader::dl_shared_objects )->save('@DynaLoader::dl_shared_objects');
-
-            @DynaLoader::dl_modules        = @modules;
-            @DynaLoader::dl_shared_objects = @so;
-        }
-
-        # foreach my $stash ( qw{XSLoader DynaLoader} ) {
-        #     no strict 'refs';
-        #     #svref_2object( \%{ $stash . '::' } )->save( $stash .q{::} ) if B::HV::can_save_stash( $stash );
-        # }
-
-        $PL_defstash = svref_2object( \%main:: )->save('main');
-
-        $PL_defstash .= ' /* PL_defstash */';    # add a comment so we can easily detect it in our source code
-
-        return $PL_defstash;
+    # We need mro to save stashes but loading it alters the mro stash.
+    if ( keys %{mro::} <= 10 ) {
+        svref_2object( \%mro:: )->save("mro::");
+        require 'mro.pm';
     }
+
+    # do we have something else than PerlIO/scalar/scalar.so ?
+    # there is something with PerlIO and PerlIO::scalar ( view in_static_core )
+    if ( scalar @{ $settings->{'dl_modules'} } && scalar @{ $settings->{'dl_so_files'} } ) {    # Backup what we had in the DynaLoader arrays prior to C_Heavy
+        my @modules = @DynaLoader::dl_modules;
+        my @so      = @DynaLoader::dl_shared_objects;
+
+        @DynaLoader::dl_modules        = @{ $settings->{'dl_modules'} };
+        @DynaLoader::dl_shared_objects = @{ $settings->{'dl_so_files'} };
+
+        svref_2object( \*DynaLoader::dl_modules )->save('@DynaLoader::dl_modules');
+        svref_2object( \*DynaLoader::dl_shared_objects )->save('@DynaLoader::dl_shared_objects');
+
+        @DynaLoader::dl_modules        = @modules;
+        @DynaLoader::dl_shared_objects = @so;
+    }
+
+    # foreach my $stash ( qw{XSLoader DynaLoader} ) {
+    #     no strict 'refs';
+    #     #svref_2object( \%{ $stash . '::' } )->save( $stash .q{::} ) if B::HV::can_save_stash( $stash );
+    # }
+}
+
+# Returns the symbol that will become &PL_defstash
+sub save_defstash {
+
+    my $PL_defstash = svref_2object( \%main:: )->save('main');
+
+    $PL_defstash .= ' /* PL_defstash */';    # add a comment so we can easily detect it in our source code
+
+    return $PL_defstash;
 }
 
 # simplified walk_syms
