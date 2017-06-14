@@ -265,9 +265,9 @@ sub comment {
 my $debug_flags;
 
 sub add_extra_comments {
-
-    # maybe use another standard flag ? - B::C::Debug::debug('flags')
-    return $ENV{BC_DEVELOPING};
+    return 1;    # always on for now
+                 # maybe use another standard flag ? - B::C::Debug::debug('flags')
+                 #return $ENV{BC_DEVELOPING};
 }
 
 sub debug {
