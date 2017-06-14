@@ -440,7 +440,6 @@ sub save_gv_format {
     return $gvform->save($fullname);
 
     # init()->sadd( "GvFORM(%s) = (CV*)s\\_%x;", $sym, $$gvform );
-    # init()->sadd( "SvREFCNT_inc(s\\_%x);", $$gvform );
 
     # return;
 }
