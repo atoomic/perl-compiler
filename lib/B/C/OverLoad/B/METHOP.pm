@@ -25,15 +25,10 @@ sub do_save {
         my $rclass_name = $op->rclass()->PV();
         my $sym         = savestashpv($rclass_name);
         if ( $sym && $sym =~ /^&sv_list/ ) {
-            init()->sadd( "SvREFCNT_inc_simple_NN(%s); /* methop_list[%d].op_rclass_sv */", $rclass, $ix );
             init2()->sadd( "Perl_mro_method_changed_in((HV*) %s);  /* %s */", $sym, $rclass_name );
         }
     }
     my $first = $name eq 'method' ? $op->first->save : $op->meth_sv->save;
-
-    if ( $first && $first =~ /^&sv_list/ ) {
-        init()->sadd( "SvREFCNT_inc_simple_NN(%s); /* methop_list[%d].op_meth_sv */", $first, $ix );
-    }
 
     methopsect()->comment_common("first, rclass");
     methopsect()->sadd( "%s, $union, (SV*)%s", $op->_save_common, $first, $rclass );
