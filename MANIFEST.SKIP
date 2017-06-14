@@ -26,3 +26,6 @@
 \.subtest\.
 \.tar\.gz$
 \.tmp~$
+^rpms/
+^.perldb$
+^bamboo.sh$
