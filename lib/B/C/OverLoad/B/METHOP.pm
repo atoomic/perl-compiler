@@ -14,32 +14,32 @@ sub do_save {
 
     $level ||= 0;
 
-    methopsect()->comment_common("first, rclass");
+    my $name = $op->name || '';
+    my $flagspv = $op->flagspv;
 
-    my $union = $op->name eq 'method' ? "{.op_first=(OP*)%s}" : "{.op_meth_sv=(SV*)%s}";
-    my $s = "%s, $union, (SV*)%s";    # rclass
+    my $union = $name eq 'method' ? "{.op_first=(OP*)%s}" : "{.op_meth_sv=(SV*)%s}";
 
     my $ix     = methopsect()->index + 1;
     my $rclass = $op->rclass->save("op_rclass_sv");
-    if ( $rclass =~ /^&sv_list/ ) {
-        init()->sadd( "SvREFCNT_inc_simple_NN(%s); /* methop_list[%d].op_rclass_sv */", $rclass, $ix );
-
-        # Put this simple PV into the PL_stashcache, it has no STASH,
-        # and initialize the method cache.
-        # TODO: backref magic for next, init the next::method cache
-        my $name = $op->rclass()->PV();
-        my $sym  = savestashpv($name);
-        init2()->sadd( "Perl_mro_method_changed_in(%s);  /* %s */", $sym, $name );
+    if ( $rclass && $rclass =~ /^&sv_list/ ) {
+        my $rclass_name = $op->rclass()->PV();
+        my $sym         = savestashpv($rclass_name);
+        if ( $sym && $sym =~ /^&sv_list/ ) {
+            init()->sadd( "SvREFCNT_inc_simple_NN(%s); /* methop_list[%d].op_rclass_sv */", $rclass, $ix );
+            init2()->sadd( "Perl_mro_method_changed_in((HV*) %s);  /* %s */", $sym, $rclass_name );
+        }
     }
-    my $first = $op->name eq 'method' ? $op->first->save : $op->meth_sv->save;
-    if ( $first =~ /^&sv_list/ ) {
+    my $first = $name eq 'method' ? $op->first->save : $op->meth_sv->save;
+
+    if ( $first && $first =~ /^&sv_list/ ) {
         init()->sadd( "SvREFCNT_inc_simple_NN(%s); /* methop_list[%d].op_meth_sv */", $first, $ix );
     }
 
-    methopsect()->sadd( $s, $op->_save_common, $first, $rclass );
-    methopsect()->debug( $op->name, $op->flagspv ) if debug('flags');
+    methopsect()->comment_common("first, rclass");
+    methopsect()->sadd( "%s, $union, (SV*)%s", $op->_save_common, $first, $rclass );
+    methopsect()->debug( $name, $flagspv ) if debug('flags');
     my $sym = savesym( $op, "(OP*)&methop_list[$ix]" );    # save it before do_labels
-    if ( $op->name eq 'method' ) {
+    if ( $name eq 'method' ) {
         do_labels( $op, $level + 1, 'first', 'rclass' );
     }
     else {
