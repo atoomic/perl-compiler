@@ -35,13 +35,11 @@ sub do_save {
     # Since 5.24 we can access the IV/NV/UV value from either the union from the main SV body
     # or also from the SvANY of it. View IV.pm for more information
 
-    my $bodyless_pointer = sprintf( "((char*)%s)+STRUCT_OFFSET(struct STRUCT_SV, sv_u) - STRUCT_OFFSET(XPVIV, xiv_iv)", $sym );
-
     svsect()->saddl(
-        '%s'           => $bodyless_pointer,    # sv_any
-        '%lu',         => $refcnt,              # sv_refcnt
-        '0x%x'         => $svflags,             # sv_flags
-        '{.svu_iv=%s}' => $ivx,                 # sv_u.svu_uv
+        'BODYLESS_IV_PTR(%s)' => $sym,        # sv_any
+        '%lu',                => $refcnt,     # sv_refcnt
+        '0x%x'                => $svflags,    # sv_flags
+        '{.svu_iv=%s}'        => $ivx,        # sv_u.svu_uv
     );
 
 =pod

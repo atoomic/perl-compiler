@@ -50,6 +50,14 @@ PerlIO * PIO_stdout;
 
 typedef struct shared_he SHARED_HE;
 
+/* these bc_*bodyless* macros are just using an extra parens around sv, should patch perl */
+#define BODYLESS_IV_PTR(sv) \
+       ((char*)sv)+STRUCT_OFFSET(struct STRUCT_SV, sv_u) - STRUCT_OFFSET(XPVIV, xiv_iv)
+
+#define BODYLESS_UV_PTR(sv) \
+       ((char*)sv)+STRUCT_OFFSET(struct STRUCT_SV, sv_u) - STRUCT_OFFSET(XPVUV, xuv_uv)
+
+
 #define IMMORTAL_PL_strtab 0x7ffffff
 
 static int fast_perl_destruct( PerlInterpreter *my_perl );
