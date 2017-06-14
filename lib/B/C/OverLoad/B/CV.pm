@@ -9,7 +9,7 @@ use B::C::Config;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
-use B::C::File qw/svsect xpvcvsect/;
+use B::C::File qw/svsect xpvcvsect init/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 
 my $initsub_index = 0;
@@ -57,6 +57,8 @@ sub do_save {
         $flags = $flags | SVf_IsCOW;
     }
 
+    my $xcv_outside = $cv->get_cv_outside();
+
     my ( $xcv_file, undef, undef ) = savecowpv( $cv->FILE || '' );
 
     xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
@@ -72,11 +74,16 @@ sub do_save {
         q{%s}         => $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
         q{(char*) %s} => $xcv_file,                                # xcv_file
         '{%s}'        => $cv->cv_save_padlist($origname),          # xcv_padlist_u
-        '(CV*)%s'     => $cv->get_cv_outside(),                    # xcv_outside
+        '(CV*)%s'     => $xcv_outside,                             # xcv_outside
         '%d'          => get_integer_value( $cv->OUTSIDE_SEQ ),    # xcv_outside_seq
         '0x%x'        => $cv->CvFLAGS,                             # xcv_flags
         '%d'          => $cv->DEPTH                                # xcv_depth
     );
+
+    if ( $xcv_outside eq '&PL_main_cv' ) {
+        init()->sadd( "xpvcv_list[%u].xcv_outside = (CV*) &PL_main_cv;", $xpvcv_ix );
+        xpvcvsect->update_field( $xpvcv_ix, 10, 'NULL /* PL_main_cv */' );
+    }
 
     # STATIC_HV: We don't think the sv_u is ever set in the SVCV so this check might be wrong
     # we are not saving the svu for a CV, all evidence indicates that the value is null (always?)
