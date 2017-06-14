@@ -206,6 +206,20 @@ sub do_save {
 
     $init->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;
 
+    # Setup xhv_name_u and xhv_name_count in the AUX section of the hash via hv_name_set.
+    my @enames = $hv->ENAMES;
+    my $name_count = $hv->name_count;
+    warn("Found an example of a non-zero HvAUX name_count!") if $name_count;
+    if (scalar @enames and !length $enames[0] and $stash_name) {
+        warn("Found empty ENAMES[0] for $stash_name");
+    }
+
+    foreach my $hash_name (@enames) {
+        next unless length $hash_name;
+        my ( $cstring, $cur, $utf8 ) = strlen_flags($hash_name);
+        $init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
+    }
+
     # Special stuff we want to do for stashes.
     if ( length $stash_name ) {
 
@@ -222,69 +236,12 @@ sub do_save {
         if ( $stash_name ne 'mro' and mro::get_mro($stash_name) eq 'c3' ) {
             make_c3($stash_name);             # Is it main when we want to do it for main????
         }
-
-        # Having this in place was making method lookups fail.
-        my ( $cstring, $cur, $utf8 ) = strlen_flags($stash_name);
-        $init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
-
-        enames_crap( $hv, $stash_name, $sym );
     }
 
     # close our HvSETUP block
     $init->indent(-1);
     $init->add('}');
     $init->split;
-
-    return $sym;
-}
-
-sub enames_crap {
-    my ( $hv, $stash_name, $sym ) = @_;
-
-    return "punt for now";
-
-    # Add aliases if namecount > 1 (GH #331)
-    # There was no B API for the count or multiple enames, so I added one.
-    my @enames = $hv->ENAMES;
-    if ( @enames > 1 ) {
-        debug( hv => "Saving for $stash_name multiple enames: ", join( " ", @enames ) );
-        my $name_count = $hv->name_count;
-
-        my $hv_max_plus_one = $hv->MAX + 1;
-
-        # If the stash name is empty xhv_name_count is negative, and names[0] should
-        # be already set. but we rather write it.
-        init()->no_split;
-
-        # unshift @enames, $name if $name_count < 0; # stashpv has already set names[0]
-        init()->add(
-            "if (!SvOOK($sym)) {",    # hv_auxinit is not exported
-            "  HE **a;",
-            sprintf( "  Newxz(a, %d + sizeof(struct xpvhv_aux), HE*);", $hv_max_plus_one ),
-            "  SvOOK_on($sym);",
-            "}",
-            "{",
-            "  struct xpvhv_aux *aux = HvAUX($sym);",
-            sprintf( "  Newx(aux->xhv_name_u.xhvnameu_names, %d, HEK*);", scalar $name_count ),
-            sprintf( "  aux->xhv_name_count = %d;",                       $name_count )
-        );
-        my $i = 0;
-        while (@enames) {
-            my ( $cstring, $cur, $utf8 ) = strlen_flags( shift @enames );
-            init()->sadd(
-                "  aux->xhv_name_u.xhvnameu_names[%u] = share_hek(%s, %d, 0);",
-                $i++, $cstring, $utf8 ? -$cur : $cur
-            );
-        }
-        init()->add("}");
-        init()->split;
-    }
-
-    # issue 79, test 46: save stashes to check for packages.
-    # and via B::STASHGV we only save stashes for stashes.
-    # For efficiency we skip most stash symbols unless -fstash.
-    # However it should be now safe to save all stash symbols.
-    # $fullname !~ /::$/ or
 
     return $sym;
 }
