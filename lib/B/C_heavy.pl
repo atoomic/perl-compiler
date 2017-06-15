@@ -912,7 +912,6 @@ sub save_main_rest {
 ### TODO:
 ##### remove stuff from boot  add use the template for EXTERN_C declaration
 #####
-
 sub build_template_stash {
     no strict 'refs';
 
@@ -942,18 +941,18 @@ sub build_template_stash {
             'debstash'    => svref_2object( \%DB:: )->save("DB::"),
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
         },
-        'XS' => $settings->{'XS'},
+        'XS'          => $settings->{'XS'},
+        'global_vars' => {
+            'dollar_caret_H'       => $^H,
+            'dollar_caret_X'       => cstring($^X),
+            'dollar_caret_UNICODE' => ${^UNICODE},
+        },
+        'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
     };
-    chomp $c_file_stash->{'compile_stats'};                                                                               # Injects a new line when you call compile_stats()
+    chomp $c_file_stash->{'compile_stats'};    # Injects a new line when you call compile_stats()
 
     # main() .c generation needs a buncha globals to be determined so the stash can access them.
     # Some of the vars are only put in the stash if they meet certain coditions.
-
-    $c_file_stash->{'global_vars'} = {
-        'dollar_caret_H'       => $^H,
-        'dollar_caret_X'       => cstring($^X),
-        'dollar_caret_UNICODE' => ${^UNICODE},
-    };
 
     # PL_strtab's hash size
     $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, 511 ) + 1;

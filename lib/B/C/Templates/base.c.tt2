@@ -336,8 +336,7 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
 [% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
 [% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
 
-/* stolen from Config.h - TODO make it dynamic */
-#define SIG_SIZE 69
+#define SIG_SIZE [% Config.sig_size %]
 
 void setup_perl_globals() {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */

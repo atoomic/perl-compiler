@@ -83,7 +83,7 @@ sub write_b_c_flags {
     # easier hash key/value slices only came with 5.22
     for my $s (
         qw(archname cc ccflags d_dlopen d_isinf d_isnan d_longdbl dlext i_dlfcn
-        ivdformat ivsize longsize mad nvgformat ptrsize static_ext usecperl
+        ivdformat ivsize longsize mad nvgformat ptrsize sig_size static_ext usecperl
         usedl uselongdouble usemymalloc uvuformat)
       ) {
         $cfg{$s} = $Config::Config{$s};
