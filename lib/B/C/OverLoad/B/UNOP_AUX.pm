@@ -27,14 +27,20 @@ sub do_save {
     unopauxsect()->sadd( "%s, s\\_%x, unopaux_item$ix + 1", $op->_save_common, ${ $op->first } );
     unopauxsect()->debug( $op->name, $op->flagspv ) if debug('flags');
 
-    my @a = map { 0 } 1 .. $auxlen;
-    meta_unopaux_item($auxlen)->add( join( ',', @a ) );
+    my @to_be_filled = map { 0 } 1 .. $auxlen;                                       #
+
+    my $unopaux_item_sect = meta_unopaux_item( $auxlen + 1 );
+    $unopaux_item_sect->comment(q{length prefix, UNOP_AUX_item * $auxlen });
+    my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
+
+    my $current_ix_in_auxlist = 1;                                                   # start at 1, do not update entry at 0
 
     # This cannot be a section, as the number of elements is variable
     my $i      = 1;
     my $s      = "Static UNOP_AUX_item unopaux_item${ix}[] = {\n\t{.uv=$auxlen}\t/* length prefix */\n";
     my $action = 0;
     for my $item (@aux_list) {
+        my $field;
         unless ( ref $item ) {
 
             # symbolize MDEREF action
@@ -42,7 +48,7 @@ sub do_save {
 
             $action = $item;
             debug( hv => $op->name . " action $action $cmt" );
-            $s .= sprintf( "\t,{.uv=0x%x} \t/* %s: %u */\n", $item, $cmt, $item );
+            $field = sprintf( "{.uv=0x%x} \t/* %s: %u */", $item, $cmt, $item );
 
         }
         else {
@@ -58,27 +64,32 @@ sub do_save {
             if ( is_constant($itemsym) ) {
                 if ( ref $item eq 'B::IV' ) {
                     my $iv = $item->IVX;
-                    $s .= "\t,{.iv = $iv}\n";
+                    $field = "{.iv = $iv}";
                 }
                 elsif ( ref $item eq 'B::UV' ) {    # also for PAD_OFFSET
                     my $uv = $item->UVX;
-                    $s .= "\t,{.uv = $uv}\n";
+                    $field = "{.uv = $uv}";
                 }
                 else {                              # SV
-                    $s .= "\t,{.sv = $itemsym}\n";
+                    $field = "{.sv = $itemsym}";
                 }
             }
             else {
                 if ( $itemsym =~ qr{^PL_} ) {
-                    $s .= "\t,{.sv=Nullsv} \t/* $itemsym */\n";
+                    $field = "{.sv=Nullsv} \t/* $itemsym */";
                     init()->add("unopaux_item${ix}[$i].sv = (SV*)$itemsym;");
                 }
                 else {
                     ## gv or other late inits
-                    $s .= "\t,{.sv = (SV*) $itemsym}\n";
+                    $field = "{.sv = (SV*) $itemsym}";
                 }
             }
         }
+
+        # gpsect()->update_field( $gp_ix, $field_ix, 'NULL' );
+
+        $s .= qq[\t,$field\n];
+
         $i++;
     }
 
