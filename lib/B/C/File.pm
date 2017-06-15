@@ -27,6 +27,7 @@ use Exporter ();
 use B::C::Config;
 use B::C::Helpers::Symtable qw(get_symtable_ref);
 use B::C::Section         ();
+use B::C::Section::Meta   ();
 use B::C::InitSection     ();
 use B::C::Section::Assign ();
 
@@ -44,7 +45,7 @@ sub singleton {
 
 # The objects in quotes do not have any special logic.
 sub code_section_names {
-    return qw{cowpv const decl init0 free sym hek sharedhe sharedhestructs}, struct_names(), op_sections();
+    return qw{cowpv const typedef decl init0 free sym hek sharedhe sharedhestructs}, struct_names(), op_sections();
 }
 
 # These objects will end up in an array of structs in the template and be auto-declared.
@@ -57,6 +58,11 @@ sub assign_sections {
     return qw{assign_hekkey2pv assign_bodyless_iv};
 }
 
+# Each of these sections can generate multiple regular section
+sub meta_sections {
+    return qw{meta_unopaux_item};
+}
+
 # These populate the init sections and have a special header.
 sub init_section_names { return qw /init init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink/ }
 
@@ -67,6 +73,7 @@ sub op_sections {
 BEGIN {
     our @EXPORT_OK = map { ( $_, "${_}sect" ) } code_section_names();
     push @EXPORT_OK, init_section_names();
+    push @EXPORT_OK, meta_sections();
 
 }
 
@@ -89,6 +96,12 @@ sub new {
     foreach my $section_name ( init_section_names() ) {
         $self->{$section_name} = B::C::InitSection->new( $section_name, get_symtable_ref(), 0 );
     }
+
+    # our meta sections
+    foreach my $section_name ( meta_sections() ) {
+        $self->{$section_name} = B::C::Section::Meta->new( $section_name, get_symtable_ref(), 0 );
+    }
+
 }
 
 sub get_sect {
@@ -112,6 +125,12 @@ sub AUTOLOAD {
     $sect =~ s/sect$//;    # Strip sect off the call so we can just access the key.
 
     exists $self->{$sect} or die("Tried to call undefined subroutine '$sect'");
+
+    # do something there with the meta sections
+    if ( ref $self->{$sect} eq 'B::C::Section::Meta' ) {
+        return $self->{$sect}->get_section(@_);
+    }
+
     return $self->{$sect};
 }
 
@@ -163,10 +182,24 @@ sub write {
         op_sections(),
     ];
 
+    $c_file_stash->{meta_section_list} = [ meta_sections() ];
+
     $self->{'sharedhestructs'}->sort();    # sort them for human readability
 
     foreach my $section ( code_section_names(), init_section_names() ) {
         $c_file_stash->{'section'}->{$section} = $self->{$section};
+    }
+
+    # add the Meta sections to the section_list */
+    my @meta_sections;
+    foreach my $section_name ( meta_sections() ) {
+        my @list = $self->{$section_name}->get_all_sections();
+        next unless scalar @list;
+        push @meta_sections, @list;
+    }
+    foreach my $section (@meta_sections) {
+        push @{ $c_file_stash->{section_list} }, $section->name;
+        $c_file_stash->{'section'}->{ $section->name } = $section;
     }
 
     replace_xs_bootstrap_to_init();

@@ -3,7 +3,7 @@ package B::UNOP_AUX;
 use strict;
 
 use B::C::Config;
-use B::C::File qw/unopauxsect init decl free/;
+use B::C::File qw/unopauxsect init decl free meta_unopaux_item/;
 use B::C::Helpers qw/do_labels is_constant/;
 
 sub _clear_stack {
@@ -26,6 +26,9 @@ sub do_save {
     my $ix = unopauxsect()->index + 1;
     unopauxsect()->sadd( "%s, s\\_%x, unopaux_item$ix + 1", $op->_save_common, ${ $op->first } );
     unopauxsect()->debug( $op->name, $op->flagspv ) if debug('flags');
+
+    my @a = map { 0 } 1 .. $auxlen;
+    meta_unopaux_item($auxlen)->add( join( ',', @a ) );
 
     # This cannot be a section, as the number of elements is variable
     my $i      = 1;
