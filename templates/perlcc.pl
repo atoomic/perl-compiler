@@ -230,7 +230,6 @@ sub parse_argv {
         'S',                # Keep generated C file
         'T',                # run the backend using perl -T
         't',                # run the backend using perl -t
-        'A',                # -DALLOW_PERL_OPTIONS like -D?
         'u=s@',             # use packages (new since 2.13)
         'U=s@',             # skip packages (new since 2.13)
         'static',           # Link to static libperl (default, new since 2.11)
@@ -278,7 +277,6 @@ sub parse_argv {
     # $Options->{Wb} .= ",-O2" if opt('O2');
     # $Options->{Wb} .= ",-O3" if opt('O3');
     # $Options->{Wb} .= ",-O4" if opt('O4');
-    $Options->{Wc} .= " -DALLOW_PERL_OPTIONS" if opt('A');
 
     if ( $Options->{time} or $Options->{spawn} ) {
         eval { require Time::HiRes; };    # 5.6 has no Time::HiRes
@@ -1182,14 +1180,6 @@ Pass comma-seperated options to ld.
 =item -T or -t
 
 run the backend using perl -T or -t
-
-=item -A
-
-Allow perl options to be passed to the executable first,
-like -D...
-
-Adds C<-DALLOW_PERL_OPTIONS> which omits C<--> from being added
-to the options handler.
 
 =item -u package
 

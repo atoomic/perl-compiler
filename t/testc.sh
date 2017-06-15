@@ -14,7 +14,6 @@ function help {
   echo " -E                 dump preprocessed source file with cc -E as _E.c"
   echo " -o                 orig. no -Mblib, use installed modules (5.6, 5.8)"
   echo " -a                 all. undo -Du. Unsilence scanning unused sub"
-  echo " -A                 -DALLOW_PERL_OPTIONS"
   echo " -L                 make CORE test symlinks and exit"
   echo " -X<num>            view the test"
   echo " -q                 quiet"
@@ -55,8 +54,6 @@ fi
 CONT=
 # 5.6: rather use -B static
 #CCMD="$PERL script/cc_harness -g3"
-# rest. -DALLOW_PERL_OPTIONS for -Dtlv
-#CCMD="$PERL $Mblib script/cc_harness -g3 -DALLOW_PERL_OPTIONS"
 CCMD="$PERL $Mblib script/cc_harness"
 LCMD=
 # On some perls I also had to add $archlib/DynaLoader/DynaLoader.a to libs in Config.pm
@@ -1414,9 +1411,6 @@ do
   fi
   if [ "$opt" = "a" ]; then # replace -Du, by -Do
     OCMD="$(echo $OCMD|sed -r -e 's/(-D.*)u,/\1o,/')"
-  fi
-  if [ "$opt" = "A" ]; then
-      CCMD="$CCMD -DALLOW_PERL_OPTIONS"
   fi
   if [ "$opt" = "L" ]; then
     make_symlinks

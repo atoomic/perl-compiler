@@ -780,11 +780,8 @@ main(int argc, char **argv, char **env)
 #endif /* PERL_USE_SAFE_PUTENV */
 
 /*  XXX With -e "" we need to fake parse_body() scriptname = BIT_BUCKET */
-#ifdef ALLOW_PERL_OPTIONS
-#define EXTRA_OPTIONS 3
-#else
 #define EXTRA_OPTIONS 4
-#endif /* ALLOW_PERL_OPTIONS */
+
     benchmark_time("prenewx");
     Newx(fakeargv, argc + EXTRA_OPTIONS + 1, char *);
     fakeargv[0] = argv[0];
@@ -798,10 +795,9 @@ main(int argc, char **argv, char **env)
     ++options_count;
   [% END %]
 
-#ifndef ALLOW_PERL_OPTIONS
     fakeargv[options_count] = "--";
     ++options_count;
-#endif /* ALLOW_PERL_OPTIONS */
+
     benchmark_time("for argc");
     for (i = 1; i < argc; i++)
 	fakeargv[i + options_count - 1] = argv[i];
