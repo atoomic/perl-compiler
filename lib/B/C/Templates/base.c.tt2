@@ -336,6 +336,9 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
 [% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
 [% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
 
+/* stolen from Config.h - TODO make it dynamic */
+#define SIG_SIZE 69
+
 void setup_perl_globals() {
     PL_defstash = [% PL.defstash %];       /*  SVt_PVHV */
     PL_curstname = [% PL.curstname %];     /* "main" SVt_PV */
@@ -346,6 +349,12 @@ void setup_perl_globals() {
     PL_replgv = [% PL.replgv %];           /* *main::^R SVt_PVGV */
     PL_debstash = [% PL.debstash %];       /* *main::DB:: SVt_PVHV */
     PL_globalstash = [% PL.globalstash %]; /* *main::CORE::GLOBAL:: SVt_PVHV */
+
+    /* initialize signals - view Perl_magic_setsig and Perl_whichsig_pvn for usage */
+    Newxz(PL_psig_name, 2 * SIG_SIZE, SV*);
+    Newxz(PL_psig_pend, SIG_SIZE, int);
+    PL_psig_ptr = PL_psig_name + SIG_SIZE;
+
 }
 
 static void init_pl_strtab(pTHX) {
