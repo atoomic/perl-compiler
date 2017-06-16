@@ -815,6 +815,8 @@ main(int argc, char **argv, char **env)
 	fakeargv[i + options_count - 1] = argv[i];
     fakeargv[argc + options_count - 1] = 0;
 
+    declare_static_sections(); /* declare all our sections to perl */
+
     benchmark_time("pre perl_parse");
     exitstatus = perl_parse(&BC_unthreaded_interpreter, xs_init, argc + options_count - 1,
 			    fakeargv, env);
@@ -843,8 +845,6 @@ main(int argc, char **argv, char **env)
     sv_setpv_mg(get_sv("\030", GV_ADD|GV_NOTQUAL), [% global_vars.dollar_caret_X %]); /* $^X - EXECUTABLE_NAME */
 
     TAINT_NOT;
-
-    declare_static_sections(); /* declare all our sections to perl ( need to move earlier but need to be sure perl is defined ) */
 
     /* PL_compcv used during compilation. */
     PL_compcv = MUTABLE_CV(newSV_type(SVt_PVCV));
