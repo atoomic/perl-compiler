@@ -47,7 +47,7 @@ op/lex.t                    COMPAT    Tests trigger errors at compilation time
 op/lexsub.t                 BC        BC issue #219 - overload issue
 op/lvref.t                  SIG       BC issue #304 - SIGABRT - assertion failures with lexical_sub feature
 op/magic.t                  TESTS     Test results:
-op/method.t                 PLAN      Plan was valid
+op/method.t                 TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
 op/override.t               COMPAT    crazy test which override CORE::GLOBAL::require @BEGIN
 op/readline.t               TESTS     BC issue #269 - Modification of a read-only value attempted
 op/ref.t                    TESTS     BC issue #300 - PVFM not compiled
