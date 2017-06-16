@@ -29,15 +29,16 @@ use B::C::Debug ();        # used for setting debug levels from cmdline
 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
+  meta_sharedhe
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
-  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect sharedhe init_stash
+  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect init_stash
 
   init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
 
 use Exporter ();
-use Errno    ();           #needed since 5.14
+use Errno ();    #needed since 5.14
 our %Regexp;
 
 # Caller was populated in C.pm
@@ -955,7 +956,7 @@ sub build_template_stash {
     # Some of the vars are only put in the stash if they meet certain coditions.
 
     # PL_strtab's hash size
-    $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, 511 ) + 1;
+    $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( meta_sharedhe()->total_entries(), 511 ) + 1;
 
     return $c_file_stash;
 }

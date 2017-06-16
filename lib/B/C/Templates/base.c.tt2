@@ -90,26 +90,6 @@ EXTERN_C void boot_[% xsub %] (pTHX_ CV* cv);
 
 #define get_sHe_HEK(sHe) (HEK*) ( (void*) &sHe + 3 * sizeof(void*) )
 
-/* macro to ceate the struct (can be protected in C to define it once) */
-#define DEFINE_STATIC_SHARED_HE_STRUCT(len) \
-    struct _sHeS_##len { HE *hent_next; HEK *hent_hek; union { SV *hent_val;  Size_t hent_refcount; } he_valu;  U32 hek_hash;  I32 hek_len;  char hek_key[ len + 1]; char flags; };
-
-/* macro to create our sHe */
-#define ALLOC_sHe(index, klen, key_string, flags_byte) \
-    static struct _sHeS_##klen sHe##index = { NULL, NULL, { .hent_refcount = IMMORTAL_PL_strtab }, 0, klen, key_string, flags_byte  };
-
-/* declare all our shared_HE struct [ once per size ] */
-[% section.sharedhestructs.output( "%s\n" ) %]
-
-/* sharedhe definitions using the ALLOC_sHe macro */
-[% section.sharedhe.output( "%s\n" ) %]
-
-Static SHARED_HE* sharedhe_list[[% section.sharedhe.index + 1 %]] =  {
-[%- FOREACH num IN [ 0 .. section.sharedhe.index ] %]
-    (SHARED_HE*) &sHe[% num %], /* sharedhe_list[[%num%]] */
-[%- END %]
-};
-
 /************************************************************************************************************
 *
 *       output_all()

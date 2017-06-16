@@ -45,7 +45,7 @@ sub singleton {
 
 # The objects in quotes do not have any special logic.
 sub code_section_names {
-    return qw{cowpv const typedef decl init0 free sym hek sharedhe sharedhestructs}, struct_names(), op_sections();
+    return qw{cowpv const typedef decl init0 free sym hek}, struct_names(), op_sections();
 }
 
 # These objects will end up in an array of structs in the template and be auto-declared.
@@ -60,7 +60,7 @@ sub assign_sections {
 
 # Each of these sections can generate multiple regular section
 sub meta_sections {
-    return qw{meta_unopaux_item};
+    return qw{meta_unopaux_item meta_sharedhe};
 }
 
 # These populate the init sections and have a special header.
@@ -183,8 +183,6 @@ sub write {
     ];
 
     $c_file_stash->{meta_section_list} = [ meta_sections() ];
-
-    $self->{'sharedhestructs'}->sort();    # sort them for human readability
 
     foreach my $section ( code_section_names(), init_section_names() ) {
         $c_file_stash->{'section'}->{$section} = $self->{$section};

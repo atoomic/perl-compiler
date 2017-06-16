@@ -22,6 +22,8 @@ sub new {
 sub get_section {
     my ( $self, $section_name ) = @_;
 
+    return $self unless defined $section_name;
+
     if ( !exists $self->{sections}->{$section_name} ) {
         ### probably need to do more: like adding the declaration for the first time
 
@@ -50,6 +52,20 @@ sub get_all_sections {
     return @list;
 }
 
+sub total_entries {
+    my $self = shift;
+
+    my @sections = get_all_sections();
+
+    my $count = 0;
+    foreach my $section (@sections) {
+        next if my $ix = $section->index < 0;
+        $count += $ix + 1;
+    }
+
+    return $count;
+}
+
 ### TODO: better moving all meta to their own class just there as a proof of concept for now
 sub add_typedef_for {
     my ( $structname, $custom ) = @_;
@@ -70,6 +86,10 @@ sub add_typedef_for {
         }
 
         $typedef = qq[typedef struct { $list } $fullname;];
+    }
+    elsif ( $structname eq 'META_SHAREDHE' ) {
+        my $len = int($custom);
+        $typedef = qq[struct _sHeS_$len { HE *hent_next; HEK *hent_hek; union { SV *hent_val;  Size_t hent_refcount; } he_valu;  U32 hek_hash;  I32 hek_len;  char hek_key[ $len + 1]; char flags; };];
     }
     else {
         die "unknown structname $structname";
