@@ -28,32 +28,58 @@ sub new {
 sub found_xs_sub {
     my ( $self, $sub ) = @_;
 
-    return;
+    # deals with XS eception there...
 
-    return unless defined $sub;
-    $sub =~ s{^main::}{};
-    return if $sub eq 'attributes::{bootstrap}';    # "main::attributes::{bootstrap}"
-    return unless $sub =~ qr{::};                   # the sub should not be in main
-    return if $sub =~ qr{:pad};
+    if ( $sub =~ qr{^IO::(?:Dir|File|Handle|Pipe|Poll|Seekable|Select|Socket)::} ) {
 
-    my $stashname = $sub;
-    $stashname =~ s{::[^:]+$}{};
-
-    # Skip any XS that wasn't present in starting %INC
-    my $inc_key = inc_key($stashname);
-    unless ( $self->{'starting_INC'}->{$inc_key} ) {
-        return;
+        # Dir.pm  File.pm  Handle.pm  Pipe.pm  Poll.pm  Seekable.pm  Select.pm  Socket  Socket.pm
+        $self->add_to_bootstrap('IO');
     }
 
-    return if $stashname eq 'strict';
-    return if $stashname eq 'warnings';
-    return if $self->{'core_modules'}->{$stashname};
-    $stashname = "List::Util" if $stashname eq 'Scalar::Util';
+    if ( $sub =~ qr{^mro::(?:_nextcan)} ) {
+        $self->add_to_bootstrap('mro');
+    }
 
-    # NOT XS???
-    return if $stashname eq 'base';
+    return;
 
-    $self->{'modules_found'}->{$stashname}++;
+    # return unless defined $sub;
+    # $sub =~ s{^main::}{};
+    # return if $sub eq 'attributes::{bootstrap}';    # "main::attributes::{bootstrap}"
+    # return unless $sub =~ qr{::};                   # the sub should not be in main
+    # return if $sub =~ qr{:pad};
+
+    # my $stashname = $sub;
+    # $stashname =~ s{::[^:]+$}{};
+
+    # # Skip any XS that wasn't present in starting %INC
+    # my $inc_key = inc_key($stashname);
+    # unless ( $self->{'starting_INC'}->{$inc_key} ) {
+    #     return;
+    # }
+
+    # return if $stashname eq 'strict';
+    # return if $stashname eq 'warnings';
+    # return if $self->{'core_modules'}->{$stashname};
+    # $stashname = "List::Util" if $stashname eq 'Scalar::Util';
+
+    # # NOT XS???
+    # return if $stashname eq 'base';
+
+    # $self->{'modules_found'}->{$stashname}++;
+}
+
+sub add_to_bootstrap {
+    my ( $self, $module ) = @_;
+
+    # protection again multiple inclusion
+    return if grep { $module eq $_ } @{ $self->{'dl_modules'} };
+
+    push @{ $self->{'dl_modules'} },  $module;
+    push @{ $self->{'dl_so_files'} }, perl_module_to_sofile($module);
+
+    #warn "# Adding $module: " . $self->{'dl_modules'}->[-1] . " /  " . $self->{'dl_so_files'}->[-1] . "\n";
+
+    return;
 }
 
 sub write_lst {
@@ -62,6 +88,7 @@ sub write_lst {
     my $file = $self->{'output_file'} . '.lst';
     open( my $fh, ">", $file ) or die("Can't open $file: $!");
     print {$fh} '';
+
     foreach my $num ( 0 .. $#{ $self->{'dl_modules'} } ) {
 
         #        my $so_file = perl_module_to_sofile($xs_module);
@@ -88,6 +115,15 @@ sub perl_module_to_sofile {
     $inc_key =~ s{::}{/}g;
 
     my $inc_path = $INC{"$inc_key.pm"};
+
+    if ( !defined $inc_path ) {
+
+        # guess it from
+        $inc_path = qx{$^X -E 'use $module; say \$INC{"$inc_key.pm"}'};
+        chomp($inc_path) if $inc_path;
+        die qq{Cannot guess path for $module} unless $inc_path;
+    }
+
     $inc_path =~ s/\Q$inc_key.pm\E$//;
 
     my @module_parts = split( '/', $inc_key );
