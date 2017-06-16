@@ -44,6 +44,15 @@ sub add {
     return $self->index();
 }
 
+sub get_sym {
+    my ( $self, $ix ) = @_;
+
+    $ix = $self->index unless defined $ix;
+
+    my $name = $self->{name};
+    return qq{${name}_list[$ix]};
+}
+
 sub _convert_list_to_sprintf {
     my (@list) = @_;
 

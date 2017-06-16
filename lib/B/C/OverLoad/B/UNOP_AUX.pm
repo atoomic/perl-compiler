@@ -23,8 +23,7 @@ sub do_save {
 
     unopauxsect()->comment_common("first, aux");
 
-    my $ix = unopauxsect()->index + 1;
-    unopauxsect()->sadd( "%s, s\\_%x, unopaux_item$ix + 1", $op->_save_common, ${ $op->first } );
+    my $ix = unopauxsect()->sadd( "%s, s\\_%x, FIRST_unopaux_item", $op->_save_common, ${ $op->first } );
     unopauxsect()->debug( $op->name, $op->flagspv ) if debug('flags');
 
     my @to_be_filled = map { 0 } 1 .. $auxlen;                                       #
@@ -32,24 +31,29 @@ sub do_save {
     my $unopaux_item_sect = meta_unopaux_item( $auxlen + 1 );
     $unopaux_item_sect->comment(q{length prefix, UNOP_AUX_item * $auxlen });
     my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
+    my $symname = $unopaux_item_sect->get_sym();
 
-    my $current_ix_in_auxlist = 1;                                                   # start at 1, do not update entry at 0
+    unopauxsect()->update_field( $ix, 15, qq{&$symname.aaab} );
 
     # This cannot be a section, as the number of elements is variable
-    my $i      = 1;
-    my $s      = "Static UNOP_AUX_item unopaux_item${ix}[] = {\n\t{.uv=$auxlen}\t/* length prefix */\n";
+    my $i            = 1;                                                            # maybe rename tp field_ix
+    my $struct_field = q{aaaa};
+
     my $action = 0;
     for my $item (@aux_list) {
         my $field;
+
+        $struct_field++;
+        my $symat = "${symname}.$struct_field";
+
         unless ( ref $item ) {
 
             # symbolize MDEREF action
             my $cmt = $op->get_action_name($item);
-
             $action = $item;
-            debug( hv => $op->name . " action $action $cmt" );
-            $field = sprintf( "{.uv=0x%x} \t/* %s: %u */", $item, $cmt, $item );
 
+            #debug( hv => $op->name . " action $action $cmt" );
+            $field = sprintf( "{.uv=0x%x}", $item );    #  \t/* %s: %u */ , $cmt, $item
         }
         else {
             # const and sv already at compile-time, gv deferred to init-time.
@@ -60,24 +64,24 @@ sub do_save {
             # || SvROK(keysv)
             # || SvIsCOW_shared_hash(keysv));
             my $constkey = ( $action & 0x30 ) == 0x10 ? 1 : 0;
-            my $itemsym = $item->save( "unopaux_item${ix}[$i]" . ( $constkey ? " const" : "" ) );
+            my $itemsym = $item->save( "$symat" . ( $constkey ? " const" : "" ) );
             if ( is_constant($itemsym) ) {
                 if ( ref $item eq 'B::IV' ) {
                     my $iv = $item->IVX;
-                    $field = "{.iv = $iv}";
+                    $field = "{.iv=$iv}";
                 }
                 elsif ( ref $item eq 'B::UV' ) {    # also for PAD_OFFSET
                     my $uv = $item->UVX;
-                    $field = "{.uv = $uv}";
+                    $field = "{.uv=$uv}";
                 }
                 else {                              # SV
-                    $field = "{.sv = $itemsym}";
+                    $field = "{.sv=$itemsym}";
                 }
             }
             else {
                 if ( $itemsym =~ qr{^PL_} ) {
-                    $field = "{.sv=Nullsv} \t/* $itemsym */";
-                    init()->add("unopaux_item${ix}[$i].sv = (SV*)$itemsym;");
+                    $field = "{.sv=Nullsv}";        #  \t/* $itemsym */
+                    init()->add("$symat.sv = (SV*)$itemsym;");
                 }
                 else {
                     ## gv or other late inits
@@ -86,16 +90,12 @@ sub do_save {
             }
         }
 
-        # gpsect()->update_field( $gp_ix, $field_ix, 'NULL' );
-
-        $s .= qq[\t,$field\n];
-
+        $unopaux_item_sect->update_field( $uaux_item_ix, $i, q[ ] . $field );
         $i++;
     }
 
-    decl()->add("$s\n};");
-
     my $sym = "(OP*)&unopaux_list[$ix]";
+
     free()->add("    ($sym)->op_type = OP_NULL;");
     do_labels( $op, $level + 1, 'first' );
 
