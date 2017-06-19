@@ -941,11 +941,17 @@ sub build_template_stash {
             'debstash'    => svref_2object( \%DB:: )->save("DB::"),
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
         },
+        'IO' => {
+            'stdin'  => svref_2object( \*STDIN )->save("STDIN"),
+            'stdout' => svref_2object( \*STDOUT )->save("STDOUT"),
+            'stderr' => svref_2object( \*STDERR )->save("STDERR"),
+        },
         'XS'          => $settings->{'XS'},
         'global_vars' => {
             'dollar_caret_H'       => $^H,
             'dollar_caret_X'       => cstring($^X),
             'dollar_caret_UNICODE' => ${^UNICODE},
+            'dollar_zero'          => svref_2object( \*0 )->save("0"),
         },
         'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
     };

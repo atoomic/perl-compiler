@@ -449,7 +449,6 @@ sub save_gv_io {
 
     my $gvio = $gv->IO;
     return 'NULL' unless $$gvio;
-    return 'NULL' if $fullname =~ m/^(?:main::)?(stdout|stderr|stdin)/i;
 
     if ( $fullname =~ m/::DATA$/ ) {
         no strict 'refs';

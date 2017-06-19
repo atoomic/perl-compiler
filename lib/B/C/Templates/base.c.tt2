@@ -823,9 +823,6 @@ main(int argc, char **argv, char **env)
 
     benchmark_time("pre global setup");
 
-    /* WARNING: get_sv messes with $0 in the stash?? */
-    sv_setpv_mg(get_sv("0", GV_ADD|GV_NOTQUAL), argv[0]);
-
     [% IF global_vars.dollar_caret_H %]
     PL_hints = [% global_vars.dollar_caret_H %];
     [% END %]
@@ -1001,7 +998,6 @@ void bc_parse_body(char **env, XSINIT_t xsinit)
     dVAR;
     int argc = PL_origargc;
     char **argv = PL_origargv;
-    const char *scriptname = NULL;
     SV *linestr_sv = NULL;
 
     PERL_SET_PHASE(PERL_PHASE_START);
@@ -1014,13 +1010,6 @@ void bc_parse_body(char **env, XSINIT_t xsinit)
     TAINT;
     set_caret_X();
     TAINT_NOT;
-
-    if (!scriptname)
-       scriptname = argv[0];
-
-    if (scriptname == NULL) {
-        scriptname = "-";
-    }
 
     /* init_perllib(); We hard code @INC on our own.*/
 
@@ -1068,13 +1057,13 @@ void bc_parse_body(char **env, XSINIT_t xsinit)
   
             /* Turn on UTF-8-ness on STDIN, STDOUT, STDERR
              * and the default open disciplines. */
-            if ((PL_unicode & PERL_UNICODE_STDIN_FLAG) && PL_stdingv  && (io = GvIO(PL_stdingv)) && (fp = IoIFP(io)))
+            if ((PL_unicode & PERL_UNICODE_STDIN_FLAG)  && (io = GvIO([% IO.stdin %])) && (fp = IoIFP(io)))
                 PerlIO_binmode(aTHX_ fp, IoTYPE(io), 0, ":utf8");
             
-            if ((PL_unicode & PERL_UNICODE_STDOUT_FLAG) && PL_defoutgv && (io = GvIO(PL_defoutgv)) && (fp = IoOFP(io)))
+            if ((PL_unicode & PERL_UNICODE_STDOUT_FLAG) && (io = GvIO([% IO.stdout %])) && (fp = IoOFP(io)))
                 PerlIO_binmode(aTHX_ fp, IoTYPE(io), 0, ":utf8");
 
-            if ((PL_unicode & PERL_UNICODE_STDERR_FLAG) && PL_stderrgv && (io = GvIO(PL_stderrgv)) && (fp = IoOFP(io)))
+            if ((PL_unicode & PERL_UNICODE_STDERR_FLAG) && (io = GvIO([% IO.stderr %])) && (fp = IoOFP(io)))
                 PerlIO_binmode(aTHX_ fp, IoTYPE(io), 0, ":utf8");
 
             if ((PL_unicode & PERL_UNICODE_INOUT_FLAG) && (sv = GvSV(gv_fetchpvs("\017PEN", GV_ADD|GV_NOTQUAL, SVt_PV)))) {
@@ -1129,9 +1118,8 @@ STATIC void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env)
     /* @ARGV (PL_argvgv) is setup here. */
     init_argv_symbols(argc,argv);
 
-    if ((tmpgv = gv_fetchpvs("0", GV_ADD|GV_NOTQUAL, SVt_PV))) {
-        sv_setpv(GvSV(tmpgv),PL_origfilename);
-    }
+    PL_origfilename = savepv(argv[0]);
+    sv_setpv(GvSV([% global_vars.dollar_zero %]),PL_origfilename);
 
     if ((PL_envgv = gv_fetchpvs("ENV", GV_ADD|GV_NOTQUAL, SVt_PVHV))) {
         HV *hv;
@@ -1254,7 +1242,7 @@ static void bc_init_predump_symbols(pTHX)
               STR_WITH_LEN("Exporter::"),
               NULL);
 
-    PL_stdingv = gv_fetchpvs("STDIN", GV_ADD|GV_NOTQUAL, SVt_PVIO);
+    PL_stdingv = [% IO.stdin %];
     GvMULTI_on(PL_stdingv);
     io = GvIOp(PL_stdingv);
     IoTYPE(io) = IoTYPE_RDONLY;
@@ -1263,7 +1251,7 @@ static void bc_init_predump_symbols(pTHX)
     GvMULTI_on(tmpgv);
     GvIOp(tmpgv) = MUTABLE_IO(SvREFCNT_inc_simple(io));
 
-    tmpgv = gv_fetchpvs("STDOUT", GV_ADD|GV_NOTQUAL, SVt_PVIO);
+    tmpgv = [% IO.stdout %];
     GvMULTI_on(tmpgv);
     io = GvIOp(tmpgv);
     IoTYPE(io) = IoTYPE_WRONLY;
@@ -1273,7 +1261,7 @@ static void bc_init_predump_symbols(pTHX)
     GvMULTI_on(tmpgv);
     GvIOp(tmpgv) = MUTABLE_IO(SvREFCNT_inc_simple(io));
 
-    PL_stderrgv = gv_fetchpvs("STDERR", GV_ADD|GV_NOTQUAL, SVt_PVIO);
+    PL_stderrgv = [% IO.stderr %];
     GvMULTI_on(PL_stderrgv);
     io = GvIOp(PL_stderrgv);
     IoTYPE(io) = IoTYPE_WRONLY;
