@@ -1102,8 +1102,6 @@ void bc_parse_body(char **env, XSINIT_t xsinit)
 
 STATIC void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env)
 {
-    GV* tmpgv;
-
     /* Set PL_toptarget to a PVIV set to "" */
     PL_toptarget = newSV_type(SVt_PVIV);
     sv_setpvs(PL_toptarget, "");
