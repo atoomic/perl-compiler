@@ -17,6 +17,7 @@ SKIP: {
 fresh_perl_is(<<'EOF', "\xC1\xAF\xC1\xAF\xC1\xB0\xC1\xB3", {}, "print doesn't launder utf8 overlongs");
 use strict;
 use warnings;
+use IO::File (); # scalar file handles require this module for B::C to work right.
 
 no warnings 'utf8';
 
