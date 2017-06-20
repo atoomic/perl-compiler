@@ -64,8 +64,8 @@ static int fast_perl_destruct( PerlInterpreter *my_perl );
 static void my_curse( pTHX_ SV* const sv );
 
 /* perl.c prototypes we do locally here now. */
-static int bc_perl_parse(pTHXx_ XSINIT_t xsinit, int argc, char **argv, char **env);
-static void bc_parse_body(char **env, XSINIT_t xsinit);
+static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env);
+static void bc_parse_body(char **env);
 static void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env);
 static void bc_init_predump_symbols(pTHX);
 
@@ -811,7 +811,7 @@ main(int argc, char **argv, char **env)
 
     PL_curstash = PL_defstash;
 
-    exitstatus = bc_perl_parse(&BC_unthreaded_interpreter, xs_init, argc, argv, env);
+    exitstatus = bc_perl_parse(&BC_unthreaded_interpreter, argc, argv, env);
     benchmark_time("post bc_perl_parse");
     if (exitstatus)
        	exit( exitstatus );
@@ -894,13 +894,13 @@ main(int argc, char **argv, char **env)
    
    The following functions are now local to this templated B::C program.
 
-       static int bc_perl_parse(pTHXx_ XSINIT_t xsinit, int argc, char **argv, char **env)
-       static void bc_parse_body(char **env, XSINIT_t xsinit);
+       static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env)
+       static void bc_parse_body(char **env);
        static void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env);
        static void bc_init_predump_symbols(pTHX);
 */
 
-static int bc_perl_parse(pTHXx_ XSINIT_t xsinit, int argc, char **argv, char **env)
+static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env)
 {
     dVAR;
     int ret;
@@ -986,14 +986,14 @@ static int bc_perl_parse(pTHXx_ XSINIT_t xsinit, int argc, char **argv, char **e
         PerlIO_printf(Perl_error_log, "panic: jmpenv failed!\n");
     }
     else {
-        bc_parse_body(env,xsinit);
+        bc_parse_body(env);
         ret = 0;
     }
     JMPENV_POP;
     return ret;
 }
 
-void bc_parse_body(char **env, XSINIT_t xsinit)
+void bc_parse_body(char **env)
 {
     dVAR;
     int argc = PL_origargc;
@@ -1029,12 +1029,13 @@ void bc_parse_body(char **env, XSINIT_t xsinit)
 
     PL_isarev = newHV();
 
+    /* Setup built in Perl XS symbols */
     boot_core_PerlIO();
     boot_core_UNIVERSAL();
     boot_core_mro();
 
-    if (xsinit)
-        (*xsinit)(aTHX);    /* in case linked C routines want magical variables */
+    /* run our local B::C xs_init */
+    xs_init(aTHX);    /* in case linked C routines want magical variables */
 
     /* Setup STDERR, STDIO, STDOUT, $, PL_statname*/
     bc_init_predump_symbols();
