@@ -1204,12 +1204,6 @@ STATIC void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env)
         }
     }
     TAINT_NOT;
-
-    /* touch @F array to prevent spurious warnings 20020415 MJD */
-    /* B::C doesn't support perl -a so this is dead code. */
-    if (PL_minus_a) {
-      (void) get_av("main::F", GV_ADD | GV_ADDMULTI);
-    }
 }
 
 static void bc_init_predump_symbols(pTHX)
