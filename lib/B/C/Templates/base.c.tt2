@@ -1005,12 +1005,6 @@ void bc_parse_body(char **env)
     /* init_main_stash(); PL_defstash setup */
     PL_curstash = PL_defstash;
 
-    /* Set $^X early so that it can be used for relocatable paths in @INC  */
-    assert (!TAINT_get);
-    TAINT;
-    set_caret_X();
-    TAINT_NOT;
-
     /* init_perllib(); We hard code @INC on our own.*/
 
     {
