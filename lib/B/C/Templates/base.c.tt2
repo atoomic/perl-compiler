@@ -1219,25 +1219,7 @@ static void bc_init_predump_symbols(pTHX)
     sv_setpvs(get_sv("\"", GV_ADD), " ");
     PL_ofsgv = (GV*)SvREFCNT_inc(gv_fetchpvs(",", GV_ADD|GV_NOTQUAL, SVt_PV));
 
-
-    /* Historically, PVIOs were blessed into IO::Handle, unless
-       FileHandle was loaded, in which case they were blessed into
-       that. Action at a distance.
-       However, if we simply bless into IO::Handle, we break code
-       that assumes that PVIOs will have (among others) a seek
-       method. IO::File inherits from IO::Handle and IO::Seekable,
-       and provides the needed methods. But if we simply bless into
-       it, then we break code that assumed that by loading
-       IO::Handle, *it* would work.
-       So a compromise is to set up the correct @IO::File::ISA,
-       so that code that does C<use IO::Handle>; will still work.
-    */
-
-    Perl_populate_isa(aTHX_ STR_WITH_LEN("IO::File::ISA"),
-              STR_WITH_LEN("IO::Handle::"),
-              STR_WITH_LEN("IO::Seekable::"),
-              STR_WITH_LEN("Exporter::"),
-              NULL);
+    /* IO::File::ISA was saved by B::C so no need to re-inject it here like init_predump_symbols() does. */
 
     PL_stdingv = [% IO.STDIN %];
     io = GvIOp(PL_stdingv);
