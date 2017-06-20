@@ -763,6 +763,8 @@ main(int argc, char **argv, char **env)
 #ifdef DEBUG_BENCHMARK
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 #endif
+
+    /* This mostly sets things to 0 once you get 5 layers down into #defines. */
     PERL_SYS_INIT3(&argc,&argv,&env);
 
     assert(PL_do_undump == 0);
