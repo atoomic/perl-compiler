@@ -1038,11 +1038,8 @@ void bc_parse_body(char **env, XSINIT_t xsinit)
 
     bc_init_predump_symbols();
 
-    /* bc_init_postdump_symbols not currently designed to be called */
-    /* more than once (ENV isn't cleared first, for example)     */
-    /* But running with -u leaves %ENV & @ARGV undefined!    XXX */
-    if (!PL_do_undump)
-        bc_init_postdump_symbols(argc,argv,env);
+    /* Setup %ENV, $0, @ARGV, PL(top|body|form)target */
+    bc_init_postdump_symbols(argc,argv,env);
 
     /* PL_unicode is turned on by -C, or by $ENV{PERL_UNICODE},
      * or explicitly in some platforms.
