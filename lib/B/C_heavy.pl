@@ -942,9 +942,13 @@ sub build_template_stash {
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
         },
         'IO' => {
-            'stdin'  => svref_2object( \*STDIN )->save("STDIN"),
-            'stdout' => svref_2object( \*STDOUT )->save("STDOUT"),
-            'stderr' => svref_2object( \*STDERR )->save("STDERR"),
+            'STDIN'  => svref_2object( \*STDIN )->save("STDIN"),
+            'STDOUT' => svref_2object( \*STDOUT )->save("STDOUT"),
+            'STDERR' => svref_2object( \*STDERR )->save("STDERR"),
+
+            'stdin'  => svref_2object( \*stdin )->save("stdin"),
+            'stdout' => svref_2object( \*stdout )->save("stdout"),
+            'stderr' => svref_2object( \*stderr )->save("stderr"),
         },
         'XS'          => $settings->{'XS'},
         'global_vars' => {

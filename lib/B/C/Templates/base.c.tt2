@@ -1214,7 +1214,6 @@ STATIC void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env)
 
 static void bc_init_predump_symbols(pTHX)
 {
-    GV *tmpgv;
     IO *io;
 
     sv_setpvs(get_sv("\"", GV_ADD), " ");
@@ -1240,33 +1239,23 @@ static void bc_init_predump_symbols(pTHX)
               STR_WITH_LEN("Exporter::"),
               NULL);
 
-    PL_stdingv = [% IO.stdin %];
-    GvMULTI_on(PL_stdingv);
+    PL_stdingv = [% IO.STDIN %];
     io = GvIOp(PL_stdingv);
     IoTYPE(io) = IoTYPE_RDONLY;
     IoIFP(io) = PerlIO_stdin();
-    tmpgv = gv_fetchpvs("stdin", GV_ADD|GV_NOTQUAL, SVt_PV);
-    GvMULTI_on(tmpgv);
-    GvIOp(tmpgv) = MUTABLE_IO(SvREFCNT_inc_simple(io));
+    GvIOp([% IO.stdin %]) = MUTABLE_IO(SvREFCNT_inc_simple(io));
 
-    tmpgv = [% IO.stdout %];
-    GvMULTI_on(tmpgv);
-    io = GvIOp(tmpgv);
+    io = GvIOp([% IO.STDOUT %]);
     IoTYPE(io) = IoTYPE_WRONLY;
     IoOFP(io) = IoIFP(io) = PerlIO_stdout();
-    setdefout(tmpgv);
-    tmpgv = gv_fetchpvs("stdout", GV_ADD|GV_NOTQUAL, SVt_PV);
-    GvMULTI_on(tmpgv);
-    GvIOp(tmpgv) = MUTABLE_IO(SvREFCNT_inc_simple(io));
+    setdefout([% IO.STDOUT %]);
+    GvIOp([% IO.stdout %]) = MUTABLE_IO(SvREFCNT_inc_simple(io));
 
-    PL_stderrgv = [% IO.stderr %];
-    GvMULTI_on(PL_stderrgv);
+    PL_stderrgv = [% IO.STDERR %];
     io = GvIOp(PL_stderrgv);
     IoTYPE(io) = IoTYPE_WRONLY;
     IoOFP(io) = IoIFP(io) = PerlIO_stderr();
-    tmpgv = gv_fetchpvs("stderr", GV_ADD|GV_NOTQUAL, SVt_PV);
-    GvMULTI_on(tmpgv);
-    GvIOp(tmpgv) = MUTABLE_IO(SvREFCNT_inc_simple(io));
+    GvIOp([% IO.stderr %]) = MUTABLE_IO(SvREFCNT_inc_simple(io));
 
     PL_statname = newSVpvs("");        /* last filename we did stat on */
 }
