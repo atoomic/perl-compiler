@@ -1216,7 +1216,7 @@ static void bc_init_predump_symbols(pTHX)
 {
     IO *io;
 
-    PL_ofsgv = (GV*)SvREFCNT_inc(gv_fetchpvs(",", GV_ADD|GV_NOTQUAL, SVt_PV));
+    PL_ofsgv = [% global_vars.dollar_comma %];
 
     /* IO::File::ISA was saved by B::C so no need to re-inject it here like init_predump_symbols() does. */
 

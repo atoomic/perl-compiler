@@ -956,6 +956,7 @@ sub build_template_stash {
             'dollar_caret_X'       => cstring($^X),
             'dollar_caret_UNICODE' => ${^UNICODE},
             'dollar_zero'          => svref_2object( \*0 )->save("0"),
+            'dollar_comma'          => svref_2object( \*, )->save(","),
         },
         'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
     };
