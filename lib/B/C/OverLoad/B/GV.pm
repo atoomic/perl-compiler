@@ -398,9 +398,6 @@ sub save_gv_cv {
     # Can't locate object method "EGV" via package "B::SPECIAL" at /usr/local/cpanel/3rdparty/perl/520/lib/perl5/cpanel_lib/i386-linux-64int/B/C/OverLoad/B/GV.pm line 450.
     {
         if ($gp) {
-            if ( $fullname eq 'Internals::V' ) {
-                $gvcv = svref_2object( \&__ANON__::_V );
-            }
             $cvsym = $gvcv->save($fullname);
         }
         my $origname = $gv->cv_needs_import_after_bootstrap( $cvsym, $fullname );

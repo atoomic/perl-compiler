@@ -544,13 +544,6 @@ sub try_autoload {
       if $cvstashname and exists ${ $cvstashname . '::' }{CLONE};
 }
 
-my @_v;
-
-BEGIN {
-    @_v = Internals::V();
-}
-sub __ANON__::_V { @_v }
-
 sub save_object {
     foreach my $sv (@_) {
         svref_2object($sv)->save;
@@ -611,7 +604,21 @@ sub walk_syms {
     walksymtable( \%{ $package . '::' }, "savecv", sub { 1 }, $package . '::' );
 }
 
+sub make_nonxs_Internals_V {
+    my $to_eval = 'sub Internals::V { return (';
+    foreach my $line ( Internals::V() ) {
+        $line =~ s/'/\\'/g;
+        $to_eval .= "'$line', ";
+    }
+    chop $to_eval;
+    chop $to_eval;
+    $to_eval .= ')};';
+    eval $to_eval;
+}
+
 sub save_pre_defstash {
+
+    make_nonxs_Internals_V();
 
     # We need to save the INC GV before ANYTHING else is allowed to happen or we'll corrupt it.
     my %INC_BACKUP = %INC;
@@ -956,7 +963,7 @@ sub build_template_stash {
             'dollar_caret_X'       => cstring($^X),
             'dollar_caret_UNICODE' => ${^UNICODE},
             'dollar_zero'          => svref_2object( \*0 )->save("0"),
-            'dollar_comma'          => svref_2object( \*, )->save(","),
+            'dollar_comma'         => svref_2object( \*, )->save(","),
         },
         'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
     };

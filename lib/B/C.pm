@@ -259,7 +259,7 @@ sub cleanup_stashes {
     # --- view vxs.inc
     $clear_stash_keys_core->( 'main', 'version::',   [qw{("" () (* (*= (+ (+= (- (-= (/ (/= (0+ (<=> (abs (bool (cmp (nomethod AUTOLOAD _VERSION boolean declare is_alpha is_qv new noop normal numify parse qv stringify vcmp}] );
     $clear_stash_keys_core->( 'main', 'utf8::',      [qw{decode downgrade encode is_utf8 native_to_unicode unicode_to_native upgrade valid}] );
-    $clear_stash_keys_core->( 'main', 'Internals::', [qw{SvREADONLY SvREFCNT V hv_clear_placeholders}] ); # NOTE: This is no longer initialized on our perl_run initialization routine.
+    $clear_stash_keys_core->( 'main', 'Internals::', [qw{SvREADONLY SvREFCNT hv_clear_placeholders}] );                                                                                                                               # NOTE: Internals::V() is no longer initialized on our perl_run initialization routine.
     $clear_stash_keys_core->( 'main', 'PerlIO::',    [qw{get_layers}] );                                                                                                                                                              # need to be done after PerlIO::Layer
     $clear_stash_keys_core->( 'main', 'constant::',  [qw{_make_const}] );
     $clear_stash_keys_core->( 'main', 're::',        [qw{is_regexp regname regnames regnames_count regexp_pattern}] );
