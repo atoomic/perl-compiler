@@ -19,12 +19,13 @@ sub do_save {
     my ( $cv, $origname ) = @_;
     debug( cv => "CV ==  %s", $origname );
 
-    if ( !$cv->CONST && $cv->XSUB && $origname !~ qr{^Carp::} && $origname !~ m/^curpad_name\[\d+\]$/ ) {    # xs function
-        $origname =~ s{^main::}{};                                                                           # main::attributes::*
-        $origname =~ s[{(.+?)}][$1]g;                                                                        # main::Internals::{V}
+    my $fullname = $cv->FULLNAME();
 
-        B::C::found_xs_sub($origname);
-        return "BOOTSTRAP_XS_[[${origname}]]_XS_BOOTSTRAP";
+    if ( !$cv->CONST && $cv->XSUB ) {    # xs function
+        $fullname =~ s{^main::}{};
+
+        B::C::found_xs_sub($fullname);
+        return "BOOTSTRAP_XS_[[${fullname}]]_XS_BOOTSTRAP";
     }
 
     my $sv_ix = svsect()->add('FAKE_GV');
@@ -264,6 +265,16 @@ sub is_lexsub {
 
 sub is_phase_name {
     $_[0] =~ /^(BEGIN|INIT|UNITCHECK|CHECK|END)$/ ? 1 : 0;
+}
+
+sub FULLNAME {
+    my ($cv) = @_;
+
+    # Do not coerce a RV into a GV during compile by calling $cv->GV on something with a NAME_HEK (RV)
+    my $name = $cv->NAME_HEK;
+    return $name if ($name);
+
+    return $cv->GV->STASH->NAME . '::' . $cv->GV->NAME;
 }
 
 1;

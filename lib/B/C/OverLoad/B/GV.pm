@@ -587,4 +587,13 @@ sub savecv {
     $gv->save($fullname);
 }
 
+sub FULLNAME {
+    my ($gv) = @_;
+    my $stash_name = $gv->STASH->NAME || '';
+    my $name       = $gv->NAME        || '';
+
+    return $name if !$stash_name;
+    return $stash_name . '::' . $name;
+}
+
 1;
