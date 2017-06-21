@@ -32,10 +32,10 @@ sub do_save {
         # argument to a split) stores a GV in op_pmreplroot instead
         # of a substitution syntax tree. We don't want to walk that...
         if ( $op->name eq "pushre" ) {
-            debug( gv => "PMOP::save saving a pp_pushre with GV $gvsym" );
             $gvsym          = $replroot->save;
             $replrootfield  = "NULL";
             $replstartfield = $replstart->save if $replstart;
+            debug( gv => "PMOP::save saving a pp_pushre with GV $gvsym" );
         }
         else {
             $replstart->save if $replstart;
@@ -71,7 +71,7 @@ sub do_save {
     }
 
     pmopsect()->debug( $op->name, $op );
-    my $pm = sprintf( "pmop_list[%d]", $ix );
+    my $pmsym = sprintf( "pmop_list[%d]", $ix );
     my $re = $op->precomp;
 
     if ( defined($re) ) {
@@ -81,7 +81,7 @@ sub do_save {
         my ( $qre, $relen, $utf8 ) = strlen_flags($re);
 
         my $pmflags = $op->pmflags;
-        debug( gv => "pregcomp $pm $qre:$relen" . ( $utf8 ? " SVf_UTF8" : "" ) . sprintf( " 0x%x\n", $pmflags ) );
+        debug( gv => "pregcomp $pmsym $qre:$relen" . ( $utf8 ? " SVf_UTF8" : "" ) . sprintf( " 0x%x\n", $pmflags ) );
 
         # Since 5.13.10 with PMf_FOLD (i) we need to swash_init("utf8::Cased").
         if ( $pmflags & 4 ) {
@@ -112,20 +112,24 @@ sub do_save {
         }
 
         my $eval_seen = $op->reflags & RXf_EVAL_SEEN;
-        my @init_block;
+        $initpm->no_split();
         if ($eval_seen) {    # set HINT_RE_EVAL on
             $pmflags |= PMf_EVAL;
-            push @init_block, '{', '    U32 hints_sav = PL_hints;', '    PL_hints |= HINT_RE_EVAL;';
+            $initpm->add('{');
+            $initpm->indent(+1);
+            $initpm->add('U32 hints_sav = PL_hints;');
+            $initpm->add('PL_hints |= HINT_RE_EVAL;');
         }
 
         # XXX Modification of a read-only value attempted. use DateTime - threaded
-        push @init_block, "PM_SETRE(&$pm, CALLREGCOMP(newSVpvn_flags($qre, $relen, " . sprintf( "SVs_TEMP|%s), 0x%x));", $utf8 ? 'SVf_UTF8' : '0', $pmflags ) . sprintf( "RX_EXTFLAGS(PM_GETRE(&%s)) = 0x%x;", $pm, $op->reflags );
+        $initpm->sadd( "PM_SETRE(&%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $pmsym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
+        $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(&%s)) = 0x%x;", $pmsym, $op->reflags );
 
         if ($eval_seen) {    # set HINT_RE_EVAL off
-            push @init_block, '    PL_hints = hints_sav;', '}';
+            $initpm->add('PL_hints = hints_sav;');
+            $initpm->indent(-1);
+            $initpm->add('}');
         }
-        $initpm->no_split();
-        $initpm->add(@init_block);
         $initpm->split();
 
         # See toke.c:8964
@@ -139,10 +143,10 @@ sub do_save {
     if ($gvsym) {
 
         # XXX need that for subst
-        init()->add("$pm.op_pmreplrootu.op_pmreplroot = (OP*)$gvsym;");
+        init()->sadd( "%s.op_pmreplrootu.op_pmreplroot = (OP*)%s;", $pmsym, $gvsym );
     }
 
-    return "(OP*)&$pm";
+    return "(OP*)&$pmsym";
 }
 
 1;
