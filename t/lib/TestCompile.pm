@@ -61,9 +61,9 @@ sub compile_script {
     # gcc the c code.
     my $harness_opts = '';
     $harness_opts = '-Wall' if $ENV{VERBOSE} && $ENV{WARNINGS};
-    $harness_opts .= $ENV{VERBOSE} ? '' : ' -q';
+    $harness_opts .= $ENV{VERBOSE} ? ''    : ' -q';
+    $harness_opts .= $ENV{DEBUG}   ? ' -g' : '';
     $harness_opts .= ' ' . $cflags if $cflags;
-    $harness_opts .= ' -staticxs'  if $use_static_xs;
 
     my $cc_harness         = get_full_path(qq{$FindBin::Bin/../../../../script/cc_harness});
     my $c_file_full_path   = get_full_path($c_file);
