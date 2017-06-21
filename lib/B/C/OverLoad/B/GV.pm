@@ -39,6 +39,11 @@ my $CORE_SYMS = {
     'main::ARGV' => 'PL_argvgv',
 };
 
+# These variables are the proxy variables we will use to save @_ and $_
+our $under = '';
+our @under = ();
+
+
 sub do_save {
     my ( $gv, $name ) = @_;
 
@@ -310,6 +315,10 @@ sub save_gv_sv {
     #    return svref_2object( \${$fullname} )->save($fullname);
     #}
 
+    if ( $fullname eq 'main::_' ) {
+        $gvsv = svref_2object( \$under );
+    }
+
     return $gvsv->save($fullname);
 }
 
@@ -318,6 +327,10 @@ sub save_gv_av {    # new function to be renamed later..
 
     my $gvav = $gv->AV;
     return 'NULL' unless $gvav && $$gvav;
+
+    if ( $fullname eq 'main::_' ) {
+        $gvav = svref_2object( \@under );
+    }
 
     # # rely on final replace to get the symbol name, it s fine
     # my $svsym = sprintf( "s\\_%x", $$gvsv );
@@ -586,6 +599,7 @@ sub savecv {
 
 sub FULLNAME {
     my ($gv) = @_;
+
     my $stash_name = $gv->STASH->NAME || '';
     my $name       = $gv->NAME        || '';
 
