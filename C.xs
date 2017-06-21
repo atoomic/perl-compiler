@@ -622,6 +622,27 @@ SvHAS_ANY(sv)
     OUTPUT:
         RETVAL
 
+#/*
+#* Perl_sv_get_backrefs returns the point to the backrefs AV*
+#* - for HV (with OOK) it's stored in the AUX.xhv_backreferences
+#* - for any other SVs it's stored in the PERL_MAGIC_backref magic
+#*
+#*/
+
+void
+SvBACKREFS(sv)
+    B::SV sv
+PREINIT:
+    SV *av_backrefs;
+PPCODE:
+    av_backrefs = (SV*) Perl_sv_get_backrefs(sv);
+    if (av_backrefs) {
+        XPUSHs(make_sv_object(aTHX_ av_backrefs));
+    } else {
+        XSRETURN_UNDEF;
+    }
+
+
 MODULE = B__CC	PACKAGE = B::CC
 
 PROTOTYPES: DISABLE

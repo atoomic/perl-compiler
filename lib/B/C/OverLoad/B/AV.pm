@@ -51,14 +51,24 @@ sub save_sv {
     return savesym( $av, "(AV*)&sv_list[$sv_ix]" );
 }
 
+# helper to skip backref SV
+sub skip_backref_sv {
+    my ($sv) = @_;
+
+    my $name = $sv->FULLNAME();
+    return 1 if $name =~ m/::(?:BEGIN|bootstrap)$/;
+    return 1 unless B::C::key_was_in_starting_stash($name);
+
+    return;
+}
+
 sub do_save {
-    my ( $av, $fullname, $cv ) = @_;
+    my ( $av, $fullname, $cv, $is_backref ) = @_;
 
     $fullname ||= '';
 
     my $fill = $av->fill();
-
-    my $sym = $av->save_sv($fullname);    # could be using PADLIST, PADNAMELIST, or AV method for this.
+    my $sym  = $av->save_sv($fullname);    # could be using PADLIST, PADNAMELIST, or AV method for this.
 
     debug( av => "saving AV %s 0x%x [%s] FILL=%d", $fullname, $$av, ref($av), $fill );
 
@@ -94,16 +104,32 @@ sub do_save {
         # map("\t*svp++ = (SV*)$_;", @names),
         my $acc = '';
 
-        # Init optimization by Nick Koston
-        # The idea is to create loops so there is less C code. In the real world this seems
-        # to reduce the memory usage ~ 3% and speed up startup time by about 8%.
-        my ( $count, @values );
+        # remove element from the array when it's a backref
+
+        my ( $count, @values ) = (0);
         {
             # TODO: This local may no longer be needed now we've removed the 5.16 conditional here.
             local $B::C::const_strings = $B::C::const_strings;
 
+            if ($is_backref) {
+                my @new_array;
+                foreach my $elt (@array) {
+                    next if skip_backref_sv($elt);
+                    push @new_array, $elt;
+                }
+                $fill -= scalar(@array) - scalar(@new_array);    # remove to fill the delta we removed from array
+                @array = @new_array;
+                return q{NULL} unless scalar @array;
+
+                # Idea: bypass the AV save if there's only one element in the array
+            }
+
             @values = map { $_->save( $fullname . "[" . $count++ . "]" ) || () } @array;
         }
+
+        # Init optimization by Nick Koston
+        # The idea is to create loops so there is less C code. In the real world this seems
+        # to reduce the memory usage ~ 3% and speed up startup time by about 8%.
 
         $count = 0;
         my $svpcast = $av->cast_sv();    # could be using PADLIST, PADNAMELIST, or AV method for this.
@@ -150,7 +176,7 @@ sub do_save {
     }
     else {
         my $max = $av->MAX;
-        init()->add("av_extend($sym, $max);") if $max > -1;
+        init()->sadd( "av_extend(%s, %d);", $sym, $max ) if $max > -1;
     }
 
     return $sym;

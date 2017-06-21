@@ -1107,4 +1107,22 @@ _EOT3
 
 }
 
+sub key_was_in_starting_stash {
+    my $path = shift or return 0;
+    $path =~ s/^main:://g;
+
+    my $curstash = $settings->{'starting_stash'} or die;
+    my @stashes = split( "::", $path );
+
+    my $stash_key = pop @stashes;
+    defined $stash_key or return 0;
+    $stash_key = pop(@stashes) . '::' if $stash_key eq '';    # Foo::bar::
+
+    foreach my $stash_name (@stashes) {
+        $curstash = $curstash->{"${stash_name}::"} or return 0;
+        ref $curstash eq 'HASH' or return 0;
+    }
+    return $curstash->{$stash_key} ? 1 : 0;
+}
+
 1;
