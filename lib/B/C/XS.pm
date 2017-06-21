@@ -28,7 +28,7 @@ sub new {
 sub found_xs_sub {
     my ( $self, $sub ) = @_;
 
-    # deals with XS eception there...
+    # deals with XS exceptions there...
 
     if ( $sub =~ qr{^IO::(?:Dir|File|Handle|Pipe|Poll|Seekable|Select|Socket)::} ) {
 
@@ -38,6 +38,10 @@ sub found_xs_sub {
 
     if ( $sub =~ qr{^mro::(?:_nextcan)} ) {
         $self->add_to_bootstrap('mro');
+    }
+
+    if ( $sub =~ qr{^re::(?:install)} ) {
+        $self->add_to_bootstrap('re');
     }
 
     return;
