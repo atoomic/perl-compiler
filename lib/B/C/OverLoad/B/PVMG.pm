@@ -189,9 +189,16 @@ sub save_magic {
         }
 
         magicsect->comment('mg_moremagic, mg_virtual, mg_private, mg_type, mg_flags, mg_len, mg_obj, mg_ptr');
-        my $last_magic_ix = magicsect->sadd(
-            " (MAGIC*) %s, (MGVTBL*) %s, %s, %s, %d, %s, (SV*) %s, (char*) %s",
-            $last_magic, '0', $mg->PRIVATE, cchar($type), $mg->FLAGS, $len, $obj, $ptrsv
+
+        my $last_magic_ix = magicsect->saddl(
+            '(MAGIC*) %s'  => $last_magic,     # mg_moremagic
+            '(MGVTBL*) %s' => '0',             # mg_virtual
+            '%s'           => $mg->PRIVATE,    # mg_private
+            '%s'           => cchar($type),    # mg_type
+            '0x%x'         => $mg->FLAGS,      # mg_flags
+            '%s'           => $len,            # mg_len
+            '(SV*) %s'     => $obj,            # mg_obj
+            '(char*) %s'   => $ptrsv,          #mg_ptr
         );
         $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
 
