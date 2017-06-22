@@ -605,7 +605,7 @@ sub walk_syms {
 }
 
 sub make_nonxs_Internals_V {
-    my $to_eval = 'sub Internals::V { return (';
+    my $to_eval = 'no warnings "redefine"; sub Internals::V { return (';
     foreach my $line ( Internals::V() ) {
         $line =~ s/'/\\'/g;
         $to_eval .= "'$line', ";
