@@ -141,7 +141,7 @@ sub save_magic {
     my $last_magic = '0';
     foreach my $mg ( reverse @mgchain ) {    # reverse because we're assigning down the chain, not up.
         my $type = $mg->TYPE;
-        my $ptr  = $mg->PTR;
+        my $ptr  = $mg->BCPTR;
         my $len  = $mg->LENGTH;
 
         exists $perl_magic_vtable_map->{$type} or die sprintf( "Unknown magic type '0x%s' / '%s' [check your mapping table dude]", unpack( 'H*', $type ), $type );
@@ -174,14 +174,13 @@ sub save_magic {
                 $ptrsv = '0';
             }
             elsif ( ref($ptr) eq 'SCALAR' ) {
-
                 # STATIC HV: We don't think anything happens here. Would like to test with a die();
                 $init_ptrsv = "SvPVX(" . svref_2object($ptr)->save($fullname) . ")";
             }
             elsif ( ref $ptr ) {
-
-                # STATIC HV: We don't think anything happens here. Would like to test with a die();
-                $init_ptrsv = "SvPVX(" . $ptr->save($fullname) . ")";
+                # Certain magic type actually point to a PMOP or a SVPV. We save them here.
+                # NOTE: This is thanks to BCPTR which needs to backport to B.xs
+                $ptrsv = ref $ptr =~ m/OP/ ? $ptr->save() : $ptr->save($fullname);
             }
             else {
                 $ptrsv = cstring($ptr);    # Nico thinks everything will happen here.
@@ -198,7 +197,7 @@ sub save_magic {
             '0x%x'         => $mg->FLAGS,      # mg_flags
             '%s'           => $len,            # mg_len
             '(SV*) %s'     => $obj,            # mg_obj
-            '(char*) %s'   => $ptrsv,          #mg_ptr
+            '(char*) %s'   => $ptrsv,          # mg_ptr
         );
         $last_magic = sprintf( 'magic_list[%d]', $last_magic_ix );
 
