@@ -15,6 +15,12 @@ my $github_issues_base = 'https://github.com/CpanelInc/perl-compiler/issues';
 my %bugs = (
     '33' => [ 'PQR', 'sub c { caller(0) }  sub foo { package PQR; main->c() } print((foo())[0])' ],
     '34' => [ 'ok',  'sub eval_in_a_sub { my $todo = shift; eval $todo; } eval_in_a_sub("print q{ok}")'],
+    '35' => [ "ok 1\n", 'sub f ($) { my $test = $_[0]; write;
+format STDOUT =
+ok @<<<<<<<
+$test
+.
+} f(1);'],
 );
 
 my %opts;
