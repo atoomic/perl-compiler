@@ -213,6 +213,7 @@ XS(XS_DynaLoader_dl_find_symbol);
 static void declare_static_sections() { /* declare our static section 'blocks' to perl */
 /* TODO: move sv_list first and other (gv_list) most common structs as order matters ! */
 /* CV, magic, and then anything else */
+
 [% FOREACH sect IN section_list -%]
 [% lines = section.$sect.index + 1 -%]
 [% SET sname = section.$sect.name() -%]
@@ -231,10 +232,13 @@ static void declare_static_sections() { /* declare our static section 'blocks' t
 [% section.decl.output( "%s\n" ) %]
 /* </decl.output> */
 
-static void HvSETUP(HV* hv, U32 size) {
+static void HvSETUP(HV* hv, U32 size, bool has_ook) {
     char *array;
+    MEM_SIZE alloc_size = PERL_HV_ARRAY_ALLOC_BYTES(size);
+
     /* malloc the hash array + the xpvhv_aux which is part of it */
-    Newxz (array, PERL_HV_ARRAY_ALLOC_BYTES (size) + sizeof(struct xpvhv_aux), char);
+    if ( has_ook ) alloc_size += sizeof(struct xpvhv_aux);
+    Newxz(array, alloc_size, char);
 
     /* setting the hash array to the HV (in sv_list) in sv_any */
     HvARRAY(hv) = (HE **) array;
@@ -555,6 +559,8 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
     VOL signed char destruct_level;  /* see possible values in intrpvar.h */
 #endif
 
+    PL_phase = PERL_PHASE_DESTRUCT;
+
     PERL_UNUSED_ARG(my_perl);
 
     assert(PL_scopestack_ix == 1);
@@ -588,6 +594,7 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
         PERL_UNUSED_ARG(x);
         JMPENV_POP;
     }
+
     LEAVE;
     FREETMPS;
     assert(PL_scopestack_ix == 0);
@@ -598,7 +605,6 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
     PL_main_start = NULL;
     PL_main_cv = NULL;
     PL_curcop = &PL_compiling;
-    PL_phase = PERL_PHASE_DESTRUCT;
 
     if (PL_threadhook(aTHX)) {
         /* Threads hook has vetoed further cleanup */
@@ -813,8 +819,10 @@ main(int argc, char **argv, char **env)
 
     PL_curstash = PL_defstash;
 
+    benchmark_time("pre bc_perl_parse");
     exitstatus = bc_perl_parse(&BC_unthreaded_interpreter, argc, argv, env);
     benchmark_time("post bc_perl_parse");
+
     if (exitstatus)
        	exit( exitstatus );
 
@@ -893,7 +901,7 @@ main(int argc, char **argv, char **env)
 /* Through an interative process, perl_parse has been lifted from perl.c and re-factored to only support the
    things that make sense for a B::C run program. This simplifies and hopefully shortens startup. This code
    is only supportable via a static HV approach to B::C
-   
+
    The following functions are now local to this templated B::C program.
 
        static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env)
@@ -970,7 +978,7 @@ static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env)
     }
 
     PL_origalen = s ? s - PL_origargv[0] + 1 : 0;
-    
+
     /* END: Determine how long $0 is allowed to be */
 
     PL_main_root = NULL; /* We should really be setting PL_main_root statically */
@@ -982,7 +990,7 @@ static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env)
 
     PL_dowarn = G_WARN_OFF;
 
-    /* BEGIN eval {} */ 
+    /* BEGIN eval {} */
     JMPENV_PUSH(ret);
     if(ret) {
         PerlIO_printf(Perl_error_log, "panic: jmpenv failed!\n");
@@ -1048,12 +1056,12 @@ void bc_parse_body(char **env)
             IO* io;
             PerlIO* fp;
             SV* sv;
-  
+
             /* Turn on UTF-8-ness on STDIN, STDOUT, STDERR
              * and the default open disciplines. */
             if ((PL_unicode & PERL_UNICODE_STDIN_FLAG)  && (io = GvIO([% IO.stdin %])) && (fp = IoIFP(io)))
                 PerlIO_binmode(aTHX_ fp, IoTYPE(io), 0, ":utf8");
-            
+
             if ((PL_unicode & PERL_UNICODE_STDOUT_FLAG) && (io = GvIO([% IO.stdout %])) && (fp = IoOFP(io)))
                 PerlIO_binmode(aTHX_ fp, IoTYPE(io), 0, ":utf8");
 
@@ -1138,35 +1146,35 @@ STATIC void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env)
 
             for (; *env; env++) {
                 old_var = *env;
-    
+
                 if (!(s = strchr(old_var,'=')) || s == old_var)
                     continue;
                     nlen = s - old_var;
-    
+
                     if (hv_exists(hv, old_var, nlen)) {
                         const char *name = savepvn(old_var, nlen);
-    
+
                         /* make sure we use the same value as getenv(), otherwise code that
                            uses getenv() (like setlocale()) might see a different value to %ENV
                          */
                         sv = newSVpv(PerlEnv_getenv(name), 0);
-    
+
                         /* keep a count of the dups of this name so we can de-dup environ later */
                         if (hv_exists(dups, name, nlen))
                             ++SvIVX(*hv_fetch(dups, name, nlen, 0));
                         else
                             (void)hv_store(dups, name, nlen, newSViv(1), 0);
-    
+
                         Safefree(name);
                     }
                     else
                         sv = newSVpv(s+1, 0);
                 (void)hv_store(hv, old_var, nlen, sv, 0);
-    
+
                 if (env_is_not_environ)
                     mg_set(sv);
             }
-              
+
             if (HvKEYS(dups)) {
                 /* environ has some duplicate definitions, remove them */
                 HE *entry;
@@ -1177,16 +1185,16 @@ STATIC void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env)
                     IV count = SvIV(HeVAL(entry));
                     IV i;
                     SV **valp = hv_fetch(hv, name, nlen, 0);
-    
+
                     assert(valp);
-    
+
                     /* try to remove any duplicate names, depending on the
                        * implementation used in my_setenv() the iteration might
                        * not be necessary, but let's be safe.
                     */
                     for (i = 0; i < count; ++i)
                         my_setenv(name, 0);
-    
+
                     /* and set it back to the value we set $ENV{name} to */
                     my_setenv(name, SvPV_nolen(*valp));
                 }
