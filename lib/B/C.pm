@@ -127,6 +127,7 @@ sub starting_stash {
 
     my %hash;
     foreach my $key ( sort keys %$stash ) {
+        next if $key eq 'bootstrap';    ## we do not want to save any bootstrap function ( XS takes care of it )
         if ( $key =~ m/::$/ ) {
             my $goto = $stash->{$key};
             my $name = "$goto";
