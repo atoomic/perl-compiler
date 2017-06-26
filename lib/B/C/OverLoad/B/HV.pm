@@ -22,7 +22,7 @@ use B::C::Config;
 use B::C::File qw/init xpvhvsect svsect sharedhe decl init init2 init_stash init_static_assignments/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
-use B::C::Save::Hek qw/save_shared_he/;
+use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::Save qw/savestashpv/;
 
 my ($swash_ToCf);
@@ -218,8 +218,8 @@ sub do_save {
 
     foreach my $hash_name (@enames) {
         next unless length $hash_name;
-        my ( $cstring, $cur, $utf8 ) = strlen_flags($hash_name);
-        $init->sadd( q{hv_name_set(%s, %s, %d, %d);}, $sym, $cstring, $cur, $utf8 );
+        my $shared_he = save_shared_he($hash_name);
+        $init->sadd( q{HvAUX(%s)->xhv_name_u.xhvnameu_name = %s; /* $hash_name */}, $sym, get_sHe_HEK($shared_he) );
     }
 
     # Special stuff we want to do for stashes.
