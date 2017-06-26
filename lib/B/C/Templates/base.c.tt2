@@ -595,16 +595,18 @@ static int fast_perl_destruct( PerlInterpreter *my_perl ) {
         JMPENV_POP;
     }
 
+    PL_main_start = NULL;
+    PL_main_cv = NULL;
+    PL_curcop = &PL_compiling;
+
+    PL_phase = PERL_PHASE_DESTRUCT;
+
     LEAVE;
     FREETMPS;
     assert(PL_scopestack_ix == 0);
 
     /* Need to flush since END blocks can produce output */
     my_fflush_all();
-
-    PL_main_start = NULL;
-    PL_main_cv = NULL;
-    PL_curcop = &PL_compiling;
 
     if (PL_threadhook(aTHX)) {
         /* Threads hook has vetoed further cleanup */
