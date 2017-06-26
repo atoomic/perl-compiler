@@ -219,7 +219,7 @@ sub do_save {
     foreach my $hash_name (@enames) {
         next unless length $hash_name;
         my $shared_he = save_shared_he($hash_name);
-        $init->sadd( q{HvAUX(%s)->xhv_name_u.xhvnameu_name = %s; /* $hash_name */}, $sym, get_sHe_HEK($shared_he) );
+        $init->sadd( q{HvAUX(%s)->xhv_name_u.xhvnameu_name = %s; /* %s */}, $sym, get_sHe_HEK($shared_he), $hash_name );
     }
 
     # Special stuff we want to do for stashes.
