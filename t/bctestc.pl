@@ -84,7 +84,7 @@ foreach my $test_label (@ARGV) {
     while (@$bug) {
         my $result    = shift @$bug;
         my $perl_code = shift @$bug;
-        next if defined $want_subtest && $want_subtest != $subtest;
+        next if defined $want_subtest && $want_subtest != $subtest++;
 
         # lazy load the content on demand
         $result = $result->() if ref $result eq 'CODE';
@@ -93,7 +93,6 @@ foreach my $test_label (@ARGV) {
         print "### Subtest $test_id-$subtest:\n";
         print "$perl_code\n";
         print "### RESULT: $result\n\n";
-        $subtest++;
     }
 
 }
