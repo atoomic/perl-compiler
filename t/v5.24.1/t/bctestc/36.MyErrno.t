@@ -6,6 +6,8 @@ BEGIN {
 }
 
 package main;
-print qq{ok\n} if &MyErrno::TEST;
 
+print qq{:ok 1} if &MyErrno::TEST;
+print qq{:ok 2} if &MyErrno::TEST == 123456;
 
+1;
