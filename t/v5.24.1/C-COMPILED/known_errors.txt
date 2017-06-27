@@ -31,7 +31,6 @@ extra/sub-in-re.t           PLAN      This test is fixed in another branch and w
 io/bom.t                    COMPAT    BC issue 312 - BOM seems to be rejected by perlcc but really, who needs this?
 io/layers.t                 SKIP      This is a known BC issue we've never cared about. use open doesn't work. See https://code.google.com/p/perl-compiler/issues/detail?id=203
 io/open.t                   TESTS     BC issue #219 (overload) - new tests in upstream since 5.14.4
-mro/next_method_utf8.t      SKIP      This test is currently leading to a OOM killer event after it slows down the runs and takes up all memory. We can put it back later!
 mro/package_aliases_utf8.t  SKIP      Runs REAALY slow and many of the failures are already reported. Waiting for other BC issues to clear before researching this one.
 op/attrhand.t               PLAN      BC issue #271 - Attribute::Handlers
 op/blocks.t                 COMPAT    check order of execution of special blocks ( BEGIN included )
@@ -127,5 +126,4 @@ xtestc/2540.t               TESTS     Output is: ""
 xtestc/2741.t               TESTS     Output is: "SV = PVHV(0x800320) at ..." expect "ok"
 xtestc/2900.t               TESTS     Output is: "19518210 "
 xtestc/2990.t               TESTS     Output is: ""
-xtestc/3170.t               SKIP      IO::Socket::SSL test that's taking up 100% memory right now.
 xtestc/3200.t               TESTS     Output is: ""
