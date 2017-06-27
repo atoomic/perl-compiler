@@ -31,7 +31,7 @@ ok( binmode(STDOUT, ":raw"),    '  raw' );
 ok( binmode(STDOUT, ":crlf"),   '  and crlf' );
 
 SKIP: {
-    skip "no EBADF", 1 unless 'Errno'->can('EBADF');
+    skip "no EBADF", 1 unless exists &Errno::EBADF;
 
     no warnings 'io', 'once';
     $! = 0;

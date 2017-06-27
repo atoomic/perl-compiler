@@ -42,10 +42,7 @@ sub do_save {
 
     # need to survive cv_undef as there is no protection against static CVs
     my $refcnt = $cv->REFCNT + 1;
-
-    my $root = $cv->get_ROOT;
-
-    my $startfield = $cv->save_optree();
+    my $root   = $cv->get_ROOT;
 
     # Setup the PV for the SV here cause we need to set cur and len.
     my $pv    = 'NULL';
@@ -64,14 +61,25 @@ sub do_save {
 
     xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
 
+    my ( $xcv_root, $startfield );
+
+    if ( my $c_function = $cv->can_do_const_sv() ) {
+        $xcv_root = sprintf( '.xcv_xsub=&%s', $c_function );
+        $startfield = sprintf( '.xcv_xsubany= (void*) %s /* xsubany */', $cv->XSUBANY->save() );    # xcv_xsubany
+    }
+    else {    # default values for xcv_root and startfield
+        $xcv_root = sprintf( "s\\_%x", $root ? $$root : 0 );
+        $startfield = $cv->save_optree();
+    }
+
     my $xpvcv_ix = xpvcvsect->saddl(
         '%s'          => $cv->save_magic_stash,                    # xmg_stash
         '{%s}'        => $cv->save_magic($origname),               # xmg_u
         '%u'          => $cur,                                     # xpv_cur -- warning this is not CUR and LEN for the pv
         '{%u}'        => $len,                                     # xpv_len_u -- warning this is not CUR and LEN for the pv
         '%s'          => $cv_stash,                                # xcv_stash
-        '{%s}'        => $startfield,                              # xcv_start_u
-        "{s\\_%x}"    => $root ? $$root : 0,                       # xcv_root_u
+        '{%s}'        => $startfield,                              # xcv_start_u --- OP *    xcv_start; or ANY xcv_xsubany;
+        "{%s}"        => $xcv_root,                                # xcv_root_u  --- OP *    xcv_root; or void    (*xcv_xsub) (pTHX_ CV*);
         q{%s}         => $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
         q{(char*) %s} => $xcv_file,                                # xcv_file
         '{%s}'        => $cv->cv_save_padlist($origname),          # xcv_padlist_u
@@ -96,6 +104,24 @@ sub do_save {
     svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT + 1, $flags, $pv );
 
     return $sym;
+}
+
+{
+    my %_const_sv_function = map { $_ => 'bc_const_sv_xsub' } qw{B::IV B::UV B::PV};
+
+    sub can_do_const_sv {
+        my ($cv) = @_;
+        die unless $cv;
+        return unless $cv->CONST && $cv->XSUB;
+        my $xsubany = $cv->XSUBANY;
+        my $ref     = ref $cv->XSUBANY;
+        return if !$ref || $ref eq 'B::SPECIAL';
+
+        return unless exists $_const_sv_function{$ref};
+
+        #die "CV CONST XSUB is not implemented for $ref" unless exists $_const_sv_function{$ref};
+        return $_const_sv_function{$ref};
+    }
 }
 
 sub typecast_stash_save {

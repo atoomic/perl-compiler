@@ -30,7 +30,7 @@ for my $bad_salt (@bad_salts) {
     my ($salt, $what) = @$bad_salt;
     $! = 0;
     is(crypt("abc", $salt), undef, "bad salt ($what)");
-    is(0+$!, Errno::EINVAL(), "check errno ($what)");
+    is(0+$!, &Errno::EINVAL, "check errno ($what)");
 }
 
 is(crypt("abcdef", "ab"), "abDMWw5NL.afs", "sanity check result");

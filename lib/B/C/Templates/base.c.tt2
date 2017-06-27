@@ -230,6 +230,36 @@ static void declare_static_sections() { /* declare our static section 'blocks' t
 [% section.decl.output( "%s\n" ) %]
 /* </decl.output> */
 
+/* const_sv_sub stolen from op.c */
+/* Efficient sub that returns a constant scalar value. */
+static void bc_const_sv_xsub(pTHX_ CV* cv) {
+     dXSARGS;
+     SV *const sv = MUTABLE_SV(XSANY.any_ptr);
+     /*PERL_UNUSED_ARG(items);*/
+     if (!sv) XSRETURN(0);
+     EXTEND(sp, 1);
+     ST(0) = sv;
+     XSRETURN(1);
+}
+/* only add them if needed */
+/*
+static void bc_const_av_xsub(pTHX_ CV* cv) {
+     dXSARGS;
+     AV * const av = MUTABLE_AV(XSANY.any_ptr);
+     SP -= items;
+     assert(av);
+
+     if (GIMME_V != G_ARRAY) {
+         EXTEND(SP, 1);
+         ST(0) = sv_2mortal(newSViv((IV)AvFILLp(av)+1));
+         XSRETURN(1);
+     }
+     EXTEND(SP, AvFILLp(av)+1);
+     Copy(AvARRAY(av), &ST(0), AvFILLp(av)+1, SV *);
+     XSRETURN(AvFILLp(av)+1);
+}
+*/
+
 static void HvSETUP(HV* hv, U32 size, bool has_ook) {
     char *array;
     MEM_SIZE alloc_size = PERL_HV_ARRAY_ALLOC_BYTES(size);

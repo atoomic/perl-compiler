@@ -32,13 +32,13 @@ say $bar "ok 7";
 
 say {"STDOUT"} "ok 8";
 
-if (! 'Errno'->can('EBADF') ) {
+if (!exists &Errno::EBADF) {
     print "ok 9 # skipped: no EBADF\n";
 } else {
     $! = 0;
     no warnings 'unopened';
     say NONEXISTENT "foo";
-    print "not " if ($! != Errno::EBADF() );
+    print "not " if ($! != &Errno::EBADF);
     say "ok 9";
 }
 
