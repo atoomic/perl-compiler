@@ -70,7 +70,7 @@ my($nlink, $mtime, $ctime) = (stat(FOO))[$NLINK, $MTIME, $CTIME];
 
 # The clock on a network filesystem might be different from the
 # system clock.
-my $Filesystem_Time_Offset = abs($mtime - time);
+my $Filesystem_Time_Offset = abs($mtime - time); 
 
 #nlink should if link support configured in Perl.
 SKIP: {
@@ -141,7 +141,7 @@ SKIP: {
         # no ctime concept $ctime is ALWAYS == $mtime
         # expect netware to be the same ...
         skip "No ctime concept on this OS", 2
-                                     if $Is_MSWin32 ||
+                                     if $Is_MSWin32 || 
                                         ($Is_Darwin && $Is_UFS);
 
         if( !ok($mtime, 'hard link mtime') ||
@@ -485,7 +485,7 @@ like $@, qr/^The stat preceding lstat\(\) wasn't an lstat at /,
     close(FOO);
     unlink $tmpfile or print "# unlink failed: $!\n";
 }
-
+  
 SKIP: {
     skip "No lstat", 2 unless $Config{d_lstat};
 
@@ -558,8 +558,8 @@ SKIP: {
 SKIP: {
     skip "No dirfd()", 9 unless $Config{d_dirfd} || $Config{d_dir_dd_fd};
     ok(opendir(DIR, "."), 'Can open "." dir') || diag "Can't open '.':  $!";
-    ok(stat(DIR), "stat() on dirhandle works");
-    ok(-d -r _ , "chained -x's on dirhandle");
+    ok(stat(DIR), "stat() on dirhandle works"); 
+    ok(-d -r _ , "chained -x's on dirhandle"); 
     ok(-d DIR, "-d on a dirhandle works");
 
     # And now for the ambiguous bareword case
@@ -581,7 +581,7 @@ SKIP: {
     # RT #8244: *FILE{IO} does not behave like *FILE for stat() and -X() operators
     ok(open(F, ">", $tmpfile), 'can create temp file');
     my @thwap = stat *F{IO};
-    ok(@thwap, "stat(*F{IO}) works");
+    ok(@thwap, "stat(*F{IO}) works");    
     ok( -f *F{IO} , "single file tests work with *F{IO}");
     close F;
     unlink $tmpfile;
@@ -592,7 +592,7 @@ SKIP: {
         skip "No dirfd()", 9 unless $Config{d_dirfd} || $Config{d_dir_dd_fd};
         ok(opendir(DIR, "."), 'Can open "." dir') || diag "Can't open '.':  $!";
         ok(stat(*DIR{IO}), "stat() on *DIR{IO} works");
-	ok(-d _ , "The special file handle _ is set correctly");
+	ok(-d _ , "The special file handle _ is set correctly"); 
         ok(-d -r *DIR{IO} , "chained -x's on *DIR{IO}");
 
 	# And now for the ambiguous bareword case
@@ -647,7 +647,7 @@ SKIP:
 {
     skip "Errno not available", 1
       unless $Errno_loaded;
-    is $error, Errno::ENOENT(),
+    is $error, &Errno::ENOENT,
       'stat on an array of valid paths should return ENOENT';
 }
 
