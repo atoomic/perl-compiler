@@ -18,7 +18,7 @@ open(A,"+>$tmpfile");
 print A "_";
 seek(A,0,0);
 
-my $b = "abcd"; 
+my $b = "abcd";
 $b = "";
 
 read(A,$b,1,4);
@@ -28,10 +28,10 @@ close(A);
 is($b,"\000\000\000\000_"); # otherwise probably "\000bcd_"
 
 SKIP: {
-    skip "no EBADF", 1 if (!exists &Errno::EBADF);
+    skip "no EBADF", 1 unless 'Errno'->can('EBADF');
 
     $! = 0;
     no warnings 'unopened';
     read(B,$b,1);
-    ok($! == &Errno::EBADF);
+    ok($! == Errno::EBADF());
 }

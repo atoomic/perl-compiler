@@ -45,13 +45,13 @@ print @x,"14\nok",@y;
 
 $\ = '';
 
-if (!exists &Errno::EBADF) {
+if (! 'Errno'->can('EBADF') ) {
     print "ok 19 # skipped: no EBADF\n";
 } else {
     $! = 0;
     no warnings 'unopened';
     print NONEXISTENT "foo";
-    print "not " if ($! != &Errno::EBADF);
+    print "not " if ($! != Errno::EBADF() );
     print "ok 19\n";
 }
 
