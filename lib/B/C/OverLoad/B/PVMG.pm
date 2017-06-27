@@ -7,9 +7,8 @@ use B::C::Config;
 use B qw/SVf_ROK SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
 use B::C::Save qw/savepv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
-use B::C::File qw/init init_static_assignments svsect xpvmgsect assign_hekkey2pv magicsect init_vtables/;
-use B::C::Helpers qw/read_utf8_string is_shared_hek get_index/;
-use B::C::Save::Hek qw/save_shared_he/;
+use B::C::File qw/init init_static_assignments svsect xpvmgsect magicsect init_vtables/;
+use B::C::Helpers qw/read_utf8_string get_index/;
 
 sub do_save {
     my ( $sv, $fullname ) = @_;
@@ -64,14 +63,6 @@ sub do_save {
         "&xpvmg_list[%d], %Lu, 0x%x, {%s}",
         $xpvmg_ix, $sv->REFCNT + 1, $flags, $sv_u
     );
-
-    if ( defined($pv) and !$static ) {
-        my $shared_hek = is_shared_hek($sv);
-        if ($shared_hek) {
-            my $hek = save_shared_he( $pv, $fullname );
-            assign_hekkey2pv()->add( $sv_ix, get_index($hek) ) if $hek ne 'NULL';
-        }
-    }
 
     return sprintf( q{&sv_list[%d]}, $sv_ix );
 }
@@ -174,10 +165,12 @@ sub save_magic {
                 $ptrsv = '0';
             }
             elsif ( ref($ptr) eq 'SCALAR' ) {
+
                 # STATIC HV: We don't think anything happens here. Would like to test with a die();
                 $init_ptrsv = "SvPVX(" . svref_2object($ptr)->save($fullname) . ")";
             }
             elsif ( ref $ptr ) {
+
                 # Certain magic type actually point to a PMOP or a SVPV. We save them here.
                 # NOTE: This is thanks to BCPTR which needs to backport to B.xs
                 $ptrsv = ref $ptr =~ m/OP/ ? $ptr->save() : $ptr->save($fullname);

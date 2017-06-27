@@ -2,11 +2,11 @@ package B::PV;
 
 use strict;
 
-use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVs_SMG SVf_READONLY SVs_OBJECT/;
+use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVs_SMG SVf_UTF8 SVf_READONLY SVs_OBJECT/;
 use B::C::Config;
 use B::C::Save qw/savecowpv/;
-use B::C::Save::Hek qw/save_shared_he/;
-use B::C::File qw/xpvsect svsect free assign_hekkey2pv/;
+use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
+use B::C::File qw/xpvsect svsect free/;
 use B::C::Helpers qw/is_shared_hek read_utf8_string get_index/;
 
 sub SVpbm_VALID { 0x40000000 }
@@ -54,13 +54,6 @@ sub do_save {
         '{%s}' => $savesym
     );
 
-    if ( $shared_hek and !$static ) {
-        my $hek = save_shared_he( $pv, $fullname );
-        if ( $hek ne 'NULL' ) {
-            assign_hekkey2pv()->add( $sv_ix, get_index($hek) );
-        }
-    }
-
     my $s = "sv_list[$sv_ix]";
     svsect()->debug( $fullname, $sv );
 
@@ -78,14 +71,14 @@ sub save_pv_or_rv {
 
     my ( $static, $shared_hek ) = ( 0, is_shared_hek($sv) );
 
-    if ( $shared_hek && !$static ) {
-        my $savesym = 'NULL';
-        my ( $is_utf8, $cur ) = read_utf8_string( $sv->PV );
-        my $len = 0;    # hek should have len 0
+    if ($shared_hek) {
+        my $pv       = $sv->PV;
+        my $utf8     = $flags & SVf_UTF8;
+        my $orig_cur = $sv->CUR;
+        my ( $shared_he, $cur ) = save_shared_he($pv);    # we know that a shared_hek as POK
+        my $len = 0;
 
-        my $pv = $sv->PV;    # we know that a shared_hek as POK
-
-        return ( $savesym, $cur, $len, $pv, $static, $flags );
+        return ( "(" . get_sHe_HEK($shared_he) . q{)->hek_key}, $cur, $len, $pv, $static, $flags );
     }
 
     my $pv = "";

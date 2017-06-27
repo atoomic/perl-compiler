@@ -55,7 +55,7 @@ sub struct_names {
 }
 
 sub assign_sections {
-    return qw{assign_hekkey2pv assign_bodyless_iv};
+    return qw{assign_bodyless_iv};
 }
 
 # Each of these sections can generate multiple regular section

@@ -43,7 +43,6 @@ my $CORE_SYMS = {
 our $under = '';
 our @under = ();
 
-
 sub do_save {
     my ( $gv, $name ) = @_;
 
@@ -70,7 +69,7 @@ sub do_save {
 
     my $namehek = q{NULL};
     if ( my $gvname = $gv->NAME ) {
-        my $share_he = save_shared_he($gvname);
+        my ($share_he) = save_shared_he($gvname);
         $namehek = get_sHe_HEK($share_he);
     }
 
@@ -195,7 +194,7 @@ sub savegp_from_gv {
     # gp_file_hek is only saved for non-stashes.
     my $gp_file_hek = q{NULL};
     if ( $fullname !~ /::$/ and $gv->FILE ne 'NULL' ) {    # and !$B::C::optimize_cop
-        $gp_file_hek = save_shared_he( $gv->FILE );        # use FILE instead of FILEGV or we will save the B::GV stash
+        ($gp_file_hek) = save_shared_he( $gv->FILE );      # use FILE instead of FILEGV or we will save the B::GV stash
     }
 
     my $gp_ix = gpsect()->add('FAKE_GP');

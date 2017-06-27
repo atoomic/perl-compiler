@@ -189,7 +189,7 @@ sub get_xcv_gv_u {
 
     # $cv->CvFLAGS & CVf_NAMED
     if ( my $pv = $cv->NAME_HEK ) {
-        my $share_he = save_shared_he($pv);
+        my ($share_he) = save_shared_he($pv);
         my $xcv_gv_u = sprintf( "{.xcv_hek=%s }", get_sHe_HEK($share_he) );    # xcv_gv_u
         return $xcv_gv_u;
     }
