@@ -139,6 +139,9 @@ SKIP: {
             $str_out .= '...';
         }
 
+        $want = '' unless defined $want;
+        $out = '' unless defined $out;
+
         # limitation... for now
         chomp $want;
         chomp $out;
