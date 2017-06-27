@@ -196,10 +196,8 @@ sub do_save {
             my ( $key, $value ) = @$elt;
 
             # Insert each key into the hash.
-            my $shared_he = save_shared_he($key);
+            my ($shared_he) = save_shared_he($key);
             $init->sadd( q{HvAddEntry(%s, (SV*) %s, %s, %d); /* %s */}, $sym, $value, $shared_he, $max, $key );
-
-            #debug( hv => q{ HV key "%s" = %s}, $key, $value );
         }
 
         # save the iterator in hv_aux (and malloc it)
@@ -218,7 +216,7 @@ sub do_save {
 
     foreach my $hash_name (@enames) {
         next unless length $hash_name;
-        my $shared_he = save_shared_he($hash_name);
+        my ($shared_he) = save_shared_he($hash_name);
         $init->sadd( q{HvAUX(%s)->xhv_name_u.xhvnameu_name = %s; /* %s */}, $sym, get_sHe_HEK($shared_he), $hash_name );
     }
 

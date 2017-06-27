@@ -153,8 +153,6 @@ struct my_padname_with_str {
 /* Missing type defs in perl so we'll make our own. */
 typedef struct my_padname_with_str MyPADNAME;
 
-typedef struct { U32 a; U32 b; }      ASSIGN_HEKKEY2PV;
-
 /* extra typedef */
 [% section.typedef.output( "%s\n" ) %]
 
@@ -415,16 +413,6 @@ static void init_pl_strtab(pTHX) {
         }
     }
 
-[% END %]
-}
-
-static void init_assign(pTHX) {
-[% IF section.assign_hekkey2pv.index + 1 > 0 %]
-    U32 i;
-
-    for (i=0; i < [% section.assign_hekkey2pv.index + 1 %]; i++) {
-        sv_list[assign_hekkey2pv_list[i].a].sv_u.svu_pv = sharedhe_list[assign_hekkey2pv_list[i].b]->shared_he_hek.hek_key;
-    }
 [% END %]
 }
 
@@ -851,10 +839,6 @@ main(int argc, char **argv, char **env)
     PL_compcv = MUTABLE_CV(newSV_type(SVt_PVCV));
     CvUNIQUE_on(PL_compcv);
     CvPADLIST(PL_compcv) = pad_new(0);
-
-    /* our special compiled init */
-    benchmark_time("init_assign");
-    init_assign(aTHX);
 
     benchmark_time("preinit");
     perl_init(aTHX);

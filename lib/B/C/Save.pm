@@ -5,8 +5,7 @@ use strict;
 use B qw(cstring svref_2object);
 use B::C::Config;
 use B::C::File qw( xpvmgsect decl init const cowpv );
-use B::C::Helpers qw/strlen_flags is_shared_hek cstring_cow cow_strlen_flags/;
-use B::C::Save::Hek qw/save_shared_he/;
+use B::C::Helpers qw/strlen_flags cstring_cow cow_strlen_flags/;
 
 use Exporter ();
 our @ISA = qw(Exporter);
