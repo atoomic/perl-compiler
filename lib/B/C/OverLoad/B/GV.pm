@@ -600,8 +600,9 @@ sub FULLNAME {
     my ($gv) = @_;
 
     my $stash = $gv->STASH;
-    my $stash_name = ( $stash && ref $stash && $stash->can('NAME') ) ? $stash->NAME : '';
-    $stash_name ||= "$stash";
+
+    # B::SPECIAL means the stash is a NULL.
+    my $stash_name = ref $stash eq 'B::SPECIAL' ? '' : $stash->NAME;
 
     my $name = $gv->NAME || '';
 
