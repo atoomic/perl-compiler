@@ -599,8 +599,11 @@ sub savecv {
 sub FULLNAME {
     my ($gv) = @_;
 
-    my $stash_name = $gv->STASH->NAME || '';
-    my $name       = $gv->NAME        || '';
+    my $stash = $gv->STASH;
+    my $stash_name = ( $stash && ref $stash && $stash->can('NAME') ) ? $stash->NAME : '';
+    $stash_name ||= "$stash";
+
+    my $name = $gv->NAME || '';
 
     return $name if !$stash_name;
     return $stash_name . '::' . $name;
