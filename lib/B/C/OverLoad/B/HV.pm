@@ -167,7 +167,7 @@ sub do_save {
         $sv_list_index,
         sprintf(
             "&xpvhv_list[%d], %Lu, 0x%x, {0}",
-            xpvhvsect()->index, $hv->REFCNT + 1, $flags
+            xpvhvsect()->index, $hv->REFCNT, $flags
         )
     );
 
