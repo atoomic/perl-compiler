@@ -55,6 +55,7 @@ sub save_sv {
 sub skip_backref_sv {
     my ($sv) = @_;
 
+    return 0 unless $sv->can('FULLNAME');
     my $name = $sv->FULLNAME();
     return 1 if $name =~ m/::(?:BEGIN|bootstrap)$/;
     return 1 unless B::C::key_was_in_starting_stash($name);
