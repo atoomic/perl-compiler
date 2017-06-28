@@ -4,7 +4,7 @@ use strict;
 
 use B qw/cstring svref_2object RXf_EVAL_SEEN PMf_EVAL/;
 use B::C::Config;
-use B::C::File qw/pmopsect init init1 init_regexp/;
+use B::C::File qw/pmopsect init init1 init2/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 
 # Global to this space?
@@ -86,16 +86,11 @@ sub do_save {
         # some pm need early init (242), SWASHNEW needs some late GVs (GH#273)
         # esp with 5.22 multideref init. i.e. all \p{} \N{}, \U, /i, ...
         # But XSLoader and utf8::SWASHNEW itself needs to be early.
-        my $initpm = init();
+        my $initpm = init1();
 
-        # needs SWASHNEW (case fold)
-        # also SWASHNEW, now needing a multideref GV. 0x5000000 is just a hack. can be more
-        if ( ( $utf8 and $pmflags & 4 ) or ( $pmflags & 0x5000000 == 0x5000000 ) ) {
-            $initpm = init1();
-            debug( sv => sprintf( "deferred PMOP %s %s 0x%x\n", $qre, $fullname, $pmflags ) );
-        }
-        else {
-            debug( sv => sprintf( "normal PMOP %s %s 0x%x\n", $qre, $fullname, $pmflags ) );
+        if ( $qre =~ m/\\[pN]\{/ or $qre =~ m/\\U/ ) {
+            $initpm = init2();
+            print STDERR "XXXX $qre\n";
         }
 
         my $eval_seen = $op->reflags & RXf_EVAL_SEEN;
