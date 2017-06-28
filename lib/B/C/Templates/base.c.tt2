@@ -233,9 +233,10 @@ static void declare_static_sections() { /* declare our static section 'blocks' t
 /* const_sv_sub stolen from op.c */
 /* Efficient sub that returns a constant scalar value. */
 static void bc_const_sv_xsub(pTHX_ CV* cv) {
-     dXSARGS;
+     dXSARGS; /* Initializes variables needed by XSRETURN */
+     PERL_UNUSED_ARG(items);
+     
      SV *const sv = MUTABLE_SV(XSANY.any_ptr);
-     /*PERL_UNUSED_ARG(items);*/
      if (!sv) XSRETURN(0);
      EXTEND(sp, 1);
      ST(0) = sv;
