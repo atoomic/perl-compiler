@@ -89,7 +89,7 @@ sub do_save {
         '%d'          => $cv->DEPTH                                # xcv_depth
     );
 
-    if ( $xcv_outside eq '&PL_main_cv' ) {
+    if ( $xcv_outside eq '&PL_main_cv' ) {                         # this is dead code for now
         init()->sadd( "xpvcv_list[%u].xcv_outside = (CV*) &PL_main_cv;", $xpvcv_ix );
         xpvcvsect->update_field( $xpvcv_ix, 10, 'NULL /* PL_main_cv */' );
     }
@@ -134,13 +134,15 @@ sub typecast_stash_save {
 
 sub get_cv_outside {
     my ($cv) = @_;
-    my $xcv_outside = ${ $cv->OUTSIDE };
-    if ( $xcv_outside == ${ main_cv() } ) {
 
-        # Provide a temp. debugging hack for CvOUTSIDE. The address of the symbol &PL_main_cv
-        # is known to the linker, the address of the value PL_main_cv not. This is set later
-        # (below) at run-time.
-        $xcv_outside = '&PL_main_cv';
+    my $xcv_outside = ${ $cv->OUTSIDE };
+
+    if ( $xcv_outside eq ${ main_cv() } ) {
+
+        # when we were setting PL_main_cv at init time,
+        #   it appears that uncompiled version of perl was using 0....
+        #   we need to double check XS code for $cv->OUTSIDE to see if it does not fallback to PL_main_cv
+        $xcv_outside = 0;
     }
     elsif ( ref( $cv->OUTSIDE ) eq 'B::CV' ) {
         $xcv_outside = 0;    # just a placeholder for a run-time GV
