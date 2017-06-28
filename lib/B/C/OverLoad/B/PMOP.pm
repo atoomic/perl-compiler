@@ -90,7 +90,6 @@ sub do_save {
 
         if ( $qre =~ m/\\[pN]\{/ or $qre =~ m/\\U/ ) {
             $initpm = init2();
-            print STDERR "XXXX $qre\n";
         }
 
         my $eval_seen = $op->reflags & RXf_EVAL_SEEN;
