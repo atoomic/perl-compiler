@@ -460,6 +460,8 @@ static void perl_init0(pTHX) { /* fixup_ppaddr */
 
 [% section.init2.output( "    %s\n", 'perl_init2' ) %]
 
+[% section.init_regexp.output( "    %s\n", 'perl_init_regexp' ) %]
+
 /*
     COMPILE STATS:  [% compile_stats %]
      NULLOP count:  [% nullop_count %]
@@ -871,6 +873,8 @@ main(int argc, char **argv, char **env)
     CvPADLIST(PL_compcv) = pad_new(0);
 
     CopSTASH_set(&PL_compiling, PL_defstash);
+
+    perl_init_regexp(aTHX);
 
     benchmark_time("preinit");
     perl_init(aTHX);
