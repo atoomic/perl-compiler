@@ -432,7 +432,7 @@ sub get_isa ($) {
 
 # try_isa($pkg,$name) returns the found $pkg for the method $pkg::$name
 # If a method can be called (via UNIVERSAL::can) search the ISA's. No AUTOLOAD needed.
-# XXX issue 64, empty @ISA if a package has no subs. in Bytecode ok
+# https://code.google.com/archive/p/perl-compiler/issues/64, empty @ISA if a package has no subs. in Bytecode ok
 sub try_isa {
     my ( $cvstashname, $cvname ) = @_;
     return 0 unless defined $cvstashname;
@@ -480,61 +480,6 @@ sub try_isa {
         }
     }
     return 0;    # not found
-}
-
-# If the sub or method is not found:
-# 2. try UNIVERSAL::method
-# 3. try compile-time expansion of AUTOLOAD to get the goto &sub addresses
-sub try_autoload {
-    my ( $cvstashname, $cvname ) = @_;
-    no strict 'refs';
-    return unless defined $cvstashname && defined $cvname;
-    return 1 if try_isa( $cvstashname, $cvname );
-    $cvname = '' unless defined $cvname;
-    no strict 'refs';
-    if ( defined( *{ 'UNIVERSAL::' . $cvname }{CODE} ) ) {
-        debug( cv => "Found UNIVERSAL::$cvname" );
-        return svref_2object( \&{ 'UNIVERSAL::' . $cvname } );
-    }
-    my $fullname = $cvstashname . '::' . $cvname;
-    debug(
-        cv => "No definition for sub %s. Try %s::AUTOLOAD",
-        $fullname, $cvstashname
-    );
-
-    # First some exceptions, fooled by goto
-    if ( $fullname eq 'utf8::SWASHNEW' ) {
-
-        # utf8_heavy was loaded so far, so defer to a demand-loading stub
-        # always require utf8_heavy, do not care if it s already in
-        my $stub = sub { require 'utf8_heavy.pl'; goto &utf8::SWASHNEW };
-
-        return svref_2object($stub);
-    }
-
-    # Handle AutoLoader classes. Any more general AUTOLOAD
-    # use should be handled by the class itself.
-    my @isa = get_isa($cvstashname);
-    if ( $cvstashname =~ /^POSIX|Storable|DynaLoader|Net::SSLeay|Class::MethodMaker$/
-        or ( exists ${ $cvstashname . '::' }{AUTOLOAD} and grep( $_ eq "AutoLoader", @isa ) ) ) {
-
-        # Tweaked version of AutoLoader::AUTOLOAD
-        my $dir = $cvstashname;
-        $dir =~ s(::)(/)g;
-        debug( cv => "require \"auto/$dir/$cvname.al\"" );
-        eval { local $SIG{__DIE__}; require "auto/$dir/$cvname.al" unless $INC{"auto/$dir/$cvname.al"} };
-        unless ($@) {
-            verbose("Forced load of \"auto/$dir/$cvname.al\"");
-            return svref_2object( \&$fullname )
-              if defined &$fullname;
-        }
-    }
-
-    # XXX TODO Check Selfloader (test 31?)
-    svref_2object( \*{ $cvstashname . '::AUTOLOAD' } )->save
-      if $cvstashname and exists ${ $cvstashname . '::' }{AUTOLOAD};
-    svref_2object( \*{ $cvstashname . '::CLONE' } )->save
-      if $cvstashname and exists ${ $cvstashname . '::' }{CLONE};
 }
 
 sub save_object {
