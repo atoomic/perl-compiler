@@ -65,7 +65,7 @@ sub do_save {
 
     if ( my $c_function = $cv->can_do_const_sv() ) {
         $xcv_root = sprintf( '.xcv_xsub=&%s', $c_function );
-        $startfield = sprintf( '.xcv_xsubany= (void*) %s /* xsubany */', $cv->XSUBANY->save() );    # xcv_xsubany
+        $startfield = sprintf( '.xcv_xsubany= {(void*) %s /* xsubany */}', $cv->XSUBANY->save() );    # xcv_xsubany
     }
     else {    # default values for xcv_root and startfield
         $xcv_root = sprintf( "s\\_%x", $root ? $$root : 0 );
