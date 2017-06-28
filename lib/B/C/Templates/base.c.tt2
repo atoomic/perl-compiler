@@ -870,6 +870,8 @@ main(int argc, char **argv, char **env)
     CvUNIQUE_on(PL_compcv);
     CvPADLIST(PL_compcv) = pad_new(0);
 
+    CopSTASH_set(&PL_compiling, PL_defstash);
+
     benchmark_time("preinit");
     perl_init(aTHX);
 
@@ -882,8 +884,6 @@ main(int argc, char **argv, char **env)
 
     /* link the CVs to the bootstrapped ones */
     perl_init_bootstraplink( aTHX );
-
-    CopSTASH_set(&PL_compiling, PL_defstash);
 
     /* We need to output evals after dl_init, in init2  */
     [% FOREACH eval_pv IN all_eval_pvs %]
