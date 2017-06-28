@@ -480,7 +480,7 @@ sub save_gv_io {
 sub get_savefields {
     my ( $gv, $fullname ) = @_;
 
-    my $gvname = $gv->NAME;
+    my $gvname = $gv->FULLNAME;
 
     # default savefields
     my $all_fields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
@@ -516,7 +516,7 @@ sub get_savefields {
     elsif ( $fullname eq 'main::@' ) {
         $savefields = Save_SV;
     }
-    elsif ( $gvname =~ /^[^A-Za-z]$/ ) {
+    elsif ( $gvname =~ /^main::[^A-Za-z]$/ ) {
         $savefields = Save_SV;
     }
     else {
