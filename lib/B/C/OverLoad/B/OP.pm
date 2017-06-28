@@ -31,15 +31,7 @@ sub do_save {
         # saves looking up ppaddr but it's a bit naughty to hard code this
         init()->sadd( "(void)find_threadsv(%s);", cstring( $threadsv_names[ $op->targ ] ) );
     }
-    if ( $type == $B::C::OP_UCFIRST ) {
-        verbose("enabling -ffold with ucfirst");
 
-        # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
-        # problems. Ideally this code should be removed in favor of a better solution.
-        require utf8;
-        B::C::load_utf8_heavy();
-
-    }
     if ( ref($op) eq 'B::OP' ) {    # check wrong BASEOPs
                                     # [perl #80622] Introducing the entrytry hack, needed since 5.12, fixed with 5.13.8 a425677
                                     #   ck_eval upgrades the UNOP entertry to a LOGOP, but B gets us just a B::OP (BASEOP).

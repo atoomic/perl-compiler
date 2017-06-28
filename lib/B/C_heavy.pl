@@ -482,13 +482,6 @@ sub try_isa {
     return 0;    # not found
 }
 
-sub load_utf8_heavy {
-    require 'utf8_heavy.pl';
-    svref_2object( \&{"utf8\::SWASHNEW"} )->save;
-
-    return 1;
-}
-
 # If the sub or method is not found:
 # 2. try UNIVERSAL::method
 # 3. try compile-time expansion of AUTOLOAD to get the goto &sub addresses
@@ -559,9 +552,6 @@ sub walksymtable {
     my ( $symref, $method, $recurse, $prefix ) = @_;
     my ( $sym, $ref, $fullname );
     $prefix = '' unless defined $prefix;
-
-    # If load_utf8_heavy doesn't happen before we walk utf8:: (when utf8_heavy has already been called) then the stored CV for utf8::SWASHNEW could be wrong.
-    load_utf8_heavy() if ( $prefix eq 'utf8::' && defined $symref->{'SWASHNEW'} );
 
     my @list = sort {
 

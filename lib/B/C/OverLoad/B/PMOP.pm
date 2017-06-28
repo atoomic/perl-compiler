@@ -83,19 +83,6 @@ sub do_save {
         my $pmflags = $op->pmflags;
         debug( gv => "pregcomp $pmsym $qre:$relen" . ( $utf8 ? " SVf_UTF8" : "" ) . sprintf( " 0x%x\n", $pmflags ) );
 
-        # Since 5.13.10 with PMf_FOLD (i) we need to swash_init("utf8::Cased").
-        if ( $pmflags & 4 ) {
-
-            # Note: in CORE utf8::SWASHNEW is demand-loaded from utf8 with Perl_load_module()
-            B::C::load_utf8_heavy();
-
-            my $swash_ToCf = B::HV::swash_ToCf_value();
-            if ( !$swash_init and $swash_ToCf ) {
-                init()->add("PL_utf8_tofold = $swash_ToCf;");
-                $swash_init++;
-            }
-        }
-
         # some pm need early init (242), SWASHNEW needs some late GVs (GH#273)
         # esp with 5.22 multideref init. i.e. all \p{} \N{}, \U, /i, ...
         # But XSLoader and utf8::SWASHNEW itself needs to be early.
