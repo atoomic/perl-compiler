@@ -167,26 +167,40 @@ sub do_save {
         $sv_list_index,
         sprintf(
             "&xpvhv_list[%d], %Lu, 0x%x, {0}",
-            xpvhvsect()->index, $hv->REFCNT + 1, $flags
+            xpvhvsect()->index, $hv->REFCNT, $flags
         )
     );
 
     my $init = $stash_name ? init_stash() : init_static_assignments();
 
     my $has_ook = $flags & SVf_OOK ? q{TRUE} : q{FALSE};    # only need one AUX when OOK is set
+    my $backrefs_sym = 0;
+    if ( my $backrefs = $hv->BACKREFS ) {
 
-    {                                                       # add hash content even if the hash is empty [ maybe only for %INC ??? ]
+        # backref is by default a list AV, but when only one single GV is in this list, then the AV is saved
+        if ( ref $backrefs eq 'B::AV' ) {
+            $backrefs_sym = $backrefs->save( undef, undef, 'backref_save' );
+        }
+        else {
+            # backrefs is not an array - single element list - backrefs=GV
+            if ( !B::AV::skip_backref_sv($backrefs) ) {
+                $backrefs_sym = $backrefs->save();
+            }
+        }
+    }
+
+    {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
         $init->no_split;
         my $comment = $stash_name ? "/* STASH declaration for ${stash_name}:: */" : '';
         $init->sadd( '{ %s', $comment );
         $init->indent(+1);
-        $init->sadd( q{HvSETUP(%s, %d, %s);}, $sym, $max + 1, $has_ook );
+        $init->sadd( q{HvSETUP(%s, %d, %s, (SV*) %s);}, $sym, $max + 1, $has_ook, $backrefs_sym );
 
         my @hash_elements;
         {
             my $i = 0;
             my %hash_kv = ( map { $i++, $_ } @hash_content_to_save );
-            @hash_elements = values %hash_kv;               # randomize the hash eleement order to the buckets [ when coliding ]
+            @hash_elements = values %hash_kv;    # randomize the hash eleement order to the buckets [ when coliding ]
         }
 
         # uncomment for saving hashes in a consistent order while debugging

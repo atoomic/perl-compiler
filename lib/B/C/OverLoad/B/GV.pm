@@ -96,7 +96,7 @@ sub do_save {
         gvsect()->supdatel(
             $gv_ix,
             "&%s"               => $xpvgv,                # XPVGV*  sv_any
-            "%u"                => $gv->REFCNT + 1,       #  sv_refcnt - +1 to make it immortal
+            "%u"                => $gv->REFCNT,           #  sv_refcnt - +1 to make it immortal
             "0x%x"              => $gv->FLAGS,            # sv_flags
             "{.svu_gp=(GP*)%s}" => $gpsym,                # GP* sv_u - plug the gp in our sv_u slot
         );
@@ -177,10 +177,10 @@ sub savegp_from_gv {
     my $gp_egv = $gv->save_egv();
 
     # walksymtable creates an extra reference to the GV (#197): STATIC_HV: Confirm this is actually a true statement at this point.
-    my $gp_refcount = $gv->GvREFCNT + 1;    # +1 for immortal: do not free our static GVs
+    my $gp_refcount = $gv->GvREFCNT;    # +1 for immortal: do not free our static GVs
 
-    my $gp_line = $gv->LINE;                # we want to use GvLINE from B.xs
-                                            # present only in perl 5.22.0 and higher. this flag seems unused ( saving 0 for now should be similar )
+    my $gp_line = $gv->LINE;            # we want to use GvLINE from B.xs
+                                        # present only in perl 5.22.0 and higher. this flag seems unused ( saving 0 for now should be similar )
 
     if ( !$gv->is_empty ) {
 
@@ -188,7 +188,7 @@ sub savegp_from_gv {
         $gp_line = $gp_line > 2147483647 ? 4294967294 - $gp_line : $gp_line;
     }
 
-    my $gp_flags = $gv->GPFLAGS;            # PERL_BITFIELD32 gp_flags:1; ~ unsigned gp_flags:1
+    my $gp_flags = $gv->GPFLAGS;        # PERL_BITFIELD32 gp_flags:1; ~ unsigned gp_flags:1
     die("gp_flags seems used now ???") if $gp_flags;    # STATIC_HV: Does removing this die fix any tests?
 
     # gp_file_hek is only saved for non-stashes.
