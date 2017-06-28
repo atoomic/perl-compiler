@@ -192,7 +192,7 @@ sub cleanup_stashes {
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
         next if $st eq 'DB::';
-        delete $stashes->{$st} if !scalar keys %{ $stashes->{$st} };
+        #delete $stashes->{$st} if !scalar keys %{ $stashes->{$st} };
     }
 
     # special logic for CORE::GLOBAL:: MUST exist ( PL_debstash )
