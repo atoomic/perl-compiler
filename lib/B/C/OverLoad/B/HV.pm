@@ -249,7 +249,7 @@ sub do_save {
         }
         my $get_mro = ( scalar %main::mro:: ) ? mro->can('get_mro') : 0;
         if ( $stash_name ne 'mro' and $get_mro and $get_mro->($stash_name) eq 'c3' ) {
-            init2()->sadd( 'Perl_mro_set_mro(aTHX_ HvMROMETA(%s), newSVpvs("c3"));', savestashpv($stash_name) );
+            init2()->sadd( 'Perl_mro_set_mro(aTHX_ HvMROMETA(%s), newSVpvs("c3")); /* %s */', savestashpv($stash_name), $stash_name );
         }
     }
 
