@@ -35,10 +35,10 @@ sub do_save {
 
     if ( $op->type == $B::C::OP_FORMLINE and $B::C::const_strings ) {    # -O3 ~
                                                                          # non-static only for all const strings containing ~ #277
-        my $sv;
         my $fop  = $op;
         my $svop = $op->first;
         while ( $svop != $op and ref($svop) ne 'B::NULL' ) {
+            my $sv;
             if ( $svop->name eq 'const' and $svop->can('sv') ) {
                 $sv = $svop->sv;
             }
