@@ -41,7 +41,7 @@ sub save_sv {
         "%s"   => "NULL",                        # xav_alloc  /* pointer to beginning of C array of SVs */ This has to be dynamically setup at init().
     );
 
-    svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT + 1, $av->FLAGS, 0 );
+    svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
 
     svsect()->debug( $fullname, $av );
     my $sv_ix    = svsect()->index;
