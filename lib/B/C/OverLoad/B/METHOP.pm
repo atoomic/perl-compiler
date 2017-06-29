@@ -3,7 +3,7 @@ package B::METHOP;
 use strict;
 
 use B qw/cstring SVf_FAKE/;
-use B::C::File qw( methopsect init init2 );
+use B::C::File qw( methopsect init2 );
 use B::C::Config;
 use B::C::Helpers::Symtable qw/savesym/;
 use B::C::Helpers qw/do_labels/;
