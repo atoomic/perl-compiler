@@ -18,6 +18,10 @@ sub new {
 
     $self->{'output_file'} or die;
 
+    # expected input which should come from caller
+    ref $self->{'dl_so_files'} eq 'ARRAY' or die 'Missing dl_so_files';
+    ref $self->{'dl_modules'} eq 'ARRAY'  or die 'Missing dl_modules';
+
     $self->{'core_modules'} = { map { s/::[^:]+$//; ( $_ => 1 ) } sort keys %{ $self->{'core_subs'} } };
 
     $self->{'modules_found'} = {};
