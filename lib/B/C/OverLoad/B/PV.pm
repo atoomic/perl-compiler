@@ -15,6 +15,11 @@ sub SVp_SCREAM  { 0x00008000 }    # method name is DOES
 sub do_save {
     my ( $sv, $fullname, $custom ) = @_;
 
+    if ( !length $fullname ) {
+        print STDERR B::C::Save::stack_flat();
+        die("B::PV requires a \$fullname be passed to save please!");
+    }
+
     my $shared_hek = is_shared_hek($sv);
 
     my ( $savesym, $cur, $len, $pv, $static, $flags ) = save_pv_or_rv( $sv, $fullname );

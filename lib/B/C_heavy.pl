@@ -872,11 +872,11 @@ sub build_template_stash {
         'devel_peek_needed'  => $devel_peek_needed,
         'MAX_PADNAME_LENGTH' => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
         'PL'                 => {
-            'defstash'    => save_defstash(),                                                                             # Re-uses the cache.
-                                                                                                                          # we do not want the SVf_READONLY and SVf_PROTECT flags to be set to PL_curstname : newSVpvs_share("main")
-            'curstname'   => svref_2object( \'main' )->save( undef, { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),
+            'defstash'    => save_defstash(),                                                                                   # Re-uses the cache.
+                                                                                                                                # we do not want the SVf_READONLY and SVf_PROTECT flags to be set to PL_curstname : newSVpvs_share("main")
+            'curstname'   => svref_2object( \'main' )->save( 'curstname', { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),
             'incgv'       => svref_2object( \*main::INC )->save("main::INC"),
-            'hintgv'      => svref_2object( \*^H )->save("^H"),                                                           # This shouldn't even exist at run time!!!
+            'hintgv'      => svref_2object( \*^H )->save("^H"),                                                                 # This shouldn't even exist at run time!!!
             'defgv'       => svref_2object( \*_ )->save("_"),
             'errgv'       => svref_2object( \*@ )->save("@"),
             'replgv'      => svref_2object( \*^R )->save("^R"),
