@@ -193,7 +193,6 @@ t/v5.24.1/C-COMPILED/io/tell.t
 t/v5.24.1/C-COMPILED/io/through.t
 t/v5.24.1/C-COMPILED/io/utf8.t
 t/v5.24.1/C-COMPILED/known_errors.txt
-t/v5.24.1/C-COMPILED/known_errors.txt.ERR
 t/v5.24.1/C-COMPILED/known_errors.ztravis.txt
 t/v5.24.1/C-COMPILED/mro/basic.t
 t/v5.24.1/C-COMPILED/mro/basic_01_c3.t
