@@ -20,6 +20,9 @@ sub do_save {
     #    die("B::PV requires a \$fullname be passed to save please!");
     #}
 
+    my ( $ix, $sym ) = svsect()->reserve($sv);
+    svsect()->debug( $fullname, $sv );
+
     my $shared_hek = is_shared_hek($sv);
 
     my ( $savesym, $cur, $len, $pv, $static, $flags ) = save_pv_or_rv( $sv, $fullname );
@@ -52,17 +55,15 @@ sub do_save {
 
     svsect()->comment("any, refcnt, flags, sv_u");
     $savesym = $savesym eq 'NULL' ? '0' : ".svu_pv=(char*) $savesym";
-    my $sv_ix = svsect()->saddl(
+    my $sv_ix = svsect()->supdatel(
+        $ix,
         '%s'   => $xpv_sym,
         '%Lu'  => $refcnt,
         '0x%x' => $flags,
         '{%s}' => $savesym
     );
 
-    my $s = "sv_list[$sv_ix]";
-    svsect()->debug( $fullname, $sv );
-
-    return "&" . $s;
+    return $sym;
 }
 
 sub save_pv_or_rv {
