@@ -53,7 +53,7 @@ BEGIN {
 # but 5.6.2 works fine
 use B qw(minus_c sv_undef walkoptree walkoptree_slow main_root main_start peekop
   class cchar svref_2object compile_stats comppadlist hash
-  init_av end_av opnumber cstring
+  init_av end_av opnumber cstring main_cv
   HEf_SVKEY SVf_POK SVf_ROK SVf_IOK SVf_NOK SVf_IVisUV SVf_READONLY SVf_PROTECT);
 
 BEGIN {
@@ -732,10 +732,6 @@ sub save_context {
         "PL_stack_sp = PL_stack_base;"    # reset stack (was 1++)
     );
 
-    init1()->add(
-        "PadlistNAMES(CvPADLIST(PL_main_cv)) = PL_comppad_name = $curpad_nam; /* namepad */",
-        "PadlistARRAY(CvPADLIST(PL_main_cv))[1] = (PAD*)$curpad_sym; /* curpad */"
-    );
 }
 
 sub save_optree {
@@ -882,6 +878,7 @@ sub build_template_stash {
             'replgv'      => svref_2object( \*^R )->save("^R"),
             'debstash'    => svref_2object( \%DB:: )->save("DB::"),
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
+            'main_cv'     => main_cv()->save("PL_main_cv"),
         },
         'IO' => {
             'STDIN'  => svref_2object( \*::STDIN )->save("STDIN"),

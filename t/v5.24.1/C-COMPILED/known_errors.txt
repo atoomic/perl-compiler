@@ -56,7 +56,6 @@ op/threads-dirh.t           COMPAT    We don't support threaded perl in this bra
 op/threads.t                COMPAT    We don't support threaded perl in this branch.
 op/vec.t                    TESTS     BC issue #269
 op/warn.t                   TESTS     BC issue #219 - overload issue
-op/write.t                  SIG       BC issue #219 - overload issue + BC issue #281 (nested format)
 op/yadayada.t               COMPAT    Unimplemented does not display the correct line number
 opbasic/magic_phase.t       COMPAT    Testing BEGIN, INIT, ... phases order, not compatible with B::C
 re/overload.t               TESTS     ?? + BC issue #219 - overload issue
@@ -105,7 +104,6 @@ xtestc/0263.t               SKIP      need investigation: different result on To
 xtestc/0269.t               TESTS     Output is: ""
 xtestc/0274.t               TESTS     Output is: "1..5\nok 1\nok 2\nok 3\nok 4\n"
 xtestc/0278.t               TESTS     Output is: ""
-xtestc/0281.t               TESTS     Output is: ""
 xtestc/0293.t               TESTS     Output is: ""
 xtestc/0295.t               TESTS     Output is: ""
 xtestc/0304.t               TESTS     Output is: "0304.bin: pp.c:177: Perl pp ..."

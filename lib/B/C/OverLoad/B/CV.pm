@@ -79,7 +79,7 @@ sub do_save {
         '{%u}'        => $len,                                     # xpv_len_u -- warning this is not CUR and LEN for the pv
         '%s'          => $cv_stash,                                # xcv_stash
         '{%s}'        => $startfield,                              # xcv_start_u --- OP *    xcv_start; or ANY xcv_xsubany;
-        "{%s}"        => $xcv_root,                                # xcv_root_u  --- OP *    xcv_root; or void    (*xcv_xsub) (pTHX_ CV*);
+        '{%s}'        => $xcv_root,                                # xcv_root_u  --- OP *    xcv_root; or void    (*xcv_xsub) (pTHX_ CV*);
         q{%s}         => $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
         q{(char*) %s} => $xcv_file,                                # xcv_file
         '{%s}'        => $cv->cv_save_padlist($origname),          # xcv_padlist_u
@@ -88,11 +88,6 @@ sub do_save {
         '0x%x'        => $cv->CvFLAGS,                             # xcv_flags
         '%d'          => $cv->DEPTH                                # xcv_depth
     );
-
-    if ( $xcv_outside eq '&PL_main_cv' ) {                         # this is dead code for now
-        init()->sadd( "xpvcv_list[%u].xcv_outside = (CV*) &PL_main_cv;", $xpvcv_ix );
-        xpvcvsect->update_field( $xpvcv_ix, 10, 'NULL /* PL_main_cv */' );
-    }
 
     # STATIC_HV: We don't think the sv_u is ever set in the SVCV so this check might be wrong
     # we are not saving the svu for a CV, all evidence indicates that the value is null (always?)
@@ -135,23 +130,11 @@ sub typecast_stash_save {
 sub get_cv_outside {
     my ($cv) = @_;
 
-    my $xcv_outside = ${ $cv->OUTSIDE };
+    my $ref = ref( $cv->OUTSIDE );
 
-    if ( $xcv_outside eq ${ main_cv() } ) {
-
-        # when we were setting PL_main_cv at init time,
-        #   it appears that uncompiled version of perl was using 0....
-        #   we need to double check XS code for $cv->OUTSIDE to see if it does not fallback to PL_main_cv
-        $xcv_outside = 0;
-    }
-    elsif ( ref( $cv->OUTSIDE ) eq 'B::CV' ) {
-        $xcv_outside = 0;    # just a placeholder for a run-time GV
-    }
-    elsif ($xcv_outside) {
-        $cv->OUTSIDE->save;
-    }
-
-    return $xcv_outside;
+    return 0 unless $ref;
+    return 0 if $ref eq 'B::CV' && ${ $cv->OUTSIDE } ne ${ main_cv() };
+    return $cv->OUTSIDE->save;
 }
 
 sub cv_save_padlist {
@@ -218,16 +201,16 @@ sub get_xcv_gv_u {
     # $cv->CvFLAGS & CVf_NAMED
     if ( my $pv = $cv->NAME_HEK ) {
         my ($share_he) = save_shared_he($pv);
-        my $xcv_gv_u = sprintf( "{.xcv_hek=%s }", get_sHe_HEK($share_he) );    # xcv_gv_u
+        my $xcv_gv_u = sprintf( "{.xcv_hek=%s}", get_sHe_HEK($share_he) );    # xcv_gv_u
         return $xcv_gv_u;
     }
 
     #GV (.xcv_gv)
     my $xcv_gv_u = $cv->GV ? $cv->GV->save : 'Nullsv';
 
-    return $xcv_gv_u if $xcv_gv_u eq 'Nullsv';
+    return '{0}' if $xcv_gv_u eq 'Nullsv';
 
-    return sprintf( "{ .xcv_gv = %s }", $xcv_gv_u );
+    return sprintf( "{.xcv_gv=%s}", $xcv_gv_u );
 }
 
 sub get_ROOT {
@@ -298,11 +281,15 @@ sub is_phase_name {
 sub FULLNAME {
     my ($cv) = @_;
 
+    #return q{PL_main_cv} if $cv eq ${ main_cv() };
     # Do not coerce a RV into a GV during compile by calling $cv->GV on something with a NAME_HEK (RV)
     my $name = $cv->NAME_HEK;
     return $name if ($name);
 
-    return $cv->GV->STASH->NAME . '::' . $cv->GV->NAME;
+    my $gv = $cv->GV;
+    return q{SPECIAL} if ref $gv eq 'B::SPECIAL';
+
+    return $cv->GV->FULLNAME;
 }
 
 1;

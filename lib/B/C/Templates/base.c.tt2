@@ -235,7 +235,7 @@ static void declare_static_sections() { /* declare our static section 'blocks' t
 static void bc_const_sv_xsub(pTHX_ CV* cv) {
      dXSARGS; /* Initializes variables needed by XSRETURN */
      PERL_UNUSED_ARG(items); /* Suppresses GCC warning about unused arg items */
-     
+
      SV *const sv = MUTABLE_SV(XSANY.any_ptr);
      if (!sv) XSRETURN(0);
      EXTEND(sp, 1);
@@ -873,11 +873,6 @@ main(int argc, char **argv, char **env)
 
     TAINT_NOT;
 
-    /* PL_compcv used during compilation. */
-    PL_compcv = MUTABLE_CV(newSV_type(SVt_PVCV));
-    CvUNIQUE_on(PL_compcv);
-    CvPADLIST(PL_compcv) = pad_new(0);
-
     CopSTASH_set(&PL_compiling, PL_defstash);
 
     perl_init_regexp(aTHX);
@@ -1051,11 +1046,7 @@ void bc_parse_body(char **env)
         }
     }
 
-    PL_main_cv = PL_compcv = MUTABLE_CV(newSV_type(SVt_PVCV));
-    CvUNIQUE_on(PL_compcv);
-
-    CvPADLIST_set(PL_compcv, pad_new(0));
-
+    PL_main_cv = PL_compcv = ( ( CV*) [% PL.main_cv %] );
     PL_isarev = newHV();
 
     /* Setup built in Perl XS symbols */
