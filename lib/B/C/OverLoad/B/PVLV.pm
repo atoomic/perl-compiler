@@ -16,6 +16,9 @@ sub do_save {
 
     die("We know of no code that produces a PVLV. Please contact the busy camels immediately.");
 
+    my ( $ix, $sym ) = svsect()->reserve($sv);
+    svsect()->debug( $fullname, $sv );
+
     my ( $pvsym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
     my ( $lvtarg, $lvtarg_sym );    # XXX missing
 
@@ -50,17 +53,9 @@ sub do_save {
         "%d"   => $sv->LvFLAGS,                    # xlv_flags # STATIC_HV: LvFLAGS is unimplemented in B
     );
 
+    svsect()->supdate( $ix, "&xpvlv_list[%d], %Lu, 0x%x, {(char*)%s}", xpvlvsect()->index, $sv->REFCNT, $flags, $pvsym );
 
-    my $ix = svsect()->add(
-        sprintf(
-            "&xpvlv_list[%d], %Lu, 0x%x, {(char*)%s}",
-            xpvlvsect()->index, $sv->REFCNT, $flags, $pvsym
-        )
-    );
-
-    svsect()->debug( $fullname, $sv );
-
-    return "&sv_list[" . $ix . "]";
+    return $sym;
 }
 
 1;
