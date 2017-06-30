@@ -3,7 +3,8 @@ use strict;
 
 # use warnings
 
-use B::C::Debug ();
+use B::C::Debug             ();
+use B::C::Helpers::Symtable ();
 my %sections;
 
 sub BOOTSTRAP_marker {
@@ -42,6 +43,27 @@ sub add {
 
     # return its position in the list (first one will be 0), avoid to call index just after in most cases
     return $self->index();
+}
+
+sub reserve {
+    my ( $self, $sv, $type ) = @_;
+    $self or die("This is a method call");
+    $sv   or die("Need a symbol");
+    my $type_cast = $type ? "($type)" : '';
+
+    my $caller_package = ( caller(0) )[0];
+    $caller_package =~ s/^B:://;
+
+    my $ix = $self->add("FAKE $caller_package");
+
+    my $list_name = $self->{'name'} or die;
+
+    # (OP*)&svop_list[5]"
+    my $sym = sprintf( '%s&%s_list[%d]', $type_cast, $list_name, $ix );
+
+    B::C::Helpers::Symtable::savesym( $sv, $sym );
+
+    return ( $ix, $sym );
 }
 
 sub get_sym {
