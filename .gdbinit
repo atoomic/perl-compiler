@@ -14,6 +14,14 @@ set confirm off
 set print array on
 set print array-indexes on
 
+# allow longer debug sessions
+set max-user-call-depth 99999999
+
+# https://sourceware.org/gdb/onlinedocs/gdb/TUI-Commands.html#TUI-Commands
+# can use CTRL-X-O to switch
+#focus cmd
+#focus src
+
 # unsafe but can load .gdbinit from a local directory
 #set auto-load safe-path /
 
@@ -64,6 +72,12 @@ define check_is_perl
   get_program_name
   gdb_strcmp $return "/usr/local/cpanel/3rdparty/perl/524/bin/perl"
   set $return = $result
+end
+
+define multistep
+  while(1)
+    step
+  end
 end
 
 define dumphv
