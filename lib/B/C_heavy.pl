@@ -275,7 +275,7 @@ my $opsect_common;
 BEGIN {
     # should use a static variable
     # only for $] < 5.021002
-    $opsect_common = "next, sibling, ppaddr, " . ( MAD() ? "madprop, " : "" ) . "targ, type, " . "opt, slabbed, savefree, static, folded, moresib, spare" . ", flags, private";
+    $opsect_common = "next, sibling, ppaddr, targ, type, " . "opt, slabbed, savefree, static, folded, moresib, spare" . ", flags, private";
 }
 
 sub opsect_common { return $opsect_common }

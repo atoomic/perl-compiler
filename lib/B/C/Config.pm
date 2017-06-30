@@ -25,13 +25,11 @@ sub LOWEST_IMAGEBASE() { 0x10000 }
 
 sub _autoload_map {
 
-    my $map = {
-        MAD => $B::C::Flags::Config{mad},
-    };
+    my $map = {};
     $map->{HAVE_DLFCN_DLOPEN} = $B::C::Flags::Config{i_dlfcn} && $B::C::Flags::Config{d_dlopen};
 
     # debugging variables
-    $map->{'DEBUGGING'}             = ( $B::C::Flags::Config{ccflags} =~ m/-DDEBUGGING/ );
+    $map->{'DEBUGGING'} = ( $B::C::Flags::Config{ccflags} =~ m/-DDEBUGGING/ );
 
     return $map;
 }
