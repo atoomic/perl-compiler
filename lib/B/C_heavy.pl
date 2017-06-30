@@ -877,28 +877,28 @@ sub build_template_stash {
             'curstname'   => svref_2object( \'main' )->save( 'curstname', { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),
             'incgv'       => svref_2object( \*main::INC )->save("main::INC"),
             'hintgv'      => svref_2object( \*^H )->save("^H"),                                                                 # This shouldn't even exist at run time!!!
-            'defgv'       => svref_2object( \*_ )->save("_"),
+            'defgv'       => svref_2object( \*::_ )->save("_"),
             'errgv'       => svref_2object( \*@ )->save("@"),
             'replgv'      => svref_2object( \*^R )->save("^R"),
             'debstash'    => svref_2object( \%DB:: )->save("DB::"),
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
         },
         'IO' => {
-            'STDIN'  => svref_2object( \*STDIN )->save("STDIN"),
-            'STDOUT' => svref_2object( \*STDOUT )->save("STDOUT"),
-            'STDERR' => svref_2object( \*STDERR )->save("STDERR"),
+            'STDIN'  => svref_2object( \*::STDIN )->save("STDIN"),
+            'STDOUT' => svref_2object( \*::STDOUT )->save("STDOUT"),
+            'STDERR' => svref_2object( \*::STDERR )->save("STDERR"),
 
-            'stdin'  => svref_2object( \*stdin )->save("stdin"),
-            'stdout' => svref_2object( \*stdout )->save("stdout"),
-            'stderr' => svref_2object( \*stderr )->save("stderr"),
+            'stdin'  => svref_2object( \*::stdin )->save("stdin"),
+            'stdout' => svref_2object( \*::stdout )->save("stdout"),
+            'stderr' => svref_2object( \*::stderr )->save("stderr"),
         },
         'XS'          => $settings->{'XS'},
         'global_vars' => {
             'dollar_caret_H'       => $^H,
             'dollar_caret_X'       => cstring($^X),
             'dollar_caret_UNICODE' => ${^UNICODE},
-            'dollar_zero'          => svref_2object( \*0 )->save("0"),
-            'dollar_comma'         => svref_2object( \*, )->save(","),
+            'dollar_zero'          => svref_2object( \*::0 )->save("0"),
+            'dollar_comma'         => svref_2object( \*::, )->save(","),
         },
         'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
     };
