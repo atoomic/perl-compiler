@@ -50,6 +50,11 @@ sub can_save_stash {
 sub key_was_missing_from_stash_at_compile {
     my ( $stash_name, $key, $curstash ) = @_;
 
+    ### STATIC_HV need improvement there - using a more generic method for whitelisting
+    if ( !$stash_name && $key && $key =~ qr{^B::C::} ) {
+        return 1;
+    }
+
     # when it s not a stash (noname) we always want to save all the keys from the hash
     return 0 unless $stash_name;
 
