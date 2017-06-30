@@ -52,17 +52,4 @@ sub do_save {
     return $sym;
 }
 
-# the save methods should probably be renamed visit
-sub save_op {    # previously known as 'sub save_rv'
-    my ( $sv, $fullname ) = @_;
-
-    $fullname ||= '(unknown)';
-
-    my $rv = $sv->RV->save($fullname);
-
-    #$rv =~ s/^\(([AGHS]V|IO)\s*\*\)\s*(\&sv_list.*)$/$2/;
-
-    return $rv;
-}
-
 1;

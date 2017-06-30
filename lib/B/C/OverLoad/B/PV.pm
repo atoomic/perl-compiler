@@ -95,9 +95,9 @@ sub save_pv_or_rv {
     if ($rok) {
 
         # this returns us a SV*. 5.8 expects a char* in xpvmg.xpv_pv
-        debug( sv => "save_pv_or_rv: B::RV::save_op(" . ( $sv || '' ) );
+        debug( sv => "save_pv_or_rv: B::RV::save(" . ( $sv || '' ) );
 
-        my $newsym = B::RV::save_op( $sv, $fullname );
+        my $newsym = $sv->RV->save($fullname);
 
         #
         # newsym can be a get_cv call from get_cv_string
