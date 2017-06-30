@@ -14,6 +14,9 @@ sub do_save {
     my $downgraded = downgrade_pvnv( $sv, $fullname );
     return $downgraded if defined $downgraded;
 
+    my ( $ix, $sym ) = svsect()->reserve($sv);
+    svsect()->debug( $fullname, $sv );
+
     my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
     my $nvx = '0.0';
     my $ivx = get_integer_value( $sv->IVX );    # here must be IVX!
@@ -33,9 +36,8 @@ sub do_save {
         $xpv_sym = sprintf( "&xpvnv_list[%d]", $xpv_ix );
     }
 
-    my $ix = svsect()->sadd( "%s, %Lu, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT + 1, $flags, $savesym );
-    svsect()->debug( $fullname, $sv );
-    return "&sv_list[" . $ix . "]";
+    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT + 1, $flags, $savesym );
+    return $sym;
 }
 
 1;
