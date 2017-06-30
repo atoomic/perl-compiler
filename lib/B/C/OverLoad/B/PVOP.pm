@@ -11,11 +11,12 @@ sub do_save {
     my ( $cow_sym, $cur, $len ) = savecowpv( $op->pv );
 
     pvopsect()->comment_common("pv");
-
-    my $ix = pvopsect()->sadd( "%s, (char*)%s", $op->_save_common, $cow_sym );
+    my ( $ix, $sym ) = pvopsect()->reserve( $op, "OP*" );
     pvopsect()->debug( $op->name, $op );
 
-    return "(OP*)&pvop_list[$ix]";
+    pvopsect()->supdate( $ix, "%s, (char*)%s", $op->_save_common, $cow_sym );
+
+    return $sym;
 }
 
 1;
