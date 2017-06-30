@@ -871,12 +871,12 @@ sub build_template_stash {
             'defstash'    => save_defstash(),                                                                                   # Re-uses the cache.
                                                                                                                                 # we do not want the SVf_READONLY and SVf_PROTECT flags to be set to PL_curstname : newSVpvs_share("main")
             'curstname'   => svref_2object( \'main' )->save( 'curstname', { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),
-            'incgv'       => svref_2object( \*main::INC )->save("main::INC"),
+            'incgv'       => svref_2object( \*::INC )->save("main::INC"),
             'hintgv'      => svref_2object( \*^H )->save("^H"),                                                                 # This shouldn't even exist at run time!!!
-            'defgv'       => svref_2object( \*::_ )->save("_"),
-            'errgv'       => svref_2object( \*@ )->save("@"),
+            'defgv'       => svref_2object( \*{'::_'} )->save("_"),
+            'errgv'       => svref_2object( \*{'::@'} )->save("@"),
             'replgv'      => svref_2object( \*^R )->save("^R"),
-            'debstash'    => svref_2object( \%DB:: )->save("DB::"),
+            'debstash'    => svref_2object( \%::DB:: )->save("DB::"),
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
             'main_cv'     => main_cv()->save("PL_main_cv"),
         },
@@ -894,8 +894,8 @@ sub build_template_stash {
             'dollar_caret_H'       => $^H,
             'dollar_caret_X'       => cstring($^X),
             'dollar_caret_UNICODE' => ${^UNICODE},
-            'dollar_zero'          => svref_2object( \*::0 )->save("0"),
-            'dollar_comma'         => svref_2object( \*::, )->save(","),
+            'dollar_zero'          => svref_2object( \*{'::0'} )->save("0"),
+            'dollar_comma'         => svref_2object( \*{'::,'} )->save(","),
         },
         'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
     };
