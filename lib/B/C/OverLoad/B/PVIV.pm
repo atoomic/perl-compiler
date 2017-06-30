@@ -12,6 +12,9 @@ sub do_save {
     my $downgraded = downgrade_pviv( $sv, $fullname );
     return $downgraded if defined $downgraded;
 
+    my ( $ix, $sym ) = svsect()->reserve($sv);
+    svsect()->debug( $fullname, $sv );
+
     # save the PVIV
     my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
 
@@ -27,12 +30,9 @@ sub do_save {
     }
 
     # save the pv
-    my $ix = svsect()->sadd(
-        "%s, %u, 0x%x, {.svu_pv=(char*) %s}",
-        $xpv_sym, $sv->REFCNT + 1, $flags, $savesym
-    );
-    svsect()->debug( $fullname, $sv );
-    return "&sv_list[" . $ix . "]";
+    svsect()->supdate( $ix, "%s, %u, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT + 1, $flags, $savesym );
+
+    return $sym;
 }
 
 1;
