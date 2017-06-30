@@ -130,15 +130,11 @@ sub _save_common {
     );
 }
 
-use constant STATIC => '0, 0, 0, 1, 0, 0, 0';
-my $PATTERN = "%s," . ( MAD() ? "0," : "" ) . " %u, %u, " . STATIC . ", 0x%x, 0x%x";
-
 sub _save_common_middle {
     my $op = shift;
 
-    # XXX maybe add a ix=opindex string for debugging if debug('flags')
     return sprintf(
-        $PATTERN,
+        "%s, %u, %u, 0, 0, 0, 1, 0, 0, 0, 0x%x, 0x%x",
         $op->fake_ppaddr, $op->targ, $op->type, $op->flags, $op->private
     );
 }
