@@ -37,9 +37,6 @@ sub _savefields_to_str {
 my $CORE_SYMS = {
     'main::ENV'  => 'PL_envgv',
     'main::ARGV' => 'PL_argvgv',
-
-    # temporary workaround for skipping B::svref_2object ( need a better patch to block it earlier )
-    'B::svref_2object' => 'NULL',
 };
 
 # These variables are the proxy variables we will use to save @_ and $_
