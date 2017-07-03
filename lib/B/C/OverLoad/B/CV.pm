@@ -15,6 +15,8 @@ use B::C::Helpers::Symtable qw/objsym savesym/;
 my $initsub_index = 0;
 my $anonsub_index = 0;
 
+sub SVt_PVFM { 14 }    # not exported by B
+
 sub do_save {
     my ( $cv, $origname ) = @_;
     debug( cv => "CV ==  %s", $origname );
@@ -133,8 +135,27 @@ sub get_cv_outside {
     my $ref = ref( $cv->OUTSIDE );
 
     return 0 unless $ref;
-    return 0 if $ref eq 'B::CV' && ${ $cv->OUTSIDE } ne ${ main_cv() };
+
+    my $fn = $cv->get_full_name;
+    if ( $ref eq 'B::CV' ) {
+        return 0 unless can_save_sub($fn);
+
+        # can provide a format on STDOUT & co
+        return 0 if ${ $cv->OUTSIDE } ne ${ main_cv() } && $fn !~ qr{^main::STD};
+    }
+
     return $cv->OUTSIDE->save;
+}
+
+# should probably leave in the same pm than can_save_stash
+sub can_save_sub {    # very similar to can_save_stash
+    my $cvname = shift;
+
+    return 0 unless defined $cvname;
+
+    # get the stash name
+    $cvname =~ s{(::[^:]+)$}{} or return 0;    # no stash name ?? should we prefix it by main ??
+    return B::HV::can_save_stash($cvname);
 }
 
 sub cv_save_padlist {

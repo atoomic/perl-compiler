@@ -42,7 +42,6 @@ op/glob.t                   SKIP      Occasional Flapper. Waiting for more BC is
 op/goto_xs.t                COMPAT    needs XS::APItest
 op/lex.t                    COMPAT    Tests trigger errors at compilation time
 op/lexsub.t                 BC        BC issue #219 - overload issue
-op/lvref.t                  SIG       BC issue #304 - SIGABRT - assertion failures with lexical_sub feature
 op/magic.t                  TESTS     Test results:
 op/method.t                 TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
 op/override.t               COMPAT    crazy test which override CORE::GLOBAL::require @BEGIN
@@ -106,7 +105,6 @@ xtestc/0274.t               TESTS     Output is: "1..5\nok 1\nok 2\nok 3\nok 4\n
 xtestc/0278.t               TESTS     Output is: ""
 xtestc/0293.t               TESTS     Output is: ""
 xtestc/0295.t               TESTS     Output is: ""
-xtestc/0304.t               TESTS     Output is: "0304.bin: pp.c:177: Perl pp ..."
 xtestc/0309.t               TESTS     Output is: ""
 xtestc/0319.t               TESTS     Output is: "Wide character in print at ..."
 xtestc/0329.t               TESTS     Output is: "axxxx \n"
