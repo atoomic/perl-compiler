@@ -15,7 +15,11 @@ use B::C::Helpers::Symtable qw/objsym savesym/;
 my $initsub_index = 0;
 my $anonsub_index = 0;
 
-sub SVt_PVFM { 14 }    # not exported by B
+sub SVt_PVFM { 14 }            # not exported by B
+sub SVs_RMG  { 0x00800000 }    # has random magical methods
+
+# from B.xs maybe we need to save more than just the RMG ones
+#define MAGICAL_FLAG_BITS (SVs_GMG|SVs_SMG|SVs_RMG)
 
 sub do_save {
     my ( $cv, $origname ) = @_;
@@ -136,12 +140,14 @@ sub get_cv_outside {
 
     return 0 unless $ref;
 
-    my $fn = $cv->get_full_name;
     if ( $ref eq 'B::CV' ) {
+        my $fn = $cv->get_full_name;
         return 0 unless can_save_sub($fn);
 
-        # can provide a format on STDOUT & co
-        return 0 if ${ $cv->OUTSIDE } ne ${ main_cv() } && $fn !~ qr{^main::STD};
+        my $format_mask = SVt_PVFM() | SVs_RMG();
+        my $is_format = ( $cv->FLAGS & $format_mask ) == $format_mask ? 1 : 0;
+
+        return 0 if ${ $cv->OUTSIDE } ne ${ main_cv() } && !$is_format;
     }
 
     return $cv->OUTSIDE->save;
