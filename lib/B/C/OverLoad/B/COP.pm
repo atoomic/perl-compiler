@@ -9,7 +9,7 @@ use B::C::Save qw/savestashpv/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 
-my %cophhtable;
+my %COPHHTABLE;
 my %copgvtable;
 
 sub do_save {
@@ -18,7 +18,8 @@ sub do_save {
     # TODO: if it is a nullified COP we must save it with all cop fields!
     debug( cops => "COP: line %d file %s\n", $op->line, $op->file );
 
-    my $ix = copsect()->add('FAKE_COP');    # replaced later
+    my $ix  = copsect()->add('FAKE_COP');    # replaced later
+    my $sym = copsect()->get_sym;            # cop_list[$ix]
 
     # shameless cut'n'paste from B::Deparse
     my ( $warn_sv, $isint );
@@ -53,44 +54,7 @@ sub do_save {
 
     copsect()->debug( $op->name, $op );
 
-    my $i = 0;
-    if ( $op->hints_hash ) {
-        my $hints = $op->hints_hash;
-
-        if ( $hints && $$hints ) {
-            if ( exists $cophhtable{$$hints} ) {
-                my $cophh = $cophhtable{$$hints};
-                init()->sadd( "CopHINTHASH_set(&cop_list[%d], %s);", $ix, $cophh );
-            }
-            else {
-                my $hint_hv = $hints->HASH if ref $hints eq 'B::RHE';
-                my $cophh = sprintf( "cophh%d", scalar keys %cophhtable );
-                $cophhtable{$$hints} = $cophh;
-                decl()->sadd( "Static COPHH *%s;", $cophh );
-                foreach my $k ( sort keys %$hint_hv ) {
-                    my ( $ck, $kl, $utf8 ) = strlen_flags($k);
-                    my $v = $hint_hv->{$k};
-                    next if $k eq ':';    #skip label, see below
-                    my $val = B::svref_2object( \$v )->save("\$^H{$k}");
-                    if ($utf8) {
-                        init()->sadd(
-                            "%s = cophh_store_pvn(%s, %s, %d, 0, %s, COPHH_KEY_UTF8);",
-                            $cophh, $i ? $cophh : 'NULL', $ck, $kl, $val
-                        );
-                    }
-                    else {
-                        init()->sadd(
-                            "%s = cophh_store_pvs(%s, %s, %s, 0);",
-                            $cophh, $i ? $cophh : 'NULL', $ck, $val
-                        );
-                    }
-                    $i++;
-                }
-                init()->sadd( "CopHINTHASH_set(&cop_list[%d], %s);", $ix, $cophh );
-            }
-        }
-
-    }
+    $op->save_hints($sym);
 
     if ($add_label) {
 
@@ -155,7 +119,48 @@ sub do_save {
         '%s'       => q{NULL},                                  # COPHH * cop_hints_hash; /* compile time state of %^H. */
     );
 
-    return "(OP*)&cop_list[$ix]";
+    return qq[(OP*)&$sym];
+}
+
+sub save_hints {
+    my ( $op, $sym ) = @_;
+
+    my $hints = $op->hints_hash;
+    return unless ref $hints;
+
+    my $i = 0;
+    if ( exists $COPHHTABLE{$$hints} ) {
+        my $cophh = $COPHHTABLE{$$hints};
+        return init()->sadd( "CopHINTHASH_set(&%s, %s);", $sym, $cophh );
+    }
+
+    die unless ref $hints eq 'B::RHE';    # does it really happen ?
+
+    my $hint_hv = $hints->HASH;
+    my $cophh = sprintf( "cophh%d", scalar keys %COPHHTABLE );
+    $COPHHTABLE{$$hints} = $cophh;
+    decl()->sadd( "Static COPHH *%s;", $cophh );
+    foreach my $k ( sort keys %$hint_hv ) {
+        my ( $ck, $kl, $utf8 ) = strlen_flags($k);
+        my $v = $hint_hv->{$k};
+        next if $k eq ':';                # skip label, saved just after
+        my $val = B::svref_2object( \$v )->save("\$^H{$k}");    ## .... problem ????
+        if ($utf8) {
+            init()->sadd(
+                "%s = cophh_store_pvn(%s, %s, %d, 0, %s, COPHH_KEY_UTF8);",
+                $cophh, $i ? $cophh : 'NULL', $ck, $kl, $val
+            );
+        }
+        else {
+            init()->sadd(
+                "%s = cophh_store_pvs(%s, %s, %s, 0);",
+                $cophh, $i ? $cophh : 'NULL', $ck, $val
+            );
+        }
+        $i++;
+    }
+
+    return init()->sadd( "CopHINTHASH_set(&%s, %s);", $sym, $cophh );
 }
 
 1;
