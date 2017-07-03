@@ -2,7 +2,7 @@ package B::PMOP;
 
 use strict;
 
-use B qw/cstring svref_2object RXf_EVAL_SEEN PMf_EVAL/;
+use B qw/cstring svref_2object RXf_EVAL_SEEN PMf_EVAL SVf_UTF8/;
 use B::C::Config;
 use B::C::File qw/pmopsect init init1 init2/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
@@ -88,7 +88,9 @@ sub do_save {
         # But XSLoader and utf8::SWASHNEW itself needs to be early.
         my $initpm = init1();
 
-        if ( $qre =~ m/\\[pN]\{/ or $qre =~ m/\\U/ ) {
+        if (   $qre =~ m/\\[pNx]\{/
+            || $qre =~ m/\\U/
+            || ( $op->reflags & SVf_UTF8 || $utf8 ) ) {
             $initpm = init2();
         }
 
