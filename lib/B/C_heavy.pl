@@ -33,6 +33,7 @@ use B::C::File qw( init2 init1 init0 init decl free
   sharedhe init_stash init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
+use B::C::Memory ();
 
 use Exporter ();
 use Errno    ();                           #needed since 5.14
@@ -422,6 +423,7 @@ sub build_template_stash {
             'dollar_comma'         => svref_2object( \*{'::,'} )->save(","),
         },
         'Config'  => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
+        'preallocated_sized' => B::C::Memory::get_malloc_size(),
         'Signals' => {
             'PL_psig_ptr' => {},
             'ignore'      => [],

@@ -4,6 +4,10 @@
 #define DEBUG_BENCHMARK 1
 [% END -%]
 
+[% IF debug.memory -%]
+#define DEBUG_BC_MEMORY 1
+[% END -%]
+
 #define PERL_CORE /* Needed for some extensions perl core refeses to export (win32 only)*/
 #include "EXTERN.h" /* Embedded interface */
 #include "perl.h"   /* API interface */
@@ -68,6 +72,37 @@ static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env);
 static void bc_parse_body(char **env);
 static void bc_init_postdump_symbols(pTHX_ int argc, char **argv, char **env);
 static void bc_init_predump_symbols(pTHX);
+
+/* BC memory optimization around Newxz */
+#define USE_BC_NEWXZ 1
+
+typedef struct bc_memory { void *start; void *end; void *ptr; } bc_memory_t;
+bc_memory_t BC_Memory;
+
+void *bc_alloc( int size ) {
+    void *ptr = BC_Memory.ptr;
+    /* move our pointer */
+    BC_Memory.ptr = (void*) ( (char*) BC_Memory.ptr + size );
+
+    /* could also use the assert, but only works with debug perl */
+#ifdef DEBUG_BC_MEMORY
+    if ( BC_Memory.ptr > BC_Memory.end ) Perl_croak_nocontext("Not enough memory");
+#else
+    /* maybe not really needed */
+    assert( BC_Memory.ptr <= BC_Memory.end );
+#endif
+
+    return ptr;
+}
+
+/* bc replacement of Newxz */
+#define bc_Newxz(v,n,t) ( v = bc_alloc( n * sizeof(t)) )
+
+#if USE_BC_NEWXZ
+#define do_Newxz bc_Newxz
+#else
+#define do_Newxz Newxz
+#endif
 
 /* TODO: Not provided in perl core? */
 #ifndef dVAR
@@ -307,7 +342,7 @@ static void HvSETUP(HV* hv, U32 size, bool has_ook, SV* backref) {
 
     /* malloc the hash array + the xpvhv_aux which is part of it */
     if ( has_ook ) alloc_size += sizeof(struct xpvhv_aux);
-    Newxz(array, alloc_size, char);
+    do_Newxz(array, alloc_size, char);
 
     /* setting the hash array to the HV (in sv_list) in sv_any */
     HvARRAY(hv) = (HE **) array;
@@ -411,7 +446,7 @@ SV ** INITAv(AV * av, int number_of_items) {
 PADNAME ** INITPADNAME(PADNAMELIST *padname, int number_of_items) {
     PADNAME **svp;
     PADNAMELIST *padnl = padname;
-    Newxz(svp, number_of_items, PADNAME *);
+    do_Newxz(svp, number_of_items, PADNAME *);
     PadnamelistARRAY(padnl) = svp;
     return svp;
 }
@@ -419,7 +454,7 @@ PADNAME ** INITPADNAME(PADNAMELIST *padname, int number_of_items) {
 PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
     PAD **svp;
     PADLIST *padl = pad;
-    Newxz(svp, number_of_items, PAD *);
+    do_Newxz(svp, number_of_items, PAD *);
     PadlistARRAY(padl) = svp;
     return svp;
 }
@@ -869,6 +904,16 @@ main(int argc, char **argv, char **env)
 
     /* Assure the interpreter struct is zeroed out. */
     Zero(&BC_unthreaded_interpreter, 1, PerlInterpreter);
+
+#if USE_BC_NEWXZ
+    /* use one single big malloc for all our stuff */
+    {
+        int preallocated_sized = [% preallocated_sized %]; /* TT macro with math using sizeof */
+        Newxz(BC_Memory.start, preallocated_sized, char);
+        BC_Memory.end   = BC_Memory.start + preallocated_sized * sizeof(char); /* only used for safety purpose ~assert */
+        BC_Memory.ptr   = BC_Memory.start;
+    }
+#endif
 
 #ifdef DEBUG_BENCHMARK
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);

@@ -13,6 +13,7 @@ lib/B/C/Helpers.pm
 lib/B/C/Helpers/Symtable.pm
 lib/B/C/InitSection.pm
 lib/B/C/IsUsingModule.pm
+lib/B/C/Memory.pm
 lib/B/C/OP.pm
 lib/B/C/Optimizer/DowngradePVXV.pm
 lib/B/C/OverLoad.pm
