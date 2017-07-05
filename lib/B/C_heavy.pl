@@ -166,7 +166,6 @@ sub walk_and_save_optree {
 
 my $saveoptree_callback;
 BEGIN { $saveoptree_callback = \&walk_and_save_optree }
-sub set_callback { $saveoptree_callback = shift }
 sub saveoptree { &$saveoptree_callback(@_) }
 
 # Look this up here so we can do just a number compare

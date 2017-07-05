@@ -16,7 +16,7 @@ our $caller  = caller;       # So we know how we were invoked.
 
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw(set_callback save_context svop_or_padop_pv inc_cleanup opsect_common fixup_ppaddr);
+our @EXPORT_OK = qw(save_context svop_or_padop_pv inc_cleanup opsect_common fixup_ppaddr);
 
 # can be improved
 our $nullop_count     = 0;
@@ -192,6 +192,7 @@ sub cleanup_stashes {
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
         next if $st eq 'DB::';
+
         #delete $stashes->{$st} if !scalar keys %{ $stashes->{$st} };
     }
 
