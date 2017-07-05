@@ -1,6 +1,8 @@
 package B::C::OP;
 
 use strict;
+
+use B qw/SVf_ROK/;
 use B::C::Helpers::Symtable qw/savesym objsym/;
 
 my $last;
@@ -49,7 +51,14 @@ sub save_constructor {
 
         # call the real save function and cache the return value{
         my $sym;
-        eval { $sym = $for->can('do_save')->( $op, @args ); 1 }
+
+        # Any SV might be an RV actually so will save via the wrong package.
+        my $class = $for;
+        if ( ref($op) =~ m/^B::((PV(IV|LV|MG|NV)?)|IV|NV|AV|GV|HV|CV|IO|FM)$/ && $op->FLAGS & SVf_ROK ) {
+            $class = 'B::RV';
+        }
+
+        eval { $sym = $class->can('do_save')->( $op, @args ); 1 }
           or die "$@\n:" . 'B::C::Save'->can('stack_flat')->();
         savesym( $op, $sym ) if defined $sym;
         return $sym;

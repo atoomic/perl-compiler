@@ -4,7 +4,7 @@ use strict;
 
 use Config ();    # TODO: Removing this causes unit tests to fail in B::C ???
 use B::C::Config;
-use B qw/SVf_ROK SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
+use B qw/SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
 use B::C::Save qw/savepv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init_static_assignments svsect xpvmgsect magicsect init_vtables/;
@@ -13,14 +13,10 @@ use B::C::Helpers qw/read_utf8_string get_index/;
 sub do_save {
     my ( $sv, $fullname ) = @_;
 
-    if ( $sv->FLAGS & SVf_ROK ) {
-        return B::RV::save( $sv, $fullname );
-    }
-
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
+    my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
     if ($static) {    # 242: e.g. $1
         $static = 0;
         $len = $cur + 1 unless $len;
@@ -42,13 +38,6 @@ sub do_save {
         and ref( $sv->SvSTASH ) ne 'B::SPECIAL'
       ) {
         die("This code used to call _patch_dlsym. The logic didn't make sense after the CV re-factor so it's been removed here.");
-    }
-
-    if ( $flags & SVf_ROK ) {          # sv => sv->RV cannot be initialized static.
-        init()->sadd( "SvRV_set(&sv_list[%d], (SV*)%s);", svsect()->index + 1, $savesym )
-          if $savesym ne '';
-        $savesym = 'NULL';
-        $static  = 1;
     }
 
     xpvmgsect()->comment("STASH, MAGIC, cur, len, xiv_u, xnv_u");

@@ -2,7 +2,7 @@ package B::GV;
 
 use strict;
 
-use B qw/cstring svref_2object SVt_PVGV SVf_ROK SVf_UTF8 SVf_AMAGIC/;
+use B qw/cstring svref_2object SVt_PVGV SVf_UTF8 SVf_AMAGIC/;
 
 use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;

@@ -16,7 +16,7 @@ sub do_save {
     svsect()->debug( $fullname, $sv );
 
     # save the PVIV
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
+    my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
 
     my $xpv_sym = 'NULL';
     if ( $sv->HAS_ANY ) {

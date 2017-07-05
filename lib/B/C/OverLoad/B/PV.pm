@@ -25,7 +25,7 @@ sub do_save {
 
     my $shared_hek = is_shared_hek($sv);
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = save_pv_or_rv( $sv, $fullname );
+    my ( $savesym, $cur, $len, $pv, $static, $flags ) = save_pv( $sv, $fullname );
 
     # sv_free2 problem with !SvIMMORTAL and del_SV
     my $refcnt = $sv->REFCNT;
@@ -66,12 +66,15 @@ sub do_save {
     return $sym;
 }
 
-sub save_pv_or_rv {
+sub save_pv {
     my ( $sv, $fullname ) = @_;
 
     my $flags = $sv->FLAGS;
-    my $pok   = $flags & ( SVf_POK | SVp_POK );
-    my $gmg   = $flags & SVs_GMG;
+
+    ( $flags & SVf_ROK ) and die("save_pv should never be a RV");
+
+    my $pok = $flags & ( SVf_POK | SVp_POK );
+    my $gmg = $flags & SVs_GMG;
 
     my ( $static, $shared_hek ) = ( 0, is_shared_hek($sv) );
 
@@ -90,31 +93,25 @@ sub save_pv_or_rv {
 
     # overloaded VERSION symbols fail to xs boot: ExtUtils::CBuilder with Fcntl::VERSION (i91)
     # 5.6: Can't locate object method "RV" via package "B::PV" Carp::Clan
-    if ( $flags & SVf_ROK ) {
-        die("pv_or_rv should never be a RV");
+    if ($pok) {
+        $pv = pack "a*", $sv->PV;    # XXX!
+        $cur = ( $sv and $sv->can('CUR') and ref($sv) ne 'B::GV' ) ? $sv->CUR : length($pv);
     }
     else {
-        if ($pok) {
-            $pv = pack "a*", $sv->PV;    # XXX!
-            $cur = ( $sv and $sv->can('CUR') and ref($sv) ne 'B::GV' ) ? $sv->CUR : length($pv);
+        if ( $gmg && $fullname ) {
+            no strict 'refs';
+            $pv = ( $fullname and ref($fullname) ) ? "${$fullname}" : '';
+            $cur = length( pack "a*", $pv );
+            $pok = 1;
         }
-        else {
-            if ( $gmg && $fullname ) {
-                no strict 'refs';
-                $pv = ( $fullname and ref($fullname) ) ? "${$fullname}" : '';
-                $cur = length( pack "a*", $pv );
-                $pok = 1;
-            }
-        }
+    }
 
-        if ($pok) {
-            ( $savesym, $cur, $len ) = savecowpv($pv);    # if $pok;
-                                                          # only flags as COW if it's not a reference and not an empty string
-            $flags |= SVf_IsCOW;
-        }
-        else {
-            $flags ^= SVf_IsCOW;
-        }
+    if ($pok) {
+        ( $savesym, $cur, $len ) = savecowpv($pv);    # only flags as COW if it's not a reference and not an empty string
+        $flags |= SVf_IsCOW;
+    }
+    else {
+        $flags ^= SVf_IsCOW;
     }
 
     $fullname = '' if !defined $fullname;

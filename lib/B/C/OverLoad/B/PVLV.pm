@@ -19,7 +19,7 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $pvsym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
+    my ( $pvsym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
     my ( $lvtarg, $lvtarg_sym );    # XXX missing
 
     #struct xpvlv {

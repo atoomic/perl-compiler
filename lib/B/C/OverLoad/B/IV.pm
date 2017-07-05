@@ -2,7 +2,7 @@ package B::IV;
 
 use strict;
 
-use B qw/SVf_ROK SVf_IOK SVp_IOK SVf_IVisUV/;
+use B qw/SVf_IOK SVp_IOK SVf_IVisUV/;
 use B::C::Config;
 use B::C::File qw/svsect/;
 use B::C::Decimal qw/get_integer_value/;
@@ -19,9 +19,6 @@ sub do_save {
         $refcnt  = $custom->{refcnt} if defined $custom->{refcnt};
     }
 
-    if ( $svflags & SVf_ROK ) {
-        return $sv->B::RV::save($fullname);
-    }
     if ( $svflags & SVf_IVisUV ) {
         return $sv->B::UV::save($fullname);
     }
