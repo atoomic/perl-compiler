@@ -2,25 +2,18 @@ package B::UNOP;
 
 use strict;
 
-use B::C::Config;
 use B::C::File qw/unopsect/;
-use B::C::Helpers qw/do_labels padop_name svop_name/;
 
 sub do_save {
-    my ( $op, $level ) = @_;
-
-    $level ||= 0;
+    my ($op) = @_;
 
     unopsect()->comment_common("first");
-    my $ix = unopsect()->sadd( "%s, s\\_%x", $op->_save_common, ${ $op->first } );
+    my ( $ix, $sym ) = unopsect()->reserve( $op, "OP*" );
     unopsect()->debug( $op->name, $op );
 
-    if ( $op->name eq 'method' and $op->first and $op->first->name eq 'const' ) {
-        my $method = svop_name( $op->first );    # STATIC_HV: dead code?
-    }
-    do_labels( $op, $level + 1, 'first' );
+    unopsect()->supdate( $ix, "%s, %s", $op->_save_common, $op->first->save );
 
-    return "(OP*)&unop_list[$ix]";
+    return $sym;
 }
 
 1;

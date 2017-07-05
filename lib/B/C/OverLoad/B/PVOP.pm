@@ -6,7 +6,7 @@ use B::C::File qw/pvopsect/;
 use B::C::Save qw/savecowpv/;
 
 sub do_save {
-    my ( $op, $level ) = @_;
+    my ($op) = @_;
 
     my ( $cow_sym, $cur, $len ) = savecowpv( $op->pv );
 

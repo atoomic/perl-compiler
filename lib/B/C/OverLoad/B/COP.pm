@@ -13,7 +13,7 @@ my %COPHHTABLE;
 my %copgvtable;
 
 sub do_save {
-    my ( $op, $level ) = @_;
+    my ($op) = @_;
 
     # TODO: if it is a nullified COP we must save it with all cop fields!
     debug( cops => "COP: line %d file %s\n", $op->line, $op->file );

@@ -14,11 +14,12 @@ my ($swash_init);
 sub PMf_ONCE() { 0x10000 };    # PMf_ONCE also not exported
 
 sub do_save {
-    my ( $op, $level, $fullname ) = @_;
+    my ($op) = @_;
     my ( $replrootfield, $replstartfield, $gvsym ) = ( 'NULL', 'NULL' );
 
-    $level    ||= 0;
-    $fullname ||= '????';
+    pmopsect()->comment_common("first, last, pmoffset, pmflags, pmreplroot, pmreplstart");
+    my ( $ix, $sym ) = pmopsect()->reserve($op);
+    pmopsect()->debug( $op->name, $op );
 
     my $replroot  = $op->pmreplroot;
     my $replstart = $op->pmreplstart;
@@ -47,15 +48,11 @@ sub do_save {
     # pmnext handling is broken in perl itself, we think. Bad op_pmnext
     # fields aren't noticed in perl's runtime (unless you try reset) but we
     # segfault when trying to dereference it to find op->op_pmnext->op_type
-
-    pmopsect()->comment_common("first, last, pmoffset, pmflags, pmreplroot, pmreplstart");
-    my $ix = pmopsect()->add(
-        sprintf(
-            "%s, s\\_%x, s\\_%x, %u, 0x%x, {%s}, {%s}",
-            $op->_save_common, ${ $op->first },
-            ${ $op->last },    0,
-            $op->pmflags, $replrootfield, $replstartfield
-        )
+    pmopsect()->supdate(
+        $ix,               "%s, s\\_%x, s\\_%x, %u, 0x%x, {%s}, {%s}",
+        $op->_save_common, ${ $op->first },
+        ${ $op->last },    0,
+        $op->pmflags, $replrootfield, $replstartfield
     );
 
     my $code_list = $op->code_list;
@@ -70,8 +67,6 @@ sub do_save {
         debug( gv => "done saving pmop_list[%d] code_list $code_list (?{})", $ix );
     }
 
-    pmopsect()->debug( $op->name, $op );
-    my $pmsym = sprintf( "pmop_list[%d]", $ix );
     my $re = $op->precomp;
 
     if ( defined($re) ) {
@@ -81,7 +76,7 @@ sub do_save {
         my ( $qre, $relen, $utf8 ) = strlen_flags($re);
 
         my $pmflags = $op->pmflags;
-        debug( gv => "pregcomp $pmsym $qre:$relen" . ( $utf8 ? " SVf_UTF8" : "" ) . sprintf( " 0x%x\n", $pmflags ) );
+        debug( gv => "pregcomp $sym $qre:$relen" . ( $utf8 ? " SVf_UTF8" : "" ) . sprintf( " 0x%x\n", $pmflags ) );
 
         # some pm need early init (242), SWASHNEW needs some late GVs (GH#273)
         # esp with 5.22 multideref init. i.e. all \p{} \N{}, \U, /i, ...
@@ -105,8 +100,8 @@ sub do_save {
         }
 
         # XXX Modification of a read-only value attempted. use DateTime - threaded
-        $initpm->sadd( "PM_SETRE(&%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $pmsym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
-        $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(&%s)) = 0x%x;", $pmsym, $op->reflags );
+        $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
+        $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(%s)) = 0x%x;", $sym, $op->reflags );
 
         if ($eval_seen) {    # set HINT_RE_EVAL off
             $initpm->add('PL_hints = hints_sav;');
@@ -124,12 +119,14 @@ sub do_save {
     }
 
     if ($gvsym) {
+        my $pmsym = $sym;
+        $pmsym =~ s/^\&//;                # Strip '&' off the front.
 
         # XXX need that for subst
         init()->sadd( "%s.op_pmreplrootu.op_pmreplroot = (OP*)%s;", $pmsym, $gvsym );
     }
 
-    return "(OP*)&$pmsym";
+    return "(OP*)" . $sym;
 }
 
 1;

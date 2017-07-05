@@ -279,23 +279,6 @@ BEGIN {
 
 sub opsect_common { return $opsect_common }
 
-# save alternate ops if defined, and also add labels (needed for B::CC)
-sub do_labels ($$@) {
-    my $op    = shift;
-    my $level = shift;
-
-    for my $m (@_) {
-        no strict 'refs';
-        my $mo = $op->$m if $m;
-        if ( $mo and $$mo ) {
-            $mo->save($level)
-              if $m ne 'first'
-              or ( $op->flags & 4
-                and !( $op->name eq 'const' and $op->flags & 64 ) );    #OPpCONST_BARE has no first
-        }
-    }
-}
-
 # STATIC_HV: This function doesn't seem to be relevant in light of white listing.
 sub method_named {
     my $name = shift;

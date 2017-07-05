@@ -4,13 +4,19 @@ use strict;
 
 use B::C::File qw/svopsect init/;
 use B::C::Config;
-use B::C::Helpers qw/do_labels/;
 
 sub do_save {
-    my ( $op, $level, $fullname ) = @_;
+    my ($op) = @_;
+
+    svopsect()->comment_common("sv");
+    my ( $ix, $sym ) = svopsect()->reserve( $op, "OP*" );
+    svopsect()->debug( $op->name, $op );
 
     my $svsym = 'Nullsv';
 
+    # STATIC HV: This might be a bug now we have a static stash.
+    # It might also be a XS op we need to be aware of and take special action beyond this.
+    #
     # XXX moose1 crash with 5.8.5-nt, Cwd::_perl_abs_path also
     if ( $op->name eq 'aelemfast' and $op->flags & 128 ) {    #OPf_SPECIAL
         $svsym = '&PL_sv_undef';                              # pad does not need to be saved
@@ -42,19 +48,18 @@ sub do_save {
 
         WARN( "Error: SVOP: " . $op->name . " $sv $svsym" ) if $svsym =~ /^\(SV\*\)lexwarn/;    #322
     }
+
     if ( $op->name eq 'method_named' ) {
         my $cv = B::C::method_named( B::C::svop_or_padop_pv($op), B::C::nextcop($op) );
         $cv->save if $cv;
     }
     my $is_const_addr = $svsym =~ m/Null|\&/;
 
-    svopsect()->comment_common("sv");
     my $svop_sv = ( $is_const_addr ? $svsym : "Nullsv /* $svsym */" );
-    my $ix = svopsect()->sadd( "%s, (SV*) %s", $op->_save_common, $svop_sv );
-    svopsect()->debug( $op->name, $op );
+    svopsect()->supdate( $ix, "%s, (SV*) %s", $op->_save_common, $svop_sv );
     init()->add("svop_list[$ix].op_sv = (SV*) $svsym;") unless $is_const_addr;
 
-    return "(OP*)&svop_list[$ix]";
+    return $sym;
 }
 
 sub svimmortal {

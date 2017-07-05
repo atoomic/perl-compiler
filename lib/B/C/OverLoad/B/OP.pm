@@ -5,9 +5,7 @@ use strict;
 use B qw/peekop cstring threadsv_names opnumber/;
 
 use B::C::Config;
-use B::C::Debug::Walker qw/walkoptree_debug/;
 use B::C::File qw/init copsect opsect/;
-use B::C::Helpers qw/do_labels/;
 
 my $OP_CUSTOM = opnumber('custom');
 
@@ -22,7 +20,7 @@ my %OP_COP = ( opnumber('nextstate') => 1 );
 debug( cops => %OP_COP );
 
 sub do_save {
-    my ( $op, $level ) = @_;
+    my ($op) = @_;
 
     my $type = $op->type;
     $B::C::nullop_count++ unless $type;
@@ -39,10 +37,11 @@ sub do_save {
         if ( $op->name eq 'entertry' ) {
             verbose("[perl #80622] Upgrading entertry from BASEOP to LOGOP...");
             bless $op, 'B::LOGOP';
-            return $op->save($level);
+            return $op->save;
         }
     }
 
+    # HV_STATIC: Why are we saving a null row?
     # since 5.10 nullified cops free their additional fields
     if ( !$type and $OP_COP{ $op->targ } ) {
         debug( cops => "Null COP: %d\n", $op->targ );
