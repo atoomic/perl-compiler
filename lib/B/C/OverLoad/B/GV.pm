@@ -52,6 +52,8 @@ sub do_save {
     # STATIC_HV need to handle $0
 
     my $gv_ix = gvsect()->add('FAKE_GV');
+    gvsect()->debug( $gv->get_fullname() );
+
     my $gvsym = sprintf( '&gv_list[%d]', $gv_ix );
     savesym( $gv, $gvsym );    # cache it early as eGV might be ourself
 
@@ -98,7 +100,6 @@ sub do_save {
             "0x%x"              => $gv->FLAGS,            # sv_flags
             "{.svu_gp=(GP*)%s}" => $gpsym,                # GP* sv_u - plug the gp in our sv_u slot
         );
-        gvsect()->debug( $gv->get_fullname() );
     }
 
     debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $gvsym, $gv->NAME );
