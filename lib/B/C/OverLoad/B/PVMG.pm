@@ -13,6 +13,13 @@ use B::C::Helpers qw/read_utf8_string get_index/;
 sub do_save {
     my ( $sv, $fullname ) = @_;
 
+    if ( $sv->FLAGS & SVf_ROK ) {
+        return B::RV::save( $sv, $fullname );
+    }
+
+    my ( $ix, $sym ) = svsect()->reserve($sv);
+    svsect()->debug( $fullname, $sv );
+
     my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv_or_rv( $sv, $fullname );
     if ($static) {    # 242: e.g. $1
         $static = 0;
@@ -34,7 +41,7 @@ sub do_save {
         and $ivx > LOWEST_IMAGEBASE    # some crazy heuristic for a sharedlibrary ptr in .data (> image_base)
         and ref( $sv->SvSTASH ) ne 'B::SPECIAL'
       ) {
-        die("This code  used to call _patch_dlsym. The logic didn't make sense after the CV re-factor so it's been removed here.");
+        die("This code used to call _patch_dlsym. The logic didn't make sense after the CV re-factor so it's been removed here.");
     }
 
     if ( $flags & SVf_ROK ) {          # sv => sv->RV cannot be initialized static.
@@ -51,12 +58,13 @@ sub do_save {
     );
 
     my $sv_u = $savesym eq 'NULL' ? 0 : ".svu_pv=(char*) $savesym";
-    my $sv_ix = svsect()->sadd(
+    my $sv_ix = svsect()->supdate(
+        $ix,
         "&xpvmg_list[%d], %Lu, 0x%x, {%s}",
         $xpvmg_ix, $sv->REFCNT + 1, $flags, $sv_u
     );
 
-    return sprintf( q{&sv_list[%d]}, $sv_ix );
+    return $sym;
 }
 
 # https://metacpan.org/pod/distribution/perl/pod/perlguts.pod

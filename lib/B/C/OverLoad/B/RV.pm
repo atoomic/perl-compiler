@@ -15,12 +15,10 @@ sub do_save {
 
     debug( sv => "Saving RV %s (0x%x) - called from %s:%s\n", ref($sv), $$sv, @{ [ ( caller(1) )[3] ] }, @{ [ ( caller(1) )[2] ] } );
 
-    my $rv = $sv->RV->save($fullname);
-    return '0' if !$rv || $rv =~ m/NULL$/;
-
-    #svsect()->comment("any, refcnt, flags, sv_u");
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
+
+    my $rv = $sv->RV->save($fullname);
 
     # 5.22 has a wrong RV->FLAGS (https://github.com/perl11/cperl/issues/63)
     my $flags = $sv->FLAGS;

@@ -69,11 +69,9 @@ sub do_save {
 sub save_pv_or_rv {
     my ( $sv, $fullname ) = @_;
 
-    my $rok = $sv->FLAGS & SVf_ROK;
-    my $pok = $sv->FLAGS & ( SVf_POK | SVp_POK );
-    my $gmg = $sv->FLAGS & SVs_GMG;
-
     my $flags = $sv->FLAGS;
+    my $pok   = $flags & ( SVf_POK | SVp_POK );
+    my $gmg   = $flags & SVs_GMG;
 
     my ( $static, $shared_hek ) = ( 0, is_shared_hek($sv) );
 
@@ -92,27 +90,12 @@ sub save_pv_or_rv {
 
     # overloaded VERSION symbols fail to xs boot: ExtUtils::CBuilder with Fcntl::VERSION (i91)
     # 5.6: Can't locate object method "RV" via package "B::PV" Carp::Clan
-    if ($rok) {
-
-        # this returns us a SV*. 5.8 expects a char* in xpvmg.xpv_pv
-        debug( sv => "save_pv_or_rv: B::RV::save(" . ( $sv || '' ) );
-
-        my $newsym = $sv->RV->save($fullname);
-
-        #
-        # newsym can be a get_cv call from get_cv_string
-        if ( $newsym =~ qr{(?:get_cv|get_cvn_flags)\(} ) {    # Moose::Util::TypeConstraints::Builtins::_RegexpRef xtest #350
-            $static = 0;
-            $pv     = $newsym;
-        }
-        else {
-            $savesym = $newsym;
-        }
-        $static = 1;                                          # ??
+    if ( $flags & SVf_ROK ) {
+        die("pv_or_rv should never be a RV");
     }
     else {
         if ($pok) {
-            $pv = pack "a*", $sv->PV;                         # XXX!
+            $pv = pack "a*", $sv->PV;    # XXX!
             $cur = ( $sv and $sv->can('CUR') and ref($sv) ne 'B::GV' ) ? $sv->CUR : length($pv);
         }
         else {
