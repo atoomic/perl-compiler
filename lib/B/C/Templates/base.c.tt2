@@ -79,10 +79,12 @@ static void bc_init_predump_symbols(pTHX);
 typedef struct bc_memory { void *start; void *end; void *ptr; } bc_memory_t;
 bc_memory_t BC_Memory;
 
-void *bc_alloc( int size ) {
+void *bc_alloc( MEM_SIZE size ) {
     void *ptr = BC_Memory.ptr;
     /* move our pointer */
     BC_Memory.ptr = (void*) ( (char*) BC_Memory.ptr + size );
+
+    declare_shared_memory_usage(ptr, size );
 
     /* could also use the assert, but only works with debug perl */
 #ifdef DEBUG_BC_MEMORY
@@ -833,9 +835,18 @@ main(int argc, char **argv, char **env)
     /* use one single big malloc for all our stuff */
     {
         int preallocated_sized = [% preallocated_sized %]; /* TT macro with math using sizeof */
+
         Newxz(BC_Memory.start, preallocated_sized, char);
+        Newxz(PL_static_shared_memory_position, 1, STATIC_MEMORY_AREA);
+
         BC_Memory.end   = BC_Memory.start + preallocated_sized * sizeof(char); /* only used for safety purpose ~assert */
         BC_Memory.ptr   = BC_Memory.start;
+
+        /* can probably merge BC_Memory and PL_static_shared_memory_position */
+        PL_static_shared_memory_position->from = BC_Memory.start;
+        PL_static_shared_memory_position->to = BC_Memory.end;
+
+        declare_static_memory( BC_Memory.start, BC_Memory.end, 0 );
     }
 #endif
 
