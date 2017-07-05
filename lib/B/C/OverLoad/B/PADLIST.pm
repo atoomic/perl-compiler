@@ -24,7 +24,7 @@ sub add_malloc_line_for_array_init {
     my ( $av, $deferred_init, $sym ) = @_;    # Ignores $fill passed in.
 
     my $fill = $av->MAX + 1;
-    $deferred_init->sadd( "PAD **svp = INITPADLIST(%s, %d);", $sym, $fill );
+    $deferred_init->sadd( "PAD **svp = %s;", B::C::Memory::INITPADLIST( $sym, $fill ) );
 }
 
 sub cast_sv {
