@@ -35,9 +35,10 @@ use B::C::File qw( init2 init1 init0 init decl free
   init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
+use B::C::Memory ();
 
 use Exporter ();
-use Errno    ();           #needed since 5.14
+use Errno ();    #needed since 5.14
 our %Regexp;
 
 # Caller was populated in C.pm
@@ -897,9 +898,10 @@ sub build_template_stash {
             'dollar_zero'          => svref_2object( \*{'::0'} )->save("0"),
             'dollar_comma'         => svref_2object( \*{'::,'} )->save(","),
         },
-        'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
+        'Config'             => {%B::C::Flags::Config},            # do a copy or op/sigdispatch.t will fail
+        'preallocated_sized' => B::C::Memory::get_malloc_size(),
     };
-    chomp $c_file_stash->{'compile_stats'};    # Injects a new line when you call compile_stats()
+    chomp $c_file_stash->{'compile_stats'};                        # Injects a new line when you call compile_stats()
 
     # main() .c generation needs a buncha globals to be determined so the stash can access them.
     # Some of the vars are only put in the stash if they meet certain coditions.
