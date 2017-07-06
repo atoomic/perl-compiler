@@ -20,9 +20,8 @@ sub do_save {
     my $auxlen = scalar @aux_list;
 
     unopauxsect()->comment_common("first, aux");
-
-    my $ix = unopauxsect()->sadd( "%s, s\\_%x, FIRST_unopaux_item", $op->_save_common, ${ $op->first } );
-    unopauxsect()->debug( $op->name, $op->flagspv ) if debug('flags');
+    my ( $ix, $sym ) = unopauxsect()->reserve( $op, "OP*" );
+    unopauxsect()->debug( $op->name, $op );
 
     my @to_be_filled = map { 0 } 1 .. $auxlen;                                       #
 
@@ -31,7 +30,7 @@ sub do_save {
     my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
     my $symname = $unopaux_item_sect->get_sym();
 
-    unopauxsect()->update_field( $ix, 15, qq{&$symname.aaab} );
+    unopauxsect()->supdate( $ix, "%s, %s, &%s.aaab", $op->_save_common, $op->first->save, $symname );
 
     # This cannot be a section, as the number of elements is variable
     my $i            = 1;                                                            # maybe rename tp field_ix
@@ -91,8 +90,6 @@ sub do_save {
         $unopaux_item_sect->update_field( $uaux_item_ix, $i, q[ ] . $field );
         $i++;
     }
-
-    my $sym = "(OP*)&unopaux_list[$ix]";
 
     free()->add("    ($sym)->op_type = OP_NULL;");
 
