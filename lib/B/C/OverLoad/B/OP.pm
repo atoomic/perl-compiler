@@ -63,7 +63,7 @@ sub do_save {
             op => "  OP=%s targ=%d flags=0x%x private=0x%x\n",
             peekop($op), $op->targ, $op->flags, $op->private
         );
-        return "&op_list[$ix]";
+        return "(OP*) &op_list[$ix]";
     }
 }
 

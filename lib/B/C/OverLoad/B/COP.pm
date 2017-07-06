@@ -18,7 +18,7 @@ sub do_save {
     # TODO: if it is a nullified COP we must save it with all cop fields!
     debug( cops => "COP: line %d file %s\n", $op->line, $op->file );
 
-    my ( $ix, $sym ) = copsect()->reserve( $op, "COP*" );
+    my ( $ix, $sym ) = copsect()->reserve( $op, "OP*" );
     copsect()->debug( $op->name, $op );
 
     # shameless cut'n'paste from B::Deparse
@@ -122,6 +122,8 @@ sub do_save {
 
 sub save_hints {
     my ( $op, $sym ) = @_;
+
+    $sym =~ s/^\(OP\*\)//;
 
     my $hints = $op->hints_hash;
     return unless ref $hints;

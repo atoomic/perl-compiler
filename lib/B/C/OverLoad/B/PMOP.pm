@@ -18,7 +18,8 @@ sub do_save {
     my ( $replrootfield, $replstartfield, $gvsym ) = ( 'NULL', 'NULL' );
 
     pmopsect()->comment_common("first, last, pmoffset, pmflags, pmreplroot, pmreplstart");
-    my ( $ix, $sym ) = pmopsect()->reserve($op);
+    my ( $ix, $sym ) = pmopsect()->reserve( $op, 'OP*' );
+    $sym =~ s/^\(OP\*\)//;     # Strip off the typecasting for local use but other callers will get our casting.
     pmopsect()->debug( $op->name, $op );
 
     my $replroot  = $op->pmreplroot;

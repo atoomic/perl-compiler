@@ -106,7 +106,7 @@ sub do_save {
         debug( hv => 'Saving stash ' . $stash_name );
     }
 
-    my ( $ix, $sym ) = svsect()->reserve($hv);
+    my ( $ix, $sym ) = svsect()->reserve( $hv, 'HV*' );
     svsect()->debug( $fullname, $hv );
 
     my $cache_stash_entry;
