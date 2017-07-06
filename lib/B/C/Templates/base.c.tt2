@@ -84,8 +84,6 @@ void *bc_alloc( MEM_SIZE size ) {
     /* move our pointer */
     BC_Memory.ptr = (void*) ( (char*) BC_Memory.ptr + size );
 
-    declare_shared_memory_usage(ptr, size );
-
     /* could also use the assert, but only works with debug perl */
 #ifdef DEBUG_BC_MEMORY
     if ( BC_Memory.ptr > BC_Memory.end ) Perl_croak_nocontext("Not enough memory");
@@ -834,7 +832,8 @@ main(int argc, char **argv, char **env)
 #if USE_BC_NEWXZ
     /* use one single big malloc for all our stuff */
     {
-        int preallocated_sized = [% preallocated_sized %]; /* TT macro with math using sizeof */
+        int preallocated_sized = [% Memory.preallocated_sized %];
+        PL_static_shared_memory_table = malloc_list; /* declare our table */
 
         Newxz(BC_Memory.start, preallocated_sized, char);
         Newxz(PL_static_shared_memory_position, 1, STATIC_MEMORY_AREA);
@@ -845,6 +844,8 @@ main(int argc, char **argv, char **env)
         /* can probably merge BC_Memory and PL_static_shared_memory_position */
         PL_static_shared_memory_position->from = BC_Memory.start;
         PL_static_shared_memory_position->to = BC_Memory.end;
+        /* we stole the size entry to store the PL_static_shared_memory_table array */
+        PL_static_shared_memory_position->size = [% section.malloc.index %]; /* no +1 there, want the C last entry */
 
         declare_static_memory( BC_Memory.start, BC_Memory.end, 0 );
     }

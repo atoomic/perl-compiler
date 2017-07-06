@@ -193,7 +193,7 @@ sub do_save {
         my $comment = $stash_name ? "/* STASH declaration for ${stash_name}:: */" : '';
         $init->sadd( '{ %s', $comment );
         $init->indent(+1);
-        $init->add( B::C::Memory::HvSETUP( $sym, $max + 1, $has_ook, $backrefs_sym ) );
+        $init->add( B::C::Memory::HvSETUP( $init, $sym, $max + 1, $has_ook, $backrefs_sym ) );
 
         my @hash_elements;
         {
