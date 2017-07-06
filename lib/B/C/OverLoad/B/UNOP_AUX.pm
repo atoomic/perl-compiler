@@ -25,11 +25,12 @@ sub do_save {
 
     my @to_be_filled = map { 0 } 1 .. $auxlen;                                       #
 
-    my $unopaux_item_sect = meta_unopaux_item( $auxlen + 1 );
+    my $list_size         = $auxlen + 1;
+    my $unopaux_item_sect = meta_unopaux_item($list_size);
     $unopaux_item_sect->comment(q{length prefix, UNOP_AUX_item * $auxlen });
     my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
-    my $symname = $unopaux_item_sect->get_sym();
 
+    my $symname = sprintf( 'meta_unopaux_item%d_list[%d]', $list_size, $uaux_item_ix );
     unopauxsect()->supdate( $ix, "%s, %s, &%s.aaab", $op->_save_common, $op->first->save, $symname );
 
     # This cannot be a section, as the number of elements is variable
