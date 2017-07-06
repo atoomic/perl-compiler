@@ -24,7 +24,8 @@ sub save_io_and_data {
 sub do_save {
     my ( $io, $fullname ) = @_;
 
-    #return 'NULL' if $io->IsSTD($fullname);
+    my ( $ix, $sym ) = svsect()->reserve($io);
+    svsect()->debug( $fullname, $io );
 
     my ( $xio_top_name,    undef, undef ) = savecowpv( $io->TOP_NAME    || '' );
     my ( $xio_fmt_name,    undef, undef ) = savecowpv( $io->FMT_NAME    || '' );
@@ -61,14 +62,15 @@ sub do_save {
         "0x%x"                    => $io->IoFLAGS,            # xio_flags
     );
 
-    my $sv_ix = svsect->saddl(
+    svsect->supdatel(
+        $ix,
         "(XPVIO*)&xpvio_list[%u]" => $xpvio_ix,               # SvANY=XPVIO*
         "%Lu"                     => $io->REFCNT + 1,         # refcnt
         "0x%x"                    => $io->FLAGS,              # flags
         "{%d}"                    => 0,                       # sv_u ( fileno ? )
     );
 
-    return savesym( $io, "&sv_list[$sv_ix]" );
+    return $sym;
 }
 
 1;
