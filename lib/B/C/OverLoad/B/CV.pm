@@ -4,7 +4,7 @@ use strict;
 
 use B::C::Flags ();
 
-use B qw/svref_2object CVf_CONST main_cv SVf_IsCOW/;
+use B qw/svref_2object CVf_CONST main_cv SVf_IsCOW CVf_NAMED/;
 use B::C::Config;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Save qw/savecowpv/;
@@ -23,7 +23,6 @@ sub SVs_RMG  { 0x00800000 }    # has random magical methods
 
 sub do_save {
     my ( $cv, $origname ) = @_;
-    debug( cv => "CV ==  %s", $origname );
 
     my $fullname = $cv->FULLNAME();
 
@@ -34,27 +33,23 @@ sub do_save {
         return "BOOTSTRAP_XS_[[${fullname}]]_XS_BOOTSTRAP";
     }
 
-    my $sv_ix = svsect()->add('FAKE_GV');
-    my $sym = savesym( $cv, "&sv_list[$sv_ix]" );
+    my ( $ix, $sym ) = svsect()->reserve($cv);
+    svsect()->debug( $fullname, $cv );
 
     my $presumed_package = $origname;
     $presumed_package =~ s/::[^:]+$// if $presumed_package;
 
     # We only have a stash if NAME_HEK isn't in place. this happens when we're off an RV instead of a GV.
-    my $cv_stash = 'NULL';
-    if ( !$cv->NAME_HEK ) {
-        $cv_stash = typecast_stash_save( $cv->STASH->save );
-    }
+    my $flags = $cv->FLAGS;
 
     # need to survive cv_undef as there is no protection against static CVs
     my $refcnt = $cv->REFCNT + 1;
     my $root   = $cv->get_ROOT;
 
     # Setup the PV for the SV here cause we need to set cur and len.
-    my $pv    = 'NULL';
-    my $flags = $cv->FLAGS;
-    my $cur   = $cv->CUR;
-    my $len   = $cv->LEN;
+    my $pv  = 'NULL';
+    my $cur = $cv->CUR;
+    my $len = $cv->LEN;
     if ( defined $cv->PV ) {
         ( $pv, $cur, $len ) = savecowpv( $cv->PV );
         $pv    = "(char *) $pv";
@@ -65,10 +60,7 @@ sub do_save {
 
     my ( $xcv_file, undef, undef ) = savecowpv( $cv->FILE || '' );
 
-    xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
-
     my ( $xcv_root, $startfield );
-
     if ( my $c_function = $cv->can_do_const_sv() ) {
         $xcv_root = sprintf( '.xcv_xsub=&%s', $c_function );
         $startfield = sprintf( '.xcv_xsubany= {(void*) %s /* xsubany */}', $cv->XSUBANY->save() );    # xcv_xsubany
@@ -78,12 +70,13 @@ sub do_save {
         $startfield = $cv->save_optree();
     }
 
+    xpvcvsect->comment("xmg_stash, xmg_u, xpv_cur, xpv_len_u, xcv_stash, xcv_start_u, xcv_root_u, xcv_gv_u, xcv_file, xcv_padlist_u, xcv_outside, xcv_outside_seq, xcv_flags, xcv_depth");
     my $xpvcv_ix = xpvcvsect->saddl(
         '%s'          => $cv->save_magic_stash,                    # xmg_stash
         '{%s}'        => $cv->save_magic($origname),               # xmg_u
         '%u'          => $cur,                                     # xpv_cur -- warning this is not CUR and LEN for the pv
         '{%u}'        => $len,                                     # xpv_len_u -- warning this is not CUR and LEN for the pv
-        '%s'          => $cv_stash,                                # xcv_stash
+        '%s'          => $cv->save_stash,                          # xcv_stash
         '{%s}'        => $startfield,                              # xcv_start_u --- OP *    xcv_start; or ANY xcv_xsubany;
         '{%s}'        => $xcv_root,                                # xcv_root_u  --- OP *    xcv_root; or void    (*xcv_xsub) (pTHX_ CV*);
         q{%s}         => $cv->get_xcv_gv_u,                        # $xcv_gv_u, # xcv_gv_u
@@ -102,7 +95,7 @@ sub do_save {
 
     # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
 
-    svsect->supdate( $sv_ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT + 1, $flags, $pv );
+    svsect->supdate( $ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT + 1, $flags, $pv );
 
     return $sym;
 }
@@ -125,8 +118,12 @@ sub do_save {
     }
 }
 
-sub typecast_stash_save {
-    my $symbol = shift or return;
+sub save_stash {
+    my $cv = shift;
+
+    $cv->STASH or return 'Nullhv';
+
+    my $symbol = $cv->STASH->save;
     $symbol = q{Nullhv}       if $symbol eq 'Nullsv';
     $symbol = "(HV*) $symbol" if $symbol ne 'Nullhv';
 
@@ -178,7 +175,8 @@ sub cv_save_padlist {
 sub get_full_name {
     my ( $cv, $origname ) = @_;
 
-    my $fullname = '';
+    my $fullname = $cv->NAME_HEK || '';
+    return $fullname if $fullname;
 
     my $gv     = $cv->GV;
     my $cvname = '';
@@ -235,7 +233,7 @@ sub get_xcv_gv_u {
     #GV (.xcv_gv)
     my $xcv_gv_u = $cv->GV ? $cv->GV->save : 'Nullsv';
 
-    return '{0}' if $xcv_gv_u eq 'Nullsv';
+    $xcv_gv_u = 0 if $xcv_gv_u eq 'Nullsv';
 
     return sprintf( "{.xcv_gv=%s}", $xcv_gv_u );
 }
@@ -254,42 +252,11 @@ sub save_optree {
 
     return 0 unless ( $root && $$root );
 
-    my $gv = $cv->GV;
+    verbose() ? B::walkoptree_slow( $root, "save" ) : B::walkoptree( $root, "save" );
+    my $startfield = objsym( $cv->START );
 
-    my $ppname;
-    my $fullname;
-
-    if ( $cv->is_lexsub($gv) ) {
-        my $name = $cv->can('NAME_HEK') ? $cv->NAME_HEK : "anonlex";
-        $ppname   = "pp_lexsub_" . $name;
-        $fullname = "<lex>" . $name;
-    }
-    elsif ( $gv and $$gv ) {
-        my ( $stashname, $gvname );
-        $stashname = $gv->STASH->NAME;
-        $gvname    = $gv->NAME;
-        $fullname  = $stashname . '::' . $gvname;
-        $ppname    = ( ${ $gv->FORM } == $$cv ) ? "pp_form_" : "pp_sub_";
-        if ( $gvname ne "__ANON__" ) {
-            $ppname .= ( $stashname eq "main" ) ? $gvname : "$stashname\::$gvname";
-            $ppname =~ s/::/__/g;
-            $ppname =~ s/(\W)/sprintf("0x%x", ord($1))/ge;
-            if ( $gvname eq "INIT" ) {
-                $ppname .= '_' . $initsub_index;
-                $initsub_index++;
-            }
-        }
-    }
-    if ( !$ppname ) {
-        $ppname = "pp_anonsub_$anonsub_index";
-        $anonsub_index++;
-    }
-
-    my $startfield = B::C::saveoptree( $ppname, $root, $cv->START, $cv->PADLIST->ARRAY );    # XXX padlist is ignored
-
-    # XXX missing cv_start for AUTOLOAD on 5.8
-    $startfield = objsym( $root->next ) unless $startfield;                                  # 5.8 autoload has only root
-    $startfield = "0" unless $startfield;                                                    # XXX either CONST ANON or empty body
+    $startfield = objsym( $root->next ) unless $startfield;    # 5.8 autoload has only root
+    $startfield = "0" unless $startfield;                      # XXX either CONST ANON or empty body
 
     return $startfield;
 }
@@ -316,7 +283,7 @@ sub FULLNAME {
     my $gv = $cv->GV;
     return q{SPECIAL} if ref $gv eq 'B::SPECIAL';
 
-    return $cv->GV->FULLNAME;
+    return $gv->FULLNAME;
 }
 
 1;
