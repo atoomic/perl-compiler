@@ -9,13 +9,15 @@ use B::C::Helpers::Symtable qw/savesym/;
 sub save_sv {    # id+outid as U32 (PL_padlist_generation++)
     my ($av) = @_;
 
-    my $fill = $av->MAX;
+    padlistsect()->comment("xpadl_max, xpadl_alloc, xpadl_id, xpadl_outid");
+    my $ix = padlistsect()->saddl(
+        '%s' => $av->MAX,     # xpadl_max
+        '%s' => '{NULL}',     # xpadl_alloc
+        '%s' => $av->ID,      # xpadl_id
+        '%s' => $av->OUTID    # xpadl_outid
+    );
 
-    padlistsect()->comment("xpadl_max, xpadl_alloc xpadl_id, xpadl_outid");
-    my ( $id, $outid ) = ( $av->ID, $av->OUTID );
-    my $padlist_index = padlistsect()->add("$fill, {NULL}, $id, $outid");
-
-    return savesym( $av, "&padlist_list[$padlist_index]" );
+    return savesym( $av, "&padlist_list[$ix]" );
 }
 
 sub add_malloc_line_for_array_init {
