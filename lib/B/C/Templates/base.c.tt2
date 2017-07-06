@@ -845,6 +845,8 @@ main(int argc, char **argv, char **env)
         /* can probably merge BC_Memory and PL_static_shared_memory_position */
         PL_static_shared_memory_position->from = BC_Memory.start;
         PL_static_shared_memory_position->to = BC_Memory.end;
+
+        declare_static_memory( BC_Memory.start, BC_Memory.end, 0 );
     }
 #endif
 
