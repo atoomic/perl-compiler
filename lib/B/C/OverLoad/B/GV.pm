@@ -7,7 +7,6 @@ use B qw/cstring svref_2object SVt_PVGV SVf_UTF8 SVf_AMAGIC/;
 use B::C::Config;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
-use B::C::Helpers::Symtable qw/objsym savesym/;
 
 my %gptable;
 
@@ -51,11 +50,8 @@ sub do_save {
 
     # STATIC_HV need to handle $0
 
-    my $gv_ix = gvsect()->add('FAKE_GV');
-    gvsect()->debug( $gv->get_fullname() );
-
-    my $gvsym = sprintf( '&gv_list[%d]', $gv_ix );
-    savesym( $gv, $gvsym );    # cache it early as eGV might be ourself
+    my ( $ix, $sym ) = gvsect()->reserve($gv);
+    gvsect()->debug( $gv->get_fullname(), $gv );
 
     my $savefields = get_savefields( $gv, $gv->get_fullname() );
 
@@ -94,7 +90,7 @@ sub do_save {
 
         # replace our FAKE entry above
         gvsect()->supdatel(
-            $gv_ix,
+            $ix,
             "&%s"               => $xpvgv,                # XPVGV*  sv_any
             "%u"                => $gv->REFCNT,           #  sv_refcnt - +1 to make it immortal
             "0x%x"              => $gv->FLAGS,            # sv_flags
@@ -102,7 +98,7 @@ sub do_save {
         );
     }
 
-    debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $gvsym, $gv->NAME );
+    debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $sym, $gv->NAME );
 
     # TODO: split the fullname and plug all of them in known territory...
     # relies on template logic to preserve the hash structure...
@@ -113,7 +109,7 @@ sub do_save {
 
     # STATIC_HV: Is there a way to do this up on the xpvgvsect()->sadd line ??
 
-    return $gvsym;
+    return $sym;
 }
 
 sub get_package {
