@@ -10,6 +10,9 @@ use B::C::File qw/init1 init2 svsect xpvsect/;
 sub do_save {
     my ( $sv, $fullname ) = @_;
 
+    my ( $ix, $sym ) = svsect()->reserve($sv);
+    svsect()->debug( $sv->name, $sv );
+
     my $pv  = $sv->PV;
     my $cur = $sv->CUR;
 
@@ -37,8 +40,7 @@ sub do_save {
         $initpm = init2();
     }
 
-    my $ix = svsect()->sadd( "%s, %Lu, 0x%x, {NULL}", $xpv_sym, $sv->REFCNT + 1, $sv->FLAGS );
-    my $sym = sprintf( "&sv_list[%d]", $ix );
+    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {NULL}", $xpv_sym, $sv->REFCNT + 1, $sv->FLAGS );
     debug( rx => "Saving RX $cstr to sv_list[$ix]" );
 
     # replace sv_any->XPV with struct regexp. need pv and extflags
@@ -62,8 +64,6 @@ sub do_save {
     $initpm->indent(-1);
     $initpm->add('}');
     $initpm->split;
-
-    svsect()->debug( $fullname, $sv );
 
     return $sym;
 }
