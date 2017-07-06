@@ -56,7 +56,7 @@ sub code_section_names {
 
 # These objects will end up in an array of structs in the template and be auto-declared.
 sub struct_names {
-    return qw( xpv xpvav xpvhv xpvcv padlist padname padnamelist magic
+    return qw( malloc xpv xpvav xpvhv xpvcv padlist padname padnamelist magic
       xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv gv gp xpvgv lexwarn refcounted_he), assign_sections();
 }
 

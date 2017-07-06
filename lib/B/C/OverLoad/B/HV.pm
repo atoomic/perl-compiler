@@ -168,7 +168,7 @@ sub do_save {
     $init->open_block( $stash_name ? "STASH declaration for ${stash_name}::" : '' );
     
     {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
-        $init->add( B::C::Memory::HvSETUP( $sym, $max + 1, $has_ook, $backrefs_sym ) );
+        $init->add( B::C::Memory::HvSETUP( $init, $sym, $max + 1, $has_ook, $backrefs_sym ) );
 
         my @hash_elements;
         {

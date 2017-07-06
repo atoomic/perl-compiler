@@ -193,7 +193,7 @@ sub _field_split {
 sub get {
     my ( $self, $row ) = @_;
 
-    $row = -1 if !defined $row;
+    $row = $self->index if !defined $row;    # get the last entry if not precised
 
     return $self->{'values'}->[$row];
 }
@@ -263,9 +263,10 @@ sub typename {
     my $self     = shift;
     my $name     = $self->name;
     my $typename = uc($name);
-    $typename = 'UNOP_AUX'  if $typename eq 'UNOPAUX';
-    $typename = 'MyPADNAME' if $typename eq 'PADNAME';
-    $typename = 'SHARED_HE' if $typename eq 'SHAREDHE';
+    $typename = 'UNOP_AUX'           if $typename eq 'UNOPAUX';
+    $typename = 'MyPADNAME'          if $typename eq 'PADNAME';
+    $typename = 'SHARED_HE'          if $typename eq 'SHAREDHE';
+    $typename = 'STATIC_MEMORY_AREA' if $typename eq 'MALLOC';
 
     return $typename;
 }

@@ -422,8 +422,10 @@ sub build_template_stash {
             'dollar_zero'          => svref_2object( \*{'::0'} )->save("0"),
             'dollar_comma'         => svref_2object( \*{'::,'} )->save(","),
         },
-        'Config'  => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
-        'preallocated_sized' => B::C::Memory::get_malloc_size(),
+        'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
+        'Memory' => {
+            'preallocated_sized' => B::C::Memory::get_malloc_size(),
+        },
         'Signals' => {
             'PL_psig_ptr' => {},
             'ignore'      => [],
@@ -431,7 +433,7 @@ sub build_template_stash {
           }
 
     };
-    chomp $c_file_stash->{'compile_stats'};     # Injects a new line when you call compile_stats()
+    chomp $c_file_stash->{'compile_stats'};    # Injects a new line when you call compile_stats()
 
     # define the PL_psig_ptr entries
     foreach my $signame ( sort keys %{ $Config{SIGNAL_NAMES} } ) {
