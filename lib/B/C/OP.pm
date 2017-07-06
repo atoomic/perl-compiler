@@ -58,6 +58,20 @@ sub save_constructor {
             $class = 'B::RV';
         }
 
+        if (0) {    # Debug for tracking save paths.
+            my @save_info = @args;
+            if ( !@save_info ) {
+                foreach my $try (qw/ppname FULLNAME SAFENAME NAME_HEK name NAME/) {
+                    my $got;
+                    if ( $class->can($try) && ( $got = $class->can($try)->($op) ) ) {
+                        push @save_info, $got;
+                    }
+                    last if @save_info >= 2;
+                }
+                push @save_info, '' while scalar @save_info < 2;
+            }
+            print STDERR sprintf( "%s save for %s, %s\n", $class, $save_info[0], $save_info[1] );
+        }
         eval { $sym = $class->can('do_save')->( $op, @args ); 1 }
           or die "$@\n:" . 'B::C::Save'->can('stack_flat')->();
         savesym( $op, $sym ) if defined $sym;
