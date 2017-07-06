@@ -106,14 +106,8 @@ sub do_save {
         debug( hv => 'Saving stash ' . $stash_name );
     }
 
-    # protect against recursive self-reference
-    # i.e. with use Moose at stash Class::MOP::Class::Immutable::Trait
-    # value => rv => cv => ... => rv => same hash
-
-    my $sv_list_index = svsect()->add("FAKE_HV");
-    my $sym = savesym( $hv, "(HV*)&sv_list[$sv_list_index]" );
-
-    # could also simply use: savesym( $hv, sprintf( "s\\_%x", $$hv ) );
+    my ( $ix, $sym ) = svsect()->reserve($hv);
+    svsect()->debug( $fullname, $hv );
 
     my $cache_stash_entry;
 
@@ -169,7 +163,7 @@ sub do_save {
 
     # replace the previously saved svsect with some accurate content
     svsect()->update(
-        $sv_list_index,
+        $ix,
         sprintf(
             "&xpvhv_list[%d], %Lu, 0x%x, {0}",
             xpvhvsect()->index, $hv->REFCNT, $flags
