@@ -117,7 +117,7 @@ cc_opclass(pTHX_ const OP *o)
 	    return OPc_SVOP;
 #endif
     }
-    
+
 #ifdef USE_ITHREADS
     if (o->op_type == OP_GV || o->op_type == OP_GVSV ||
 	o->op_type == OP_RCATLINE)
@@ -154,7 +154,7 @@ cc_opclass(pTHX_ const OP *o)
 
     case OA_PVOP_OR_SVOP:
         /*
-         * Character translations (tr///) are usually a PVOP, keeping a 
+         * Character translations (tr///) are usually a PVOP, keeping a
          * pointer to a table of shorts used to look up translations.
          * Under utf8, however, a simple table isn't practical; instead,
          * the OP is an SVOP (or, under threads, a PADOP),
@@ -732,6 +732,33 @@ CODE:
   }
 OUTPUT:
     RETVAL
+
+SV*
+sizeof_pointer()
+    ALIAS:
+    B::C::sizeof_xpvhv_aux                 = 1
+    B::C::sizeof_HV_ARRAY                  = 2
+PREINIT:
+    SV *ret;
+CODE:
+ {
+    MEM_SIZE size;
+    switch (ix) {
+        case 1:
+            size = sizeof( struct xpvhv_aux );
+        break;
+        case 2:
+            size = PERL_HV_ARRAY_ALLOC_BYTES(1);
+        break;
+        default:
+            size = sizeof( void * );
+
+    }
+    RETVAL = newSVuv( size );
+ }
+OUTPUT:
+    RETVAL
+
 
 BOOT:
 {

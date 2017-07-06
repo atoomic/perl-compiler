@@ -33,8 +33,6 @@ use B::C::File qw( init2 init1 init0 init decl free
   sharedhe init_stash init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
-use B::C::Memory ();
-
 use Exporter ();
 use Errno    ();                           #needed since 5.14
 
@@ -46,6 +44,8 @@ BEGIN {
         XSLoader::load('B::C');
     }
 }
+
+use B::C::Memory ();       # after loading C.xs
 
 # for 5.6.[01] better use the native B::C
 # but 5.6.2 works fine

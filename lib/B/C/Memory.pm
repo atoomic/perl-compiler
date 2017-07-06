@@ -14,13 +14,41 @@ my @SECTION_ORDER = qw{
   init_bootstraplink
 };
 
+my %SIZEOF = (
+    'PERL_HV_ARRAY_ALLOC_BYTES' => 8,    # 'sizeof(HE*) * size' by default
+    'struct xpvhv_aux'          => 56,
+    'void *'                    => 8,
+);
+
+# simple sizeof using one hardcoded value for now
+sub sizeof {
+    my $struct = shift;
+
+    die q{sizeof requires one arg} unless $struct;
+    return $SIZEOF{$struct}  if defined $SIZEOF{$struct};
+    return $SIZEOF{'void *'} if $struct =~ q{\*$};
+    die qq{sizeof: Unkown struct '$struct'};
+}
+
 sub check_all_sizes {
-    ### TODO implement and run it at load time to check that the value are still accurate
+    my $check = sub {
+        my ( $struct, $size ) = @_;
+        my $set = $SIZEOF{$struct} // 0;
+
+        #warn "# sizeof($struct) is incorrect: set to '$set' should be '$size'\n";
+        return if $set == $size;
+        die "sizeof($struct) is incorrect: set to '$set' should be '$size'\n";
+    };
+
+    # do the check using the XS caller
+    $check->( 'void *',                    B::C::sizeof_pointer() );
+    $check->( 'struct xpvhv_aux',          B::C::sizeof_xpvhv_aux() );
+    $check->( 'PERL_HV_ARRAY_ALLOC_BYTES', B::C::sizeof_HV_ARRAY() );
 
     return;
 }
 
-check_all_sizes();
+check_all_sizes();    # autocheck at startup
 
 # mark the memory consume for this structure
 sub consume_malloc {
@@ -51,22 +79,6 @@ sub consume_malloc {
     }
 
 }
-
-my %SIZEOF = (
-    'PERL_HV_ARRAY_ALLOC_BYTES' => 8,    # 'sizeof(HE*) * size' by default
-    'struct xpvhv_aux'          => 56,
-    'void *'                    => 8,
-);
-
-sub sizeof {
-    my $struct = shift;
-    die unless $struct;
-    return $SIZEOF{$struct}  if defined $SIZEOF{$struct};
-    return $SIZEOF{'void *'} if $struct =~ q{\*$};
-    die qq{sizeof: Unkown struct '$struct'};
-}
-
-#  #  define PERL_HV_ARRAY_ALLOC_BYTES(size) ((size) * sizeof(HE*))
 
 sub get_malloc_size {    # in char unit
     populate_malloc_section();
@@ -104,16 +116,19 @@ sub populate_malloc_section {
 
             $to += $entry->{counter} * $entry->{size};    # where this ends
 
+            malloc()->comment('Malloc_t from (delta from start), Malloc_t to (delta from start), MEM_SIZE size, void *next (unusued pointer)');
+
             # for now use STATIC_MEMORY_AREA struct
             # { Malloc_t from; Malloc_t to; MEM_SIZE size; struct static_memory_t *next; }
             malloc()->saddl(
-                '(Malloc_t) %d'  => $from,                # Malloc_t from
-                '(Malloc_t) %d'  => $to,                  # Malloc_t to
-                '(MEM_SIZE) %d'  => $entry->{size},       # MEM_SIZE size
-                'NULL /* x%d */' => $entry->{counter},    # struct static_memory_t *next - unused *next pointer
+                '(Malloc_t) %d' => $from,             # Malloc_t from
+                '(Malloc_t) %d' => $to,               # Malloc_t to
+                '(MEM_SIZE) %d' => $entry->{size},    # MEM_SIZE size
+                '%s'            => 'NULL',            # struct static_memory_t *next - unused *next pointer
             );
+            malloc()->debug( $entry->{size} . ' x' . $entry->{counter} );
 
-            $from = $to;                                  # where the next one starts;
+            $from = $to;                              # where the next one starts;
         }
     }
 
