@@ -13,17 +13,14 @@ our $MAX_PADNAME_LENGTH = 1;
 sub do_save {
     my ( $pn, $fullname ) = @_;
 
-    my $xpadn_ourstash = sprintf( "(HV*) %s", $pn->OURSTASH->save($fullname) );
-    my $xpadn_type_u   = sprintf( "(HV*) %s", $pn->TYPE->save($fullname) );
+    my ( $ix, $sym ) = padnamesect()->reserve($pn);
+    padnamesect()->debug( $fullname, $pn );
 
     my $refcnt = $pn->REFCNT;
     $refcnt++ if $refcnt < 1000;    # XXX protect from free, but allow SvREFCOUNT_IMMORTAL
 
     my $pv = $pn->PVX;
     my $xpadn_str = cstring($pv) || '{0}';
-
-    my $ix = padnamesect()->index + 1;
-    my $sym = sprintf( "&padname_list[%d]", $ix );
 
     my $xpadn_pv = $ix ? sprintf( "((char*)%s)+STRUCT_OFFSET(struct padname_with_str, xpadn_str[0])", $sym ) : 'NULL';
 
@@ -41,18 +38,21 @@ sub do_save {
     # We set it to the max length of the largest variable.
     padnamesect()->comment(" pv, ourstash, type_u, low, high, refcnt, gen, len, flags, str");
 
+    # STATIC_HV: xpadn_type_u doesn't seem to be supporting the possibility of xpadn_protocv??
+
     # Provided in base.c.tt2 custom to deal with xpadn_str needing to be fixed in size.
-    padnamesect()->saddl(
-        "%s"   => $xpadn_pv,                  # char *xpadn_pv;
-        "%s"   => $xpadn_ourstash,            # HV *xpadn_ourstash;
-        "{%s}" => $xpadn_type_u,              # union { HV *xpadn_typestash; CV *xpadn_protocv; } xpadn_type_u;
-        "%u"   => $pn->COP_SEQ_RANGE_LOW,     # U32 xpadn_low;
-        "%u"   => $pn->COP_SEQ_RANGE_HIGH,    # U32 xpadn_high;
-        "%s"   => $xpadn_refcnt,              # U32 xpadn_refcnt;
-        "%i"   => $pn->GEN,                   # int xpadn_gen;
-        "%u"   => $xpadn_len,                 # U8  xpadn_len;
-        "0x%x" => $pn->FLAGS & 0xff,          # U8  xpadn_flags; /* U8 + FAKE if OUTER. OUTER,STATE,LVALUE,TYPED,OUR */
-        "%s"   => $xpadn_str,                 # char xpadn_str[60]; /* longer lexical upval names are forbidden for now */
+    padnamesect()->supdatel(
+        $ix,
+        "%s"                         => $xpadn_pv,                         # char *xpadn_pv;
+        "(HV*) %s"                   => $pn->OURSTASH->save($fullname),    # HV *xpadn_ourstash;
+        "{.xpadn_typestash=(HV*)%s}" => $pn->TYPE->save($fullname),        # union { HV *xpadn_typestash; CV *xpadn_protocv; } xpadn_type_u;
+        "%u"                         => $pn->COP_SEQ_RANGE_LOW,            # U32 xpadn_low;
+        "%u"                         => $pn->COP_SEQ_RANGE_HIGH,           # U32 xpadn_high;
+        "%s"                         => $xpadn_refcnt,                     # U32 xpadn_refcnt;
+        "%i"                         => $pn->GEN,                          # int xpadn_gen;
+        "%u"                         => $xpadn_len,                        # U8  xpadn_len;
+        "0x%x"                       => $pn->FLAGS & 0xff,                 # U8  xpadn_flags; /* U8 + FAKE if OUTER. OUTER,STATE,LVALUE,TYPED,OUR */
+        "%s"                         => $xpadn_str,                        # char xpadn_str[60]; /* longer lexical upval names are forbidden for now */
     );
 
     padnamesect()->debug( $fullname . " " . $pv, $pn->flagspv ) if debug('flags');
