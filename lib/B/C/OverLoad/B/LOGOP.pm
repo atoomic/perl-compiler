@@ -13,9 +13,9 @@ sub do_save {
 
     logopsect()->supdatel(
         $ix,
-        '%s' => $op->_save_common,
-        '%s' => $op->first->save,
-        '%s' => $op->other->save
+        '%s'       => $op->_save_common,
+        '(OP*) %s' => $op->first->save,    # OP *    op_first;
+        '(OP*) %s' => $op->other->save,    # OP *    op_other;
     );
 
     return $sym;
