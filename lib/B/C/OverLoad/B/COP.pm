@@ -18,8 +18,8 @@ sub do_save {
     # TODO: if it is a nullified COP we must save it with all cop fields!
     debug( cops => "COP: line %d file %s\n", $op->line, $op->file );
 
-    my $ix  = copsect()->add('FAKE_COP');    # replaced later
-    my $sym = copsect()->get_sym;            # cop_list[$ix]
+    my ( $ix, $sym ) = copsect()->reserve( $op, "COP*" );
+    copsect()->debug( $op->name, $op );
 
     # shameless cut'n'paste from B::Deparse
     my ( $warn_sv, $isint );
@@ -51,8 +51,6 @@ sub do_save {
 
     # cop_label now in hints_hash (Change #33656)
     my $add_label = $op->label ? 1 : 0;
-
-    copsect()->debug( $op->name, $op );
 
     $op->save_hints($sym);
 
@@ -119,7 +117,7 @@ sub do_save {
         '%s'       => q{NULL},                                  # COPHH * cop_hints_hash; /* compile time state of %^H. */
     );
 
-    return qq[(OP*)&$sym];
+    return $sym;
 }
 
 sub save_hints {
@@ -131,7 +129,7 @@ sub save_hints {
     my $i = 0;
     if ( exists $COPHHTABLE{$$hints} ) {
         my $cophh = $COPHHTABLE{$$hints};
-        return init()->sadd( "CopHINTHASH_set(&%s, %s);", $sym, $cophh );
+        return init()->sadd( "CopHINTHASH_set(%s, %s);", $sym, $cophh );
     }
 
     die unless ref $hints eq 'B::RHE';    # does it really happen ?
@@ -160,7 +158,7 @@ sub save_hints {
         $i++;
     }
 
-    return init()->sadd( "CopHINTHASH_set(&%s, %s);", $sym, $cophh );
+    return init()->sadd( "CopHINTHASH_set(%s, %s);", $sym, $cophh );
 }
 
 1;
