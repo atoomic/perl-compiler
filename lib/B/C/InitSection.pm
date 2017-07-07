@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 # avoid use vars
-use parent 'B::C::Section';
+our @ISA = qw/B::C::Section/;
 
 use B::C::Debug ();
 use B qw(cstring);
