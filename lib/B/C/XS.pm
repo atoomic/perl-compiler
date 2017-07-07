@@ -118,6 +118,7 @@ sub inc_key {
 
 sub perl_module_to_sofile {
     my $module = shift or die "missing module name";
+    die q{This is a function not a method call} if ref $module;
 
     my $inc_key = $module;
     $inc_key =~ s{::}{/}g;

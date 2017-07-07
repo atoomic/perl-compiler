@@ -190,7 +190,7 @@ Static const char xsfile[] = "universal.c";
 #undef CopFILE_set
 #define CopFILE_set(c,pv)  CopFILEGV_set((c), gv_fetchfile(pv))
 
-[% IF init2_remap.size and !HAVE_DLFCN_DLOPEN %]
+[% IF remap_xs_symbols.size %]
 XS(XS_DynaLoader_dl_load_file);
 XS(XS_DynaLoader_dl_find_symbol);
 [% END %]

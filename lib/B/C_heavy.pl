@@ -81,7 +81,7 @@ BEGIN {
 }
 
 our ( $package_pv,     @package_pv );                 # global stash for methods since 5.13
-our ( %xsub,           %init2_remap );
+our ( %xsub,           %remap_xs_symbols );
 our ( %dumped_package, %skip_package, %isa_cache );
 
 # fixme move to config
@@ -804,6 +804,8 @@ sub save_main_rest {
 
     fixup_ppaddr();
 
+    do_remap_xs_symbols();
+
     $settings->{'XS'}->write_lst();
     my $c_file_stash = build_template_stash();
 
@@ -831,8 +833,7 @@ sub build_template_stash {
         'creator'            => "created at " . scalar localtime() . " with B::C $VERSION for $^X",
         'init_name'          => $settings->{'init_name'} || "perl_init",
         'gv_index'           => $gv_index,
-        'init2_remap'        => \%init2_remap,
-        'HAVE_DLFCN_DLOPEN'  => HAVE_DLFCN_DLOPEN(),
+        'remap_xs_symbols'   => \%remap_xs_symbols,
         'compile_stats'      => compile_stats(),
         'nullop_count'       => $nullop_count,
         'all_eval_pvs'       => \@B::C::InitSection::all_eval_pvs,
@@ -880,6 +881,52 @@ sub build_template_stash {
     $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, 511 ) + 1;
 
     return $c_file_stash;
+}
+
+sub do_remap_xs_symbols {
+    my %xs_pkgs;
+
+    for my $pkg ( sort keys %remap_xs_symbols ) {
+        next unless grep { $pkg eq $_ } @{ $settings->{'XS'}->modules() };
+        $xs_pkgs{$pkg} = 1;    # maybe store the so file thre ?
+    }
+
+    return unless scalar keys %xs_pkgs;
+
+    my $init = init_bootstraplink();    # was using init2 previously
+
+    # was using more logic if HAVE_DLFCN_DLOPEN is not true, but seems to always be the case for us
+    die "HAVE_DLFCN_DLOPEN is not true" unless HAVE_DLFCN_DLOPEN();
+
+    # unfortunately cannot use our BOOTSTRAP_XS logic there as
+    #   Perl_gv_fetchpv("Encode::ascii_encoding", 0, SVt_PVCV)
+    # is going to return an 0
+
+    $init->no_split;
+    $init->add("{");
+    $init->indent(+1);
+
+    $init->add( "#include <dlfcn.h>", "void *handle;" );
+
+    for my $pkg ( sort keys %xs_pkgs ) {
+        my $so_file = B::C::XS::perl_module_to_sofile($pkg);
+        die qq{Cannot get .so file for module '$pkg'} unless $so_file;
+
+        $init->sadd( "handle = dlopen(%s, %s);", cstring($so_file), 'RTLD_NOW|RTLD_NOLOAD' );
+        foreach my $mg ( @{ $remap_xs_symbols{$pkg}{MG} } ) {
+            verbose("init2 remap xpvmg_list[$mg->{ID}].xiv_iv to dlsym of $pkg\: $mg->{NAME}");
+            $init->sadd(
+                "xpvmg_list[%d].xiv_iv = PTR2IV( dlsym(handle, %s) );",
+                $mg->{ID}, cstring( $mg->{NAME} )
+            );
+        }
+    }
+
+    $init->indent(-1);
+    $init->add("}");
+    $init->split;
+
+    return;
 }
 
 sub found_xs_sub {
