@@ -15,7 +15,6 @@ sub inc_index {
 package B::HV;
 
 use strict;
-require mro;
 
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
 use B::C::Config;
