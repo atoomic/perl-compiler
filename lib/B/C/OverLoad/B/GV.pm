@@ -10,29 +10,6 @@ use B::C::File qw/init init_static_assignments gvsect gpsect xpvgvsect init_boot
 
 my %gptable;
 
-sub Save_HV()   { 1 }
-sub Save_AV()   { 2 }
-sub Save_SV()   { 4 }
-sub Save_CV()   { 8 }
-sub Save_FORM() { 16 }
-sub Save_IO()   { 32 }
-sub Save_FILE() { 64 }
-
-sub _savefields_to_str {
-    my $i = shift;
-    return '' unless debug('gv') && $i;
-    my $s = qq{$i: };
-    $s .= 'HV '   if $i & Save_HV();
-    $s .= 'AV '   if $i & Save_AV();
-    $s .= 'SV '   if $i & Save_SV();
-    $s .= 'CV '   if $i & Save_CV();
-    $s .= 'FORM ' if $i & Save_FORM();
-    $s .= 'IO '   if $i & Save_IO();
-    $s .= 'FILE ' if $i & Save_FILE();
-
-    return $s;
-}
-
 my $CORE_SYMS = {
     'main::ENV'  => 'PL_envgv',
     'main::ARGV' => 'PL_argvgv',
@@ -53,11 +30,7 @@ sub do_save {
     my ( $ix, $sym ) = gvsect()->reserve($gv);
     gvsect()->debug( $gv->get_fullname(), $gv );
 
-    my $savefields = get_savefields( $gv, $gv->get_fullname() );
-
-    debug( gv => '===== GV::do_save for %s [ savefields=%s ] ', $gv->get_fullname(), _savefields_to_str($savefields) );
-
-    my $gpsym = $gv->savegp_from_gv($savefields);
+    my $gpsym = $gv->savegp_from_gv();
 
     my $stash_symbol = $gv->get_stash_symbol();
 
@@ -149,7 +122,7 @@ sub GP_IX_HEK()    { 11 }
 
 # FIXME todo and move later to B/GP.pm ?
 sub savegp_from_gv {
-    my ( $gv, $savefields ) = @_;
+    my ( $gv ) = @_;
 
     # no GP to save there...
     return 'NULL' unless $gv->isGV_with_GP and $gv->GP;
@@ -194,14 +167,14 @@ sub savegp_from_gv {
 
     my $gp_ix = gpsect()->add('FAKE_GP');
 
-    $gp_sv = $gv->save_gv_sv($fullname) if $savefields & Save_SV;
-    $gp_av = $gv->save_gv_av($fullname) if $savefields & Save_AV;
-    $gp_hv = $gv->save_gv_hv($fullname) if $savefields & Save_HV;
-    $gp_cv = $gv->save_gv_cv( $fullname, $gp_ix ) if $savefields & Save_CV;
-    $gp_form = $gv->save_gv_format($fullname) if $savefields & Save_FORM;    # FIXME incomplete for now
+    $gp_sv = $gv->save_gv_sv($fullname);
+    $gp_av = $gv->save_gv_av($fullname);
+    $gp_hv = $gv->save_gv_hv($fullname);
+    $gp_cv = $gv->save_gv_cv( $fullname, $gp_ix );
+    $gp_form = $gv->save_gv_format($fullname);
 
     my $io_sv;
-    ( $gp_io, $io_sv ) = $gv->save_gv_io($fullname) if $savefields & Save_IO;    # FIXME: get rid of sym
+    ( $gp_io, $io_sv ) = $gv->save_gv_io($fullname);
     $gp_sv = $io_sv if $io_sv;
     gpsect()->comment('SV, gp_io, CV, cvgen, gp_refcount, HV, AV, CV* form, GV, line, flags, HEK* file');
 
@@ -470,75 +443,6 @@ sub save_gv_io {
     }
 
     return ( $gvio->save($fullname), undef );
-}
-
-sub get_savefields {
-    my ( $gv, $fullname ) = @_;
-
-    my $gvname = $gv->FULLNAME;
-
-    # default savefields
-    my $all_fields = Save_HV | Save_AV | Save_SV | Save_CV | Save_FORM | Save_IO;
-    my $savefields = 0;
-
-    my $gp = $gv->GP;
-
-    # some non-alphabetic globs require some parts to be saved
-    # ( ex. %!, but not $! )
-    if ( ref($gv) eq 'B::STASHGV' and $gvname !~ /::$/ ) {
-
-        # https://code.google.com/archive/p/perl-compiler/issues/79 - Only save stashes for stashes.
-        $savefields = 0;
-    }
-    elsif ( $fullname eq 'main::!' ) {    #Errno
-        $savefields = Save_HV | Save_SV | Save_CV;
-    }
-    elsif ( $fullname =~ /^DynaLoader::dl_(require_symbols|resolve_using|librefs)$/ ) {    # no need to assign any SV/AV/HV to them (172)
-        $savefields = Save_CV | Save_FORM | Save_IO;
-    }
-    elsif ( $fullname eq 'main::ENV' ) {
-        $savefields = $all_fields ^ Save_HV;
-    }
-    elsif ( $fullname eq 'main::ARGV' ) {
-        $savefields = $all_fields ^ Save_AV;
-    }
-    elsif ( $fullname =~ /^main::STD(IN|OUT|ERR)$/ ) {
-        $savefields = Save_FORM | Save_IO;
-    }
-    elsif ( $fullname eq 'main::_' ) {
-        $savefields = Save_AV | Save_SV;
-    }
-    elsif ( $fullname eq 'main::@' ) {
-        $savefields = Save_SV;
-    }
-    elsif ( $gvname =~ /^main::[-+]$/ ) {    # Last match start and stop
-        $savefields = Save_AV;
-    }
-    elsif ( $gvname =~ /^main::[0-9]$/ ) {    # Numbered matches.
-        $savefields = Save_SV | Save_AV;
-    }
-    elsif ( $gvname =~ /^main::[^A-Za-z]$/ ) {
-        $savefields = Save_SV;
-    }
-    else {
-        $savefields = $all_fields;
-    }
-
-    # avoid overly dynamic POSIX redefinition warnings: GH #335, #345
-    if ( $fullname =~ m/^POSIX::M/ or $fullname eq 'attributes::bootstrap' ) {
-        $savefields &= ~Save_CV;
-    }
-
-    my $is_gvgp    = $gv->isGV_with_GP;
-    my $is_coresym = $gv->is_coresym();
-    if ( !$is_gvgp or $is_coresym ) {
-        $savefields &= ~Save_FORM;
-        $savefields &= ~Save_IO;
-    }
-
-    $savefields |= Save_FILE if ( $is_gvgp and !$is_coresym );
-
-    return $savefields;
 }
 
 sub savecv {
