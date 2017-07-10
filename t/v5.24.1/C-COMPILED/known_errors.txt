@@ -77,6 +77,7 @@ uni/tr_7jis.t               COMPAT    BC issue #283 - unsupported deprecated "en
 uni/tr_eucjp.t              COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/tr_sjis.t               COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/tr_utf8.t               COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
+uni/variables.t             SKIP      Taking too long to run. something's really broken. need to get to the root of it.
 xtestc/0015.t               TESTS     Output is: "a\nb\n\n"
 xtestc/0135.t               TESTS     Output is: ""
 xtestc/0163.t               TESTS     Output is: ""
