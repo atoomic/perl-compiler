@@ -37,7 +37,8 @@ sub do_save {
     my $magic_stash = $gv->FLAGS & SVf_AMAGIC ? $stash_symbol : q{NULL};
 
     my $namehek = q{NULL};
-    if ( my $gvname = $gv->NAME ) {
+    my $gvname  = $gv->NAME;
+    if ( defined $gvname && length($gvname) ) {
         my ($share_he) = save_shared_he($gvname);
         $namehek = get_sHe_HEK($share_he);
     }
@@ -122,7 +123,7 @@ sub GP_IX_HEK()    { 11 }
 
 # FIXME todo and move later to B/GP.pm ?
 sub savegp_from_gv {
-    my ( $gv ) = @_;
+    my ($gv) = @_;
 
     # no GP to save there...
     return 'NULL' unless $gv->isGV_with_GP and $gv->GP;
@@ -167,10 +168,10 @@ sub savegp_from_gv {
 
     my $gp_ix = gpsect()->add('FAKE_GP');
 
-    $gp_sv = $gv->save_gv_sv($fullname);
-    $gp_av = $gv->save_gv_av($fullname);
-    $gp_hv = $gv->save_gv_hv($fullname);
-    $gp_cv = $gv->save_gv_cv( $fullname, $gp_ix );
+    $gp_sv   = $gv->save_gv_sv($fullname);
+    $gp_av   = $gv->save_gv_av($fullname);
+    $gp_hv   = $gv->save_gv_hv($fullname);
+    $gp_cv   = $gv->save_gv_cv( $fullname, $gp_ix );
     $gp_form = $gv->save_gv_format($fullname);
 
     my $io_sv;
