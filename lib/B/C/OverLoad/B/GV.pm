@@ -511,6 +511,9 @@ sub get_savefields {
     elsif ( $fullname eq 'main::@' ) {
         $savefields = Save_SV;
     }
+    elsif ( $gvname =~ /^main::[0-9]$/ ) {
+        $savefields = Save_SV | Save_AV;
+    }
     elsif ( $gvname =~ /^main::[^A-Za-z]$/ ) {
         $savefields = Save_SV;
     }
