@@ -469,7 +469,7 @@ tests[95]='use IO::Socket::SSL();
 my IO::Handle $handle = IO::Socket::SSL->new(SSL_verify_mode =>0);
 $handle->blocking(0);
 print "ok";'
-tests[96]='defined(&B::OP::name) || print q(ok)'
+tests[96]='defined(&PQR::STU) || print q(ok)'
 tests[97]='use v5.12; print q(ok);'
 
 # from here on we test CC specifics only
