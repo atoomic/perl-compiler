@@ -511,7 +511,10 @@ sub get_savefields {
     elsif ( $fullname eq 'main::@' ) {
         $savefields = Save_SV;
     }
-    elsif ( $gvname =~ /^main::[0-9]$/ ) {
+    elsif ( $gvname =~ /^main::[-+]$/ ) {    # Last match start and stop
+        $savefields = Save_AV;
+    }
+    elsif ( $gvname =~ /^main::[0-9]$/ ) {    # Numbered matches.
         $savefields = Save_SV | Save_AV;
     }
     elsif ( $gvname =~ /^main::[^A-Za-z]$/ ) {
