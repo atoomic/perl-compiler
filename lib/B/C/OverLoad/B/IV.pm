@@ -12,7 +12,7 @@ sub do_save {
 
     # Since 5.11 the RV is no special SV object anymore, just a IV (test 16)
     my $svflags = $sv->FLAGS;
-    my $refcnt  = $sv->REFCNT + 1;
+    my $refcnt  = $sv->REFCNT;
 
     if ( ref $custom ) {    # used when downgrading a PVIV / PVNV to IV
         $svflags = $custom->{flags}  if defined $custom->{flags};
