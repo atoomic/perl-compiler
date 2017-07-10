@@ -30,7 +30,10 @@ sub cast_sv {
 sub save_sv {
     my ( $av, $fullname ) = @_;
 
-    my $fill = $av->fill();           # could be using PADLIST, PADNAMELIST, or AV method for this.
+    my ( $ix, $sym ) = svsect()->reserve( $av, 'AV*' );
+    svsect()->debug( $fullname, $av );
+
+    my $fill = $av->fill();    # could be using PADLIST, PADNAMELIST, or AV method for this.
 
     xpvavsect()->comment('xmg_stash, xmg_u, xav_fill, xav_max, xav_alloc');
     my $xpv_ix = xpvavsect()->saddl(
@@ -41,14 +44,9 @@ sub save_sv {
         "%s"   => "NULL",                        # xav_alloc  /* pointer to beginning of C array of SVs */ This has to be dynamically setup at init().
     );
 
-    svsect()->sadd( "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
+    svsect()->supdate( $ix, "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
 
-    svsect()->debug( $fullname, $av );
-    my $sv_ix    = svsect()->index;
-    my $av_index = xpvavsect()->index;
-
-    # protect against recursive self-references (Getopt::Long)
-    return savesym( $av, "(AV*)&sv_list[$sv_ix]" );
+    return $sym;
 }
 
 # helper to skip backref SV
