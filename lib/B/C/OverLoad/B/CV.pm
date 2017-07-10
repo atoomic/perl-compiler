@@ -44,7 +44,8 @@ sub do_save {
 
     # need to survive cv_undef as there is no protection against static CVs
     my $refcnt = $cv->REFCNT + 1;
-    my $root   = $cv->get_ROOT;
+
+    my $root = $cv->get_ROOT;
 
     # Setup the PV for the SV here cause we need to set cur and len.
     my $pv  = 'NULL';
@@ -141,13 +142,19 @@ sub get_cv_outside {
         my $fn = $cv->get_full_name;
         return 0 unless can_save_sub($fn);
 
-        my $format_mask = SVt_PVFM() | SVs_RMG();
-        my $is_format = ( $cv->FLAGS & $format_mask ) == $format_mask ? 1 : 0;
+        my $is_format = $cv->is_format;
 
         return 0 if ${ $cv->OUTSIDE } ne ${ main_cv() } && !$is_format;
     }
 
     return $cv->OUTSIDE->save;
+}
+
+sub is_format {
+    my $cv = shift;
+
+    my $format_mask = SVt_PVFM() | SVs_RMG();
+    return ( $cv->FLAGS & $format_mask ) == $format_mask ? 1 : 0;
 }
 
 # should probably leave in the same pm than can_save_stash
