@@ -39,26 +39,25 @@ sub do_save {
     # HV_STATIC: Why are we saving a null row?
     # since 5.10 nullified cops free their additional fields
     if ( !$type and $OP_COP{ $op->targ } ) {
-        debug( cops => "Null COP: %d\n", $op->targ );
-
         copsect()->comment_common("line, stash, file, hints, seq, warnings, hints_hash");
-        my $ix = copsect()->sadd(
+        my ( $ix, $sym ) = copsect()->reserve( $op, "OP*" );
+        copsect()->debug( $op->name, $op );
+
+        copsect()->supdate( $ix,
             "%s, 0, %s, NULL, 0, 0, NULL, NULL",
             $op->_save_common, "Nullhv"
         );
 
-        return "(OP*)&cop_list[$ix]";
+        return $sym;
     }
     else {
+
         opsect()->comment( B::C::opsect_common() );
-        my $ix = opsect()->add( $op->_save_common );
+        my ( $ix, $sym ) = opsect()->reserve( $op, "OP*" );
         opsect()->debug( $op->name, $op );
 
-        debug(
-            op => "  OP=%s targ=%d flags=0x%x private=0x%x\n",
-            peekop($op), $op->targ, $op->flags, $op->private
-        );
-        return "(OP*) &op_list[$ix]";
+        opsect()->update( $ix, $op->_save_common );
+        return $sym;
     }
 }
 
