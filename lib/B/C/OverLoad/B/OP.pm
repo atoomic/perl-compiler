@@ -24,11 +24,6 @@ sub do_save {
 
     my $type = $op->type;
     $B::C::nullop_count++ unless $type;
-    if ( $type == $B::C::OP_THREADSV ) {
-
-        # saves looking up ppaddr but it's a bit naughty to hard code this
-        init()->sadd( "(void)find_threadsv(%s);", cstring( $threadsv_names[ $op->targ ] ) );
-    }
 
     if ( ref($op) eq 'B::OP' ) {    # check wrong BASEOPs
                                     # [perl #80622] Introducing the entrytry hack, needed since 5.12, fixed with 5.13.8 a425677
@@ -83,57 +78,10 @@ sub B::OP::fake_ppaddr {
 sub _save_common {
     my $op = shift;
 
-    # compile-time method_named packages are always const PV sM/BARE, they should be optimized.
-    # run-time packages are in gvsv/padsv. This is difficult to optimize.
-    #   my Foo $obj = shift; $obj->bar(); # TODO typed $obj
-    # entersub -> pushmark -> package -> args...
-    # See perl -MO=Terse -e '$foo->bar("var")'
-    # See also http://www.perl.com/pub/2000/06/dougpatch.html
-    # XXX TODO 5.8 ex-gvsv
-    # XXX TODO Check for method_named as last argument
-    if (
-            $op->type > 0
-        and $op->name eq 'entersub'
-        and $op->first
-        and
-
-        # Foo->bar()  compile-time lookup, 34 = BARE in all versions
-        (
-            ( $op->first->next->name eq 'const' and $op->first->next->flags == 34 )
-            or $op->first->next->name eq 'padsv'    # or $foo->bar() run-time lookup
-        )
-        and $op->first->name eq 'pushmark'
-        and $op->first->can('name')
-
-      ) {
-        my $pkgop = $op->first->next;
-        if ( !$op->first->next->type ) {            # 5.8 ex-gvsv
-            $pkgop = $op->first->next->next;
-        }
-        debug( cv => "check package_pv " . $pkgop->name . " for method_name" );
-        my $pv = B::C::svop_or_padop_pv($pkgop);    # 5.13: need to store away the pkg pv
-        if ( $pv and $pv !~ /[! \(]/ ) {
-            $B::C::package_pv = $pv;
-        }
-        else {
-            # mostly optimized-away padsv NULL pads with 5.8
-            WARN("package_pv for method_name not found") if debug('cv');
-        }
-    }
-
     return sprintf(
-        "%s, %s, %s",
+        "%s, %s, %s, %u, %u, 0, 0, 0, 1, 0, 0, 0, 0x%x, 0x%x",
         $op->next->save,
         $op->sibling->save,
-        $op->_save_common_middle
-    );
-}
-
-sub _save_common_middle {
-    my $op = shift;
-
-    return sprintf(
-        "%s, %u, %u, 0, 0, 0, 1, 0, 0, 0, 0x%x, 0x%x",
         $op->fake_ppaddr, $op->targ, $op->type, $op->flags, $op->private
     );
 }
