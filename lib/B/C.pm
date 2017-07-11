@@ -249,37 +249,11 @@ sub cleanup_stashes {
             $CORE_subs->{ $full_stash . $k } = 1;
         }
 
-        #return $clear_stash_keys->( $root_stash, $name, $keys_to_clear );
+        return $clear_stash_keys->( $root_stash, $name, $keys_to_clear );
     };
 
-    # order matters
-    $clear_stash_keys_core->( 'PerlIO::', 'Layer::', [qw{NoWarnings find}] );
-
-    ### view universal.c - static const struct xsub_details details[]
-    $clear_stash_keys_core->( 'main', 'UNIVERSAL::', [qw{DOES VERSION can isa}] );
-
-    # --- view vxs.inc
-    $clear_stash_keys_core->( 'main', 'version::',   [qw{("" () (* (*= (+ (+= (- (-= (/ (/= (0+ (<=> (abs (bool (cmp (nomethod AUTOLOAD _VERSION boolean declare is_alpha is_qv new noop normal numify parse qv stringify vcmp}] );
-    $clear_stash_keys_core->( 'main', 'utf8::',      [qw{decode downgrade encode is_utf8 native_to_unicode unicode_to_native upgrade valid}] );
-    $clear_stash_keys_core->( 'main', 'Internals::', [qw{SvREADONLY SvREFCNT hv_clear_placeholders}] );                                                                                                                               # NOTE: Internals::V() is no longer initialized on our perl_run initialization routine.
-    $clear_stash_keys_core->( 'main', 'PerlIO::',    [qw{get_layers}] );                                                                                                                                                              # need to be done after PerlIO::Layer
-    $clear_stash_keys_core->( 'main', 'constant::',  [qw{_make_const}] );
-    $clear_stash_keys_core->( 'main', 're::',        [qw{is_regexp regname regnames regnames_count regexp_pattern}] );
-    ## end of universal.c boot
-
-    $clear_stash_keys_core->( 'main', 'mro::',    [qw{method_changed_in}] );                                                                                                                                                          # mro_core.c
-    $clear_stash_keys_core->( 'main', 'Regexp::', [qw{DESTROY}] );
-
     # B::C provides its own DynaLoader boot
-    $clear_stash_keys_core->(
-        'main',
-        'DynaLoader::',
-        [
-            qw{boot_DynaLoader dl_load_file dl_unload_file dl_find_symbol dl_undef_symbols
-              dl_install_xsub dl_error
-              }
-        ]
-    );
+    $clear_stash_keys_core->( 'File::', 'Glob::', [qw{GLOB_ABEND GLOB_ALPHASORT GLOB_ALTDIRFUNC GLOB_BRACE GLOB_CSH GLOB_ERR GLOB_LIMIT GLOB_MARK GLOB_NOCASE GLOB_NOCHECK GLOB_NOMAGIC GLOB_NOSORT GLOB_NOSPACE GLOB_QUOTE GLOB_TILDE}] );
 
     # we are saving subs defined by CORE at startup
     $settings->{CORE_subs} = $CORE_subs;
