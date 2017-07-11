@@ -15,7 +15,6 @@ sub PMf_ONCE() { 0x10000 };    # PMf_ONCE also not exported
 
 sub do_save {
     my ($op) = @_;
-    my ( $replrootfield, $replstartfield, $gvsym ) = ( 'NULL', 'NULL' );
 
     pmopsect()->comment_common("first, last, pmoffset, pmflags, pmreplroot, pmreplstart");
     my ( $ix, $sym ) = pmopsect()->reserve( $op, 'OP*' );
@@ -26,34 +25,16 @@ sub do_save {
     my $replstart = $op->pmreplstart;
     my $ppaddr    = $op->ppaddr;
 
-    # under ithreads, OP_PUSHRE.op_replroot is an integer. multi not.
-    $replrootfield = sprintf( "s\\_%x", $$replroot ) if ref $replroot;
-    if ($$replroot) {
-
-        # OP_PUSHRE (a mutated version of OP_MATCH for the regexp
-        # argument to a split) stores a GV in op_pmreplroot instead
-        # of a substitution syntax tree. We don't want to walk that...
-        if ( $op->name eq "pushre" ) {
-            $gvsym          = $replroot->save;
-            $replrootfield  = "NULL";
-            $replstartfield = $replstart->save if $replstart;
-            debug( gv => "PMOP::save saving a pp_pushre with GV $gvsym" );
-        }
-        else {
-            $replstart->save if $replstart;
-            $replstartfield = B::C::saveoptree( "*ignore*", $replroot, $replstart );
-            $replstartfield =~ s/^hv/(OP*)hv/;
-        }
-    }
+    my $replrootfield  = ( $replroot  && ref $replroot )  ? $replroot->save  : 'NULL';
+    my $replstartfield = ( $replstart && ref $replstart ) ? $replstart->save : 'NULL';
 
     # pmnext handling is broken in perl itself, we think. Bad op_pmnext
     # fields aren't noticed in perl's runtime (unless you try reset) but we
     # segfault when trying to dereference it to find op->op_pmnext->op_type
     pmopsect()->supdate(
-        $ix,               "%s, s\\_%x, s\\_%x, %u, 0x%x, {%s}, {%s}",
-        $op->_save_common, ${ $op->first },
-        ${ $op->last },    0,
-        $op->pmflags, $replrootfield, $replstartfield
+        $ix, "%s, %s, %s, %u, 0x%x, {%s}, {%s}",
+        $op->_save_common, $op->first->save, $op->last->save, 0,
+        $op->pmflags,      $replrootfield,   $replstartfield
     );
 
     my $code_list = $op->code_list;
@@ -119,12 +100,13 @@ sub do_save {
         }
     }
 
-    if ($gvsym) {
+    if ( $replrootfield && $replrootfield ne 'NULL' ) {
+
         my $pmsym = $sym;
         $pmsym =~ s/^\&//;                # Strip '&' off the front.
 
         # XXX need that for subst
-        init()->sadd( "%s.op_pmreplrootu.op_pmreplroot = (OP*)%s;", $pmsym, $gvsym );
+        init()->sadd( "%s.op_pmreplrootu.op_pmreplroot = (OP*)%s;", $pmsym, $replrootfield );
     }
 
     return "(OP*)" . $sym;

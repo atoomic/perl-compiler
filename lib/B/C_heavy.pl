@@ -779,8 +779,8 @@ sub save_main_rest {
 
     init()->add(
         "/* startpoints */",
-        sprintf( "PL_main_root = s\\_%x;",  ${ main_root() } ),
-        sprintf( "PL_main_start = s\\_%x;", ${ main_start() } ),
+        sprintf( "PL_main_root = %s;",  main_root()->save ),
+        sprintf( "PL_main_start = %s;", main_start()->save ),
     );
     init()->add(
         index( $init_av, '(AV*)' ) >= 0

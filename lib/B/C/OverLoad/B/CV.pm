@@ -68,7 +68,7 @@ sub do_save {
         $startfield = sprintf( '.xcv_xsubany= {(void*) %s /* xsubany */}', $cv->XSUBANY->save() );    # xcv_xsubany
     }
     else {    # default values for xcv_root and startfield
-        $xcv_root = sprintf( "s\\_%x", $root ? $$root : 0 );
+        $xcv_root = sprintf( "%s", $root ? $root->save : 0 );
         $startfield = $cv->save_optree();
     }
 

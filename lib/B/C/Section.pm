@@ -350,13 +350,6 @@ sub output {
 
         }
 
-        if ( $val =~ m/(s\\_[0-9a-f]+)/ ) {
-            if ( !exists( $sym->{$1} ) and $1 ne 's\_0' ) {
-                $ref = $1;
-                $B::C::unresolved_count++;
-                B::C::Debug::verbose( "Warning: unresolved " . $self->name . " symbol $ref" );
-            }
-        }
         $val =~ s{(s\\_[0-9a-f]+)}{ exists($sym->{$1}) ? $sym->{$1} : $default; }ge;
         if ( defined $self->{'dbg'}->[$i] ) {
             $dbg = $self->{'dbg'}->[$i] . " " . $ref;

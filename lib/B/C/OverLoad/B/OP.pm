@@ -122,9 +122,9 @@ sub _save_common {
     }
 
     return sprintf(
-        "s\\_%x, s\\_%x, %s",
-        ${ $op->next },
-        ${ $op->sibling },
+        "%s, %s, %s",
+        $op->next->save,
+        $op->sibling->save,
         $op->_save_common_middle
     );
 }

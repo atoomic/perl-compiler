@@ -215,7 +215,7 @@ sub savegp_from_gv {
 
         # if the value is null or using a static list, then it's fine
         # when it s a bootstrap XS CV no need to set it later, the init_bootstraplink is going to do it for us (no need to redo it)
-        next if $field_v =~ qr{null}i or $field_v =~ qr{list} or $field_v =~ qr{^s\\_\S+$} or $field_v =~ qr{BOOTSTRAP_XS_};
+        next if $field_v =~ qr{null}i or $field_v =~ qr{list} or $field_v =~ qr{BOOTSTRAP_XS_};
 
         # replace the value by a null one
         debug( gv => q{Cannot use static value '%s' for gp_list[%d].%s => postpone to init}, $field_v, $gp_ix, $field_name );
@@ -302,13 +302,10 @@ sub save_gv_av {    # new function to be renamed later..
         $gvav = svref_2object( \@under );
     }
 
-    # # rely on final replace to get the symbol name, it s fine
-    # my $svsym = sprintf( "s\\_%x", $$gvsv );
-
     my $svsym = $gvav->save($fullname);
     if ( $fullname eq 'main::-' ) {    # fixme: can directly save these values
-        init()->sadd( "AvFILLp(s\\_%x) = -1;", $$gvav );
-        init()->sadd( "AvMAX(s\\_%x) = -1;",   $$gvav );
+        init()->sadd( "AvFILLp(%s) = -1;", $gvav->save );
+        init()->sadd( "AvMAX(%s) = -1;",   $gvav->save );
     }
 
     return $svsym;
@@ -336,9 +333,6 @@ sub save_gv_hv {                       # new function to be renamed later..
             $Encode::Encoding{$k} = $tmp_Encode_Encoding{$k} if exists $tmp_Encode_Encoding{$k};
         }
         my $sym = $gvhv->save($fullname);
-
-        #         init()->add("/* deferred some XS enc pointers for \%Encode::Encoding */");
-        #         init()->sadd( "GvHV(%s) = s\\_%x;", $sym, $$gvhv );
 
         %Encode::Encoding = %tmp_Encode_Encoding;
         return $sym;
@@ -418,10 +412,6 @@ sub save_gv_format {
     return 'NULL' unless $gvform && $$gvform;
 
     return $gvform->save($fullname);
-
-    # init()->sadd( "GvFORM(%s) = (CV*)s\\_%x;", $sym, $$gvform );
-
-    # return;
 }
 
 sub save_gv_io {
