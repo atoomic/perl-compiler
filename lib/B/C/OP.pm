@@ -54,7 +54,7 @@ sub save_constructor {
 
         # Any SV might be an RV actually so will save via the wrong package.
         my $class = $for;
-        if ( ref($op) =~ m/^B::((PV(IV|LV|MG|NV)?)|IV|NV|AV|GV|HV|CV|IO|FM)$/ && $op->FLAGS & SVf_ROK ) {
+        if ( ref($op) =~ m/^B::((PV(IV|LV|NV)?)|IV|NV|AV|GV|HV|CV|IO|FM)$/ && $op->FLAGS & SVf_ROK ) {
             $class = 'B::RV';
         }
 

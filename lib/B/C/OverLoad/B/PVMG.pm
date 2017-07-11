@@ -3,7 +3,7 @@ package B::PVMG;
 use strict;
 
 use B::C::Config;
-use B qw/SVf_READONLY HEf_SVKEY SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
+use B qw/SVf_READONLY HEf_SVKEY SVf_ROK SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
 use B::C::Save qw/savepv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init_static_assignments svsect xpvmgsect magicsect init_vtables/;
@@ -15,10 +15,25 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
-    if ($static) {    # 242: e.g. $1
-        $static = 0;
-        $len = $cur + 1 unless $len;
+    my ( $savesym, $cur, $len, $pv, $static, $flags );
+    my $sv_u;
+    if ( $sv->FLAGS & SVf_ROK ) {
+        $flags = $sv->FLAGS;
+        $cur   = $sv->CUR;
+        $len   = $sv->LEN;
+        $sv_u  = ".svu_rv=" . $sv->RV->save($fullname);
+
+    }
+    else {
+
+        ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
+        if ($static) {    # 242: e.g. $1
+            $static = 0;
+            $len = $cur + 1 unless $len;
+        }
+
+        $sv_u = $savesym eq 'NULL' ? 0 : ".svu_pv=(char*) $savesym";
+
     }
 
     my $ivx = get_integer_value( $sv->IVX );    # XXX How to detect HEK* namehek?
@@ -46,7 +61,6 @@ sub do_save {
         $sv->save_magic_stash, $sv->save_magic($fullname), $cur, $len, $ivx, $nvx
     );
 
-    my $sv_u = $savesym eq 'NULL' ? 0 : ".svu_pv=(char*) $savesym";
     my $sv_ix = svsect()->supdate(
         $ix,
         "&xpvmg_list[%d], %Lu, 0x%x, {%s}",
