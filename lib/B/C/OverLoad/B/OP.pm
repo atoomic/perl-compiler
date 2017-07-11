@@ -25,20 +25,10 @@ sub do_save {
     my $type = $op->type;
     $B::C::nullop_count++ unless $type;
 
-    if ( ref($op) eq 'B::OP' ) {    # check wrong BASEOPs
-                                    # [perl #80622] Introducing the entrytry hack, needed since 5.12, fixed with 5.13.8 a425677
-                                    #   ck_eval upgrades the UNOP entertry to a LOGOP, but B gets us just a B::OP (BASEOP).
-                                    #   op->other points to the leavetry op, which is needed for the eval scope.
-        if ( $op->name eq 'entertry' ) {
-            verbose("[perl #80622] Upgrading entertry from BASEOP to LOGOP...");
-            bless $op, 'B::LOGOP';
-            return $op->save;
-        }
-    }
-
     # HV_STATIC: Why are we saving a null row?
     # since 5.10 nullified cops free their additional fields
     if ( !$type and $OP_COP{ $op->targ } ) {
+        die("Saving a cop in an OP???");
         copsect()->comment_common("line, stash, file, hints, seq, warnings, hints_hash");
         my ( $ix, $sym ) = copsect()->reserve( $op, "OP*" );
         copsect()->debug( $op->name, $op );
