@@ -22,20 +22,19 @@ sub do_save {
         $refcnt  = $custom->{refcnt} if defined $custom->{refcnt};
     }
 
-    if ( $svflags & SVf_IVisUV ) {
+    if ( $svflags & SVf_IVisUV == SVf_IVisUV ) {
         return $sv->B::UV::save($fullname);
     }
     my $ivx = get_integer_value( $sv->IVX );
 
+    my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
-
-    my $sv_ix = svsect()->index + 1;
-    my $sym = sprintf( "&sv_list[%d]", $sv_ix );
 
     # Since 5.24 we can access the IV/NV/UV value from either the union from the main SV body
     # or also from the SvANY of it. View IV.pm for more information
 
-    svsect()->saddl(
+    svsect()->supdatel(
+        $ix,
         'BODYLESS_IV_PTR(%s)' => $sym,        # sv_any
         '%lu',                => $refcnt,     # sv_refcnt
         '0x%x'                => $svflags,    # sv_flags
