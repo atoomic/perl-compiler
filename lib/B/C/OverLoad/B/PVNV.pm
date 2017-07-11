@@ -36,7 +36,7 @@ sub do_save {
         $xpv_sym = sprintf( "&xpvnv_list[%d]", $xpv_ix );
     }
 
-    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT + 1, $flags, $savesym );
+    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT, $flags, $savesym );
     return $sym;
 }
 

@@ -30,7 +30,7 @@ sub do_save {
     }
 
     # save the pv
-    svsect()->supdate( $ix, "%s, %u, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT + 1, $flags, $savesym );
+    svsect()->supdate( $ix, "%s, %u, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT, $flags, $savesym );
 
     return $sym;
 }

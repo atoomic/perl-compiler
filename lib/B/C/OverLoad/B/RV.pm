@@ -26,8 +26,8 @@ sub do_save {
 
     svsect()->supdatel(
         $ix,
-        '(void*)%s - sizeof(void*)' => $sym,              # the SvANY is set just below at init time
-        '%Lu'                       => $sv->REFCNT + 1,
+        '(void*)%s - sizeof(void*)' => $sym,          # the SvANY is set just below at init time
+        '%Lu'                       => $sv->REFCNT,
         '0x%x'                      => $flags,
         '{%s}', ( is_constant($rv) ? ".svu_rv=$rv" : "0 /* $rv */" )
     );
