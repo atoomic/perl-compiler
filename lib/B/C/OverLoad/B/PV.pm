@@ -2,7 +2,7 @@ package B::PV;
 
 use strict;
 
-use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVs_SMG SVf_UTF8 SVf_READONLY SVs_OBJECT/;
+use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVs_SMG SVt_PVGV SVf_UTF8 SVf_READONLY SVs_OBJECT/;
 use B::C::Config;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
@@ -25,7 +25,7 @@ sub do_save {
 
     my $shared_hek = is_shared_hek($sv);
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = save_pv( $sv, $fullname );
+    my ( $savesym, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $fullname );
 
     # sv_free2 problem with !SvIMMORTAL and del_SV
     my $refcnt = $sv->REFCNT;
@@ -54,11 +54,10 @@ sub do_save {
     }
 
     svsect()->comment("any, refcnt, flags, sv_u");
-    $savesym = $savesym eq 'NULL' ? '0' : ".svu_pv=(char*) $savesym";
     my $sv_ix = svsect()->supdatel(
         $ix,
         '%s'   => $xpv_sym,
-        '%Lu'  => $refcnt,
+        '%Lu'  => $refcnt + 1,
         '0x%x' => $flags,
         '{%s}' => $savesym
     );
@@ -66,26 +65,41 @@ sub do_save {
     return $sym;
 }
 
-sub save_pv {
-    my ( $sv, $fullname ) = @_;
+sub save_svu {
+    my ( $sv, $sym, $fullname ) = @_;
 
     my $flags = $sv->FLAGS;
 
-    ( $flags & SVf_ROK ) and die("save_pv should never be a RV");
+    # This is an RV so the svu points to another SV.
+    if ( $flags & SVf_ROK ) {
+        my $savesym = B::RV::save_rv( $sv, $sym, $fullname );
+
+        my $cur    = $sv->CUR;
+        my $len    = $sv->LEN;
+        my $static = 0;
+
+        my $flags = $sv->FLAGS;
+
+        # GV should never have an ROK flag. that's just wierd.
+        die( sprintf( "Unexpected Flags (0x%x) for %s in save_svu for ROK\n", $flags, ref $sv ) ) if ( $flags & SVt_PVGV ) == SVt_PVGV;
+
+        my $pv = "RV DEBUG ONLY STRING";
+        $savesym = ".svu_rv=$savesym";
+        return ( $savesym, $cur, $len, $pv, $static, $flags );
+    }
 
     my $pok = $flags & ( SVf_POK | SVp_POK );
     my $gmg = $flags & SVs_GMG;
 
     my ( $static, $shared_hek ) = ( 0, is_shared_hek($sv) );
 
+    # Our svu points to a shared_hek.
     if ($shared_hek) {
-        my $pv       = $sv->PV;
-        my $utf8     = $flags & SVf_UTF8;
-        my $orig_cur = $sv->CUR;
+        my $pv = $sv->PV;
         my ( $shared_he, $cur ) = save_shared_he($pv);    # we know that a shared_hek as POK
         my $len = 0;
 
-        return ( "(" . get_sHe_HEK($shared_he) . q{)->hek_key}, $cur, $len, $pv, $static, $flags );
+        return ( ".svu_pv=(char*)(" . get_sHe_HEK($shared_he) . q{)->hek_key}, $cur, $len, $pv, $static, $flags );
     }
 
     my $pv = "";
@@ -122,6 +136,7 @@ sub save_pv {
         $static, $static, $shared_hek ? "shared, $fullname" : $fullname
     );
 
+    $savesym = ".svu_pv=(char*) $savesym";
     return ( $savesym, $cur, $len, $pv, $static, $flags );
 }
 

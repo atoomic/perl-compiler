@@ -10,6 +10,8 @@ use B::C::File qw/init1 init2 svsect xpvsect/;
 sub do_save {
     my ( $sv, $fullname ) = @_;
 
+    $sv->FLAGS & 2048 and die sprintf( "Unexpected SVf_ROK found in %s\n", ref $sv );
+
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $sv->name, $sv );
 

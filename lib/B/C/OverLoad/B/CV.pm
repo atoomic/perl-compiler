@@ -25,6 +25,7 @@ sub do_save {
     my ( $cv, $origname ) = @_;
 
     my $fullname = $cv->FULLNAME();
+    $cv->FLAGS & 2048 and die sprintf( "Unexpected SVf_ROK found in %s\n", ref $cv );
 
     if ( !$cv->CONST && $cv->XSUB ) {    # xs function
         $fullname =~ s{^main::}{};

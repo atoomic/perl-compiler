@@ -5,7 +5,7 @@ use strict;
 use B::C::File qw/listopsect/;
 
 sub do_save {
-    my ( $op ) = @_;
+    my ($op) = @_;
 
     listopsect()->comment_common("first, last");
     my ( $ix, $sym ) = listopsect()->reserve( $op, "OP*" );

@@ -5,7 +5,7 @@ use strict;
 use B::C::File qw/loopsect/;
 
 sub do_save {
-    my ( $op ) = @_;
+    my ($op) = @_;
 
     loopsect()->comment_common("first, last, redoop, nextop, lastop");
     my ( $ix, $sym ) = loopsect()->reserve( $op, "OP*" );

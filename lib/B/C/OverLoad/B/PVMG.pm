@@ -15,25 +15,11 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags );
-    my $sv_u;
-    if ( $sv->FLAGS & SVf_ROK ) {
-        $flags = $sv->FLAGS;
-        $cur   = $sv->CUR;
-        $len   = $sv->LEN;
-        $sv_u  = ".svu_rv=" . $sv->RV->save($fullname);
+    my ( $sv_u, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $sym, $fullname );
 
-    }
-    else {
-
-        ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
-        if ($static) {    # 242: e.g. $1
-            $static = 0;
-            $len = $cur + 1 unless $len;
-        }
-
-        $sv_u = $savesym eq 'NULL' ? 0 : ".svu_pv=(char*) $savesym";
-
+    if ($static) {    # 242: e.g. $1
+        $static = 0;
+        $len = $cur + 1 unless $len;
     }
 
     my $ivx = get_integer_value( $sv->IVX );    # XXX How to detect HEK* namehek?

@@ -3,9 +3,9 @@ package B::RV;
 use strict;
 
 use B::C::Config;
-use B::C::File qw/svsect init init2 init_static_assignments /;
+use B qw/SVf_ROK SVt_PVGV/;
+use B::C::File qw/svsect init init2 init_static_assignments/;
 use B::C::Helpers qw/is_constant/;
-
 use B::C::Helpers::Symtable qw/objsym savesym/;
 
 # Since 5.11 also called by IV::save (SV -> IV)
@@ -18,36 +18,51 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my $rv = $sv->RV->save($fullname);
-
     # 5.22 has a wrong RV->FLAGS (https://github.com/perl11/cperl/issues/63)
     my $flags = $sv->FLAGS;
-    $flags = 0x801 if $flags & 9;    # not a GV but a ROK IV (21)
+
+    # GV should never have an ROK flag. that's just wierd.
+    die( sprintf( "Unexpected Flags (0x%x) for %s in save_svu for ROK\n", $flags, ref $sv ) ) if ( $flags & SVt_PVGV ) == SVt_PVGV;
 
     svsect()->supdatel(
         $ix,
-        '(void*)%s - sizeof(void*)' => $sym,          # the SvANY is set just below at init time
+        '(void*)%s - sizeof(void*)' => $sym,                                     # the SvANY is set just below at init time
         '%Lu'                       => $sv->REFCNT,
         '0x%x'                      => $flags,
-        '{%s}', ( is_constant($rv) ? ".svu_rv=$rv" : "0 /* $rv */" )
+        '{.svu_rv=%s}'              => B::RV::save_rv( $sv, $sym, $fullname ),
     );
 
-    my $update_sym = $sym;
-    $update_sym =~ s/^&//;
+    return $sym;
+}
 
-    if ( !is_constant($rv) ) {
-        my $init = ( $rv =~ /get_cv/ ) ? init2() : init();
+sub try_save {
+    my ( $sv, $fullname ) = @_;
 
-        # check if the CV is bootsrrapped then use the correct section for it
-        if ( my $sub = B::C::is_bootstrapped_cv($rv) ) {
-            $init = B::C::get_bootstrap_section($sub);
-        }
+    return unless $sv->FLAGS & SVf_ROK;
 
-        # ref($rv) ne 'B::GV' && ref($rv) ne 'B::HV'
-        $init->sadd( "%s.sv_u.svu_rv = (SV*)%s;", $update_sym, $rv );
+    return do_save( $sv, $fullname );
+}
+
+sub save_rv {
+    my ( $sv, $sym, $fullname ) = @_;
+    $fullname ||= "(Unknown RV)";
+
+    my $rv = $sv->RV->save($fullname);
+
+    return "$rv" if is_constant($rv);
+
+    $sym =~ s/^&//;
+
+    my $init = ( $rv =~ /get_cv/ ) ? init2() : init();
+
+    # check if the CV is bootsrrapped then use the correct section for it
+    if ( my $sub = B::C::is_bootstrapped_cv($rv) ) {
+        $init = B::C::get_bootstrap_section($sub);
     }
 
-    return $sym;
+    # ref($rv) ne 'B::GV' && ref($rv) ne 'B::HV'
+    $init->sadd( "%s.sv_u.svu_rv = (SV*)%s;", $sym, $rv );
+    return "0 /* $rv */";
 }
 
 1;

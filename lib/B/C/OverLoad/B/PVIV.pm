@@ -16,7 +16,7 @@ sub do_save {
     svsect()->debug( $fullname, $sv );
 
     # save the PVIV
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
+    my ( $savesym, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $fullname );
 
     my $xpv_sym = 'NULL';
     if ( $sv->HAS_ANY ) {
@@ -30,7 +30,7 @@ sub do_save {
     }
 
     # save the pv
-    svsect()->supdate( $ix, "%s, %u, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT, $flags, $savesym );
+    svsect()->supdate( $ix, "%s, %u, 0x%x, {%s}", $xpv_sym, $sv->REFCNT, $flags, $savesym );
 
     return $sym;
 }

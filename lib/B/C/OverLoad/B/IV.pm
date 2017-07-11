@@ -10,6 +10,9 @@ use B::C::Decimal qw/get_integer_value/;
 sub do_save {
     my ( $sv, $fullname, $custom ) = @_;
 
+    my $rv_sym = B::RV::try_save($sv, $fullname);
+    return $rv_sym if $rv_sym;
+
     # Since 5.11 the RV is no special SV object anymore, just a IV (test 16)
     my $svflags = $sv->FLAGS;
     my $refcnt  = $sv->REFCNT;

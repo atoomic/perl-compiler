@@ -22,6 +22,8 @@ our @under = ();
 sub do_save {
     my ( $gv, $name ) = @_;
 
+    $gv->FLAGS & 2048 and die sprintf( "Unexpected SVf_ROK found in %s\n", ref $gv );
+
     # return earlier for special cases
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
 

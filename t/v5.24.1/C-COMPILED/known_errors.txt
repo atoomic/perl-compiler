@@ -44,7 +44,6 @@ op/lexsub.t                 BC        BC issue #219 - overload issue
 op/magic.t                  TESTS     Test results:
 op/method.t                 TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
 op/override.t               COMPAT    crazy test which override CORE::GLOBAL::require @BEGIN
-op/readline.t               TESTS     BC issue #269 - Modification of a read-only value attempted
 op/ref.t                    TESTS     BC issue #300 - PVFM not compiled
 op/sprintf2.t               SKIP      flapping test: Tests are in sequence
 op/stash.t                  TESTS     BC issue #221 - delete is not anonymizing the returned sub
@@ -52,7 +51,6 @@ op/sub_lval.t               TESTS     BC issue #277 - sub declaration with :lval
 op/svleak.t                 COMPAT    This test uses XS::APItest, which we don't install during perl install?
 op/threads-dirh.t           COMPAT    We don't support threaded perl in this branch.
 op/threads.t                COMPAT    We don't support threaded perl in this branch.
-op/vec.t                    TESTS     BC issue #269
 op/warn.t                   TESTS     BC issue #219 - overload issue
 op/yadayada.t               COMPAT    Unimplemented does not display the correct line number
 opbasic/magic_phase.t       COMPAT    Testing BEGIN, INIT, ... phases order, not compatible with B::C
@@ -71,7 +69,6 @@ uni/chr.t                   COMPAT    BC issue #283 - deprecated "encoding" prag
 uni/fold.t                  SKIP      BC issue #219 - overload issue
 uni/greek.t                 COMPAT    BC issue #283 - deprecated "encoding" pragma
 uni/latin2.t                COMPAT    BC issue #283 - deprecated "encoding" pragma
-uni/readline.t              TESTS     BC issue #269 - constant modification causes segfault not die.
 uni/stash.t                 TESTS     BC issue #221 - delete is not anonymizing the returned sub
 uni/tr_7jis.t               COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/tr_eucjp.t              COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
@@ -104,9 +101,9 @@ xtestc/0295.t               TESTS     Output is: ""
 xtestc/0309.t               TESTS     Output is: ""
 xtestc/0319.t               TESTS     Output is: "Wide character in print at ..."
 xtestc/0329.t               TESTS     Output is: "axxxx \n"
-xtestc/0350.t               TESTS     Output is: ""
+xtestc/0350.t               TESTS     Output is: "" expect "ok"
 xtestc/0369.t               TESTS     Output is: ""
-xtestc/0371.t               TESTS     Output is: ""
+xtestc/0371.t               TESTS     Output is: "" expect "5"
 xtestc/1960.t               TESTS     Output is: ""
 xtestc/2052.t               TESTS     Output is: ""
 xtestc/2201.t               TESTS     Output is: ""

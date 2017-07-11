@@ -17,7 +17,7 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
+    my ( $savesym, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $fullname );
     my $nvx = '0.0';
     my $ivx = get_integer_value( $sv->IVX );    # here must be IVX!
     if ( $flags & ( SVf_NOK | SVp_NOK ) ) {
@@ -36,7 +36,7 @@ sub do_save {
         $xpv_sym = sprintf( "&xpvnv_list[%d]", $xpv_ix );
     }
 
-    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {.svu_pv=(char*) %s}", $xpv_sym, $sv->REFCNT, $flags, $savesym );
+    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {%s}", $xpv_sym, $sv->REFCNT, $flags, $savesym );
     return $sym;
 }
 

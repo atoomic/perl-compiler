@@ -19,7 +19,7 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $pvsym, $cur, $len, $pv, $static, $flags ) = B::PV::save_pv( $sv, $fullname );
+    my ( $pvsym, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $fullname );
     my ( $lvtarg, $lvtarg_sym );    # XXX missing
 
     #struct xpvlv {
@@ -53,7 +53,7 @@ sub do_save {
         "%d"   => $sv->LvFLAGS,                    # xlv_flags # STATIC_HV: LvFLAGS is unimplemented in B
     );
 
-    svsect()->supdate( $ix, "&xpvlv_list[%d], %Lu, 0x%x, {(char*)%s}", xpvlvsect()->index, $sv->REFCNT, $flags, $pvsym );
+    svsect()->supdate( $ix, "&xpvlv_list[%d], %Lu, 0x%x, {%s}", xpvlvsect()->index, $sv->REFCNT, $flags, $pvsym );
 
     return $sym;
 }

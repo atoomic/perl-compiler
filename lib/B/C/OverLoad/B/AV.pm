@@ -64,6 +64,7 @@ sub skip_backref_sv {
 sub do_save {
     my ( $av, $fullname, $cv, $is_backref ) = @_;
 
+    $av->FLAGS & 2048 and die sprintf( "Unexpected SVf_ROK found in %s\n", ref $av );
     $fullname ||= '';
 
     my $fill = $av->fill();
