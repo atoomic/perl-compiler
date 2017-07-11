@@ -14,6 +14,7 @@ use strict;
 
 # From C.pm
 our %Config;
+our %mainSIGs;
 our ( $VERSION, $caller, $nullop_count, $unresolved_count, $gv_index, $settings );
 our ( @ISA, @EXPORT_OK );
 our $const_strings = 1;    # TODO: This var needs to go away.
@@ -870,9 +871,33 @@ sub build_template_stash {
             'dollar_zero'          => svref_2object( \*{'::0'} )->save("0"),
             'dollar_comma'         => svref_2object( \*{'::,'} )->save(","),
         },
-        'Config' => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
+        'Config'  => {%B::C::Flags::Config},    # do a copy or op/sigdispatch.t will fail
+        'Signals' => {
+            'PL_psig_ptr' => {},
+            'ignore'      => [],
+            'need_init'   => 0,
+          }
+
     };
-    chomp $c_file_stash->{'compile_stats'};    # Injects a new line when you call compile_stats()
+    chomp $c_file_stash->{'compile_stats'};     # Injects a new line when you call compile_stats()
+
+    # define the PL_psig_ptr entries
+    foreach my $signame ( sort keys %{ $Config{SIGNAL_NAMES} } ) {
+        next unless defined $SIG{$signame};
+        my $signum = $Config{SIGNAL_NAMES}->{$signame};
+        next unless defined $B::C::mainSIGs{$signame};
+        if ( ref $SIG{$signame} ) {
+            $c_file_stash->{'Signals'}->{'PL_psig_ptr'}->{$signum} = $B::C::mainSIGs{$signame};
+        }
+        elsif ( $SIG{$signame} eq 'IGNORE' ) {
+            push @{ $c_file_stash->{'Signals'}->{'ignore'} }, $signum;
+        }
+        else {
+            WARN "Value for signal '$signame' not saved.";
+        }
+
+        $c_file_stash->{'Signals'}->{need_init} = 1;
+    }
 
     # main() .c generation needs a buncha globals to be determined so the stash can access them.
     # Some of the vars are only put in the stash if they meet certain coditions.

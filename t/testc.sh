@@ -354,6 +354,8 @@ tests[50]='package Top;sub top{q(ok)};package Next;our @ISA=qw(Top);package main
 tests[51]='$SIG{__WARN__}=sub{print "ok"};warn 1;'
 # check if general signals work
 tests[511]='BEGIN{$SIG{USR1}=sub{$w++;};} kill USR1 => $$; print q(ok) if $w'
+# check if IGNORE signals work
+tests[512]='BEGIN{$SIG{USR1}="IGNORE";} kill USR1 => $$; print q(ok)'
 #-------------
 # issue27
 tests[527]='require LWP::UserAgent;print q(ok);'

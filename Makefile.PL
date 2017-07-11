@@ -79,6 +79,23 @@ sub write_b_c_flags {
     $Config::Config{useithreads}     and die "This version of B::C does not support ithreads";
     $Config::Config{usemultiplicity} and die "This version of B::C does not support multiplicity";
 
+    { # signals
+        my @signames = split /\s+/, $Config::Config{sig_name};
+        my @signums =  split /\s+/, $Config::Config{sig_num};
+
+        die unless scalar @signums == scalar @signames;
+        die unless scalar @signums;
+
+        my %signals;
+        while ( @signames ) {
+            $signals{$signames[0]} = $signums[0];
+            shift @signames;
+            shift @signums;
+        }
+
+        $cfg{'SIGNAL_NAMES'} = \%signals;
+    }
+
     # Ensure to add all used Config keys in B::C here, otherwise they will be silently empty!
     # easier hash key/value slices only came with 5.22
     for my $s (

@@ -139,6 +139,11 @@ sub do_save {
 
             debug( hv => "saving HV [ $i / len=$length ]\$" . $fullname . '{' . $key . "} 0x%0x", $sv );
             $value = $sv->save( $fullname . '{' . $key . '}' );    # Turn the hash value into a symbol
+
+            if ( $fullname && $fullname eq 'main::SIG' ) {
+                $B::C::mainSIGs{$key} = $value;
+            }
+
             next if $value eq q{NULL};                             # this can comes from ourself ( view above )
 
             push @hash_content_to_save, [ $key, $value ] if defined $value;

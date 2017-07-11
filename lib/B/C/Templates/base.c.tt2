@@ -771,7 +771,22 @@ static void dl_init(pTHX)
     [% END %]
 }
 
+[% IF Signals.need_init -%]
+static void bc_init_signals() {
 
+[% FOREACH signum IN Signals.PL_psig_ptr.keys -%]
+    PL_psig_ptr[[% signum -%]] = [% Signals.PL_psig_ptr.$signum -%];
+    (void)rsignal([% signum -%], PL_csighandlerp);
+[% END -%]
+
+[% FOREACH signum IN Signals.ignore -%]
+    /* ignore signal [% signum %] */
+    (void)rsignal([% signum -%], (Sighandler_t) SIG_IGN);
+[% END -%]
+    /* default ?? (void)rsignal(i, (Sighandler_t) SIG_DFL); */
+
+}
+[% END -%]
 
 /************************************************************************************************************
 *
@@ -846,6 +861,10 @@ main(int argc, char **argv, char **env)
   [% END %]
 
     PL_curstash = PL_defstash;
+
+[% IF Signals.need_init -%]
+    bc_init_signals();
+[% END -%]
 
     benchmark_time("pre bc_perl_parse");
     exitstatus = bc_perl_parse(&BC_unthreaded_interpreter, argc, argv, env);
