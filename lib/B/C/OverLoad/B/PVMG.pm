@@ -4,7 +4,7 @@ use strict;
 
 use B::C::Config;
 use B qw/SVf_READONLY HEf_SVKEY SVf_ROK SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
-use B::C::Save qw/savepv/;
+use B::C::Save qw/savecowpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init_static_assignments svsect xpvmgsect magicsect init_vtables/;
 use B::C::Helpers qw/read_utf8_string get_index/;
@@ -129,6 +129,7 @@ sub save_magic {
 
         if ( defined $vtable and $vtable eq '0' ) {
             next;
+
             # Remove the next above and Moose (xtestc/0350.t and xtestc/0371.t will exit B::C over this.)
             warn("We don't know how to handle or what uses u or ~ magic ???\n");
             warn("Got ptr == $ptr\n");
@@ -172,7 +173,7 @@ sub save_magic {
                 $ptrsv = ref $ptr =~ m/OP/ ? $ptr->save() : $ptr->save($fullname);
             }
             else {
-                $ptrsv = cstring($ptr);    # Nico thinks everything will happen here.
+                ( $ptrsv, undef, undef ) = savecowpv( $ptr || '' );
             }
         }
 
