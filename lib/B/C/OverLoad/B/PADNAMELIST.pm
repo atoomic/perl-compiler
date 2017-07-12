@@ -12,7 +12,7 @@ sub save_sv {
     padnamelistsect()->comment("xpadnl_fill, xpadnl_alloc, xpadnl_max, xpadnl_max_named, xpadnl_refcnt");
 
     # TODO: max_named walk all names and look for non-empty names
-    my $refcnt   = $av->REFCNT + 1;    # XXX defer free to global destruction: 28
+    my $refcnt   = $av->REFCNT;
     my $fill     = $av->MAX;
     my $maxnamed = $av->MAXNAMED;
 
