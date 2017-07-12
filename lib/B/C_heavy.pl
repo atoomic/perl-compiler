@@ -83,8 +83,8 @@ BEGIN {
 our ( %xsub, %remap_xs_symbols );
 our ( %dumped_package, %skip_package, %isa_cache );
 
-# fixme move to config
-our ( $use_xsloader, $devel_peek_needed );
+# STATIC HV: do we want to preserve the ability to compile in Devel::Peek ? lazy loading it is fine and acceptable
+our ($devel_peek_needed);
 
 our @xpvav_sizes;
 our $in_endav;
@@ -452,15 +452,6 @@ sub walk_stashes {
     }
 }
 
-# Used by Makefile.PL to autogenerate %INC deps.
-# QUESTION: why Moose and IO::Socket::SSL listed here
-# QUESTION: can we skip B::C::* here
-sub collect_deps {
-    my %deps;
-    walk_stashes( \%main::, undef, \%deps );
-    print join " ", ( sort keys %deps );
-}
-
 # XS in CORE which do not need to be bootstrapped extra.
 # There are some specials like mro,re,UNIVERSAL.
 sub in_static_core {
@@ -504,24 +495,6 @@ sub static_core_packages {
 
     push @pkg, split( / /, $Config{static_ext} );
     return @pkg;
-}
-
-sub skip_pkg {
-    my $package = shift;
-    if (
-        $package =~ /^(main::)?(Internals|O)::/
-
-        #or $package =~ /::::/ #  CORE/base/lex.t 54
-        or $package =~ /^B::C::/
-        or $package eq '__ANON__'
-        or index( $package, " " ) != -1    # XXX skip invalid package names
-        or index( $package, "(" ) != -1    # XXX this causes the compiler to abort
-        or index( $package, ")" ) != -1    # XXX this causes the compiler to abort
-        or exists $B::C::settings->{'skip_packages'}->{$package} or exists $skip_package{$package} or ( $DB::deep and $package =~ /^(DB|Term::ReadLine)/ )
-      ) {
-        return 1;
-    }
-    return 0;
 }
 
 # global state only, unneeded for modules
@@ -604,18 +577,6 @@ sub _delete_macros_vendor_undefined {
     return 1;
 }
 
-sub force_saving_xsloader {
-    init()->add("/* custom XSLoader::load_file */");
-
-    # does this really save the whole packages?
-    $dumped_package{DynaLoader} = 1;
-    svref_2object( \&XSLoader::load_file )->save;
-    svref_2object( \&DynaLoader::dl_load_flags )->save;    # not saved as XSUB constant?
-
-    # add_hashINC("DynaLoader");
-    $use_xsloader = 0;                                     # do not load again
-}
-
 sub save_main_rest {
     verbose("done main optree, walking symtable for extras");
 
@@ -651,10 +612,6 @@ sub save_main_rest {
 
     my %INC_BACKUP = %INC;
     save_context();
-
-    # verbose("use_xsloader=$use_xsloader");
-    # If XSLoader was forced later, e.g. in curpad, INIT or END block
-    force_saving_xsloader() if $use_xsloader;
 
     return if $settings->{'check'};
 
