@@ -2,6 +2,7 @@ package B::SVOP;
 
 use strict;
 
+use B qw/SVf_ROK/;
 use B::C::File qw/svopsect init/;
 use B::C::Config;
 
@@ -70,4 +71,127 @@ sub svimmortal {
     return undef;
 }
 
+our ( $package_pv, @package_pv );    # global stash for methods since 5.13
+
+# STATIC_HV: This function doesn't seem to be relevant in light of white listing.
+sub method_named {
+    my $name = shift;
+    return unless $name;
+    my $cop = shift;
+    my $loc = $cop ? " at " . $cop->file . " line " . $cop->line : "";
+
+    # Note: the pkg PV is unacessible(?) at PL_stack_base+TOPMARK+1.
+    # But it is also at the const or padsv after the pushmark, before all args.
+    # See L<perloptree/"Call a method">
+    # We check it in op->_save_common
+    if ( ref($name) eq 'B::CV' ) {
+        WARN $name;
+        return $name;
+    }
+
+    my $method;
+    for ( $package_pv, @package_pv, 'main' ) {
+        no strict 'refs';
+        next unless defined $_;
+        $method = $_ . '::' . $name;
+        if ( defined(&$method) ) {
+            last;
+        }
+        else {
+            if ( my $parent = try_isa( $_, $name ) ) {
+                $method = $parent . '::' . $name;
+                last;
+            }
+            debug( cv => "no definition for method_name \"$method\"" );
+        }
+    }
+
+    $method = $name unless $method;
+    if ( exists &$method ) {    # Do not try to save non-existing methods
+        debug( cv => "save method_name \"$method\"$loc" );
+        return svref_2object( \&{$method} );
+    }
+
+    return 0;
+}
+
+# 1. called from method_named, so hashp should be defined
+# 2. called from svop before method_named to cache the $package_pv
+sub svop_or_padop_pv {
+    my $op = shift;
+    my $sv;
+    if ( !$op->can("sv") ) {
+        if ( $op->can('name') and $op->name eq 'padsv' ) {
+            my @c   = comppadlist->ARRAY;
+            my @pad = $c[1]->ARRAY;
+            return $pad[ $op->targ ]->PV if $pad[ $op->targ ] and $pad[ $op->targ ]->can("PV");
+
+            # This might fail with B::NULL (optimized ex-const pv) entries in the pad.
+        }
+
+        # $op->can('pmreplroot') fails for 5.14
+        if ( ref($op) eq 'B::PMOP' and $op->pmreplroot->can("sv") ) {
+            $sv = $op->pmreplroot->sv;
+        }
+        else {
+            return $package_pv unless $op->flags & 4;
+
+            # op->first is disallowed for !KIDS and OPpCONST_BARE
+            return $package_pv if $op->name eq 'const' and $op->flags & 64;
+            return $package_pv unless $op->first->can("sv");
+            $sv = $op->first->sv;
+        }
+    }
+    else {
+        $sv = $op->sv;
+    }
+
+    # XXX see SvSHARED_HEK_FROM_PV for the stash in S_method_common pp_hot.c
+    # In this hash the CV is stored directly
+    if ( $sv and $$sv ) {
+
+        return $sv->PV if $sv->can("PV");
+        if ( ref($sv) eq "B::SPECIAL" ) {    # DateTime::TimeZone
+                                             # XXX null -> method_named
+            debug( gv => "NYI S_method_common op->sv==B::SPECIAL, keep $package_pv" );
+            return $package_pv;
+        }
+        if ( $sv->FLAGS & SVf_ROK ) {
+            goto missing if $sv->isa("B::NULL");
+            my $rv = $sv->RV;
+            if ( $rv->isa("B::PVGV") ) {
+                my $o = $rv->IO;
+                return $o->STASH->NAME if $$o;
+            }
+            goto missing if $rv->isa("B::PVMG");
+            return $rv->STASH->NAME;
+        }
+        else {
+          missing:
+            if ( $op->name ne 'method_named' ) {
+
+                # Called from first const/padsv before method_named. no magic pv string, so a method arg.
+                # The first const pv as method_named arg is always the $package_pv.
+                return $package_pv;
+            }
+            elsif ( $sv->isa("B::IV") ) {
+                WARN(
+                    sprintf(
+                        "Experimentally try method_cv(sv=$sv,$package_pv) flags=0x%x",
+                        $sv->FLAGS
+                    )
+                );
+
+                # QUESTION: really, how can we test it ?
+                # XXX untested!
+                return svref_2object( method_cv( $$sv, $package_pv ) );
+            }
+        }
+    }
+    else {
+        my @c   = comppadlist->ARRAY;
+        my @pad = $c[1]->ARRAY;
+        return $pad[ $op->targ ]->PV if $pad[ $op->targ ] and $pad[ $op->targ ]->can("PV");
+    }
+}
 1;
