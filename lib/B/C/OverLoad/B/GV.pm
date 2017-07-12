@@ -87,6 +87,21 @@ sub get_fullname {
 
 my %saved_gps;
 
+# hardcode the order of GV elements, so we can use macro instead of indexes
+#   avoid to count and guess what index we are talking about
+sub GP_IX_SV()     { 0 }
+sub GP_IX_IO()     { 1 }
+sub GP_IX_CV()     { 2 }
+sub GP_IX_CVGEN () { 3 }
+sub GP_IX_REFCNT() { 4 }
+sub GP_IX_HV()     { 5 }
+sub GP_IX_AV()     { 6 }
+sub GP_IX_FORM()   { 7 }
+sub GP_IX_GV()     { 8 }
+sub GP_IX_LINE()   { 9 }
+sub GP_IX_FLAGS()  { 10 }
+sub GP_IX_HEK()    { 11 }
+
 # FIXME todo and move later to B/GP.pm ?
 sub savegp_from_gv {
     my ($gv) = @_;
@@ -168,10 +183,10 @@ sub savegp_from_gv {
     # we can only use static values for sv, av, hv, cv, if they are coming from a static list
 
     my @postpone = (
-        [ 'gp_sv', 0, $gp_sv ],
-        [ 'gp_cv', 2, $gp_cv ],
-        [ 'gp_av', 6, $gp_av ],
-        [ 'gp_hv', 5, $gp_hv ],
+        [ 'gp_sv', GP_IX_SV(), $gp_sv ],
+        [ 'gp_av', GP_IX_AV(), $gp_av ],
+        [ 'gp_hv', GP_IX_HV(), $gp_hv ],
+        [ 'gp_cv', GP_IX_CV(), $gp_cv ],
     );
 
     # Find things that can't be statically compiled and defer them
