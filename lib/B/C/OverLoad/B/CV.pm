@@ -44,7 +44,7 @@ sub do_save {
     my $flags = $cv->FLAGS;
 
     # need to survive cv_undef as there is no protection against static CVs
-    my $refcnt = $cv->REFCNT + 1;
+    my $refcnt = $cv->REFCNT;
 
     my $root = $cv->get_ROOT;
 
@@ -91,7 +91,7 @@ sub do_save {
     );
 
     # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
-    svsect->supdate( $ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT + 1, $flags, $pv );
+    svsect->supdate( $ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT, $flags, $pv );
 
     return $sym;
 }

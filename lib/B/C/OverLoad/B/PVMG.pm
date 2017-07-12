@@ -128,7 +128,13 @@ sub save_magic {
         my $vtable = $perl_magic_vtable_map->{$type};
 
         if ( defined $vtable and $vtable eq '0' ) {
-            next;                            # STATIC HV: We need to know how to handle "extensions" or XS
+            next;
+            # Remove the next above and Moose (xtestc/0350.t and xtestc/0371.t will exit B::C over this.)
+            warn("We don't know how to handle or what uses u or ~ magic ???\n");
+            warn("Got ptr == $ptr\n");
+            warn("Got len == $len\n");
+            warn("Got type == $type\n");
+            exit 6;
         }
 
         ### view Perl_magic_freeovrld: contains a list of memory addresses to CVs...
@@ -154,8 +160,9 @@ sub save_magic {
                 $ptrsv = '0';
             }
             elsif ( ref($ptr) eq 'SCALAR' ) {
+                warn("We don't think anything happens here. Contact us if your program doesn't compile because of this.;\n");
+                exit 7;
 
-                # STATIC HV: We don't think anything happens here. Would like to test with a die();
                 $init_ptrsv = "SvPVX(" . svref_2object($ptr)->save($fullname) . ")";
             }
             elsif ( ref $ptr ) {

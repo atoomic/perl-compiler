@@ -57,7 +57,7 @@ sub do_save {
     my $sv_ix = svsect()->supdatel(
         $ix,
         '%s'   => $xpv_sym,
-        '%Lu'  => $refcnt + 1,
+        '%Lu'  => $refcnt,
         '0x%x' => $flags,
         '{%s}' => $savesym
     );

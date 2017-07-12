@@ -41,7 +41,7 @@ sub do_save {
         $initpm = init2();
     }
 
-    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {NULL}", $xpv_sym, $sv->REFCNT + 1, $sv->FLAGS );
+    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {NULL}", $xpv_sym, $sv->REFCNT, $sv->FLAGS );
     debug( rx => "Saving RX $cstr to sv_list[$ix]" );
 
     # replace sv_any->XPV with struct regexp. need pv and extflags
