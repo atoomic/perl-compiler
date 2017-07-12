@@ -173,7 +173,7 @@ sub save_magic {
                 $ptrsv = ref $ptr =~ m/OP/ ? $ptr->save() : $ptr->save($fullname);
             }
             else {
-                ( $ptrsv, undef, undef ) = savecowpv( $ptr || '' );
+                ( $ptrsv, undef, undef ) = savecowpv($ptr) if defined $ptr;
             }
         }
 
