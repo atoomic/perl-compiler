@@ -328,12 +328,6 @@ sub try_isa {
     return 0;    # not found
 }
 
-sub save_object {
-    foreach my $sv (@_) {
-        svref_2object($sv)->save;
-    }
-}
-
 # Fixes bug #307: use foreach, not each
 # each is not safe to use (at all). walksymtable is called recursively which might add
 # symbols to the stash, which might cause re-ordered rehashes, which will fool the hash
