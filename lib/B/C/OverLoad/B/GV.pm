@@ -160,7 +160,7 @@ sub savegp_from_gv {
     }
 
     my $gp_flags = $gv->GPFLAGS;        # PERL_BITFIELD32 gp_flags:1; ~ unsigned gp_flags:1
-    die("gp_flags seems used now ???") if $gp_flags;    # STATIC_HV: Does removing this die fix any tests?
+    die("We know of nothing that compiles with GPFLAGS set. Notifiy BC") if $gp_flags;
 
     # gp_file_hek is only saved for non-stashes.
     my $gp_file_hek = q{NULL};
