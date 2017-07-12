@@ -90,13 +90,7 @@ sub do_save {
         '%d'          => $cv->DEPTH                                # xcv_depth
     );
 
-    # STATIC_HV: We don't think the sv_u is ever set in the SVCV so this check might be wrong
-    # we are not saving the svu for a CV, all evidence indicates that the value is null (always?)
-    # CVf_NAMED flag lets you know to use the HEK for the name
-    #warn qq{======= Unsaved PV for a CV - $origname - } . $cv->PV if ( length( $cv->PV ) );
-
     # svsect()->comment("any=xpvcv, refcnt, flags, sv_u");
-
     svsect->supdate( $ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT + 1, $flags, $pv );
 
     return $sym;
