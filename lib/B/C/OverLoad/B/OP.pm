@@ -2,22 +2,19 @@ package B::OP;
 
 use strict;
 
-use B qw/peekop cstring threadsv_names opnumber/;
+use B qw/opnumber/;
 
 use B::C::Config;
 use B::C::File qw/init copsect opsect/;
 
 my $OP_CUSTOM = opnumber('custom');
 
-my @threadsv_names;
-
-BEGIN {
-    @threadsv_names = threadsv_names();
-}
-
 # special handling for nullified COP's.
 my %OP_COP = ( opnumber('nextstate') => 1 );
 debug( cops => %OP_COP );
+
+my @save_later;
+my $deferred_saving = 0;
 
 sub do_save {
     my ($op) = @_;
@@ -25,30 +22,26 @@ sub do_save {
     my $type = $op->type;
     $B::C::nullop_count++ unless $type;
 
-    # HV_STATIC: Why are we saving a null row?
-    # since 5.10 nullified cops free their additional fields
-    if ( !$type and $OP_COP{ $op->targ } ) {
-        die("Saving a cop in an OP???");
-        copsect()->comment_common("line, stash, file, hints, seq, warnings, hints_hash");
-        my ( $ix, $sym ) = copsect()->reserve( $op, "OP*" );
-        copsect()->debug( $op->name, $op );
+    opsect()->comment( B::C::opsect_common() );
+    my ( $ix, $sym ) = opsect()->reserve( $op, "OP*" );
+    opsect()->debug( $op->name, $op );
 
-        copsect()->supdate( $ix,
-            "%s, 0, %s, NULL, 0, 0, NULL, NULL",
-            $op->_save_common, "Nullhv"
-        );
-
-        return $sym;
+    # We prevent deep recursion here and in B::UNOP by not recursing until we've saved everything at our depth first.
+    if ( !$deferred_saving ) {
+        $deferred_saving = 1;
+        opsect()->update( $ix, $op->_save_common );
+        $deferred_saving = 0;
     }
     else {
-
-        opsect()->comment( B::C::opsect_common() );
-        my ( $ix, $sym ) = opsect()->reserve( $op, "OP*" );
-        opsect()->debug( $op->name, $op );
-
-        opsect()->update( $ix, $op->_save_common );
-        return $sym;
+        push @save_later, [ $ix, $op ];
     }
+
+    while ( !$deferred_saving && @save_later ) {
+        my $to_save = pop @save_later;
+        opsect()->update( $to_save->[0], $to_save->[1]->_save_common );
+    }
+
+    return $sym;
 }
 
 # See also init_op_ppaddr below; initializes the ppaddr to the
@@ -69,9 +62,9 @@ sub _save_common {
 
     return sprintf(
         "%s, %s, %s, %u, %u, 0, 0, 0, 1, 0, 0, 0, 0x%x, 0x%x",
-        $op->next->save,
-        $op->sibling->save,
-        $op->fake_ppaddr, $op->targ, $op->type, $op->flags, $op->private
+        $op->next->save    || 'NULL',
+        $op->sibling->save || 'NULL',
+        $op->fake_ppaddr, $op->targ, $op->type, $op->flags || 0, $op->private || 0
     );
 }
 

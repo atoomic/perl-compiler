@@ -25,8 +25,8 @@ sub do_save {
     my $replstart = $op->pmreplstart;
     my $ppaddr    = $op->ppaddr;
 
-    my $replrootfield  = ( $replroot  && ref $replroot )  ? $replroot->save  : 'NULL';
-    my $replstartfield = ( $replstart && ref $replstart ) ? $replstart->save : 'NULL';
+    my $replrootfield  = ( $replroot  && ref $replroot )  ? $replroot->save  || 'NULL' : 'NULL';
+    my $replstartfield = ( $replstart && ref $replstart ) ? $replstart->save || 'NULL' : 'NULL';
 
     # pmnext handling is broken in perl itself, we think. Bad op_pmnext
     # fields aren't noticed in perl's runtime (unless you try reset) but we
