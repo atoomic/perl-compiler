@@ -41,7 +41,6 @@ op/glob.t                   SKIP      Occasional Flapper. Waiting for more BC is
 op/goto_xs.t                COMPAT    needs XS::APItest
 op/lex.t                    COMPAT    Tests trigger errors at compilation time
 op/lexsub.t                 BC        BC issue #219 - overload issue
-op/magic.t                  TESTS     Test results:
 op/method.t                 TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
 op/override.t               COMPAT    crazy test which override CORE::GLOBAL::require @BEGIN
 op/ref.t                    TESTS     BC issue #300 - PVFM not compiled
