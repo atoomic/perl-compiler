@@ -50,7 +50,7 @@ sub do_save {
     my $sv_ix = svsect()->supdate(
         $ix,
         "&xpvmg_list[%d], %Lu, 0x%x, {%s}",
-        $xpvmg_ix, $sv->REFCNT + 1, $flags, $sv_u
+        $xpvmg_ix, $sv->REFCNT, $flags, $sv_u
     );
 
     return $sym;
