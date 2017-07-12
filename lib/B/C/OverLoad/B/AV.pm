@@ -132,9 +132,21 @@ sub do_save {
                 $fill -= scalar(@array) - scalar(@new_array);    # remove to fill the delta we removed from array
                 @array = @new_array;
 
-                # we know this is a svsect here... or the list would not be the same
-                $av->section_sv()->supdate( $ix, "NULL, 0, 0, {NULL}" );
-                return q{NULL} unless scalar @array;
+                if ( !scalar @array ) {
+                    # nothing to save there
+                    if ( $ix == $section->index ) {
+                        $section->remove;                        # lives dangerously but should be fine :-\
+                    }
+                    else {
+                        # sanity check: we know this is a svsect here...
+                        die $section->name unless $section->name eq 'sv';
+
+                        # too late to remove it, let's update our svsect to an empty entry
+                        $section->supdate( $ix, "NULL, 0, 0, {NULL}" );
+                        $section->debug('unused svsect entry too late to remove it');
+                    }
+                    return q{NULL};
+                }
 
                 # Idea: bypass the AV save if there's only one element in the array
             }
