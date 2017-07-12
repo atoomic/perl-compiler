@@ -83,7 +83,7 @@ sub open_block {
     $comment = sprintf( q{/* %s */}, $comment ) if $comment;
 
     $self->no_split;
-    $self->sadd( "{ %s", $comment );
+    $self->sadd( "{ %s", $comment // '' );
     $self->indent(+1);
 
     return;
