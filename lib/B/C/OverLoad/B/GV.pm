@@ -32,10 +32,7 @@ sub do_save {
 
     my $gpsym = $gv->savegp_from_gv();
 
-    # STATIC_HV save_magic??
     my $stash_symbol = $gv->get_stash_symbol();
-
-    my $magic_stash = $gv->FLAGS & SVf_AMAGIC ? $stash_symbol : q{NULL};
 
     my $namehek = q{NULL};
     my $gvname  = $gv->NAME;
@@ -48,24 +45,22 @@ sub do_save {
     my $xpvg_ix = xpvgvsect()->saddl(
 
         # _XPV_HEAD
-        "%s"                => $magic_stash,              # HV* xmg_stash;      /* class package */
-        "{%s}"              => $gv->save_magic($name),    # union _xmgu xmg_u;
-        '%d'                => $gv->CUR,                  # STRLEN  xpv_cur;        /* length of svu_pv as a C string */
-        '{.xpvlenu_len=%d}' => $gv->LEN,                  # union xpv_len_u - xpvlenu_len or xpvlenu_pv
-
-        # custom fields for xpvgv
-        '{.xivu_namehek=(HEK*)%s}' => $namehek,           # union _xivu xiv_u - the namehek (HEK*)
-        '{.xgv_stash=%s}'          => $stash_symbol,      # union _xnvu xnv_u - The symbol for the HV stash. Which field is it??
+        "%s"                       => $gv->save_magic_stash($name),    # HV* xmg_stash;      /* class package */
+        "{%s}"                     => $gv->save_magic($name),          # union _xmgu xmg_u;
+        '%d'                       => $gv->CUR,                        # STRLEN  xpv_cur;        /* length of svu_pv as a C string */
+        '{.xpvlenu_len=%d}'        => $gv->LEN,                        # union xpv_len_u - xpvlenu_len or xpvlenu_pv
+        '{.xivu_namehek=(HEK*)%s}' => $namehek,                        # union _xivu xiv_u - the namehek (HEK*)
+        '{.xgv_stash=%s}'          => $stash_symbol,                   # union _xnvu xnv_u - The symbol for the HV stash. Which field is it??
     );
     xpvgvsect()->debug( $gv->get_fullname() );
 
     gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
     gvsect()->supdatel(
         $ix,
-        "&xpvgv_list[%d]"   => $xpvg_ix,                  # XPVGV*  sv_any
-        "%u"                => $gv->REFCNT,               # sv_refcnt
-        "0x%x"              => $gv->FLAGS,                # sv_flags
-        "{.svu_gp=(GP*)%s}" => $gpsym,                    # GP* sv_u - plug the gp in our sv_u slot
+        "&xpvgv_list[%d]"   => $xpvg_ix,                               # XPVGV*  sv_any
+        "%u"                => $gv->REFCNT,                            # sv_refcnt
+        "0x%x"              => $gv->FLAGS,                             # sv_flags
+        "{.svu_gp=(GP*)%s}" => $gpsym,                                 # GP* sv_u - plug the gp in our sv_u slot
     );
 
     return $sym;
