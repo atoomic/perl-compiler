@@ -27,26 +27,32 @@ sub cast_sv {
     return "(SV*)";
 }
 
-sub save_sv {
-    my ( $av, $fullname ) = @_;
+sub cast_section {                    ### Stupid move it to section !!! a section know its type
+    return "AV*";
+}
 
-    my ( $ix, $sym ) = svsect()->reserve( $av, 'AV*' );
-    svsect()->debug( $fullname, $av );
+sub section_sv {
+    return svsect();
+}
 
-    my $fill = $av->fill();    # could be using PADLIST, PADNAMELIST, or AV method for this.
+sub update_sv {
+    my ( $av, $ix, $fullname, $args ) = @_;
+
+    my $fill = $args->{fill};
+    my $max  = $args->{fill};         # for AVs optimization ?
 
     xpvavsect()->comment('xmg_stash, xmg_u, xav_fill, xav_max, xav_alloc');
     my $xpv_ix = xpvavsect()->saddl(
         "%s"   => $av->save_magic_stash,         # xmg_stash
         "{%s}" => $av->save_magic($fullname),    # xmg_u
-        "0x%x" => $fill,                         # xav_fill
-        "0x%x" => $fill,                         # xav_max
+        "%s"   => $fill,                         # xav_fill
+        "%s"   => $max,                          # xav_max
         "%s"   => "NULL",                        # xav_alloc  /* pointer to beginning of C array of SVs */ This has to be dynamically setup at init().
     );
 
     svsect()->supdate( $ix, "&xpvav_list[%d], %Lu, 0x%x, {%s}", $xpv_ix, $av->REFCNT, $av->FLAGS, 0 );
 
-    return $sym;
+    return;
 }
 
 # helper to skip backref SV
@@ -68,7 +74,13 @@ sub do_save {
     $fullname ||= '';
 
     my $fill = $av->fill();
-    my $sym  = $av->save_sv($fullname);    # could be using PADLIST, PADNAMELIST, or AV method for this.
+
+    my $section = $av->section_sv();
+
+    my ( $ix, $sym ) = $section->reserve( $av, $av->cast_section );
+
+    #$sym = "($type_to_cast) $sym";
+    #warn sprintf( "### SEC %s TTC %s sym %s\n", $section->{name}, $type_to_cast, $sym );
 
     debug( av => "saving AV %s 0x%x [%s] FILL=%d", $fullname, $$av, ref($av), $fill );
 
@@ -119,12 +131,16 @@ sub do_save {
                 }
                 $fill -= scalar(@array) - scalar(@new_array);    # remove to fill the delta we removed from array
                 @array = @new_array;
+
+                # we know this is a svsect here... or the list would not be the same
+                $av->section_sv()->supdate( $ix, "NULL, 0, 0, {NULL}" );
                 return q{NULL} unless scalar @array;
 
                 # Idea: bypass the AV save if there's only one element in the array
             }
 
             @values = map { $_->save( $fullname . "[" . $count++ . "]" ) || () } @array;
+            $fill = scalar(@values) if $is_backref;
         }
 
         # Init optimization by Nick Koston
@@ -179,7 +195,9 @@ sub do_save {
         init()->sadd( "av_extend(%s, %d);", $sym, $max ) if $max > -1;
     }
 
-    return $sym;
+    $av->update_sv( $ix, $fullname, { fill => $fill } );    # could be using PADLIST, PADNAMELIST, or AV method for this.
+
+    return $sym;                                            # return the reserved symbol
 }
 
 # With -fav-init faster initialize the array as the initial av_extend()

@@ -6,21 +6,24 @@ our @ISA = qw(B::AV);
 use B::C::File qw/padnamelistsect/;
 use B::C::Helpers::Symtable qw/savesym/;
 
-sub save_sv {
-    my ($av) = @_;
+sub section_sv {
+    return padnamelistsect();
+}
 
-    padnamelistsect()->comment("xpadnl_fill, xpadnl_alloc, xpadnl_max, xpadnl_max_named, xpadnl_refcnt");
+sub update_sv {
+    my ( $av, $ix, $fullname ) = @_;
+
+    my $section = $av->section_sv();
+    $section->comment("xpadnl_fill, xpadnl_alloc, xpadnl_max, xpadnl_max_named, xpadnl_refcnt");
 
     # TODO: max_named walk all names and look for non-empty names
     my $refcnt   = $av->REFCNT;
     my $fill     = $av->MAX;
     my $maxnamed = $av->MAXNAMED;
 
-    my $ix = padnamelistsect->add("$fill, NULL, $fill, $maxnamed, $refcnt");
+    $section->update( $ix, "$fill, NULL, $fill, $maxnamed, $refcnt" );
 
-    my $sym = savesym( $av, "&padnamelist_list[$ix]" );
-
-    return $sym;
+    return;
 }
 
 sub add_malloc_line_for_array_init {
@@ -32,6 +35,10 @@ sub add_malloc_line_for_array_init {
 
 sub cast_sv {
     return "(PADNAME*)";
+}
+
+sub cast_section {                            ### Stupid move it to section !!! a section know its type
+    return "PADNAMELIST*";
 }
 
 sub fill { return shift->MAX }
