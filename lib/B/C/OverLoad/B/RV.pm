@@ -26,10 +26,10 @@ sub do_save {
 
     svsect()->supdatel(
         $ix,
-        '(void*)%s - sizeof(void*)' => $sym,                                     # the SvANY is set just below at init time
+        '(void*)%s - sizeof(void*)' => $sym,                              # the SvANY is set just below at init time
         '%Lu'                       => $sv->REFCNT,
         '0x%x'                      => $flags,
-        '{.svu_rv=%s}'              => B::RV::save_rv( $sv, $sym, $fullname ),
+        '{.svu_rv=%s}'              => save_rv( $sv, $sym, $fullname ),
     );
 
     return $sym;
@@ -60,9 +60,8 @@ sub save_rv {
         $init = B::C::get_bootstrap_section($sub);
     }
 
-    # ref($rv) ne 'B::GV' && ref($rv) ne 'B::HV'
     $init->sadd( "%s.sv_u.svu_rv = (SV*)%s;", $sym, $rv );
-    return "0 /* $rv */";
+    return sprintf( q{0 /* RV %s */}, $rv );
 }
 
 1;
