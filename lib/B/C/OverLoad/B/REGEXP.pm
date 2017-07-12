@@ -27,7 +27,6 @@ sub do_save {
     my $magic       = $sv->save_magic($fullname);
 
     # Unfortunately this XPV is needed temp. Later replaced by struct regexp.
-    # STATIC HV: Static stash please.
     my $xpv_ix = xpvsect()->saddl(
         "%s"   => $magic_stash,    # xmg_stash
         "{%s}" => $magic,          # xmg_u
