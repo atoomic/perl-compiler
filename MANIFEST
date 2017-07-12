@@ -60,7 +60,6 @@ lib/B/C/Section/Meta.pm
 lib/B/C/Templates/base.c.tt2
 lib/B/C/XS.pm
 lib/B/C_heavy.pl
-lib/B/FAKEOP.pm
 lib/B/STASHGV.pm
 Makefile.PL
 MANIFEST			This list of files
