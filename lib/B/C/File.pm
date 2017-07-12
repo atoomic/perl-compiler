@@ -211,7 +211,6 @@ sub write {
     my $template_file = "$template_dir/$template_name_short";
     -e $template_file or die("Can't find or read $template_file for generating B::C C code.");
 
-    # STATIC_HV: Altering the stash by loading modules after the white list has been established can lead to
     # problems. Ideally this code should be removed in favor of a better solution.
     # op/magic-27839.t sets SIG{WARN} in a begin block and then never releases it.
     eval q{local $SIG{__WARN__} = 'IGNORE'; require Config; require Exporter::Heavy; require Template};
