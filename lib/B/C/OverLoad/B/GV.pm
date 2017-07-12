@@ -27,13 +27,12 @@ sub do_save {
     # return earlier for special cases
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
 
-    # STATIC_HV need to handle $0
-
     my ( $ix, $sym ) = gvsect()->reserve($gv);
     gvsect()->debug( $gv->get_fullname(), $gv );
 
     my $gpsym = $gv->savegp_from_gv();
 
+    # STATIC_HV save_magic??
     my $stash_symbol = $gv->get_stash_symbol();
 
     my $magic_stash = $gv->FLAGS & SVf_AMAGIC ? $stash_symbol : q{NULL};
@@ -59,31 +58,15 @@ sub do_save {
         '{.xgv_stash=%s}'          => $stash_symbol,      # union _xnvu xnv_u - The symbol for the HV stash. Which field is it??
     );
     xpvgvsect()->debug( $gv->get_fullname() );
-    my $xpvgv = sprintf( 'xpvgv_list[%d]', $xpvg_ix );
 
-    {
-        gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
-
-        # replace our FAKE entry above
-        gvsect()->supdatel(
-            $ix,
-            "&%s"               => $xpvgv,                # XPVGV*  sv_any
-            "%u"                => $gv->REFCNT,           #  sv_refcnt - +1 to make it immortal
-            "0x%x"              => $gv->FLAGS,            # sv_flags
-            "{.svu_gp=(GP*)%s}" => $gpsym,                # GP* sv_u - plug the gp in our sv_u slot
-        );
-    }
-
-    debug( gv => 'Save for %s = %s VS %s', $gv->get_fullname(), $sym, $gv->NAME );
-
-    # TODO: split the fullname and plug all of them in known territory...
-    # relies on template logic to preserve the hash structure...
-
-    #my @namespace = split( '::', $gv->get_fullname() );
-
-    # FIXME... need to plug it to init()->sadd( "%s = %s;", $sym, gv_fetchpv_string( $name, $gvadd, 'SVt_PV' ) );
-
-    # STATIC_HV: Is there a way to do this up on the xpvgvsect()->sadd line ??
+    gvsect()->comment("XPVGV*  sv_any,  U32     sv_refcnt; U32     sv_flags; union   { gp* } sv_u # gp*");
+    gvsect()->supdatel(
+        $ix,
+        "&xpvgv_list[%d]"   => $xpvg_ix,                  # XPVGV*  sv_any
+        "%u"                => $gv->REFCNT,               # sv_refcnt
+        "0x%x"              => $gv->FLAGS,                # sv_flags
+        "{.svu_gp=(GP*)%s}" => $gpsym,                    # GP* sv_u - plug the gp in our sv_u slot
+    );
 
     return $sym;
 }
@@ -109,20 +92,6 @@ sub get_fullname {
 
 my %saved_gps;
 
-# hardcode the order of GV elements, so we can use macro instead of indexes
-sub GP_IX_SV()     { 0 }
-sub GP_IX_IO()     { 1 }
-sub GP_IX_CV()     { 2 }
-sub GP_IX_CVGEN () { 3 }
-sub GP_IX_REFCNT() { 4 }
-sub GP_IX_HV()     { 5 }
-sub GP_IX_AV()     { 6 }
-sub GP_IX_FORM()   { 7 }
-sub GP_IX_GV()     { 8 }
-sub GP_IX_LINE()   { 9 }
-sub GP_IX_FLAGS()  { 10 }
-sub GP_IX_HEK()    { 11 }
-
 # FIXME todo and move later to B/GP.pm ?
 sub savegp_from_gv {
     my ($gv) = @_;
@@ -147,8 +116,9 @@ sub savegp_from_gv {
 
     my $gp_egv = $gv->save_egv();
 
-    # walksymtable creates an extra reference to the GV (#197): STATIC_HV: Confirm this is actually a true statement at this point.
+    # walksymtable creates an extra reference to the GV (xtestc/0197.t)
     my $gp_refcount = $gv->GvREFCNT;    # +1 for immortal: do not free our static GVs
+    $gp_refcount-- if $gp_refcount > 1;
 
     my $gp_line = $gv->LINE;            # we want to use GvLINE from B.xs
                                         # present only in perl 5.22.0 and higher. this flag seems unused ( saving 0 for now should be similar )
@@ -203,10 +173,10 @@ sub savegp_from_gv {
     # we can only use static values for sv, av, hv, cv, if they are coming from a static list
 
     my @postpone = (
-        [ 'gp_sv', GP_IX_SV(), $gp_sv ],
-        [ 'gp_av', GP_IX_AV(), $gp_av ],
-        [ 'gp_hv', GP_IX_HV(), $gp_hv ],
-        [ 'gp_cv', GP_IX_CV(), $gp_cv ],
+        [ 'gp_sv', 0, $gp_sv ],
+        [ 'gp_cv', 2, $gp_cv ],
+        [ 'gp_av', 6, $gp_av ],
+        [ 'gp_hv', 5, $gp_hv ],
     );
 
     # Find things that can't be statically compiled and defer them
@@ -228,14 +198,6 @@ sub savegp_from_gv {
 
     return $saved_gps{$gp};
 }
-
-# hardcode the order of GV elements, so we can use macro instead of indexes
-sub GV_IX_STASH ()     { 0 }
-sub GV_IX_MAGIC ()     { 1 }
-sub GV_IX_CUR ()       { 2 }
-sub GV_IX_LEN ()       { 3 }
-sub GV_IX_NAMEHEK ()   { 4 }
-sub GV_IX_XGV_STASH () { 5 }
 
 sub get_stash_symbol {
     my ($gv) = @_;
@@ -270,20 +232,6 @@ sub save_gv_sv {
 
     my $gvsv = $gv->SV;
     return 'NULL' unless $$gvsv;
-
-    #my $gvname  = $gv->NAME;
-    # STATIC_HV: We think this special case needs to go away but don't have proof yet.
-    # Reported in https://code.google.com/archive/p/perl-compiler/issues/91
-    #if ( $gvname && $gvname eq 'VERSION' and $gvsv->FLAGS & SVf_ROK ) {
-    #    die ("STATIC_HV: DEAD CODE??");
-    #    my $package = $gv->get_package();
-    #    debug( gv => "Strip overload from $package\::VERSION, fails to xs boot (issue 91)" );
-    #    my $rv     = $gvsv->object_2svref();
-    #    my $origsv = $$rv;
-    #    no strict 'refs';
-    #    ${$fullname} = "$origsv";
-    #    return svref_2object( \${$fullname} )->save($fullname);
-    #}
 
     if ( $fullname eq 'main::_' ) {
         $gvsv = svref_2object( \$under );
@@ -348,22 +296,8 @@ sub save_gv_cv {
 
     my $package = $gv->get_package();
     my $gvcv    = $gv->CV;
-    if ( !$$gvcv ) {
 
-        # STATIC_HV: We're not expanding AUTOLOAD and missing stuff.
-        #debug( gv => "Empty CV $fullname, AUTOLOAD and try again" );
-        #no strict 'refs';
-
-        # Fix test 31, catch unreferenced AUTOLOAD. The downside:
-        # It stores the whole optree and all its children.
-        # Similar with test 39: re::is_regexp
-        #svref_2object( \*{"$package\::AUTOLOAD"} )->save if $package and exists ${"$package\::"}{AUTOLOAD};
-        #svref_2object( \*{"$package\::CLONE"} )->save    if $package and exists ${"$package\::"}{CLONE};
-        #$gvcv = $gv->CV;    # try again
-
-        return 'NULL';    # ??? really
-    }
-
+    return 'NULL' unless $$gvcv;
     return 'NULL' unless ref($gvcv) eq 'B::CV';
     return 'NULL' if ref( $gvcv->GV ) eq 'B::SPECIAL' or ref( $gvcv->GV->EGV ) eq 'B::SPECIAL';
 
@@ -478,13 +412,6 @@ sub savecv {
         debug( gv => "Skip internal XS $fullname" );
         return;
     }
-
-    # STATIC_HV: This code was removed because white listing doesn't really work with force_heavy any more.
-    # What is done here has not been analyzed to see if we need to fix it.
-    ## load utf8 and bytes on demand.
-    #if ( my $newgv = force_heavy( $package, $fullname ) ) {
-    #    $gv = $newgv;
-    #}
 
     # XXX fails and should not be needed. The B::C part should be skipped 9 lines above, but be defensive
     return if $fullname eq 'B::walksymtable' or $fullname eq 'B::C::walksymtable';
