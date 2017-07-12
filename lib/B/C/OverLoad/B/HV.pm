@@ -1,17 +1,3 @@
-package B::C::HV;
-
-my $hv_index = 0;
-
-sub get_index {
-    return $hv_index;
-}
-
-sub inc_index {
-    return ++$hv_index;
-}
-
-1;
-
 package B::HV;
 
 use strict;
@@ -23,12 +9,6 @@ use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::Save qw/savestashpv/;
-
-my ($swash_ToCf);
-
-sub swash_ToCf_value {    # NO idea what it s ??
-    return $swash_ToCf;
-}
 
 sub can_save_stash {
     my $stash_name = shift;
