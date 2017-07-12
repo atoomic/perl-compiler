@@ -73,7 +73,7 @@ sub do_save {
     debug( av => "saving AV %s 0x%x [%s] FILL=%d", $fullname, $$av, ref($av), $fill );
 
     # XXX AVf_REAL is wrong test: need to save comppadlist but not stack
-    # STATIC HV: We used to block save on @- and @+ by checking for magic of type D. save_magic doesn't advertize this now so we don't have the "same" blocker.
+    # We used to block save on @- and @+ by checking for magic of type D. save_magic doesn't advertize this now so we don't have the "same" blocker.
     if ( $fill > -1 and $fullname !~ m/^(main::)?[-+]$/ ) {
         my @array = $av->ARRAY;    # crashes with D magic (Getopt::Long)
         if ( debug('av') ) {
