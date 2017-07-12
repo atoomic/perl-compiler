@@ -62,8 +62,6 @@ BEGIN {
     B->import(qw(regex_padav SVp_NOK SVp_IOK CVf_CONST CVf_ANON SVt_PVGV));
 }
 
-use B::STASHGV ();
-
 use B::C::XS       ();
 use B::C::OverLoad ();
 use B::C::Save qw(savepv savestashpv);
