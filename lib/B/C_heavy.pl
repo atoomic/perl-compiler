@@ -154,18 +154,6 @@ my $saveoptree_callback;
 BEGIN { $saveoptree_callback = \&walk_and_save_optree }
 sub saveoptree { &$saveoptree_callback(@_) }
 
-# Look this up here so we can do just a number compare
-# rather than looking up the name of every BASEOP in B::OP
-# maybe use contant
-our ( $OP_THREADSV, $OP_DBMOPEN, $OP_FORMLINE, $OP_UCFIRST );
-
-BEGIN {
-    $OP_THREADSV = opnumber('threadsv');
-    $OP_DBMOPEN  = opnumber('dbmopen');
-    $OP_FORMLINE = opnumber('formline');
-    $OP_UCFIRST  = opnumber('ucfirst');
-}
-
 sub IsCOW {
     return ( ref $_[0] && $_[0]->can('FLAGS') && $_[0]->FLAGS & 0x10000000 );    # since 5.22
 }
