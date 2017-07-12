@@ -86,9 +86,6 @@ our ( %dumped_package, %skip_package, %isa_cache );
 # fixme move to config
 our ( $use_xsloader, $devel_peek_needed );
 
-# options and optimizations shared with B::CC
-our ($mainfile);
-
 our @xpvav_sizes;
 our $in_endav;
 my %static_core_pkg;

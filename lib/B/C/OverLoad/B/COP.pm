@@ -85,12 +85,7 @@ sub do_save {
 
     # we should have already saved the GV for the file (exception for B and O)
     my $filegv = exists $main::{qq[_<$file]} ? svref_2object( \$main::{qq[_<$file]} )->save : 'Nullgv';
-    $filegv = 'Nullgv' if $filegv eq 'NULL';    # STATIC_HV
-
-    # our root: store all packages from this file
-    if ( !$B::C::mainfile ) {                   # STATIC_HV: dead code? we're trying to save stashes an OP belongs to. whitelist should make this unnecessary.
-        $B::C::mainfile = $op->file if $op->stashpv eq 'main';
-    }
+    $filegv = 'Nullgv' if $filegv eq 'NULL';
 
     # COP has a stash method
     my $stash = $op->stash ? $op->stash->save : q{Nullhv};
