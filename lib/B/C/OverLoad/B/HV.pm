@@ -174,10 +174,7 @@ sub do_save {
     }
 
     {    # add hash content even if the hash is empty [ maybe only for %INC ??? ]
-        $init->no_split;
-        my $comment = $stash_name ? "/* STASH declaration for ${stash_name}:: */" : '';
-        $init->sadd( '{ %s', $comment );
-        $init->indent(+1);
+        $init->open_block( $stash_name ? "STASH declaration for ${stash_name}::" : '' );
         $init->sadd( q{HvSETUP(%s, %d, %s, (SV*) %s);}, $sym, $max + 1, $has_ook, $backrefs_sym );
 
         my @hash_elements;
@@ -238,9 +235,7 @@ sub do_save {
     }
 
     # close our HvSETUP block
-    $init->indent(-1);
-    $init->add('}');
-    $init->split;
+    $init->close_block;
 
     return $sym;
 }

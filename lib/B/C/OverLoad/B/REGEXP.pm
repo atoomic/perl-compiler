@@ -45,9 +45,7 @@ sub do_save {
     debug( rx => "Saving RX $cstr to sv_list[$ix]" );
 
     # replace sv_any->XPV with struct regexp. need pv and extflags
-    $initpm->no_split;
-    $initpm->add('{');
-    $initpm->indent(+1);
+    $initpm->open_block();
 
     # Re-compile into an SV.
     $initpm->add("PL_hints |= HINT_RE_EVAL;") if ( $sv->EXTFLAGS & RXf_EVAL_SEEN );
@@ -62,9 +60,7 @@ sub do_save {
     $initpm->sadd( "ReANY(%s)->xmg_stash =  %s;",                       $sym, $magic_stash );
     $initpm->sadd( "ReANY(%s)->xmg_u.xmg_magic =  %s;",                 $sym, $magic );
 
-    $initpm->indent(-1);
-    $initpm->add('}');
-    $initpm->split;
+    $initpm->close_block();
 
     return $sym;
 }

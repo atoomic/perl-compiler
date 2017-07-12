@@ -76,6 +76,29 @@ sub no_split {
     return shift->{'nosplit'}++;
 }
 
+sub open_block {
+    my ( $self, $comment ) = shift;
+
+    # make it a C comment style
+    $comment = sprintf( q{/* %s */}, $comment ) if $comment;
+
+    $self->no_split;
+    $self->sadd( "{ %s", $comment );
+    $self->indent(+1);
+
+    return;
+}
+
+sub close_block {
+    my $self = shift;
+
+    $self->indent(-1);
+    $self->add('}');
+    $self->split;
+
+    return;
+}
+
 sub inc_count {
     my $self = shift;
 

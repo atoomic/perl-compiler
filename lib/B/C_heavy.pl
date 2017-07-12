@@ -800,9 +800,7 @@ sub do_remap_xs_symbols {
     #   Perl_gv_fetchpv("Encode::ascii_encoding", 0, SVt_PVCV)
     # is going to return an 0
 
-    $init->no_split;
-    $init->add("{");
-    $init->indent(+1);
+    $init->open_block;
 
     $init->add( "#include <dlfcn.h>", "void *handle;" );
 
@@ -820,9 +818,7 @@ sub do_remap_xs_symbols {
         }
     }
 
-    $init->indent(-1);
-    $init->add("}");
-    $init->split;
+    $init->close_block;
 
     return;
 }

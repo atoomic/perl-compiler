@@ -194,17 +194,13 @@ sub add_to_init {
 
     my $deferred_init = $acc =~ qr{BOOTSTRAP_XS_}m ? init_bootstraplink() : init_static_assignments();
 
-    $deferred_init->no_split;
-    $deferred_init->sadd( "{ /* Initialize array %s */", $fullname );
-    $deferred_init->indent(+1);
+    $deferred_init->open_block( sprintf( "{ /* Initialize array %s */", $fullname ) );
 
     $deferred_init->add("register int gcount;") if $acc =~ m/\(gcount=/m;
     $av->add_malloc_line_for_array_init( $deferred_init, $sym, $fill );
     $deferred_init->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
 
-    $deferred_init->indent(-1);
-    $deferred_init->add("}");
-    $deferred_init->split;
+    $deferred_init->close_block();
 }
 
 sub add_malloc_line_for_array_init {

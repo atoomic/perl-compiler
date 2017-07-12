@@ -72,11 +72,9 @@ sub do_save {
         }
 
         my $eval_seen = $op->reflags & RXf_EVAL_SEEN;
-        $initpm->no_split();
+        $initpm->open_block();
         if ($eval_seen) {    # set HINT_RE_EVAL on
             $pmflags |= PMf_EVAL;
-            $initpm->add('{');
-            $initpm->indent(+1);
             $initpm->add('U32 hints_sav = PL_hints;');
             $initpm->add('PL_hints |= HINT_RE_EVAL;');
         }
@@ -87,10 +85,8 @@ sub do_save {
 
         if ($eval_seen) {    # set HINT_RE_EVAL off
             $initpm->add('PL_hints = hints_sav;');
-            $initpm->indent(-1);
-            $initpm->add('}');
         }
-        $initpm->split();
+        $initpm->close_block();
 
         # See toke.c:8964
         # set in the stash the PERL_MAGIC_symtab PTR to the PMOP: ((PMOP**)mg->mg_ptr) [elements++] = pm;
