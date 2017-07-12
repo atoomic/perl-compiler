@@ -17,7 +17,6 @@ sub do_save {
 
     binopsect->supdate( $ix, "%s, %s, %s", $op->_save_common, $op->first->save, $op->last->save );
 
-    # STATIC_HV: Not clear how Devel::Peek is being used here.
     my $ppaddr = $op->ppaddr;
     if ( $op->type == $OP_CUSTOM ) {
         my $ptr = $$op;
@@ -28,8 +27,7 @@ sub do_save {
         }
         else {
             B::C::Debug::vebose( "Warning: Unknown custom op " . $op->name );
-            $ppaddr = sprintf( 'Perl_custom_op_xop(aTHX_ INT2PTR(OP*, 0x%x))', $$op );
-            init()->sadd( "binop_list[%d].op_ppaddr = %s;", $ix, $ppaddr );
+            init()->sadd( "binop_list[%d].op_ppaddr = Perl_custom_op_xop(aTHX_ INT2PTR(OP*, 0x%x));", $ix, $ppaddr, $$op );
         }
     }
 
