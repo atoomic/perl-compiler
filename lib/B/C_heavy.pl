@@ -893,8 +893,11 @@ sub key_was_in_starting_stash {    # Left::Side::
     my $path = shift or die q{no stash for key_was_in_starting_stash};    # maybe 1
 
     return 1 if $path eq 'main::';
+    return 0 if $path eq '::';                                            # STATIC_HV probably 1 also there
 
     $path =~ s/^main:://;
+
+    return 0 if $path eq '';
 
     my $curstash = $settings->{'starting_stash'} or die;
     my @stashes = split( "::", $path );
