@@ -194,9 +194,6 @@ sub do_save {
             my ($shared_he) = save_shared_he($key);
             $init->sadd( q{HvAddEntry(%s, (SV*) %s, %s, %d); /* %s */}, $sym, $value, $shared_he, $max, $key );
         }
-
-        # save the iterator in hv_aux (and malloc it)
-        $init->sadd( "HvRITER_set(%s, %d);", $sym, -1 );    # saved $hv->RITER
     }
 
     $init->add("SvREADONLY_on($sym);") if $hv->FLAGS & SVf_READONLY;

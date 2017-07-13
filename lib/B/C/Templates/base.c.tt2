@@ -261,6 +261,18 @@ static void bc_const_av_xsub(pTHX_ CV* cv) {
 }
 */
 
+/* HV_STASH can do better randomization there */
+static U32 bc_S_ptr_hash(PTRV u) {
+     u = (~u) + (u << 18);
+     u = u ^ (u >> 31);
+     u = u * 21;
+     u = u ^ (u >> 11);
+     u = u + (u << 6);
+     u = u ^ (u >> 22);
+
+     return (U32) u;
+}
+
 static void HvSETUP(HV* hv, U32 size, bool has_ook, SV* backref) {
     char *array;
     MEM_SIZE alloc_size = PERL_HV_ARRAY_ALLOC_BYTES(size);
@@ -274,8 +286,20 @@ static void HvSETUP(HV* hv, U32 size, bool has_ook, SV* backref) {
 
     /* set the backrefrence for HV which is stored in AUX (in magic for regular SVs) */
     /* do not check if backref is defined or not */
-    if ( has_ook )
-        HvAUX(hv)->xhv_backreferences = (AV*) backref;
+    if ( has_ook ) {
+        /* view S_hv_auxinit_internal for init */
+        struct xpvhv_aux *iter = HvAUX(hv);
+        iter->xhv_backreferences = (AV*) backref;
+        iter->xhv_riter = -1;
+
+        /* change the PL_hash_rand_bits */
+        PL_hash_rand_bits += bc_S_ptr_hash((PTRV)array);
+        PL_hash_rand_bits = ROTL_UV(PL_hash_rand_bits, 1);
+
+        /* randomize our hash */
+        iter->xhv_last_rand = iter->xhv_rand = PL_hash_rand_bits;
+    }
+
 
     return;
 }
