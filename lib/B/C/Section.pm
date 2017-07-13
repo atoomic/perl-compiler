@@ -194,6 +194,8 @@ sub _field_split {
 sub get {
     my ( $self, $row ) = @_;
 
+    $row = -1 if !defined $row;
+
     return $self->{'values'}->[$row];
 }
 
@@ -306,16 +308,27 @@ sub debug {
     }
 
     # build our debug line for the current index
-    my $dbg = join ', ', map { defined $_ ? ( ref($_) ? ref($_) : $_ ) : 'undef' } @what;
 
-    if ( defined $self->{'dbg'}->[ $self->index ] ) {
-        $self->{'dbg'}->[ $self->index ] .= ', ' . $dbg;
+    my $str;
+    my $dbg = scalar @what ? '' : 'undef';
+    foreach my $e (@what) {
+        do { $str = 'undef'; next } unless defined $e;
+        $str = ref($e) || $e;
+    }
+    continue {
+        $dbg .= ', ' if length $dbg;
+        $dbg .= $str;
+    }
+
+    my $ix = $self->index;
+    if ( defined $self->{'dbg'}->[$ix] ) {
+        $self->{'dbg'}->[$ix] .= ', ' . $dbg;
     }
     else {
-        $self->{'dbg'}->[ $self->index ] = $dbg;
+        $self->{'dbg'}->[$ix] = $dbg;
     }
 
-    return;
+    return $self->{'dbg'}->[$ix];
 }
 
 sub output {
