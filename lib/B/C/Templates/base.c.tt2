@@ -165,7 +165,7 @@ typedef struct my_padname_with_str MyPADNAME;
 */
 
 typedef struct p5rx RE;
-Static IV PL_sv_objcount = 0; /* deprecated with 5.21.1 but still needed and used */
+Static IV PL_sv_objcount = 1; /* deprecated with 5.21.1 but still needed and used */
 SV* sv;
 [% IF gv_index %]
 Static GV *dynamic_gv_list[[% gv_index %]];
