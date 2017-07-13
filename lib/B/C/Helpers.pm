@@ -6,7 +6,7 @@ use B qw/SVf_POK SVp_POK/;
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw/svop_name padop_name read_utf8_string
   is_constant strlen_flags cow_strlen_flags is_shared_hek
-  cstring_cow get_index
+  cstring_cow get_index key_was_in_starting_stash
   /;
 
 # wip to be moved
@@ -99,6 +99,38 @@ sub get_index {
     my $str = shift;
     return $1 if $str && $str =~ qr{\[([0-9]+)\]};
     die "Cannot get index from '$str'";
+}
+
+=item key_was_in_starting_stash
+
+Checks a string path to determine if that path was seen during startup.
+
+=cut
+
+sub key_was_in_starting_stash {    # Left::Side::
+    my $path = shift or die q{no stash for key_was_in_starting_stash};    # maybe 1
+
+    return 0 if $path =~ m/:::/;                                          # We don't support more than 2 colons as separators.
+    return 0 if $path =~ /^::/;                                           # No we don't support paths leading with ::
+
+    return 1 if $path eq 'main::';
+    $path =~ s/^main:://;
+
+    my $curstash = $B::C::settings->{'starting_stash'} or die;
+    my @stashes = split( "::", $path );
+
+    my $stash_key = pop @stashes;
+    die qq{Key is null in key_was_in_starting_stash - $path} unless length $stash_key;
+    if ( $path =~ qr{::$} ) {
+        $stash_key .= q{::};
+    }
+
+    foreach my $stash_name (@stashes) {
+        $curstash = $curstash->{"${stash_name}::"} or return 0;
+        ref $curstash eq 'HASH' or return 0;
+    }
+
+    return $curstash->{$stash_key} ? 1 : 0;
 }
 
 1;

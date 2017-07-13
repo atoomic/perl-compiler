@@ -7,7 +7,7 @@ use B::C::Flags ();
 use B qw/cstring SVf_IOK SVf_POK SVs_OBJECT/;
 use B::C::Config;
 use B::C::File qw/init xpvavsect svsect init_static_assignments init_bootstraplink/;
-use B::C::Helpers qw/strlen_flags/;
+use B::C::Helpers qw/strlen_flags key_was_in_starting_stash/;
 use B::C::Helpers::Symtable qw/savesym/;
 
 # maybe need to move to setup/config
@@ -62,7 +62,7 @@ sub skip_backref_sv {
     return 0 unless $sv->can('FULLNAME');
     my $name = $sv->FULLNAME();
     return 1 if $name =~ m/::(?:bootstrap)$/;    # BEGIN
-    return 1 unless B::C::key_was_in_starting_stash($name);
+    return 1 unless key_was_in_starting_stash($name);
 
     return;
 }
