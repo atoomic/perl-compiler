@@ -25,9 +25,21 @@ my $github_issues_base = 'https://github.com/CpanelInc/perl-compiler/issues';
 my $bugs = find_all_tests();
 
 my %opts;
-getopts( 'hLX:', \%opts );
+getopts( 'hLlX:', \%opts );
 
 HELP_MESSAGE() if $opts{'h'} || ( ! scalar @ARGV && !scalar keys %opts );
+
+if ( $opts{'l'} ) {
+    foreach my $test_id ( sort keys %$bugs ) {
+        print "# $github_issues_base/$test_id\n";
+        foreach my $t ( sort { $a->{name} cmp $b->{name} } $bugs->{$test_id}->@* ) {
+            printf "- %s.t\n", $t->{name};
+        }
+        print "\n";
+    }
+
+    exit;
+}
 
 if ( $opts{'L'} ) {
     mkdir $BC_TEST_DIR;
@@ -41,22 +53,15 @@ if ( $opts{'L'} ) {
 
     foreach my $test_id ( sort { $a <=> $b } keys %$bugs ) {
         my $bug = $bugs->{$test_id};
-        if ( !$bug ) {
+        if ( ref $bug ne 'ARRAY' || !scalar @$bug ) {
             print "No bug found for test ID '$test_id'\n";
             next;
         }
-        ref $bug eq 'ARRAY' or die("Bug $test_id looks ill defined");
-
-        my $bug_count = scalar @$bug;
-        if ( $bug_count % 2 != 0 or $bug_count < 2 ) {
-            die("There aren't an even amount of entries in the definition for bug $test_id");
-        }
 
         my $subtest = 0;
-        while (@$bug) {
-            shift @$bug;
-            shift @$bug;
-            symlink( '../bctest.pl', sprintf( "%03d-%d.t", $test_id, $subtest ) );
+        foreach my $t (@$bug) {
+            my $name = $t->{name};
+            symlink( '../bctest.pl', $name . q{.t} );
             $subtest++;
         }
     }
@@ -69,7 +74,7 @@ if ( $opts{'L'} ) {
 unshift @ARGV, $opts{'X'} if $opts{'X'};
 
 foreach my $test_label (@ARGV) {
-    my ( $test_id, $want_subtest ) = split( "-", $test_label );
+    my ( $test_id, $want_subtest ) = split( /\./, $test_label );
 
     my $bug = $bugs->{$test_id};
     if ( !$bug ) {
@@ -80,17 +85,18 @@ foreach my $test_label (@ARGV) {
 
     print "$github_issues_base/$test_id\n\n";
 
-    my $subtest = 0;
-    while (@$bug) {
-        my $result    = shift @$bug;
-        my $perl_code = shift @$bug;
-        next if defined $want_subtest && $want_subtest != $subtest++;
+    foreach my $t (@$bug) {
+        my $result    = $t->{expect};
+        my $perl_code = $t->{content};
+        my $name = $t->{name};
+
+        next if defined $want_subtest && $test_label ne $name;
 
         # lazy load the content on demand
         $result = $result->() if ref $result eq 'CODE';
         $perl_code = $perl_code->() if ref $perl_code eq 'CODE';
 
-        print "### Subtest $test_id-$subtest:\n";
+        print "### Subtest $name:\n";
         print "$perl_code\n";
         print "### RESULT: $result\n\n";
     }
@@ -114,6 +120,8 @@ sub find_all_tests {
         $t =~ s{^$BC_TEST_T_DIR/}{};
         if ( $t =~ qr{^([0-9]+)\.} ) {
             my $id = $1;
+            my $name = $t; 
+            $name =~ s{\.t$}{};
 
             my $expect = DEFAULT_OUTPUT;
             my $load_t_content = sub { return scalar read_file( $file ) };
@@ -125,7 +133,7 @@ sub find_all_tests {
 
             # push the test
             $bugs->{$id} //= [];
-            push $bugs->{$id}->@*, $expect, $load_t_content;
+            push $bugs->{$id}->@*, { expect => $expect, content =>  $load_t_content, name => $name };
         }
     }
 
@@ -150,6 +158,7 @@ $0 <opts> <bc testid>
 * optional arguments:
     -X<num>  print out tests related to <num>.
     -L       generate C_COMPILED tests and symlinks.
+    -l       list all known tests
 
     -h       print this help.
 
