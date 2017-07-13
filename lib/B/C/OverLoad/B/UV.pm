@@ -2,8 +2,8 @@ package B::UV;
 
 use strict;
 
+use B qw/SVf_READONLY/;
 use B::C::Flags ();
-
 use B::C::File qw/svsect/;
 use B::C::Decimal qw/u32fmt/;
 
@@ -24,11 +24,16 @@ sub do_save {
     # Since 5.24 we can access the IV/NV/UV value from either the union from the main SV body
     # or also from the SvANY of it. View IV.pm for more information
 
+    my $flags = $sv->FLAGS;
+
+    # special case to be able to bootstrap EV need to remove the READONLY flag
+    $flags &= ~SVf_READONLY if $fullname && $fullname eq 'EV::API';
+
     svsect()->supdatel(
         $ix,
         "BODYLESS_UV_PTR(%s)" => $sym,           # sv_any
         u32fmt()              => $sv->REFCNT,    # sv_refcnt
-        '0x%x'                => $sv->FLAGS,     # sv_flags
+        '0x%x'                => $flags,         # sv_flags
         '{.svu_uv=%s}'        => "$uvx$suff",    # sv_u.svu_uv
     );
 
