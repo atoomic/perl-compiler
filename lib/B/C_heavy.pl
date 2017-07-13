@@ -889,21 +889,25 @@ _EOT3
 
 }
 
-sub key_was_in_starting_stash {
-    my $path = shift or return 0;
-    $path =~ s/^main:://g;
+sub key_was_in_starting_stash {    # Left::Side::
+    my $path = shift or die q{no stash for key_was_in_starting_stash};    # maybe 1
+
+    return 1 if $path eq 'main::';
+
+    $path =~ s/^main:://;
 
     my $curstash = $settings->{'starting_stash'} or die;
     my @stashes = split( "::", $path );
 
     my $stash_key = pop @stashes;
-    defined $stash_key or return 0;
-    $stash_key = pop(@stashes) . '::' if $stash_key eq '';    # Foo::bar::
+    die qq{Key is null in key_was_in_starting_stash - $path} unless length $stash_key;
+    $stash_key .= q{::} if $path =~ qr{::$};
 
     foreach my $stash_name (@stashes) {
         $curstash = $curstash->{"${stash_name}::"} or return 0;
         ref $curstash eq 'HASH' or return 0;
     }
+
     return $curstash->{$stash_key} ? 1 : 0;
 }
 

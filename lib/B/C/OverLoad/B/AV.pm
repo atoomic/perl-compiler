@@ -61,7 +61,7 @@ sub skip_backref_sv {
 
     return 0 unless $sv->can('FULLNAME');
     my $name = $sv->FULLNAME();
-    return 1 if $name =~ m/::(?:BEGIN|bootstrap)$/;
+    return 1 if $name =~ m/::(?:bootstrap)$/;    # BEGIN
     return 1 unless B::C::key_was_in_starting_stash($name);
 
     return;
@@ -133,6 +133,7 @@ sub do_save {
                 @array = @new_array;
 
                 if ( !scalar @array ) {
+
                     # nothing to save there
                     if ( $ix == $section->index ) {
                         $section->remove;                        # lives dangerously but should be fine :-\
