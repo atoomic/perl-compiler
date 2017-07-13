@@ -43,6 +43,12 @@ sub singleton {
     return $self;
 }
 
+sub re_initialize {    # only for unit tests purpose
+    my $outfile = $self->{'c_file_name'};
+    $self = undef;
+    return new($outfile);
+}
+
 # The objects in quotes do not have any special logic.
 sub code_section_names {
     return qw{cowpv const typedef decl init0 free sym hek sharedhe sharedhestructs}, struct_names(), op_sections();
@@ -82,7 +88,7 @@ sub new {
 
     $self and die "Singleton: should only be called once !";
 
-    debug( 'file' => "Write to c file: '$outfile'" );
+    debug( 'file' => "Write to c file: '" . ( $outfile // 'undef' ) . "'" );
     $self = bless { 'c_file_name' => $outfile };
 
     foreach my $section_name ( code_section_names() ) {

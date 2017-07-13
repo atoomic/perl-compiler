@@ -5,7 +5,9 @@ use warnings;
 
 use Test::More;
 
-use B qw/svref_2object/;
+use B qw/svref_2object SVf_ROK/;
+
+use B::C::OverLoad; # overload save with a magic wrapper
 use B::C::OverLoad::B::IV ();
 use B::C::OverLoad::B::UV ();
 use B::C::OverLoad::B::RV ();
@@ -19,15 +21,16 @@ my $iv = svref_2object( \$simple_int );
 isa_ok( $iv, 'B::IV', '$simple_int' );
 B::C::File::new('doesnt matter');
 
+#*B::IV::save = B::IV::do_save;
+
 my $got = B::IV::save( $iv, '$main::simple_int' );
-like( svsect()->{'values'}->[1],    qr{^\&xpviv_list\[0\], 1}, "it's listed in svsect and has 1 reference" );
-like( xpvivsect()->{'values'}->[0], qr/\{$simple_int\}$/,      "its value is listed in xpvivsect" );
+is( svsect()->get( 1 ),    q{BODYLESS_UV_PTR(&sv_list[1]), 1, 0x1101, {.svu_uv=8675309U}}, "bodyless IV with 1 reference" );
 
 clear_all();
 
 my $second_ref = \$simple_int;
 $got = B::IV::save( $iv, '$main::simple_int' );
-like( svsect()->{'values'}->[1], qr{^\&xpviv_list\[0\], 2}, "it's listed in svsect and has 2 references once we refer to it from elsewhere" );
+is( svsect()->get( 1 ), 'BODYLESS_UV_PTR(&sv_list[1]), 2, 0x1101, {.svu_uv=8675309U}', "bodyless IV with 2 references once we refer to it from elsewhere" );
 
 clear_all();
 
@@ -39,8 +42,10 @@ my $rv_save_called;
 
 my $rv = svref_2object( \$second_ref );
 isa_ok( $rv, 'B::IV', 'A ref to the int variable' );
-$got = B::IV::save( $rv, '$main::second_ref' );
-is( $rv_save_called, 1, "B::RV::save is called when a B::IV is a reference actually" );
+ok $rv->FLAGS & SVf_ROK, 'SVf_ROK enable';
+$got = B::IV::do_save( $rv, '$main::second_ref' );
+is $got, q{&sv_list[1]}, 'got one sv_list symbol';
+is svsect()->get( 1 ), q[(void*)&sv_list[1] - sizeof(void*), 1, 0x801, {.svu_rv=&sv_list[2]}], 'the SV points to another SV';
 
 clear_all();
 
