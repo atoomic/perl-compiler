@@ -43,7 +43,6 @@ op/lex.t                    COMPAT    Tests trigger errors at compilation time
 op/lexsub.t                 BC        BC issue #219 - overload issue
 op/method.t                 TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
 op/override.t               COMPAT    crazy test which override CORE::GLOBAL::require @BEGIN
-op/ref.t                    TESTS     BC issue #300 - PVFM not compiled
 op/sprintf2.t               SKIP      flapping test: Tests are in sequence
 op/stash.t                  TESTS     BC issue #221 - delete is not anonymizing the returned sub
 op/sub_lval.t               TESTS     BC issue #277 - sub declaration with :lvalue should apply it to XSUBs
