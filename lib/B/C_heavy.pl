@@ -314,57 +314,6 @@ sub try_isa {
     return 0;    # not found
 }
 
-# Fixes bug #307: use foreach, not each
-# each is not safe to use (at all). walksymtable is called recursively which might add
-# symbols to the stash, which might cause re-ordered rehashes, which will fool the hash
-# iterator, leading to missing symbols in the binary.
-# Old perl5 bug: The iterator should really be stored in the op, not the hash.
-sub walksymtable {
-    my ( $symref, $method, $recurse, $prefix ) = @_;
-    my ( $sym, $ref, $fullname );
-    $prefix = '' unless defined $prefix;
-
-    my @list = sort {
-
-        # we want these symbols to be saved last to avoid incomplete saves
-        # +/- reverse is to defer + - to fix Tie::Hash::NamedCapturespecial cases. GH #247
-        # _loose_name redefined from utf8_heavy.pl
-        # re can be loaded by utf8_heavy
-        foreach my $v (qw{- + re:: utf8:: bytes::}) {
-            $a eq $v and return 1;
-            $b eq $v and return -1;
-        }
-
-        # reverse order for now to preserve original behavior before improved patch
-        $b cmp $a
-    } keys %$symref;
-
-    # reverse is to defer + - to fix Tie::Hash::NamedCapturespecial cases. GH #247
-    foreach my $sym (@list) {
-        no strict 'refs';
-        $ref      = $symref->{$sym};
-        $fullname = "*main::" . $prefix . $sym;
-        if ( $sym =~ /::$/ ) {
-            $sym = $prefix . $sym;
-            if ( svref_2object( \*$sym )->NAME ne "main::" && $sym ne "<none>::" && &$recurse($sym) ) {
-                walksymtable( \%$fullname, $method, $recurse, $sym );
-            }
-        }
-        else {
-            svref_2object( \*$fullname )->$method();
-        }
-    }
-}
-
-sub walk_syms {
-    my $package = shift;
-    no strict 'refs';
-    return if $dumped_package{$package};
-    debug( pkg => "walk_syms $package" ) if verbose();
-    $dumped_package{$package} = 1;
-    walksymtable( \%{ $package . '::' }, "savecv", sub { 1 }, $package . '::' );
-}
-
 sub make_nonxs_Internals_V {
     my $to_eval = 'no warnings "redefine"; sub Internals::V { return (';
     foreach my $line ( Internals::V() ) {
@@ -433,8 +382,6 @@ sub save_defstash {
     return $PL_defstash;
 }
 
-# simplified walk_syms
-# needed to populate @B::C::Flags::deps from Makefile.PL from within this %INC context
 sub walk_stashes {
     my ( $symref, $prefix, $dependencies ) = @_;
     no strict 'refs';

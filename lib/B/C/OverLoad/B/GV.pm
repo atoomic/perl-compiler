@@ -126,7 +126,6 @@ sub savegp_from_gv {
 
     my $gp_egv = $gv->save_egv();
 
-    # walksymtable creates an extra reference to the GV (xtestc/0197.t)
     my $gp_refcount = $gv->GvREFCNT;    # +1 for immortal: do not free our static GVs
     $gp_refcount-- if $gp_refcount > 1;
 
@@ -423,8 +422,8 @@ sub savecv {
         return;
     }
 
-    # XXX fails and should not be needed. The B::C part should be skipped 9 lines above, but be defensive
-    return if $fullname eq 'B::walksymtable' or $fullname eq 'B::C::walksymtable';
+    # Dead code?
+    die if $fullname eq 'B::walksymtable' or $fullname eq 'B::C::walksymtable';
 
     $B::C::dumped_package{$package} = 1 if !exists $B::C::dumped_package{$package} and $package !~ /::$/;
     debug( gv => "Saving GV \*$fullname 0x%x", ref $gv ? $$gv : 0 );
