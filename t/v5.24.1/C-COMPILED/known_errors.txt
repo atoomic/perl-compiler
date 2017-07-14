@@ -35,6 +35,7 @@ op/caller.t            TESTS     Test results:
 op/closure.t           TESTS     BC issue #278 - destruction issue
 op/coreamp.t           COMPAT    unsupported experimental::lexical_topic + BC issue #219 - overload issue
 op/coresubs.t          COMPAT    uses B::walkoptree
+op/glob.t              SKIP      Flaps because it's surprised to see perlcc files during its run. 
 op/goto_xs.t           COMPAT    needs XS::APItest
 op/lex.t               COMPAT    Tests trigger errors at compilation time
 op/lexsub.t            BC        BC issue #219 - overload issue
