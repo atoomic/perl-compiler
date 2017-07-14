@@ -150,14 +150,6 @@ my $saveoptree_callback;
 BEGIN { $saveoptree_callback = \&walk_and_save_optree }
 sub saveoptree { &$saveoptree_callback(@_) }
 
-sub IsCOW {
-    return ( ref $_[0] && $_[0]->can('FLAGS') && $_[0]->FLAGS & 0x10000000 );    # since 5.22
-}
-
-sub IsCOW_hek {
-    return IsCOW( $_[0] ) && !$_[0]->LEN;
-}
-
 # fixme only use opsect common
 my $opsect_common;
 
@@ -168,8 +160,6 @@ BEGIN {
 }
 
 sub opsect_common { return $opsect_common }
-
-
 
 sub get_isa ($) {
     no strict 'refs';
@@ -301,7 +291,7 @@ sub save_defstash {
 sub save_optree {
     verbose("Starting compile");
     verbose("Walking optree");
-    %Exporter::Cache = ();                # avoid B::C and B symbols being stored
+    %Exporter::Cache = ();                   # avoid B::C and B symbols being stored
     _delete_macros_vendor_undefined();
 
     if ( debug('walk') ) {

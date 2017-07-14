@@ -25,7 +25,15 @@ sub is_shared_hek {
 
     my $flags = $sv->FLAGS;
     return 0 unless $flags & ( SVf_POK | SVp_POK );      # cannot be a shared hek if we have no PV public or private
-    return ( ( $flags & 0x09000000 ) == 0x09000000 ) || B::C::IsCOW_hek($sv);
+    return ( ( $flags & 0x09000000 ) == 0x09000000 ) || IsCOW_hek($sv);
+}
+
+sub IsCOW {
+    return ( ref $_[0] && $_[0]->can('FLAGS') && $_[0]->FLAGS & 0x10000000 );    # since 5.22
+}
+
+sub IsCOW_hek {
+    return IsCOW( $_[0] ) && !$_[0]->LEN;
 }
 
 # lazy helper for backward compatibility only (we can probably avoid to use it)
