@@ -302,10 +302,4 @@ sub _patch_dlsym {
     return $ivx;
 }
 
-sub _save_remap {
-    my ( $key, $pkg, $name, $ivx ) = @_;
-
-    return;
-}
-
 1;
