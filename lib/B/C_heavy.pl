@@ -136,20 +136,6 @@ BEGIN {
     *DynaLoader::croak = sub { die @_ }
 }
 
-sub walk_and_save_optree {
-    my ( $name, $root, $start ) = @_;
-    if ($root) {
-
-        # B.xs: walkoptree does more, reifying refs. rebless or recreating it.
-        verbose() ? walkoptree_slow( $root, "save" ) : walkoptree( $root, "save" );
-    }
-    return objsym($start);
-}
-
-my $saveoptree_callback;
-BEGIN { $saveoptree_callback = \&walk_and_save_optree }
-sub saveoptree { &$saveoptree_callback(@_) }
-
 # fixme only use opsect common
 my $opsect_common;
 
@@ -395,7 +381,7 @@ sub build_template_stash {
             'dowarn'      => $^W ? 'G_WARN_ON' : 'G_WARN_OFF',
             'tainting'    => $^{TAINT} ? 'TRUE' : 'FALSE',
             'taint_warn'  => $^{TAINT} < 1 ? 'FALSE' : 'TRUE',
-            'compad'      => (comppadlist->ARRAY)[1]->save('curpad_syms') || 'NULL',
+            'compad' => ( comppadlist->ARRAY )[1]->save('curpad_syms') || 'NULL',
         },
         'IO' => {
             'STDIN'  => svref_2object( \*::STDIN )->save("STDIN"),
