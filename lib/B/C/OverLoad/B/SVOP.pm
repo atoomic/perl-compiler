@@ -51,6 +51,7 @@ sub do_save {
     }
 
     if ( $op->name eq 'method_named' ) {
+        die "Dead code?? This was broken for a while and we never noticed!";
         my $cv = method_named( svop_or_padop_pv($op), nextcop($op) );
         $cv->save if $cv;
     }
