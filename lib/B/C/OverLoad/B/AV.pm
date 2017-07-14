@@ -121,8 +121,6 @@ sub do_save {
         my ( $count, @values ) = (0);
         {
             # TODO: This local may no longer be needed now we've removed the 5.16 conditional here.
-            local $B::C::const_strings = $B::C::const_strings;
-
             if ($is_backref) {
                 my @new_array;
                 foreach my $elt (@array) {

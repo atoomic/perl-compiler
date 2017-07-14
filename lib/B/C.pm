@@ -24,8 +24,6 @@ our $unresolved_count = 0;
 
 our $gv_index = 0;
 
-our $const_strings = 1;      # TODO: This var needs to go away.
-
 our $settings = {
     'signals'       => 1,
     'debug_options' => '',

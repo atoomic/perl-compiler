@@ -99,7 +99,6 @@ sub do_save {
     my @contents = $hv->ARRAY;
 
     if (@contents) {
-        local $B::C::const_strings = $B::C::const_strings;
         my ( $i, $length );
         $length = scalar(@contents);
 

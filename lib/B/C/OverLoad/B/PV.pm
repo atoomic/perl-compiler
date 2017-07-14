@@ -40,7 +40,7 @@ sub do_save {
     }
 
     # static pv, do not destruct. test 13 with pv0 "3".
-    if ( $B::C::const_strings and !$shared_hek and $flags & SVf_READONLY and !$len ) {
+    if ( !$shared_hek and $flags & SVf_READONLY and !$len ) {
         $flags &= ~0x01000000;
         debug( pv => "turn off SVf_FAKE %s %s\n", cstring($pv), $fullname );
     }

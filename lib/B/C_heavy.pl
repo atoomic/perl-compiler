@@ -17,7 +17,6 @@ our %Config;
 our %mainSIGs;
 our ( $VERSION, $caller, $nullop_count, $unresolved_count, $gv_index, $settings );
 our ( @ISA, @EXPORT_OK );
-our $const_strings = 1;    # TODO: This var needs to go away.
 
 BEGIN {
     use B::C::Flags ();
@@ -25,8 +24,8 @@ BEGIN {
 }
 
 use B::Flags;
-use B::C::Config;          # import everything
-use B::C::Debug ();        # used for setting debug levels from cmdline
+use B::C::Config;    # import everything
+use B::C::Debug ();  # used for setting debug levels from cmdline
 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
@@ -38,7 +37,7 @@ use B::C::File qw( init2 init1 init0 init decl free
 use B::C::Helpers::Symtable qw(objsym savesym);
 
 use Exporter ();
-use Errno    ();           #needed since 5.14
+use Errno    ();     #needed since 5.14
 our %Regexp;
 
 # Caller was populated in C.pm
