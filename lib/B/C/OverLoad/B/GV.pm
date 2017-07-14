@@ -414,13 +414,6 @@ sub savecv {
         debug( gv => "Skip XS \&$fullname 0x%x", ref $cv ? $$cv : 0 );
         return;
     }
-    if (
-        $$cv and B::C::in_static_core( $package, $name ) and ref($cv) eq 'B::CV'    # 5.8,4 issue32
-        and $cv->XSUB
-      ) {
-        debug( gv => "Skip internal XS $fullname" );
-        return;
-    }
 
     # Dead code?
     die if $fullname eq 'B::walksymtable' or $fullname eq 'B::C::walksymtable';

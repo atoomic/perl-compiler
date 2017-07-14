@@ -86,7 +86,6 @@ our ($devel_peek_needed);
 
 our @xpvav_sizes;
 our $in_endav;
-my %static_core_pkg;
 
 sub start_heavy {
     my $settings = $B::C::settings;
@@ -380,51 +379,6 @@ sub save_defstash {
     $PL_defstash .= ' /* PL_defstash */';    # add a comment so we can easily detect it in our source code
 
     return $PL_defstash;
-}
-
-# XS in CORE which do not need to be bootstrapped extra.
-# There are some specials like mro,re,UNIVERSAL.
-sub in_static_core {
-    my ( $stashname, $cvname ) = @_;
-    if ( $stashname eq 'UNIVERSAL' ) {
-        return $cvname =~ /^(isa|can|DOES|VERSION)$/;
-    }
-    %static_core_pkg = map { $_ => 1 } static_core_packages()
-      unless %static_core_pkg;
-    return 1 if $static_core_pkg{$stashname};
-    if ( $stashname eq 'mro' ) {
-        return $cvname eq 'method_changed_in';
-    }
-    if ( $stashname eq 're' ) {
-        return $cvname =~ /^(is_regexp|regname|regnames|regnames_count|regexp_pattern)$/;
-    }
-    if ( $stashname eq 'PerlIO' ) {
-        return $cvname eq 'get_layers';
-    }
-    if ( $stashname eq 'PerlIO::Layer' ) {
-        return $cvname =~ /^(find|NoWarnings)$/;
-    }
-    return 0;
-}
-
-# XS modules in CORE. Reserved namespaces.
-# Note: mro,re,UNIVERSAL have both, static core and dynamic/static XS
-# version has an external ::vxs
-sub static_core_packages {
-    my @pkg = qw(Internals utf8 UNIVERSAL);
-
-    push @pkg, 'version';
-
-    #push @pkg, 'DynaLoader'	      if $Config{usedl};
-    # Win32CORE only in official cygwin pkg. And it needs to be bootstrapped,
-    # handled by static_ext.
-    push @pkg, 'Cygwin'                     if $^O eq 'cygwin';
-    push @pkg, 'NetWare'                    if $^O eq 'NetWare';
-    push @pkg, 'OS2'                        if $^O eq 'os2';
-    push @pkg, qw(VMS VMS::Filespec vmsish) if $^O eq 'VMS';
-
-    push @pkg, split( / /, $Config{static_ext} );
-    return @pkg;
 }
 
 # global state only, unneeded for modules
