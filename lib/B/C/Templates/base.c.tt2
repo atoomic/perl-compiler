@@ -421,6 +421,12 @@ void setup_perl_globals() {
     PL_debstash = [% PL.debstash %];       /* *main::DB:: SVt_PVHV */
     PL_globalstash = [% PL.globalstash %]; /* *main::CORE::GLOBAL:: SVt_PVHV */
 
+    /* Custom to B::C */
+    PL_endav    = (AV*) [% PL.endav %]; /* SVt_PVAV */
+    PL_initav   = (AV*) [% PL.initav %]; /* SVt_PVAV */
+    PL_tainting = [% PL.tainting %]; /* boolean */
+    PL_tainting = [% PL.taint_warn %]; /* boolean */
+
     /* initialize signals - view Perl_magic_setsig and Perl_whichsig_pvn for usage */
     Newxz(PL_psig_name, 2 * SIG_SIZE, SV*);
     Newxz(PL_psig_pend, SIG_SIZE, int);
@@ -927,6 +933,10 @@ main(int argc, char **argv, char **env)
     perl_init1(aTHX);
     benchmark_time("init1 done");
 
+    PL_comppad = [% PL.compad %];
+    PL_curpad  = AvARRAY(PL_comppad);
+    PL_stack_sp = PL_stack_base;
+
     /* load the XS modules */
     dl_init(aTHX);
 
@@ -1045,14 +1055,14 @@ static int bc_perl_parse(pTHXx_ int argc, char **argv, char **env)
 
     /* END: Determine how long $0 is allowed to be */
 
-    PL_main_root = NULL; /* We should really be setting PL_main_root statically */
-    PL_main_start = NULL;
+    PL_main_root = [% PL.main_root %];
+    PL_main_start = [% PL.main_start %];
     PL_main_cv = NULL;
 
     /* $^T or $BASETIME */
     time(&PL_basetime);
 
-    PL_dowarn = G_WARN_OFF;
+    PL_dowarn = [% PL.dowarn %];
 
     /* BEGIN eval {} */
     JMPENV_PUSH(ret);

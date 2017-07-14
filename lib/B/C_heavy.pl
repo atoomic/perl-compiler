@@ -85,7 +85,6 @@ our ( %dumped_package, %skip_package, %isa_cache );
 our ($devel_peek_needed);
 
 our @xpvav_sizes;
-our $in_endav;
 
 sub start_heavy {
     my $settings = $B::C::settings;
@@ -381,44 +380,6 @@ sub save_defstash {
     return $PL_defstash;
 }
 
-# global state only, unneeded for modules
-sub save_context {
-
-    # forbid run-time extends of curpad syms, names and INC
-    verbose("save context:");
-
-    init()->add("/* honor -w */");
-    init()->sadd( "PL_dowarn = ( %s ) ? G_WARN_ON : G_WARN_OFF;", $^W );
-    if ( $^{TAINT} ) {
-        init()->add(
-            "/* honor -Tt */",
-            "PL_tainting = TRUE;",
-
-            # -T -1 false, -t 1 true
-            "PL_taint_warn = " . ( $^{TAINT} < 0 ? "FALSE" : "TRUE" ) . ";"
-        );
-    }
-
-    my ( $curpad_nam, $curpad_sym );
-    {
-        # Record comppad sv's names, may not be static
-        local $B::C::const_strings = 0;
-        init()->add("/* curpad names */");
-        verbose("curpad names:");
-        $curpad_nam = ( comppadlist->ARRAY )[0]->save('curpad_name');
-        verbose("curpad syms:");
-        init()->add("/* curpad syms */");
-        $curpad_sym = ( comppadlist->ARRAY )[1]->save('curpad_syms');
-    }
-
-    init1()->add(
-        "PL_curpad = AvARRAY($curpad_sym);",
-        "PL_comppad = $curpad_sym;",      # fixed "panic: illegal pad"
-        "PL_stack_sp = PL_stack_base;"    # reset stack (was 1++)
-    );
-
-}
-
 sub save_optree {
     verbose("Starting compile");
     verbose("Walking optree");
@@ -464,50 +425,20 @@ sub _delete_macros_vendor_undefined {
 sub save_main_rest {
     verbose("done main optree, walking symtable for extras");
 
-    # startpoints: XXX TODO push BEGIN/END blocks to modules code.
-    debug( av => "Writing init_av" );
-    my $init_av = init_av->save('INIT');
-    my $end_av;
-    {
-        # >=5.10 need to defer nullifying of all vars in END, not only new ones.
-        local ($B::C::const_strings);
-        $in_endav = 1;
-        debug( 'av' => "Writing end_av" );
-        init()->add("/* END block */");
-        $end_av   = end_av->save('END');
-        $in_endav = 0;
-    }
-
-    init()->add(
-        "/* startpoints */",
-        sprintf( "PL_main_root = %s;",  main_root()->save ),
-        sprintf( "PL_main_start = %s;", main_start()->save ),
-    );
-    init()->add(
-        index( $init_av, '(AV*)' ) >= 0
-        ? "PL_initav = $init_av;"
-        : "PL_initav = (AV*)$init_av;"
-    );
-    init()->add(
-        index( $end_av, '(AV*)' ) >= 0
-        ? "PL_endav = $end_av;"
-        : "PL_endav = (AV*)$end_av;"
-    );
-
-    my %INC_BACKUP = %INC;
-    save_context();
-
     return if $settings->{'check'};
 
-    fixup_ppaddr();
-
-    do_remap_xs_symbols();
+    # These have to be saved before fixup_ppaddr or xtestc/0131.t will fail.
+    # Probably all saves have to happen prior to fixup?
+    # ( comppadlist->ARRAY )[0]->save('curpad_name');
+    # ( comppadlist->ARRAY )[1]->save('curpad_syms');
 
     $settings->{'XS'}->write_lst();
     my $c_file_stash = build_template_stash();
 
+    fixup_ppaddr();
+    do_remap_xs_symbols();
+
     verbose("Writing output");
-    %INC = %INC_BACKUP;    # Put back %INC now we've saved everything so Template can be loaded properly.
     B::C::File::write($c_file_stash);
 
     # Can use NyTProf with B::C
@@ -549,6 +480,14 @@ sub build_template_stash {
             'debstash'    => svref_2object( \%::DB:: )->save("DB::"),
             'globalstash' => svref_2object( \%CORE::GLOBAL:: )->save("CORE::GLOBAL::"),
             'main_cv'     => main_cv()->save("PL_main_cv"),
+            'endav'       => end_av()->save('END'),
+            'initav'      => init_av()->save('INIT'),
+            'main_root'   => main_root()->save,
+            'main_start'  => main_start()->save,
+            'dowarn'      => $^W ? 'G_WARN_ON' : 'G_WARN_OFF',
+            'tainting'    => $^{TAINT} ? 'TRUE' : 'FALSE',
+            'taint_warn'  => $^{TAINT} < 1 ? 'FALSE' : 'TRUE',
+            'compad'      => (comppadlist->ARRAY)[1]->save('curpad_syms') || 'NULL',
         },
         'IO' => {
             'STDIN'  => svref_2object( \*::STDIN )->save("STDIN"),
@@ -670,9 +609,9 @@ sub is_bootstrapped_cv {
     return;
 }
 
-# init op addrs must be the last action, otherwise
-# some ops might not be initialized
-# but it needs to happen before CALLREGCOMP, as a /i calls a compiled utf8::SWASHNEW
+# This code sets all op_ppaddr addresses on startup from PL_ppaddr[] which
+# I guess is dynamic so has to be set on startup every time?
+# This means ALL ops have to have been saved before calling this sub.
 sub fixup_ppaddr {
     foreach my $op_section_name ( B::C::File::op_sections() ) {
         my $section = B::C::File::get_sect($op_section_name);
@@ -680,6 +619,21 @@ sub fixup_ppaddr {
         next unless $num >= 0;
         init_op_addr( $section->name, $num + 1 );
     }
+}
+
+sub init_op_addr {
+    my ( $op_type, $num ) = @_;
+    my $op_list = $op_type . "_list";
+
+    init0()->add( split /\n/, <<_EOT3 );
+{
+    register int i;
+    for( i = 0; i < ${num}; ++i ) {
+        ${op_list}\[i].op_ppaddr = PL_ppaddr[PTR2IV(${op_list}\[i].op_ppaddr)];
+    }
+}
+_EOT3
+
 }
 
 # 5.15.3 workaround [perl #101336], without .bs support
@@ -758,21 +712,6 @@ sub XSLoader::load_file {
   return &$xs(@_);
 }
 |;
-}
-
-sub init_op_addr {
-    my ( $op_type, $num ) = @_;
-    my $op_list = $op_type . "_list";
-
-    init0()->add( split /\n/, <<_EOT3 );
-{
-    register int i;
-    for( i = 0; i < ${num}; ++i ) {
-        ${op_list}\[i].op_ppaddr = PL_ppaddr[PTR2IV(${op_list}\[i].op_ppaddr)];
-    }
-}
-_EOT3
-
 }
 
 1;
