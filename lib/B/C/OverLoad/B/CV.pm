@@ -134,12 +134,9 @@ sub get_cv_outside {
     return 0 unless $ref;
 
     if ( $ref eq 'B::CV' ) {
-        my $fn = $cv->get_full_name;
-        return 0 unless can_save_sub($fn);
+        $cv->FULLNAME or return 0;
 
-        my $is_format = $cv->is_format;
-
-        return 0 if ${ $cv->OUTSIDE } ne ${ main_cv() } && !$is_format;
+        return 0 if ${ $cv->OUTSIDE } ne ${ main_cv() } && !$cv->is_format;
     }
 
     return $cv->OUTSIDE->save;
@@ -150,17 +147,6 @@ sub is_format {
 
     my $format_mask = SVt_PVFM() | SVs_RMG();
     return ( $cv->FLAGS & $format_mask ) == $format_mask ? 1 : 0;
-}
-
-# should probably leave in the same pm than can_save_stash
-sub can_save_sub {    # very similar to can_save_stash
-    my $cvname = shift;
-
-    return 0 unless defined $cvname;
-
-    # get the stash name
-    $cvname =~ s{(::[^:]+)$}{} or return 0;    # no stash name ?? should we prefix it by main ??
-    return B::HV::can_save_stash($cvname);
 }
 
 sub cv_save_padlist {
