@@ -382,21 +382,6 @@ sub save_defstash {
     return $PL_defstash;
 }
 
-sub walk_stashes {
-    my ( $symref, $prefix, $dependencies ) = @_;
-    no strict 'refs';
-    $prefix = '' unless defined $prefix;
-    foreach my $sym ( sort keys %$symref ) {
-        if ( $sym =~ /::$/ ) {
-            $sym = $prefix . $sym;
-            $dependencies->{ substr( $sym, 0, -2 ) }++;
-            if ( $sym ne "main::" && $sym ne "<none>::" ) {
-                walk_stashes( \%$sym, $sym, $dependencies );
-            }
-        }
-    }
-}
-
 # XS in CORE which do not need to be bootstrapped extra.
 # There are some specials like mro,re,UNIVERSAL.
 sub in_static_core {
