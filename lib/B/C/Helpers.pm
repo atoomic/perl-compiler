@@ -4,14 +4,10 @@ use Exporter ();
 use B::C::Config;
 use B qw/SVf_POK SVp_POK/;
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw/svop_name padop_name read_utf8_string
+our @EXPORT_OK = qw/read_utf8_string
   is_constant strlen_flags cow_strlen_flags is_shared_hek
   cstring_cow get_index key_was_in_starting_stash
   /;
-
-# wip to be moved
-*padop_name = \&B::C::padop_name;
-*svop_name  = \&B::C::svop_name;
 
 # B/C/Helpers/Sym
 

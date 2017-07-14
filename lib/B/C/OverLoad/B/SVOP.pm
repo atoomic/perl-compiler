@@ -31,7 +31,7 @@ sub do_save {
 
         # 96 do not save a gvsv->cv if just checked for defined'ness
         my $gv   = $op->sv;
-        my $gvsv = B::C::svop_name($op);
+        my $gvsv = svop_name($op);
         $svsym = '(SV*)' . $gv->save();
     }
     else {
@@ -51,7 +51,7 @@ sub do_save {
     }
 
     if ( $op->name eq 'method_named' ) {
-        my $cv = B::C::method_named( B::C::svop_or_padop_pv($op), B::C::nextcop($op) );
+        my $cv = method_named( svop_or_padop_pv($op), nextcop($op) );
         $cv->save if $cv;
     }
     my $is_const_addr = $svsym =~ m/Null|\&/;
@@ -194,4 +194,90 @@ sub svop_or_padop_pv {
         return $pad[ $op->targ ]->PV if $pad[ $op->targ ] and $pad[ $op->targ ]->can("PV");
     }
 }
+
+
+sub svop_name {
+    my $op = shift;
+    my $cv = shift;
+    my $sv;
+    if ( $op->can('name') and $op->name eq 'padsv' ) {
+        return padop_name( $op, $cv );
+    }
+    else {
+        if ( !$op->can("sv") ) {
+            if ( ref($op) eq 'B::PMOP' and $op->pmreplroot->can("sv") ) {
+                $sv = $op->pmreplroot->sv;
+            }
+            else {
+                $sv = $op->first->sv
+                  unless $op->flags & 4
+                  or ( $op->name eq 'const' and $op->flags & 34 )
+                  or $op->first->can("sv");
+            }
+        }
+        else {
+            $sv = $op->sv;
+        }
+        if ( $sv and $$sv ) {
+            if ( $sv->FLAGS & SVf_ROK ) {
+                return '' if $sv->isa("B::NULL");
+                my $rv = $sv->RV;
+                if ( $rv->isa("B::PVGV") ) {
+                    my $o = $rv->IO;
+                    return $o->STASH->NAME if $$o;
+                }
+                return '' if $rv->isa("B::PVMG");
+                return $rv->STASH->NAME;
+            }
+            else {
+                if ( $op->name eq 'gvsv' or $op->name eq 'gv' ) {
+                    return $sv->STASH->NAME . '::' . $sv->NAME;
+                }
+
+                return
+                    $sv->can('STASH') ? $sv->STASH->NAME
+                  : $sv->can('NAME')  ? $sv->NAME
+                  :                     $sv->PV;
+            }
+        }
+    }
+}
+
+# scalar: pv. list: (stash,pv,sv)
+# pads are not named, but may be typed
+sub padop_name {
+    my $op = shift;
+    my $cv = shift;
+    if (
+        $op->can('name')
+        and (  $op->name eq 'padsv'
+            or $op->name eq 'method_named'
+            or ref($op) eq 'B::SVOP' )
+      )    #threaded
+    {
+        return () if $cv and ref( $cv->PADLIST ) eq 'B::SPECIAL';
+        my @c     = ( $cv and ref($cv) eq 'B::CV' and ref( $cv->PADLIST ) ne 'B::NULL' ) ? $cv->PADLIST->ARRAY : comppadlist->ARRAY;
+        my @types = $c[0]->ARRAY;
+        my @pad   = $c[1]->ARRAY;
+        my $ix    = $op->can('padix') ? $op->padix : $op->targ;
+        my $sv    = $pad[$ix];
+        my $t     = $types[$ix];
+        if ( defined($t) and ref($t) ne 'B::SPECIAL' ) {
+            my $pv = $sv->can("PV") ? $sv->PV : ( $t->can('PVX') ? $t->PVX : '' );
+            return $pv;
+        }
+        elsif ($sv) {
+            my $pv = $sv->PV if $sv->can("PV");
+            return $pv;
+        }
+    }
+}
+
+# return the next COP for file and line info
+sub nextcop {
+    my $op = shift;
+    while ( $op and ref($op) ne 'B::COP' and ref($op) ne 'B::NULL' ) { $op = $op->next; }
+    return ( $op and ref($op) eq 'B::COP' ) ? $op : undef;
+}
+
 1;
