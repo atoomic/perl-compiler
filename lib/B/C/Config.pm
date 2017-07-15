@@ -26,7 +26,6 @@ sub LOWEST_IMAGEBASE() { 0x10000 }
 sub _autoload_map {
 
     my $map = {};
-    $map->{HAVE_DLFCN_DLOPEN} = $B::C::Flags::Config{i_dlfcn} && $B::C::Flags::Config{d_dlopen};
 
     # debugging variables
     $map->{'DEBUGGING'} = ( $B::C::Flags::Config{ccflags} =~ m/-DDEBUGGING/ );
@@ -41,25 +40,6 @@ BEGIN {
     our @EXPORT_OK = sort keys %$_autoload;
     push @EXPORT_OK, qw/debug debug_all display_message verbose WARN INFO FATAL LOWEST_IMAGEBASE/;
     our @EXPORT = @EXPORT_OK;
-}
-
-our $AUTOLOAD;
-
-{
-    # croak when C99 is used in our code
-    sub C99 {
-        die "Do not use C99: this should always be true";
-    }
-}
-
-sub AUTOLOAD {
-    my $ask_for = $AUTOLOAD;
-    $ask_for =~ s/.*:://;
-
-    $ask_for =~ s/sect$//;    # Strip sect off the call so we can just access the key.
-
-    exists $_autoload->{$ask_for} or die("Tried to call undefined subroutine '$ask_for'");
-    return $_autoload->{$ask_for};
 }
 
 1;

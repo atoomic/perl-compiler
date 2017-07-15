@@ -448,9 +448,6 @@ sub do_remap_xs_symbols {
 
     my $init = init_bootstraplink();    # was using init2 previously
 
-    # was using more logic if HAVE_DLFCN_DLOPEN is not true, but seems to always be the case for us
-    die "HAVE_DLFCN_DLOPEN is not true" unless HAVE_DLFCN_DLOPEN();
-
     # unfortunately cannot use our BOOTSTRAP_XS logic there as
     #   Perl_gv_fetchpv("Encode::ascii_encoding", 0, SVt_PVCV)
     # is going to return an 0

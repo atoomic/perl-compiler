@@ -72,6 +72,7 @@ sub write_b_c_flags {
     $Config::Config{d_c99_variadic_macros} or die "This version of B::C does not support compilers without C99";
     $Config::Config{useithreads}     and die "This version of B::C does not support ithreads";
     $Config::Config{usemultiplicity} and die "This version of B::C does not support multiplicity";
+    $Config::Config{i_dlfcn} && $Config::Config{d_dlopen} or die "was using more logic if HAVE_DLFCN_DLOPEN is not true, but seems to always be the case for us";
 
     {    # signals
         my @signames = split /\s+/, $Config::Config{sig_name};
