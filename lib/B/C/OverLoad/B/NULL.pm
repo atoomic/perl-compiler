@@ -1,7 +1,7 @@
 package B::NULL;
 
 use strict;
-use B::C::Config;
+use B::C::Debug qw/debug verbose/;
 use B::C::File qw/svsect/;
 
 sub do_save {

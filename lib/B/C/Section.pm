@@ -3,7 +3,6 @@ use strict;
 
 # use warnings
 
-use B::C::Debug             ();
 use B::C::Helpers::Symtable ();
 my %sections;
 
@@ -290,7 +289,7 @@ my $debug_flags;
 
 sub add_extra_comments {
     return 1;    # always on for now
-                 # maybe use another standard flag ? - B::C::Debug::debug('flags')
+                 # maybe use another standard flag ? - debug('flags')
                  #return $ENV{BC_DEVELOPING};
 }
 

@@ -2,7 +2,6 @@ package B::C::Save::Hek;
 
 use strict;
 
-use B::C::Config;
 use B::C::File qw(sharedhe sharedhestructs);
 use B::C::Helpers qw/strlen_flags/;
 

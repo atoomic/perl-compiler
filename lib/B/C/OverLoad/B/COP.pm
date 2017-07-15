@@ -3,7 +3,7 @@ package B::COP;
 use strict;
 
 use B qw/cstring svref_2object/;
-use B::C::Config;
+use B::C::Debug qw/debug/;
 use B::C::File qw/init copsect decl/;
 use B::C::Save qw/savestashpv/;
 use B::C::Decimal qw/get_integer_value/;

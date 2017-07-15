@@ -2,7 +2,7 @@ package B::UNOP_AUX;
 
 use strict;
 
-use B::C::Config;
+use B::C::Debug qw/debug/;
 use B::C::File qw/unopauxsect init free meta_unopaux_item/;
 use B::C::Helpers qw/is_constant/;
 

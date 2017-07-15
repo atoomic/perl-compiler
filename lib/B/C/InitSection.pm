@@ -5,7 +5,7 @@ use warnings;
 # avoid use vars
 our @ISA = qw/B::C::Section/;
 
-use B::C::Debug ();
+use B::C::Debug qw(debug);
 use B qw(cstring);
 
 # All objects inject into this shared variable.
@@ -44,7 +44,7 @@ sub new {
         }
 
         return 0 if $blacklist{ $self->{name} };
-        $status = B::C::Debug::debug('benchmark') || 0 unless defined $status;
+        $status = debug('benchmark') || 0 unless defined $status;
         return $status;
     }
 }
@@ -140,7 +140,7 @@ sub add {
     push @$current, map { "$spaces$_" } @lines;
     $self->{'count'} += scalar(@lines);
 
-    if ( B::C::Debug::debug('stack') ) {
+    if ( debug('stack') ) {
         my $add_stack = 'B::C::Save'->can('_caller_comment');
         my $stack     = $add_stack->();
         push @$current, $stack if length $stack;

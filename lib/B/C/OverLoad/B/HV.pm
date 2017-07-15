@@ -3,7 +3,7 @@ package B::HV;
 use strict;
 
 use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
-use B::C::Config;
+use B::C::Debug qw/debug WARN/;
 use B::C::File qw/init xpvhvsect svsect sharedhe decl init init2 init_stash init_static_assignments/;
 use B::C::Helpers qw/read_utf8_string strlen_flags/;
 use B::C::Helpers::Symtable qw/objsym savesym/;

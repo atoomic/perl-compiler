@@ -24,7 +24,7 @@ use warnings;
 
 use Exporter ();
 
-use B::C::Config;
+use B::C::Debug qw/debug WARN verbose/;
 use B::C::Helpers::Symtable qw(get_symtable_ref);
 use B::C::Section         ();
 use B::C::Section::Meta   ();

@@ -4,7 +4,7 @@ use strict;
 
 use B qw/opnumber/;
 
-use B::C::Config;
+use B::C::Debug qw/debug verbose/;
 use B::C::File qw/init copsect opsect/;
 
 my $OP_CUSTOM = opnumber('custom');

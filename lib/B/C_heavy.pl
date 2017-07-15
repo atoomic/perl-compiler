@@ -24,8 +24,7 @@ BEGIN {
 }
 
 use B::Flags;
-use B::C::Config;    # import everything
-use B::C::Debug ();  # used for setting debug levels from cmdline
+use B::C::Debug qw(debug verbose WARN);    # used for setting debug levels from cmdline
 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
@@ -37,7 +36,7 @@ use B::C::File qw( init2 init1 init0 init decl free
 use B::C::Helpers::Symtable qw(objsym savesym);
 
 use Exporter ();
-use Errno    ();     #needed since 5.14
+use Errno    ();                           #needed since 5.14
 our %Regexp;
 
 # Caller was populated in C.pm
@@ -280,10 +279,10 @@ sub save_optree {
     _delete_macros_vendor_undefined();
 
     if ( debug('walk') ) {
-        verbose("Enabling B::debug / B::walkoptree_debug");
+        verbose("Enabling B::debug");
         B->debug(1);
 
-        # this is enabling walkoptree_debug
+        # this is enabling
         # which is useful when using walkoptree (not the slow version)
     }
 

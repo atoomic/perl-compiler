@@ -2,7 +2,7 @@ package B::RV;
 
 use strict;
 
-use B::C::Config;
+use B::C::Debug qw/debug/;
 use B qw/SVf_ROK SVt_PVGV/;
 use B::C::File qw/svsect init init2 init_static_assignments/;
 use B::C::Helpers qw/is_constant/;

@@ -4,7 +4,7 @@ use strict;
 
 use B qw/SVf_ROK/;
 use B::C::File qw/svopsect init/;
-use B::C::Config;
+use B::C::Debug qw/debug WARN/;
 
 sub do_save {
     my ($op) = @_;
@@ -195,7 +195,6 @@ sub svop_or_padop_pv {
         return $pad[ $op->targ ]->PV if $pad[ $op->targ ] and $pad[ $op->targ ]->can("PV");
     }
 }
-
 
 sub svop_name {
     my $op = shift;

@@ -3,7 +3,7 @@ package B::C::Save;
 use strict;
 
 use B qw(cstring svref_2object);
-use B::C::Config;
+use B::C::Debug qw/debug/;
 use B::C::File qw( xpvmgsect decl init const cowpv );
 use B::C::Helpers qw/strlen_flags cstring_cow cow_strlen_flags/;
 

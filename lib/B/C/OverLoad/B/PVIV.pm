@@ -1,7 +1,7 @@
 package B::PVIV;
 
 use strict;
-use B::C::Config;
+
 use B::C::File qw/xpvivsect svsect/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Optimizer::DowngradePVXV qw/downgrade_pviv/;

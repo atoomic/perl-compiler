@@ -2,6 +2,11 @@ package B::C::Debug;
 
 use strict;
 
+use Exporter ();
+our @ISA = qw(Exporter);
+
+our @EXPORT_OK = qw/debug verbose WARN INFO FATAL/;
+
 my %debug_map = (
     'A'     => 'av',
     'c'     => 'cops',

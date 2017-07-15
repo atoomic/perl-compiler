@@ -7,7 +7,7 @@ use B qw(svref_2object);
 
 use B::C::Flags ();
 
-use B::C::Config qw/verbose debug/;
+use B::C::Debug qw/verbose debug/;
 
 sub new {
     my $class = shift or die;

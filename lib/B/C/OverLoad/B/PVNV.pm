@@ -3,7 +3,6 @@ package B::PVNV;
 use strict;
 
 use B qw{SVf_NOK SVp_NOK SVs_OBJECT};
-use B::C::Config;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/xpvnvsect svsect/;
 use B::C::Optimizer::DowngradePVXV qw/downgrade_pvnv/;

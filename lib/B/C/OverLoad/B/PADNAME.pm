@@ -5,8 +5,8 @@ package B::PADNAME;
 use strict;
 
 use B qw/cstring/;
+use B::C::Debug qw/debug/;
 use B::C::File qw/padnamesect/;
-use B::C::Config;
 
 our $MAX_PADNAME_LENGTH = 1;
 

@@ -5,7 +5,7 @@ use strict;
 use B::C::Flags ();
 
 use B qw/svref_2object CVf_CONST main_cv SVf_IsCOW CVf_NAMED/;
-use B::C::Config;
+use B::C::Debug qw/verbose/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;

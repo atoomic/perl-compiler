@@ -1,7 +1,9 @@
 package B::C::Helpers;
 
+use strict;
+
 use Exporter ();
-use B::C::Config;
+
 use B qw/SVf_POK SVp_POK/;
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw/read_utf8_string

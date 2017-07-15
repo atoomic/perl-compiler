@@ -4,7 +4,7 @@ use strict;
 
 use B qw/cstring svref_2object SVt_PVGV SVf_UTF8 SVf_AMAGIC/;
 
-use B::C::Config;
+use B::C::Debug qw/debug verbose/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
 

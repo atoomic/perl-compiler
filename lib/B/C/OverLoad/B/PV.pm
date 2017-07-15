@@ -3,7 +3,7 @@ package B::PV;
 use strict;
 
 use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVs_SMG SVt_PVGV SVf_UTF8 SVf_READONLY SVs_OBJECT/;
-use B::C::Config;
+use B::C::Debug qw/debug/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/xpvsect svsect free/;
@@ -30,7 +30,7 @@ sub do_save {
     # sv_free2 problem with !SvIMMORTAL and del_SV
     my $refcnt = $sv->REFCNT;
     if ( $fullname && $fullname eq 'svop const' ) {
-        $refcnt = DEBUGGING() ? 1000 : 0x7fffffff;
+        $refcnt = 0x7fffffff;
     }
 
     if ( ref $custom ) {    # used when downgrading a PVIV / PVNV to IV

@@ -2,12 +2,17 @@ package B::PVMG;
 
 use strict;
 
-use B::C::Config;
+use B::C::Debug qw/debug verbose WARN/;
 use B qw/SVf_READONLY HEf_SVKEY SVf_ROK SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
 use B::C::Save qw/savecowpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init_static_assignments svsect xpvmgsect magicsect init_vtables/;
 use B::C::Helpers qw/read_utf8_string get_index/;
+
+# usually 0x400000, but can be as low as 0x10000
+# http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devcommon/compdirsimagebaseaddress_xml.html
+# called mapped_base on linux (usually 0xa38000)
+sub LOWEST_IMAGEBASE() { 0x10000 }
 
 sub do_save {
     my ( $sv, $fullname ) = @_;

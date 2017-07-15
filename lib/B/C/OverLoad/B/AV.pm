@@ -5,7 +5,7 @@ use strict;
 use B::C::Flags ();
 
 use B qw/cstring SVf_IOK SVf_POK SVs_OBJECT/;
-use B::C::Config;
+use B::C::Debug qw/debug/;
 use B::C::File qw/init xpvavsect svsect init_static_assignments init_bootstraplink/;
 use B::C::Helpers qw/strlen_flags key_was_in_starting_stash/;
 use B::C::Helpers::Symtable qw/savesym/;

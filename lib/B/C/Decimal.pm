@@ -3,7 +3,6 @@ package B::C::Decimal;
 use strict;
 
 use B::C::Flags ();
-use B::C::Config;
 
 use Exporter ();
 our @ISA       = qw(Exporter);
@@ -29,7 +28,7 @@ sub get_integer_value ($) {
     if ( $ivx < -$INTMAX ) {
         $sval = sprintf( "%${IVDFORMAT}%s", $ivx, 'LL' );    # DateTime
     }
-    if ( $INC{'POSIX.pm'} ) { # If POSIX is currently loaded.
+    if ( $INC{'POSIX.pm'} ) {                                # If POSIX is currently loaded.
 
         # i262: LONG_MIN -9223372036854775808L integer constant is so large that it is unsigned
         if ( $ivx == POSIX::LONG_MIN() ) {

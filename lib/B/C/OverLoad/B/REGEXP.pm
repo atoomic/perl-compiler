@@ -3,7 +3,7 @@ package B::REGEXP;
 use strict;
 
 use B qw/cstring RXf_EVAL_SEEN/;
-use B::C::Config;
+use B::C::Debug qw/debug/;
 use B::C::File qw/init1 init2 svsect xpvsect/;
 
 # post 5.11: When called from B::RV::save not from PMOP::save precomp
