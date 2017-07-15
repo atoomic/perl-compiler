@@ -4,7 +4,6 @@ use strict;
 our @ISA = qw(B::AV);
 
 use B::C::File qw/padlistsect/;
-use B::C::Helpers::Symtable qw/savesym/;
 
 sub section_sv {
     return padlistsect();

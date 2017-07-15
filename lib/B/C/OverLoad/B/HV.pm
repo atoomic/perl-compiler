@@ -2,11 +2,9 @@ package B::HV;
 
 use strict;
 
-use B qw/cstring SVf_READONLY SVf_PROTECT SVs_OBJECT SVf_OOK SVf_AMAGIC/;
+use B qw/SVf_READONLY SVf_PROTECT SVf_OOK SVf_AMAGIC/;
 use B::C::Debug qw/debug WARN/;
-use B::C::File qw/init xpvhvsect svsect sharedhe decl init init2 init_stash init_static_assignments/;
-use B::C::Helpers qw/read_utf8_string strlen_flags/;
-use B::C::Helpers::Symtable qw/objsym savesym/;
+use B::C::File qw/init xpvhvsect svsect decl init init2 init_stash init_static_assignments/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::Save qw/savestashpv/;
 
@@ -111,10 +109,6 @@ sub do_save {
             if ( key_was_missing_from_stash_at_compile( $stash_name, $key, $current_stash_position_in_starting_stash ) ) {
                 debug( hv => '...... Skipping key "%s" from stash "%s" (missing) ', $key, $stash_name );
                 next;
-            }
-
-            if ( debug('hv') and ref($sv) eq 'B::RV' and defined objsym($sv) ) {
-                WARN( "HV recursion? with $fullname\{$key\} -> %s\n", $sv->RV );
             }
 
             debug( hv => "saving HV [ $i / len=$length ]\$" . $fullname . '{' . $key . "} 0x%0x", $sv );

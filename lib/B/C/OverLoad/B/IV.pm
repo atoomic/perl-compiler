@@ -2,7 +2,7 @@ package B::IV;
 
 use strict;
 
-use B qw/SVf_IOK SVp_IOK SVf_IVisUV/;
+use B qw/SVf_IVisUV/;
 use B::C::File qw/svsect/;
 use B::C::Decimal qw/get_integer_value/;
 

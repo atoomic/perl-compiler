@@ -2,10 +2,9 @@ package B::IO;
 
 use strict;
 
-use B qw/cstring cchar svref_2object/;
+use B qw/cchar svref_2object/;
 use B::C::Save qw/savecowpv/;
 use B::C::File qw/init init2 svsect xpviosect/;
-use B::C::Helpers::Symtable qw/savesym/;
 
 sub save_io_and_data {
     my ( $io, $globname, $data ) = @_;

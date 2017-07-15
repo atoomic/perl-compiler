@@ -2,12 +2,12 @@ package B::PV;
 
 use strict;
 
-use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVs_SMG SVt_PVGV SVf_UTF8 SVf_READONLY SVs_OBJECT/;
+use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVt_PVGV SVf_READONLY/;
 use B::C::Debug qw/debug/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/xpvsect svsect free/;
-use B::C::Helpers qw/is_shared_hek read_utf8_string get_index/;
+use B::C::Helpers qw/is_shared_hek/;
 
 sub SVpbm_VALID { 0x40000000 }
 sub SVp_SCREAM  { 0x00008000 }    # method name is DOES

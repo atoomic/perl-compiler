@@ -4,11 +4,10 @@ use strict;
 
 use B::C::Flags ();
 
-use B qw/cstring SVf_IOK SVf_POK SVs_OBJECT/;
+use B qw/cstring SVf_IOK SVf_POK/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/init xpvavsect svsect init_static_assignments init_bootstraplink/;
-use B::C::Helpers qw/strlen_flags key_was_in_starting_stash/;
-use B::C::Helpers::Symtable qw/savesym/;
+use B::C::Helpers qw/key_was_in_starting_stash/;
 
 # maybe need to move to setup/config
 my ( $use_av_undef_speedup, $use_svpop_speedup ) = ( 1, 1 );

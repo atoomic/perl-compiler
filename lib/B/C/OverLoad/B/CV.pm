@@ -2,15 +2,13 @@ package B::CV;
 
 use strict;
 
-use B::C::Flags ();
-
-use B qw/svref_2object CVf_CONST main_cv SVf_IsCOW CVf_NAMED/;
+use B qw/CVf_CONST main_cv SVf_IsCOW CVf_NAMED/;
 use B::C::Debug qw/verbose/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/svsect xpvcvsect init/;
-use B::C::Helpers::Symtable qw/objsym savesym/;
+use B::C::Helpers::Symtable qw/objsym/;
 
 my $initsub_index = 0;
 my $anonsub_index = 0;

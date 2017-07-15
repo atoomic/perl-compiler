@@ -5,9 +5,8 @@ use strict;
 use B qw/cstring svref_2object/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/init copsect decl/;
-use B::C::Save qw/savestashpv/;
 use B::C::Decimal qw/get_integer_value/;
-use B::C::Helpers qw/read_utf8_string strlen_flags/;
+use B::C::Helpers qw/strlen_flags/;
 
 my %COPHHTABLE;
 my %copgvtable;
@@ -94,7 +93,6 @@ sub do_save {
     if ( !$stash or $stash eq 'NULL' or $stash eq 'Nullhv' ) {
 
         # view op/bless.t
-        #warn sprintf( "#### Fallback to PL_defstash - stash %s - stashpv %s - alternate %s", $op->stash, $op->stashpv, scalar savestashpv( $op->stashpv ) );
         $stash = B::C::save_defstash();
     }
 

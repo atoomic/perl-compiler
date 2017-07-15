@@ -4,9 +4,8 @@ use strict;
 
 use B::C::Debug qw/debug/;
 use B qw/SVf_ROK SVt_PVGV/;
-use B::C::File qw/svsect init init2 init_static_assignments/;
+use B::C::File qw/svsect init init2/;
 use B::C::Helpers qw/is_constant/;
-use B::C::Helpers::Symtable qw/objsym savesym/;
 
 # Since 5.11 also called by IV::save (SV -> IV)
 sub do_save {

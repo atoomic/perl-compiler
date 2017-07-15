@@ -3,11 +3,10 @@ package B::PVMG;
 use strict;
 
 use B::C::Debug qw/debug verbose WARN/;
-use B qw/SVf_READONLY HEf_SVKEY SVf_ROK SVf_READONLY SVf_AMAGIC SVf_IsCOW cstring cchar SVp_POK svref_2object class/;
+use B qw/SVf_READONLY HEf_SVKEY SVf_READONLY cchar SVp_POK svref_2object/;
 use B::C::Save qw/savecowpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init_static_assignments svsect xpvmgsect magicsect init_vtables/;
-use B::C::Helpers qw/read_utf8_string get_index/;
 
 # usually 0x400000, but can be as low as 0x10000
 # http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devcommon/compdirsimagebaseaddress_xml.html
