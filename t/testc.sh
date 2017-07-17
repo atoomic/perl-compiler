@@ -837,8 +837,8 @@ my $str = q{0};
 $str =~ /^[ET1]/i;
 {
     no warnings qw<io deprecated>;
-    print "ok 1\n" if opendir(H, "t");
-    print "ok 2" if open(H, "<", "TESTS");
+    print "ok 1\n" if opendir(H, "/tmp");
+    print "ok 2" if open(H, "<", "/etc/passwd");
 }'
 result[207]='ok 1
 ok 2'
