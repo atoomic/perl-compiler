@@ -950,7 +950,8 @@ ok @<<<<<<<
 $x
 .
 write;print "\n";'
-result[239]='ok 1'
+result[239]='ok 1
+'
 tests[240]='my $a = "\x{100}\x{101}Aa";
 print "ok\n" if "\U$a" eq "\x{100}\x{100}AA";
 my $b = "\U\x{149}cD"; # no pb without that line'
