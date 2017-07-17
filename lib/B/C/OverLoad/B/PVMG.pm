@@ -19,12 +19,7 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $sv_u, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $sym, $fullname );
-
-    if ($static) {    # 242: e.g. $1
-        $static = 0;
-        $len = $cur + 1 unless $len;
-    }
+    my ( $sv_u, $cur, $len, $pv, $flags ) = $sv->save_svu( $sym, $sym, $fullname );
 
     my $ivx = get_integer_value( $sv->IVX );    # XXX How to detect HEK* namehek?
     my $nvx = get_double_value( $sv->NVX );     # it cannot be xnv_u.xgv_stash ptr (BTW set by GvSTASH later)

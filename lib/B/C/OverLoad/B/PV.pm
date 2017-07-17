@@ -25,7 +25,7 @@ sub do_save {
 
     my $shared_hek = is_shared_hek($sv);
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $fullname );
+    my ( $savesym, $cur, $len, $pv, $flags ) = $sv->save_svu( $sym, $fullname );
 
     # sv_free2 problem with !SvIMMORTAL and del_SV
     my $refcnt = $sv->REFCNT;
@@ -74,9 +74,8 @@ sub save_svu {
     if ( $flags & SVf_ROK ) {
         my $savesym = B::RV::save_rv( $sv, $sym, $fullname );
 
-        my $cur    = $sv->CUR;
-        my $len    = $sv->LEN;
-        my $static = 0;
+        my $cur = $sv->CUR;
+        my $len = $sv->LEN;
 
         my $flags = $sv->FLAGS;
 
@@ -85,13 +84,13 @@ sub save_svu {
 
         my $pv = "RV DEBUG ONLY STRING";
         $savesym = ".svu_rv=$savesym";
-        return ( $savesym, $cur, $len, $pv, $static, $flags );
+        return ( $savesym, $cur, $len, $pv, $flags );
     }
 
     my $pok = $flags & ( SVf_POK | SVp_POK );
     my $gmg = $flags & SVs_GMG;
 
-    my ( $static, $shared_hek ) = ( 0, is_shared_hek($sv) );
+    my $shared_hek = is_shared_hek($sv);
 
     # Our svu points to a shared_hek.
     if ($shared_hek) {
@@ -99,7 +98,7 @@ sub save_svu {
         my ( $shared_he, $cur ) = save_shared_he($pv);    # we know that a shared_hek as POK
         my $len = 0;
 
-        return ( ".svu_pv=(char*)(" . get_sHe_HEK($shared_he) . q{)->hek_key}, $cur, $len, $pv, $static, $flags );
+        return ( ".svu_pv=(char*)(" . get_sHe_HEK($shared_he) . q{)->hek_key}, $cur, $len, $pv, $flags );
     }
 
     my $pv = "";
@@ -130,14 +129,10 @@ sub save_svu {
 
     $fullname = '' if !defined $fullname;
 
-    debug(
-        pv => "Saving pv %s %s cur=%d, len=%d, static=%d cow=%d %s",
-        $savesym, cstring($pv), $cur, $len,
-        $static, $static, $shared_hek ? "shared, $fullname" : $fullname
-    );
+    debug( pv => "Saving pv %s %s cur=%d, len=%d, %s", $savesym, cstring($pv), $cur, $len, $shared_hek ? "shared, $fullname" : $fullname );
 
     $savesym = ".svu_pv=(char*) $savesym";
-    return ( $savesym, $cur, $len, $pv, $static, $flags );
+    return ( $savesym, $cur, $len, $pv, $flags );
 }
 
 1;

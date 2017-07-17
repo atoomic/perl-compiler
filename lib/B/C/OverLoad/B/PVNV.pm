@@ -16,7 +16,7 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $savesym, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $fullname );
+    my ( $savesym, $cur, $len, $pv, $flags ) = $sv->save_svu( $sym, $fullname );
     my $nvx = '0.0';
     my $ivx = get_integer_value( $sv->IVX );    # here must be IVX!
     if ( $flags & ( SVf_NOK | SVp_NOK ) ) {

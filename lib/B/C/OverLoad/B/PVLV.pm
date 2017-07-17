@@ -18,7 +18,7 @@ sub do_save {
     my ( $ix, $sym ) = svsect()->reserve($sv);
     svsect()->debug( $fullname, $sv );
 
-    my ( $pvsym, $cur, $len, $pv, $static, $flags ) = $sv->save_svu( $sym, $fullname );
+    my ( $pvsym, $cur, $len, $pv, $flags ) = $sv->save_svu( $sym, $fullname );
 
     xpvlvsect()->comment('xmg_stash, xmg_u, xpv_cur, xpv_len_u, xiv_u, xnv_u, xlv_targoff_u, xlv_targlen, xlv_targ, xlv_type, xlv_flags');
     my $xpv_ix = xpvlvsect()->saddl(
