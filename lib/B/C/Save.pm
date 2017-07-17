@@ -10,7 +10,7 @@ use B::C::Helpers qw/strlen_flags cstring_cow cow_strlen_flags/;
 use Exporter ();
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/savepv savecowpv inc_pv_index savestashpv/;
+our @EXPORT_OK = qw/savecowpv inc_pv_index savestashpv/;
 
 my %strtable;
 my %cowtable;
@@ -70,29 +70,6 @@ sub savecowpv {
     $cowtable{$cstring} = [ $pvsym, $cur, $len ];
 
     return ( $pvsym, $cur, $len );               # NOTE: $cur is total size of the perl string. len would be the length of the C string.
-}
-
-sub savepv {
-    my $pv    = shift;
-    my $const = shift;
-    my ( $cstring, $len, $utf8 ) = strlen_flags($pv);
-
-    return $strtable{$cstring} if defined $strtable{$cstring};
-    my $pvsym = sprintf( "pv%d", inc_pv_index() );
-    $const = $const ? " const" : "";
-    my $maxlen = 0;
-    if ( $maxlen && $len > $maxlen ) {
-        my $chars = join ', ', map { cchar $_ } split //, pack( "a*", $pv );
-        decl()->sadd( "Static%s char %s[] = { %s };", $const, $pvsym, $chars );
-        $strtable{$cstring} = $pvsym;
-    }
-    else {
-        if ( $cstring ne "0" ) {    # sic
-            decl()->sadd( "Static%s char %s[] = %s;", $const, $pvsym, $cstring );
-            $strtable{$cstring} = $pvsym;
-        }
-    }
-    return $pvsym;
 }
 
 sub _caller_comment {

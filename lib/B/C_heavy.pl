@@ -62,7 +62,7 @@ BEGIN {
 
 use B::C::XS       ();
 use B::C::OverLoad ();
-use B::C::Save qw(savepv savestashpv);
+use B::C::Save qw(savestashpv);
 
 # FIXME: this part can now be dynamic
 # exclude all not B::C:: prefixed subs
