@@ -72,7 +72,6 @@ uni/variables.t        SKIP      Taking too long to run. something's really brok
 xtestc/0163.t          TESTS     GH #48 - DESTROY not triggered
 xtestc/0169.t          TESTS     Output is: "42\n"
 xtestc/0222.t          TESTS     GH #49 - Cannot use "here-document" in RegExp
-xtestc/0241.t          TESTS     Output is: ""
 xtestc/0247.t          TESTS     Output is: ""
 xtestc/0248.t          TESTS     Output is: " toto \n"
 xtestc/0262.t          TESTS     Output is: "Constant subroutine M SQRT2 ..."

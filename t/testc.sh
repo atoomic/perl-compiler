@@ -955,7 +955,7 @@ result[239]='ok 1
 tests[240]='my $a = "\x{100}\x{101}Aa";
 print "ok\n" if "\U$a" eq "\x{100}\x{100}AA";
 my $b = "\U\x{149}cD"; # no pb without that line'
-tests[241]='package Pickup; use UNIVERSAL qw( can ); if (can( "Pickup", "can" ) != \&UNIVERSAL::can) { print "not " } print "ok\n";'
+tests[241]='package Pickup; *can = \&UNIVERSAL::can; if (can( "Pickup", "can" ) != \&UNIVERSAL::can) { print "not " } print "ok\n";'
 tests[242]='$xyz = ucfirst("\x{3C2}");
 $a = "\x{3c3}foo.bar";
 ($c = $a) =~ s/(\p{IsWord}+)/ucfirst($1)/ge;
