@@ -1038,6 +1038,7 @@ result[263]='[]'
 tests[264]='no warnings; warn "$a.\n"'
 result[264]='.'
 tests[269]='use constant roref => \2; eval { for (roref) { $_ = 42 } }; print $@'
+result[269]='Modification of a read-only value attempted at xtestc/0269.pl line 1.'
 tests[270]='*x = *STDOUT; print {*x{IO}} "ok\n";'
 tests[271]='my $FALSE = 0;
 END { delete $ENV{"Boom"} if $FALSE }
