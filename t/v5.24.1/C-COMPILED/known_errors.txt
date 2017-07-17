@@ -74,7 +74,7 @@ xtestc/0169.t          TESTS     Output is: "42\n"
 xtestc/0222.t          TESTS     GH #49 - Cannot use "here-document" in RegExp
 xtestc/0247.t          TESTS     GH #50 - $^H when using arybase
 xtestc/0248.t          TESTS     GH #51 - using variable inside a regexp
-xtestc/0274.t          TESTS     Output is: "1..5\nok 1\nok 2\nok 3\nok 4\n"
+xtestc/0274.t          TESTS     GH #52 - smartmatch reset issue
 xtestc/0278.t          TESTS     Output is: ""
 xtestc/0293.t          TESTS     Output is: ""
 xtestc/0295.t          TESTS     Output is: ""
