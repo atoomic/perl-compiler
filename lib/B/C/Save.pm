@@ -10,19 +10,10 @@ use B::C::Helpers qw/strlen_flags cstring_cow cow_strlen_flags/;
 use Exporter ();
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/savecowpv inc_pv_index savestashpv/;
+our @EXPORT_OK = qw/savecowpv savestashpv/;
 
 my %strtable;
 my %cowtable;
-
-# Two different families of save functions
-#   save_* vs save*
-
-my $pv_index = -1;
-
-sub inc_pv_index {
-    return ++$pv_index;
-}
 
 sub savecowpv {
     my $pv = shift;

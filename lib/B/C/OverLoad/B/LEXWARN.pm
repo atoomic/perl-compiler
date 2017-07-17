@@ -6,12 +6,17 @@ use B::C::Flags ();
 
 use B qw/cstring/;
 use B::C::File qw/decl/;
-use B::C::Save qw/inc_pv_index/;
 
 # pre vs. post 5.8.9/5.9.4 logic for lexical warnings
 our @ISA = qw(B::PV B::IV);
 
 my %lexwarnsym;
+
+my $lexwarn_index = -1;
+
+sub inc_lexwarn_index {
+    return ++$lexwarn_index;
+}
 
 sub save {
     my ( $sv, $fullname ) = @_;
@@ -21,7 +26,7 @@ sub save {
     # check cache
     return @{ $lexwarnsym{$pv} } if $lexwarnsym{$pv};
 
-    my $sym = sprintf( "lexwarn%d", inc_pv_index() );
+    my $sym = sprintf( "lexwarn%d", inc_lexwarn_index() );
     my $isint = 0;
 
     # if 8 use UVSIZE, if 4 use LONGSIZE
