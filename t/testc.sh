@@ -1239,8 +1239,14 @@ if [[ $v518 -gt 0 ]]; then
   print "ok\n" if $ok'
 fi
 
-tests[319]='#TODO Wide character warnings missing (bytes layer ignored)
-use warnings q{utf8}; my $w; local $SIG{__WARN__} = sub { $w = $_[0] }; my $c = chr(300); open F, ">", "a"; binmode(F, ":bytes:"); print F $c,"\n"; close F; print $w'
+tests[319]='
+use warnings q{utf8};
+my $w;
+local $SIG{__WARN__} = sub { $w = $_[0] };
+my $c = chr(300); open F, ">", "a";
+binmode(F, ":bytes:");
+print F $c,"\n"; close F;
+print qq[ok] if $w =~ qr[Wide character in print];'
 if [[ $v518 -gt 0 ]]; then
     tests[318]='use utf8; ＬＯＯＰ: { last ＬＯＯＰ } print qq(ok\n)'
     tests[320]='use utf8; sub участники { print qq{ok\n} } $::{"участники"}->()'
