@@ -127,7 +127,7 @@ SKIP: {
         my $out     = qx{$bin_file 2>&1};
         my $str_out = $out;
         $str_out =~ s{\n}{\\n}g;
-        $str_out =~ s{[^A-Za-z0-9\s\\:=,;\.\(\)]}{ }g;
+        $str_out =~ s{[^A-Za-z0-9\s\\:=,;\.\(\)_]}{?}g;
         $str_out =~ s{\s+}{ }g;
         if ( length($str_out) > 30 ) {
             $str_out = substr( $str_out, 0, 30 );
@@ -144,7 +144,7 @@ SKIP: {
         $want =~ s/\n/\\n/g;
 
         #chomp $out if $want eq 'ok';
-        unless ( $errors->check_todo( $out eq $want, qq{Output is: "$str_out" expect "$want"}, 'TESTS' ) ) {
+        unless ( $errors->check_todo( $out eq $want, qq{Output is: "$str_out" (len=}.length($out).qq{) expect "$want" (len=}.length($want).q{)}, 'TESTS' ) ) {
             skip( "TESTS failure", $errors->{to_skip} );
         }
 
