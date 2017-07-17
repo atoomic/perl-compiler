@@ -89,3 +89,4 @@ fullog.txt
 /t/v5.24.1/t/.gdbinit
 /parse*
 pcc*
+/foo*
