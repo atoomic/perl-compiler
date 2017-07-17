@@ -27,7 +27,9 @@ sub save_constructor {
         # call the real save function and cache the return value{
         my $sym;
 
-        if (0) {    # Debug for tracking save paths.
+        local $^W = undef;    # avoid for warning 'Deep recursion on subroutine'
+
+        if (0) {              # Debug for tracking save paths.
             my @save_info = @args;
             if ( !@save_info ) {
                 foreach my $try (qw/ppname FULLNAME SAFENAME NAME_HEK name NAME/) {
