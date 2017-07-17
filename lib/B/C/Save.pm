@@ -72,10 +72,6 @@ sub savecowpv {
     return ( $pvsym, $cur, $len );               # NOTE: $cur is total size of the perl string. len would be the length of the C string.
 }
 
-sub constpv {                                    # could also safely use a cowpv
-    return savepv( shift, 1 );
-}
-
 sub savepv {
     my $pv    = shift;
     my $const = shift;
