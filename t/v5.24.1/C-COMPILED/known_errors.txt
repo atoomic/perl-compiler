@@ -71,7 +71,7 @@ uni/tr_utf8.t          COMPAT    BC issue #283 - unsupported deprecated "encodin
 uni/variables.t        SKIP      Taking too long to run. something's really broken. need to get to the root of it.
 xtestc/0163.t          TESTS     GH #48 - DESTROY not triggered
 xtestc/0169.t          TESTS     Output is: "42\n"
-xtestc/0222.t          TESTS     Output is: "Can t find string terminator ..."
+xtestc/0222.t          TESTS     GH #49 - Cannot use "here-document" in RegExp
 xtestc/0226.t          EXIT      Exit code is 0
 xtestc/0230.t          TESTS     Output is: "\n"
 xtestc/0237.t          TESTS     Output is: " "
