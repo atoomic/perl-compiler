@@ -69,7 +69,7 @@ uni/tr_eucjp.t         COMPAT    BC issue #283 - unsupported deprecated "encodin
 uni/tr_sjis.t          COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/tr_utf8.t          COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/variables.t        SKIP      Taking too long to run. something's really broken. need to get to the root of it.
-xtestc/0163.t          TESTS     Output is: ""
+xtestc/0163.t          TESTS     GH #48 - DESTROY not triggered
 xtestc/0169.t          TESTS     Output is: "42\n"
 xtestc/0173.t          TESTS     Output is: "ok 1\nok 2\nok 3\n"
 xtestc/0175.t          TESTS     Output is: "ok\n"
