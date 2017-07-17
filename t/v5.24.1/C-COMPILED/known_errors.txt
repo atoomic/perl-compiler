@@ -76,7 +76,7 @@ xtestc/0247.t          TESTS     GH #50 - $^H when using arybase
 xtestc/0248.t          TESTS     GH #51 - using variable inside a regexp
 xtestc/0274.t          TESTS     GH #52 - smartmatch reset issue
 xtestc/0278.t          TESTS     GH #48 - DESTROY not triggered
-xtestc/0293.t          TESTS     Output is: ""
+xtestc/0293.t          TESTS     GH #53 - CORO need to reload and mark some SVs as readonly
 xtestc/0295.t          TESTS     Output is: ""
 xtestc/0309.t          TESTS     Output is: ""
 xtestc/0319.t          TESTS     Output is: "Wide character in print at ..."
