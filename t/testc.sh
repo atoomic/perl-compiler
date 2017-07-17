@@ -689,14 +689,12 @@ result[173]='ok 1
 ok 2
 ok 3'
 tests[175]='{
-  # note that moving the use in an eval block solve the problem
-  use warnings NONFATAL => all;
+  use warnings NONFATAL => q[all];
   $SIG{__WARN__} = sub { "ok - expected warning\n" };
   my $x = pack( "I,A", 4, "X" );
   print "ok\n";
 }'
-result[175]='ok - expected warning
-ok'
+result[175]='ok'
 tests[176]='use Math::BigInt; print Math::BigInt::->new(5000000000);'
 result[176]='5000000000'
 tests[177]='use version; print "ok\n" if version::is_strict("4.2");'
