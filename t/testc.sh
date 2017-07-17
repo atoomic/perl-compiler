@@ -783,7 +783,8 @@ my $m;
 $SIG{__DIE__} = sub { $m = shift };
 { my $f = Foo->new }
 print "m: $m\n";'
-result[196]='m: Modification of a read-only value attempted at ccode196.pl line 3.'
+result[196]='m: Modification of a read-only value attempted at xtestc/0196.pl line 3.
+'
 tests[197]='package FINALE;
 {
     $ref3 = bless ["ok - package destruction"];
