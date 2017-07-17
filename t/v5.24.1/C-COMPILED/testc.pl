@@ -72,7 +72,7 @@ my $testc_test = $1;
 my $test_code = `$working_dir/../../../testc.sh -X $testc_test 2>/dev/null`;
 
 ### RESULT:133
-$test_code =~ s/### RESULT:(.+)$//ms;
+$test_code =~ s/\n### RESULT:(.+)$//ms;
 my $want = $1;
 
 ( my $perl_file = $file_to_test ) =~ s/\.t$/.pl/;
