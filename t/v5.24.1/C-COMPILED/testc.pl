@@ -127,7 +127,7 @@ SKIP: {
         my $out     = qx{$bin_file 2>&1};
         my $str_out = $out;
         $str_out =~ s{\n}{\\n}g;
-        $str_out =~ s{[^A-Za-z0-9\s\\:=,;\.\(\)_]}{?}g;
+        $str_out =~ s{[^A-Za-z0-9\s\\:=,;\.\(\)_\-]}{?}g;
         $str_out =~ s{\s+}{ }g;
         if ( length($str_out) > 30 ) {
             $str_out = substr( $str_out, 0, 30 );
