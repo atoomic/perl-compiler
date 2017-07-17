@@ -931,8 +931,6 @@ tests[235]='BEGIN{$INC{"Carp.pm"}="/dev/null"} $d = pack("U*", 0xe3, 0x81, 0xAF)
 result[235]='6'
 # -O3
 tests[236]='sub t { if ($_[0] == $_[1]) { print "ok\n"; } else { print "not ok - $_[0] == $_[1]\n"; } } t(-1.2, " -1.2");'
-tests[237]='print "\000\000\000\000_"'
-result[237]='_'
 tests[238]='sub f ($);
 sub f ($) {
   my $test = $_[0];
