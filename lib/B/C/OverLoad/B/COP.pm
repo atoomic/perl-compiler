@@ -4,7 +4,7 @@ use strict;
 
 use B qw/cstring svref_2object/;
 use B::C::Debug qw/debug/;
-use B::C::File qw/init copsect decl/;
+use B::C::File qw/init copsect decl lexwarnsect/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Helpers qw/strlen_flags/;
 
@@ -20,40 +20,12 @@ sub do_save {
     my ( $ix, $sym ) = copsect()->reserve( $op, "OP*" );
     copsect()->debug( $op->name, $op );
 
-    # shameless cut'n'paste from B::Deparse
-    my ( $warn_sv, $isint );
-    my $warnings   = $op->warnings;
-    my $is_special = ref($warnings) eq 'B::SPECIAL';
-    my $warnsvcast = "(STRLEN*)";
-    if ($is_special) {
-        $warn_sv = 'pWARN_STD';
-        $warn_sv = 'pWARN_ALL' if $$warnings == 4;     # use warnings 'all';
-        $warn_sv = 'pWARN_NONE' if $$warnings == 5;    # use warnings 'all';
-    }
-    else {
-        # LEXWARN_on: Original $warnings->save from 5.8.9 was wrong,
-        # DUP_WARNINGS copied length PVX bytes.
-        my $warn = bless $warnings, "B::LEXWARN";
-
-        # TODO: isint here misses already seen lexwarn symbols
-        ( $warn_sv, $isint ) = $warn->save;
-
-        # XXX No idea how a &sv_list[] came up here, a re-used object. Anyway.
-        $warn_sv = substr( $warn_sv, 1 ) if substr( $warn_sv, 0, 3 ) eq '&sv';
-        $warn_sv = $warnsvcast . '&' . $warn_sv;
-    }
-
-    my $dynamic_copwarn = !$is_special ? 1 : 0;
-
     # Trim the .pl extension, to print the executable name only.
     my $file = $op->file;
 
-    # cop_label now in hints_hash (Change #33656)
-    my $add_label = $op->label ? 1 : 0;
-
     $op->save_hints($sym);
 
-    if ($add_label) {
+    if ( $op->label ) {
 
         # test 29 and 15,16,21. 44,45
         my $label = $op->label;
@@ -63,23 +35,6 @@ sub do_save {
             "Perl_cop_store_label(aTHX_ &cop_list[%d], %s, %u, %s);",
             $ix, $cstring, $cur, $utf8
         );
-    }
-
-    if ( !$is_special and !$isint ) {
-        my $copw = $warn_sv;
-        $copw =~ s/^\(STRLEN\*\)&//;
-
-        # on cv_undef (scope exit, die, Attribute::Handlers, ...) CvROOT and all its kids are freed.
-        # lexical cop_warnings need to be dynamic, but just the ptr to the static string.
-        if ($copw) {
-            my $dest = "cop_list[$ix].cop_warnings";
-
-            # with DEBUGGING save_pvn returns ptr + PERL_MEMORY_DEBUG_HEADER_SIZE
-            # which is not the address which will be freed in S_cop_free.
-            # Need to use old-style PerlMemShared_, see S_cop_free in op.c (#362)
-            # lexwarn<n> might be also be STRLEN* 0
-            init()->sadd( "%s = (STRLEN*)savesharedpvn((const char*)%s, sizeof(%s));", $dest, $copw, $copw );
-        }
     }
 
     # we should have already saved the GV for the file (exception for B and O)
@@ -100,14 +55,14 @@ sub do_save {
     copsect()->comment_common("BASEOP, line_t line, HV* stash, GV* filegv, U32 hints, U32 seq, STRLEN* warn_sv, COPHH* hints_hash");
     copsect()->supdatel(
         $ix,
-        '%s'       => $op->_save_common,                        # BASEOP list
-        '%u'       => $op->line,                                # /* line # of this command */
-        '(HV*) %s' => $stash,                                   # HV *    cop_stash;  /* package line was compiled in */
-        '(GV*) %s' => $filegv,                                  # GV *    cop_filegv; /* file the following line # is from */
-        '%u'       => $op->hints,                               # U32     cop_hints;  /* hints bits from pragmata */
-        '%s'       => get_integer_value( $op->cop_seq ),        # U32     cop_seq;    /* parse sequence number */
-        '%s'       => !$dynamic_copwarn ? $warn_sv : 'NULL',    # STRLEN *    cop_warnings;   /* lexical warnings bitmask */
-        '%s'       => q{NULL},                                  # COPHH * cop_hints_hash; /* compile time state of %^H. */
+        '%s'       => $op->_save_common,                    # BASEOP list
+        '%u'       => $op->line,                            # /* line # of this command */
+        '(HV*) %s' => $stash,                               # HV *    cop_stash;  /* package line was compiled in */
+        '(GV*) %s' => $filegv,                              # GV *    cop_filegv; /* file the following line # is from */
+        '%u'       => $op->hints,                           # U32     cop_hints;  /* hints bits from pragmata */
+        '%s'       => get_integer_value( $op->cop_seq ),    # U32     cop_seq;    /* parse sequence number */
+        '%s'       => $op->save_warnings,                   # STRLEN *    cop_warnings;   /* lexical warnings bitmask */
+        '%s'       => q{NULL},                              # COPHH * cop_hints_hash; /* compile time state of %^H. */
     );
 
     return $sym;
@@ -156,6 +111,38 @@ sub save_hints {
     }
 
     return init()->sadd( "CopHINTHASH_set(%s, %s);", $sym, $cophh );
+}
+
+# We use the same symbol for ALL warnings with the same value.
+my %lexwarnsym_cache;
+
+sub save_warnings {
+    my $op = shift or die;
+
+    my $warnings = $op->warnings;
+    if ( ref($warnings) eq 'B::SPECIAL' ) {
+        return 'pWARN_ALL'  if $$warnings == 4;    #define pWARN_ALL  0x2 /* use warnings 'all' */
+        return 'pWARN_NONE' if $$warnings == 5;    #define pWARN_NONE 0x1 /* no warnings */
+        return 'pWARN_STD'  if $$warnings == 6;    #define pWARN_STD  0x0 /* ? */
+
+        die("Unknown special warnings $warnings $$warnings\n");
+    }
+    ref $warnings eq 'B::PV' or die("Warnings isn't a PV like we thought it was?? $warnings");
+
+    my $pv = $warnings->PV;
+    return $lexwarnsym_cache{$pv} if $lexwarnsym_cache{$pv};
+
+    #print STDERR sprintf("XXXX WARN length=%s len=%s cur=%s\n", length($pv), $warnings->LEN, $warnings->CUR);
+
+    my $len = $warnings->CUR;
+    B::C::longest_warnings_string($len);
+    my $ix = lexwarnsect()->saddl(
+        '%ld' => $len,
+        '%s'  => cstring($pv),
+    );
+
+    # set cache
+    return $lexwarnsym_cache{$pv} = sprintf( "(STRLEN*) &lexwarn_list[%d]", $ix );
 }
 
 1;

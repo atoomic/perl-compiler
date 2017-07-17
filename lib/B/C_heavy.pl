@@ -29,8 +29,7 @@ use B::C::Debug qw(debug verbose WARN);    # used for setting debug levels from 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
-  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect padlistsect loopsect sharedhe init_stash
-
+  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect lexwarnsect padlistsect loopsect sharedhe init_stash
   init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
@@ -203,6 +202,17 @@ sub try_isa {
     return 0;    # not found
 }
 
+my $longest_warnings;
+
+sub longest_warnings_string {
+    my $len = shift or return $longest_warnings;
+
+    $longest_warnings //= $len;
+    $longest_warnings = $len if $longest_warnings < $len;
+
+    return $longest_warnings;
+}
+
 sub make_nonxs_Internals_V {
     my $to_eval = 'no warnings "redefine"; sub Internals::V { return (';
     foreach my $line ( Internals::V() ) {
@@ -359,7 +369,8 @@ sub build_template_stash {
         'TAINT'              => ( ${^TAINT} ? 1 : 0 ),
         'devel_peek_needed'  => $devel_peek_needed,
         'MAX_PADNAME_LENGTH' => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
-        'PL'                 => {
+        'longest_warnings_string' => longest_warnings_string() || 17,
+        'PL' => {
             'defstash'    => save_defstash(),                                                                                   # Re-uses the cache.
                                                                                                                                 # we do not want the SVf_READONLY and SVf_PROTECT flags to be set to PL_curstname : newSVpvs_share("main")
             'curstname'   => svref_2object( \'main' )->save( 'curstname', { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),

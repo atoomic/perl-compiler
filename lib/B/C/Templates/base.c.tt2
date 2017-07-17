@@ -153,6 +153,10 @@ struct my_padname_with_str {
 /* Missing type defs in perl so we'll make our own. */
 typedef struct my_padname_with_str MyPADNAME;
 
+/* Lexical warnings storage */
+struct lexwarn { STRLEN len; char warnings[[% longest_warnings_string %]]; };
+typedef struct lexwarn LEXWARN;
+
 /* extra typedef */
 [% section.typedef.output( "%s\n" ) %]
 
