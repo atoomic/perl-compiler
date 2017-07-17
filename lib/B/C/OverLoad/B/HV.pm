@@ -2,11 +2,10 @@ package B::HV;
 
 use strict;
 
-use B qw/SVf_READONLY SVf_PROTECT SVf_OOK SVf_AMAGIC/;
+use B qw/svref_2object SVf_READONLY SVf_PROTECT SVf_OOK SVf_AMAGIC/;
 use B::C::Debug qw/debug WARN/;
 use B::C::File qw/init xpvhvsect svsect decl init init2 init_stash init_static_assignments/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
-use B::C::Save qw/savestashpv/;
 
 sub can_save_stash {
     my $stash_name = shift;
@@ -237,6 +236,12 @@ sub get_max_hash_from_keys {
     return $default if !$keys or $keys <= $default;    # default hash max value
 
     return 2**( int( log($keys) / log(2) ) + 1 ) - 1;
+}
+
+sub savestashpv {                                      # save a stash from a string (pv)
+    my $name = shift;
+    no strict 'refs';
+    return svref_2object( \%{ $name . '::' } )->save;
 }
 
 1;

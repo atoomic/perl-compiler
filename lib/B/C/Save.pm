@@ -10,7 +10,7 @@ use B::C::Helpers qw/strlen_flags cstring_cow cow_strlen_flags/;
 use Exporter ();
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/savecowpv savestashpv/;
+our @EXPORT_OK = qw/savecowpv/;
 
 my %strtable;
 my %cowtable;
@@ -88,12 +88,6 @@ sub stack_flat {
     my @stack = @{ stack() };
     splice( @stack, 0, $remove );    # shift the first X elements
     return join "\n", @stack;
-}
-
-sub savestashpv {                    # save a stash from a string (pv)
-    my $name = shift;
-    no strict 'refs';
-    return svref_2object( \%{ $name . '::' } )->save;
 }
 
 1;
