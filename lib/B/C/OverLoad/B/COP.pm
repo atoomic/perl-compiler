@@ -135,19 +135,21 @@ sub save_hints {
     decl()->sadd( "Static COPHH *%s;", $cophh );
     foreach my $k ( sort keys %$hint_hv ) {
         my ( $ck, $kl, $utf8 ) = strlen_flags($k);
+
         my $v = $hint_hv->{$k};
         next if $k eq ':';                # skip label, saved just after
+        my $parent = $i ? $cophh : 'NULL';                      # view Perl_refcounted_he_new_pvn
         my $val = B::svref_2object( \$v )->save("\$^H{$k}");    ## .... problem ????
         if ($utf8) {
             init()->sadd(
                 "%s = cophh_store_pvn(%s, %s, %d, 0, %s, COPHH_KEY_UTF8);",
-                $cophh, $i ? $cophh : 'NULL', $ck, $kl, $val
+                $cophh, $parent, $ck, $kl, $val
             );
         }
         else {
             init()->sadd(
                 "%s = cophh_store_pvs(%s, %s, %s, 0);",
-                $cophh, $i ? $cophh : 'NULL', $ck, $val
+                $cophh, $parent, $ck, $val
             );
         }
         $i++;
