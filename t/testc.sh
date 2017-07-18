@@ -1176,8 +1176,6 @@ fi
 if [[ $v518 -gt 0 && $v524 -eq 0 ]]; then
   tests[299]='no warnings qw{experimental::lexical_topic}; my $s = "ok\n"; my $_ = "not ok\n"; my $r = $s =~ /ok(?{ print qq[$_] })/;'
 fi
-tests[2990]='#TODO version
-package Pickup; use UNIVERSAL qw( VERSION ); print qq{ok\n} if VERSION "UNIVERSAL";'
 tests[300]='format STDERR =
 .
 my $stdout = *STDOUT{IO};
