@@ -101,7 +101,7 @@ sub save_compile_state {
     $settings->{'starting_flat_stashes'} = flatten_stashes( $settings->{'starting_stash'} );
 
     #eval q{ require Data::Dumper; $Data::Dumper::Sortkeys = $Data::Dumper::Sortkeys = 1; };
-    #eval q { print STDERR Data::Dumper::Dumper($settings->{'dl_so_files'}, $settings->{'dl_modules'}) };exit;
+    #eval q { print STDERR Data::Dumper::Dumper($settings->{'dl_so_files'}, $settings->{'dl_modules'}) };
     #eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
     #eval q { print STDERR Data::Dumper::Dumper(\%seen) };
     #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} );
