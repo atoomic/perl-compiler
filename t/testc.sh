@@ -1264,8 +1264,29 @@ if [[ $v518 -gt 0 ]]; then
         print qq/ok\n/ if $chr =~ $re;
     }'
 fi
-tests[3200]='#TODO No warnings reading in invalid utf8 stream (utf8 layer ignored)
-use warnings "utf8"; local $SIG{__WARN__} = sub { $@ = shift }; open F, ">", "a"; binmode F; my ($chrE4, $chrF6) = (chr(0xE4), chr(0xF6)); print F "foo", $chrE4, "\n"; print F "foo", $chrF6, "\n"; close F; open F, "<:utf8", "a";  undef $@; my $line = <F>; print q(ok) if $@ =~ /utf8 "\xE4" does not map to Unicode/;'
+tests[3200]='use warnings "utf8";
+{
+  # redirect stderr
+  my $stderr;
+  local *STDERR;
+  open(STDERR, ">>", \$stderr) or die "failed to open STDERR ($!)";
+
+
+  open F, ">", "a" or die;
+  binmode F;
+
+  my ($chrE4, $chrF6) = (chr(0xE4), chr(0xF6));
+  print F "foo", $chrE4, "\n";
+  print F "foo", $chrF6, "\n";
+  close F;
+
+  open F, "<:utf8", "a" or die;
+  undef $@;
+  my $line = join " ", <F>;
+
+  print q(ok) if $stderr =~ qr/\Qutf8 "\xE4" does not map to Unicode\E/m;
+}
+'
 tests[324]='package Master;
 use mro "c3";
 sub me { "Master" }
