@@ -23,7 +23,7 @@
 # - Fields are white space delimited. It's assumed $test and $type will have no spaces in them.
 #
 
-base/lex.t             PLAN      BC issue #222 - Cannot use '<<' in regexp
+base/lex.t             PLAN      GH #49 - Cannot use '<<' in regexp
 comp/final_line_num.t  COMPAT    This test is about BEGIN / file parse behavior so not relevant to B::C
 comp/hints.t           COMPAT    tests are using BEGIN block, do not ready for B::C
 comp/parser.t          COMPAT    We're not going to support ' as a package separator until we need to: https://github.com/rurban/perl-compiler/issues/217
