@@ -68,13 +68,13 @@ uni/tr_eucjp.t         COMPAT    BC issue #283 - unsupported deprecated "encodin
 uni/tr_sjis.t          COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/tr_utf8.t          COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/variables.t        SKIP      Taking too long to run. something's really broken. need to get to the root of it.
-xtestc/0163.t          TESTS     GH #48 - DESTROY not triggered
+xtestc/0163.t          TESTS     GH #48 - DESTROY on upgraded lexvar not triggered
 xtestc/0169.t          TESTS     Output is: "42\n"
 xtestc/0222.t          TESTS     GH #49 - Cannot use "here-document" in RegExp
 xtestc/0247.t          TESTS     GH #50 - $^H when using arybase
 xtestc/0248.t          TESTS     GH #51 - using variable inside a regexp
 xtestc/0274.t          TESTS     GH #52 - smartmatch reset issue
-xtestc/0278.t          TESTS     GH #48 - DESTROY not triggered
+xtestc/0278.t          TESTS     GH #48 - DESTROY on upgraded lexvar not triggered
 xtestc/0293.t          TESTS     GH #53 - CORO need to reload and mark some SVs as readonly
 xtestc/0295.t          TESTS     GH #51 - using variable inside a regexp/substitute
 xtestc/0309.t          TESTS     GH #54 - cannot overwrite Regexp::DESTROY
@@ -85,5 +85,5 @@ xtestc/0371.t          TESTS     Output is: "" expect "5"
 xtestc/1960.t          TESTS     Output is: ""
 xtestc/2052.t          TESTS     Output is: ""
 xtestc/2201.t          TESTS     Output is: ""
-xtestc/2540.t          TESTS     Output is: ""
+xtestc/2540.t          TESTS     GH #48 - DESTROY on upgraded lexvar not triggered
 xtestc/2900.t          TESTS     GH #57 - open qw(:std :utf8) STDOUT issue
