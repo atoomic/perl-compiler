@@ -402,6 +402,8 @@ sub build_template_stash {
             'tainting'    => $^{TAINT} ? 'TRUE' : 'FALSE',
             'taint_warn'  => $^{TAINT} < 1 ? 'FALSE' : 'TRUE',
             'compad' => ( comppadlist->ARRAY )[1]->save('curpad_syms') || 'NULL',
+            'warnhook' => save_sig('__WARN__'),
+            'diehook'  => save_sig('__DIE__'),
         },
         'IO' => {
             'STDIN'  => svref_2object( \*::STDIN )->save("STDIN"),
@@ -455,6 +457,16 @@ sub build_template_stash {
     $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, 511 ) + 1;
 
     return $c_file_stash;
+}
+
+sub save_sig {
+    my $sig_name = shift or die;
+    my $sig = $SIG{$sig_name};
+    return undef if !defined $sig;
+
+    my $sv = svref_2object( \$sig );
+    $sv = $sv->RV if ( $sv->FLAGS & SVf_ROK ) == SVf_ROK;
+    return $sv->save("\$SIG{$sig_name}");
 }
 
 sub do_remap_xs_symbols {

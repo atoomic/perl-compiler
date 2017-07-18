@@ -455,6 +455,9 @@ void setup_perl_globals() {
     PL_tainting = [% PL.tainting %]; /* boolean */
     PL_tainting = [% PL.taint_warn %]; /* boolean */
 
+    [% IF PL.warnhook %] PL_warnhook = [% PL.warnhook %];[% END %]
+    [% IF PL.diehook %] PL_diehook = [% PL.diehook %];[% END %]
+
     /* initialize signals - view Perl_magic_setsig and Perl_whichsig_pvn for usage */
     Newxz(PL_psig_name, 2 * SIG_SIZE, SV*);
     Newxz(PL_psig_pend, SIG_SIZE, int);
