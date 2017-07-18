@@ -32,12 +32,12 @@ op/attrhand.t          PLAN      BC issue #271 - Attribute::Handlers
 op/blocks.t            COMPAT    check order of execution of special blocks ( BEGIN included )
 op/caller.t            TESTS     Test results:
 op/closure.t           TESTS     BC issue #278 - destruction issue
-op/coreamp.t           COMPAT    unsupported experimental::lexical_topic + BC issue #219 - overload issue
+op/coreamp.t           COMPAT    unsupported experimental::lexical_topic
 op/coresubs.t          COMPAT    uses B::walkoptree
 op/glob.t              SKIP      Flaps because it's surprised to see perlcc files during its run.
 op/goto_xs.t           COMPAT    needs XS::APItest
 op/lex.t               COMPAT    Tests trigger errors at compilation time
-op/lexsub.t            BC        BC issue #219 - overload issue
+op/lexsub.t            BC        GH #60 - SEGV at compile time from B
 op/method.t            TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
 op/override.t          COMPAT    crazy test which override CORE::GLOBAL::require @BEGIN
 op/sprintf2.t          SKIP      Tests are in sequence - https://github.com/CpanelInc/perl-compiler/issues/45
@@ -49,10 +49,10 @@ op/threads.t           COMPAT    We don't support threaded perl in this branch.
 op/warn.t              TESTS     GH #57 - open qw(:std :utf8) STDOUT issue
 op/yadayada.t          COMPAT    Unimplemented does not display the correct line number
 opbasic/magic_phase.t  COMPAT    Testing BEGIN, INIT, ... phases order, not compatible with B::C
-re/overload.t          TESTS     ?? + BC issue #219 - overload issue
-re/pat.t               PLAN      Recheck BC issue #219 - overload issue + BC issue #295
+re/overload.t          TESTS     GH #61 - Overloading regexp issue with lexical scope
+re/pat.t               PLAN      BC issue #295
 re/pat_advanced.t      PLAN      Recheck BC issue #317 - nested regexp
-re/pat_re_eval.t       PLAN      BC issue #219 - overload issue
+re/pat_re_eval.t       PLAN      GH #62 - Cannot compile eval group RegExp at runtime
 re/pat_rt_report.t     TESTS     BC issue #317 - nested Regex
 re/qr_gc.t             TESTS     BC issue #309 - regexp destruction
 re/reg_eval_scope.t    PLAN      BC issue #295 - (?{}) should have its own lexical scope
