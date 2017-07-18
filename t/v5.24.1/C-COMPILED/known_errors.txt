@@ -84,6 +84,5 @@ xtestc/0369.t          TESTS     Output is: ""
 xtestc/0371.t          TESTS     Output is: "" expect "5"
 xtestc/1960.t          TESTS     Output is: ""
 xtestc/2052.t          TESTS     Output is: ""
-xtestc/2201.t          TESTS     Output is: ""
 xtestc/2540.t          TESTS     GH #48 - DESTROY on upgraded lexvar not triggered
 xtestc/2900.t          TESTS     GH #57 - open qw(:std :utf8) STDOUT issue

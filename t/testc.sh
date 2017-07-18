@@ -897,7 +897,7 @@ sub hint_fetch {
     $results[10]->{$key};
 }
 print qq{ok\n} if hint_fetch("dooot");'
-tests[2201]='BEGIN { $^H{dчастt} = 1 }
+tests[2201]='use utf8; BEGIN { $^H{dчастt} = 1 }
 sub hint_fetch {
     my $key = shift;
     my @results = caller(0);
