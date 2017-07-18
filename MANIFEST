@@ -23,7 +23,6 @@ lib/B/C/OverLoad/B/GV.pm
 lib/B/C/OverLoad/B/HV.pm
 lib/B/C/OverLoad/B/IO.pm
 lib/B/C/OverLoad/B/IV.pm
-lib/B/C/OverLoad/B/LEXWARN.pm
 lib/B/C/OverLoad/B/LISTOP.pm
 lib/B/C/OverLoad/B/LOGOP.pm
 lib/B/C/OverLoad/B/LOOP.pm
@@ -1412,7 +1411,6 @@ t/v5.24.1/C-COMPILED/xtestc/0232.t
 t/v5.24.1/C-COMPILED/xtestc/0234.t
 t/v5.24.1/C-COMPILED/xtestc/0235.t
 t/v5.24.1/C-COMPILED/xtestc/0236.t
-t/v5.24.1/C-COMPILED/xtestc/0237.t
 t/v5.24.1/C-COMPILED/xtestc/0238.t
 t/v5.24.1/C-COMPILED/xtestc/0239.t
 t/v5.24.1/C-COMPILED/xtestc/0240.t
@@ -1560,7 +1558,6 @@ t/v5.24.1/C-COMPILED/xtestc/2872.t
 t/v5.24.1/C-COMPILED/xtestc/2900.t
 t/v5.24.1/C-COMPILED/xtestc/2901.t
 t/v5.24.1/C-COMPILED/xtestc/2950.t
-t/v5.24.1/C-COMPILED/xtestc/2990.t
 t/v5.24.1/C-COMPILED/xtestc/3000.t
 t/v5.24.1/C-COMPILED/xtestc/3010.t
 t/v5.24.1/C-COMPILED/xtestc/3050.t
