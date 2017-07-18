@@ -1082,7 +1082,20 @@ ok 5'
 # ignored xop
 tests[2740]='use Devel::Peek; my %hash = ( a => 1 ); Dump(%hash) if $ENV{FALSE}; print "ok\n"'
 # call xop (failed with -O1)
-tests[2741]='use Devel::Peek; my %hash = ( a => 1 ); Dump(%hash); print "ok\n"'
+tests[2741]='use Devel::Peek;
+
+my %hash = ( a => 1 );
+
+close STDERR;
+my $stderr;
+{
+  # redirect stderr
+  local *STDERR;
+  open(STDERR, ">", \$stderr) or die "failed to open STDERR ($!)";
+  Dump(%hash);
+}
+
+print "ok\n" if $stderr =~ qr{^SV = PVHV};'
 if [[ $v518 -gt 0 ]]; then
   tests[276]='sub t2 : lvalue; print qq/ok\n/'
 fi

@@ -86,5 +86,4 @@ xtestc/1960.t          TESTS     Output is: ""
 xtestc/2052.t          TESTS     Output is: ""
 xtestc/2201.t          TESTS     Output is: ""
 xtestc/2540.t          TESTS     Output is: ""
-xtestc/2741.t          TESTS     Output is: "SV = PVHV(0x800320) at ..." expect "ok"
 xtestc/2900.t          TESTS     GH #57 - open qw(:std :utf8) STDOUT issue
