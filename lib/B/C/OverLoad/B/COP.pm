@@ -4,9 +4,10 @@ use strict;
 
 use B qw/cstring svref_2object/;
 use B::C::Debug qw/debug/;
-use B::C::File qw/init copsect decl lexwarnsect/;
+use B::C::File qw/init copsect decl lexwarnsect refcounted_hesect/;
 use B::C::Decimal qw/get_integer_value/;
 use B::C::Helpers qw/strlen_flags/;
+use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 
 my %COPHHTABLE;
 my %copgvtable;
@@ -22,8 +23,6 @@ sub do_save {
 
     # Trim the .pl extension, to print the executable name only.
     my $file = $op->file;
-
-    $op->save_hints($sym);
 
     if ( $op->label ) {
 
@@ -62,7 +61,7 @@ sub do_save {
         '%u'       => $op->hints,                           # U32     cop_hints;  /* hints bits from pragmata */
         '%s'       => get_integer_value( $op->cop_seq ),    # U32     cop_seq;    /* parse sequence number */
         '%s'       => $op->save_warnings,                   # STRLEN *    cop_warnings;   /* lexical warnings bitmask */
-        '%s'       => q{NULL},                              # COPHH * cop_hints_hash; /* compile time state of %^H. */
+        '%s'       => $op->save_hints,                      # COPHH * cop_hints_hash; /* compile time state of %^H. */
     );
 
     return $sym;
@@ -74,43 +73,40 @@ sub save_hints {
     $sym =~ s/^\(OP\*\)//;
 
     my $hints = $op->hints_hash;
-    return unless ref $hints;
+    return 'NULL' unless $hints and ref($hints) || '' eq 'B::RHE';
 
-    my $i = 0;
-    if ( exists $COPHHTABLE{$$hints} ) {
-        my $cophh = $COPHHTABLE{$$hints};
-        return init()->sadd( "CopHINTHASH_set(%s, %s);", $sym, $cophh );
+    my $hash = $hints->HASH;
+    return 'NULL' unless $hash and ref($hash) || '' eq 'HASH' and keys %$hash;
+
+    # We don't understand it but a ':' key in the hints bucket change will break tests:
+    # io/layers.t, op/goto.t
+    return 'NULL' if keys %$hash == 1 and exists $hash->{':'};
+    delete $hash->{':'};
+
+    my $shared_he_next = "NULL";
+    foreach my $key ( keys %$hash ) {
+        my ($shared_he) = save_shared_he($key);
+        my $namehek = get_sHe_HEK($shared_he);
+
+        my $value = $hash->{$key};
+        my $len   = length($value);
+
+        B::C::longest_refcounted_he_value($len);
+
+        my $ix = refcounted_hesect()->saddl(
+            '(COPHH*) %s'               => $shared_he_next,         # struct refcounted_he *refcounted_he_next
+            '%s'                        => $namehek,                # HEK *refcounted_he_hek
+            '{.refcounted_he_u_len=%s}' => $len,                    # union refcounted_he_val
+            '%s'                        => 'IMMORTAL_PL_strtab',    # U32 refcounted_he_refcnt
+            '%s'                        => 'HVrhek_PV',
+            '%s'                        => cstring($value),         # Put a 0 on the end in the event it needs to check for UTF8 info.
+        );
+
+        # print STDERR sprintf("%s == %s\n", $key, $hash->{$key});
+        $shared_he_next = sprintf( '&refcounted_he_list[%d]', $ix );
     }
 
-    die unless ref $hints eq 'B::RHE';    # does it really happen ?
-
-    my $hint_hv = $hints->HASH;
-    my $cophh = sprintf( "cophh%d", scalar keys %COPHHTABLE );
-    $COPHHTABLE{$$hints} = $cophh;
-    decl()->sadd( "Static COPHH *%s;", $cophh );
-    foreach my $k ( sort keys %$hint_hv ) {
-        my ( $ck, $kl, $utf8 ) = strlen_flags($k);
-
-        my $v = $hint_hv->{$k};
-        next if $k eq ':';                # skip label, saved just after
-        my $parent = $i ? $cophh : 'NULL';                      # view Perl_refcounted_he_new_pvn
-        my $val = B::svref_2object( \$v )->save("\$^H{$k}");    ## .... problem ????
-        if ($utf8) {
-            init()->sadd(
-                "%s = cophh_store_pvn(%s, %s, %d, 0, %s, COPHH_KEY_UTF8);",
-                $cophh, $parent, $ck, $kl, $val
-            );
-        }
-        else {
-            init()->sadd(
-                "%s = cophh_store_pvs(%s, %s, %s, 0);",
-                $cophh, $parent, $ck, $val
-            );
-        }
-        $i++;
-    }
-
-    return init()->sadd( "CopHINTHASH_set(%s, %s);", $sym, $cophh );
+    return "(COPHH*)" . $shared_he_next;
 }
 
 # We use the same symbol for ALL warnings with the same value.
@@ -149,40 +145,18 @@ sub save_warnings {
 
 __END__
 
-#  define CopSTASH(c)       ((c)->cop_stash)
-#  define CopFILE_set(c,pv)  CopFILEGV_set((c), gv_fetchfile(pv))
-
- #define BASEOP              \
-     OP*     op_next;        \
-     OP*     _OP_SIBPARENT_FIELDNAME;\
-     OP*     (*op_ppaddr)(pTHX); \
-     PADOFFSET   op_targ;        \
-     PERL_BITFIELD16 op_type:9;      \
-     PERL_BITFIELD16 op_opt:1;       \
-     PERL_BITFIELD16 op_slabbed:1;   \
-     PERL_BITFIELD16 op_savefree:1;  \
-     PERL_BITFIELD16 op_static:1;    \
-     PERL_BITFIELD16 op_folded:1;    \
-     PERL_BITFIELD16 op_moresib:1;       \
-     PERL_BITFIELD16 op_spare:1;     \
-     U8      op_flags;       \
-     U8      op_private;
- #endif
-
- struct cop {
-     BASEOP
-     /* On LP64 putting this here takes advantage of the fact that BASEOP isn't
-        an exact multiple of 8 bytes to save structure padding.  */
-     line_t      cop_line;       /* line # of this command */
-     /* label for this construct is now stored in cop_hints_hash */
-     HV *    cop_stash;  /* package line was compiled in */
-     GV *    cop_filegv; /* file the following line # is from */
-
-     U32     cop_hints;  /* hints bits from pragmata */
-     U32     cop_seq;    /* parse sequence number */
-     /* Beware. mg.c and warnings.pl assume the type of this is STRLEN *:  */
-     STRLEN *    cop_warnings;   /* lexical warnings bitmask */
-     /* compile time state of %^H.  See the comment in op.c for how this is
-        used to recreate a hash to return from caller.  */
-     COPHH * cop_hints_hash;
- };
+/* Gosh. This really isn't a good name any longer.  */
+struct refcounted_he {
+    struct refcounted_he *refcounted_he_next;   /* next entry in chain */
+    HEK                  *refcounted_he_hek;    /* hint key */
+    union {
+        IV                refcounted_he_u_iv;
+        UV                refcounted_he_u_uv;
+        STRLEN            refcounted_he_u_len;
+        void             *refcounted_he_u_ptr;  /* Might be useful in future */
+    } refcounted_he_val;
+    U32                   refcounted_he_refcnt; /* reference count */
+    /* First byte is flags. Then NUL-terminated value. Then for ithreads,
+       non-NUL terminated key.  */
+    char                  refcounted_he_data[1];
+};

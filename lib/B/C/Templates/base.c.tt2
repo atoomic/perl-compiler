@@ -154,8 +154,32 @@ struct my_padname_with_str {
 typedef struct my_padname_with_str MyPADNAME;
 
 /* Lexical warnings storage */
-struct lexwarn { STRLEN len; char warnings[[% longest_warnings_string %]]; };
+struct lexwarn { STRLEN len; char warnings[[% longest_warnings_string %] + 2]; };
 typedef struct lexwarn LEXWARN;
+
+#define HVrhek_undef    0x00 /* Value is undef. */
+#define HVrhek_delete   0x10 /* Value is placeholder - signifies delete. */
+#define HVrhek_IV       0x20 /* Value is IV. */
+#define HVrhek_UV       0x30 /* Value is UV. */
+#define HVrhek_PV       0x40 /* Value is a (byte) string. */
+#define HVrhek_PV_UTF8  0x50 /* Value is a (utf8) string. */
+
+/* Lexical warnings storage */
+struct bc_refcounted_he {
+    struct refcounted_he *refcounted_he_next;   /* next entry in chain */
+    HEK                  *refcounted_he_hek;    /* hint key */
+    union {
+        IV                refcounted_he_u_iv;
+        UV                refcounted_he_u_uv;
+        STRLEN            refcounted_he_u_len;
+        void             *refcounted_he_u_ptr;  /* Might be useful in future */
+    } refcounted_he_val;
+    U32                   refcounted_he_refcnt; /* reference count */
+    char flags; /* Unlike perl, we'll just put flags here in its own slot. */
+    /* No flags are stored below for our version. */
+    char                  refcounted_he_data[[% longest_refcounted_he_value %]];
+};
+typedef struct bc_refcounted_he REFCOUNTED_HE;
 
 /* extra typedef */
 [% section.typedef.output( "%s\n" ) %]

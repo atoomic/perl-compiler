@@ -29,8 +29,8 @@ use B::C::Debug qw(debug verbose WARN);    # used for setting debug levels from 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
   opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
-  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect lexwarnsect padlistsect loopsect sharedhe init_stash
-  init_COREbootstraplink init_bootstraplink
+  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect lexwarnsect refcounted_he padlistsect loopsect
+  sharedhe init_stash init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
 
@@ -213,6 +213,17 @@ sub longest_warnings_string {
     return $longest_warnings;
 }
 
+my $longest_refcounted_he_value;
+
+sub longest_refcounted_he_value {
+    my $len = shift or return $longest_refcounted_he_value || 1;
+
+    $longest_refcounted_he_value //= $len;
+    $longest_refcounted_he_value = $len if $longest_refcounted_he_value < $len;
+
+    return $longest_refcounted_he_value;
+}
+
 sub make_nonxs_Internals_V {
     my $to_eval = 'no warnings "redefine"; sub Internals::V { return (';
     foreach my $line ( Internals::V() ) {
@@ -370,7 +381,8 @@ sub build_template_stash {
         'devel_peek_needed'  => $devel_peek_needed,
         'MAX_PADNAME_LENGTH' => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
         'longest_warnings_string' => longest_warnings_string() || 17,
-        'PL' => {
+        'longest_refcounted_he_value' => longest_refcounted_he_value(),
+        'PL'                          => {
             'defstash'    => save_defstash(),                                                                                   # Re-uses the cache.
                                                                                                                                 # we do not want the SVf_READONLY and SVf_PROTECT flags to be set to PL_curstname : newSVpvs_share("main")
             'curstname'   => svref_2object( \'main' )->save( 'curstname', { update_flags => ~SVf_READONLY & ~SVf_PROTECT } ),
