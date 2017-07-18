@@ -1399,7 +1399,7 @@ fi
 tests[374]='my $z = 0; my $li2 = "c"; my $rh = { foo => [ "ok\n" ]}; print $rh->{"foo"}->[$li2+$z];';
 tests[2050]='use utf8;package 텟ţ::ᴼ; sub ᴼ_or_Ḋ { "ok" } print ᴼ_or_Ḋ;'
 tests[2051]='use utf8;package ƂƂƂƂ; sub ƟK { "ok" } package ƦƦƦƦ; use base "ƂƂƂƂ"; my $x = bless {}, "ƦƦƦƦ"; print $x->ƟK();'
-tests[2052]='{ package Diӑmond_A; sub fಓ { "ok" } } { package Diӑmond_B; use base q{Diӑmond_A}; use mro "c3"; sub fಓ { (shift)->next::method() } } print Diӑmond_B->fಓ();'
+tests[2052]='use utf8; { package Diӑmond_A; sub fಓ { "ok" } } { package Diӑmond_B; use base q{Diӑmond_A}; use mro "c3"; sub fಓ { (shift)->next::method() } } print Diӑmond_B->fಓ();'
 # silly compiler warnings test, only usable with -q
 tests[2053]='use strict; BEGIN { $SIG{__WARN__} = sub { die "Dying on warning: ", @_ } } print q{ok}'
 # empty keys multideref
