@@ -80,7 +80,7 @@ xtestc/0293.t          TESTS     GH #53 - CORO need to reload and mark some SVs 
 xtestc/0295.t          TESTS     GH #51 - using variable inside a regexp/substitute
 xtestc/0309.t          TESTS     GH #54 - cannot overwrite Regexp::DESTROY
 xtestc/0329.t          TESTS     GH #51 - using variable inside a regexp/substitute
-xtestc/0350.t          TESTS     Output is: "" expect "ok"
+xtestc/0350.t          TESTS     GH #55 - Moose SEGV missing B::perlstring
 xtestc/0369.t          TESTS     Output is: ""
 xtestc/0371.t          TESTS     Output is: "" expect "5"
 xtestc/1960.t          TESTS     Output is: ""
