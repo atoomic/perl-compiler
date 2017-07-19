@@ -66,7 +66,7 @@ sub do_save {
         my $initpm = init1();
 
         if (   $qre =~ m/\\[pNx]\{/
-            || $qre =~ m/\\[Ut]/
+            || $qre =~ m/\\U/
             || ( $op->reflags & SVf_UTF8 || $utf8 ) ) {
             $initpm = init2();
         }
