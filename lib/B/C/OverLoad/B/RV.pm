@@ -48,7 +48,7 @@ sub save_rv {
 
     my $rv = $sv->RV->save($fullname);
 
-    return "$rv" if is_constant($rv);
+    return "(SV*)$rv" if is_constant($rv);
 
     $sym =~ s/^&//;
 

@@ -17,7 +17,7 @@ use B qw/cstring/;
 
 sub is_constant {
     my $s = shift;
-    return 1 if $s =~ /^(&sv_list|\-?[0-9]+|Nullsv)/;    # not gv_list, hek
+    return 1 if $s =~ /&sv_list|Nullsv/;    # not gv_list, hek
     return 0;
 }
 
