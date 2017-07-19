@@ -134,6 +134,8 @@ sub get_cv_outside {
     if ( $ref eq 'B::CV' ) {
         $cv->FULLNAME or return 0;
 
+        return $cv->OUTSIDE->save if $cv->CvFLAGS & 0x100;
+
         return 0 if ${ $cv->OUTSIDE } ne ${ main_cv() } && !$cv->is_format;
     }
 
