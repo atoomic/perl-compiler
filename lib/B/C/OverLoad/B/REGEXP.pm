@@ -37,7 +37,7 @@ sub do_save {
 
     my $initpm = init1();
 
-    if ( $pv =~ m/\\[pN]\{/ or $pv =~ m/\\U/ ) {
+    if ( $pv =~ m/\\[pN]\{/ or $cstr =~ m/\\[Ut]/ ) {
         $initpm = init2();
     }
 
