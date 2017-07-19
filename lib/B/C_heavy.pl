@@ -36,7 +36,6 @@ use B::C::Helpers::Symtable qw(objsym savesym);
 
 use Exporter ();
 use Errno    ();                           #needed since 5.14
-our %Regexp;
 
 # Caller was populated in C.pm
 BEGIN {

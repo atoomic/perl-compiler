@@ -52,7 +52,6 @@ sub do_save {
     my $re = $op->precomp;
 
     if ( defined($re) ) {
-        $B::C::Regexp{$$op} = $op;
 
         # TODO minor optim: fix savere( $re ) to avoid newSVpvn;
         my ( $qre, $relen, $utf8 ) = strlen_flags($re);
@@ -87,19 +86,12 @@ sub do_save {
             $initpm->add('PL_hints = hints_sav;');
         }
         $initpm->close_block();
-
-        # See toke.c:8964
-        # set in the stash the PERL_MAGIC_symtab PTR to the PMOP: ((PMOP**)mg->mg_ptr) [elements++] = pm;
-        if ( $op->pmflags & PMf_ONCE() ) {
-            my $stash = ref $op->pmstash eq 'B::HV' ? $op->pmstash->NAME : '__ANON__';
-            $B::C::Regexp{$$op} = $op;    #188: restore PMf_ONCE, set PERL_MAGIC_symtab in $stash
-        }
     }
 
     if ( $replrootfield && $replrootfield ne 'NULL' ) {
 
         my $pmsym = $sym;
-        $pmsym =~ s/^\&//;                # Strip '&' off the front.
+        $pmsym =~ s/^\&//;    # Strip '&' off the front.
 
         # XXX need that for subst
         init()->sadd( "%s.op_pmreplrootu.op_pmreplroot = (OP*)%s;", $pmsym, $replrootfield );
