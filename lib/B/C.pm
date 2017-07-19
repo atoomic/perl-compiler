@@ -65,6 +65,10 @@ sub build_c_file {
     parse_options(@configure_options);    # Parses command line options and populates $settings where necessary
     save_compile_state();
     load_heavy();                         # Loads B::C_heavy.pl
+    
+    # After we did a require, clear the SWASH cache so it's not saved.
+    utf8->can('reset_swash') and utf8->can('reset_swash')->();
+
     start_heavy();                        # Invokes into B::C_heavy.pl
 }
 
@@ -77,6 +81,9 @@ sub compile {
 }
 
 sub save_compile_state {
+
+    # On initial start of B::C save, clear the SWASH cache so it's not saved.
+    utf8->can('reset_swash') and utf8->can('reset_swash')->();
 
     $settings->{'dl_so_files'} = save_xsloader_so();
     $settings->{'dl_modules'}  = save_xsloader_modules();
@@ -113,6 +120,9 @@ sub save_compile_state {
 sub save_inc {
     my %compiled_INC = %INC;
     delete $compiled_INC{"$_.pm"} foreach qw{B B/C O };
+    foreach my $key (keys %compiled_INC) {
+        delete $compiled_INC{$key} if $key =~ m/^unicore/;
+    }
     return \%compiled_INC;
 }
 
