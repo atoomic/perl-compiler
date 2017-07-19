@@ -113,6 +113,11 @@ sub save_compile_state {
 sub save_inc {
     my %compiled_INC = %INC;
     delete $compiled_INC{"$_.pm"} foreach qw{B B/C O };
+    foreach my $key ( keys %compiled_INC ) {
+        delete $compiled_INC{$key} if $key =~ m/^unicore/;
+    }
+    delete $compiled_INC{'utf8_heavy.pl'};
+    delete $compiled_INC{'utf8.pm'};
     return \%compiled_INC;
 }
 
@@ -183,7 +188,7 @@ sub cleanup_stashes {
     }
 
     # cleanup sepcial stashes
-    foreach my $unsaved (qw{B:: O::}) {
+    foreach my $unsaved (qw{B:: O:: utf8::}) {
         delete $stashes->{$unsaved};
     }
 
