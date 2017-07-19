@@ -45,7 +45,7 @@ isa_ok( $rv, 'B::IV', 'A ref to the int variable' );
 ok $rv->FLAGS & SVf_ROK, 'SVf_ROK enable';
 $got = B::IV::do_save( $rv, '$main::second_ref' );
 is $got, q{&sv_list[1]}, 'got one sv_list symbol';
-is svsect()->get( 1 ), q[(void*)&sv_list[1] - sizeof(void*), 1, 0x801, {.svu_rv=&sv_list[2]}], 'the SV points to another SV';
+is svsect()->get( 1 ), q[(void*)&sv_list[1] - sizeof(void*), 1, 0x801, {.svu_rv=(SV*)&sv_list[2]}], 'the SV points to another SV';
 
 clear_all();
 
