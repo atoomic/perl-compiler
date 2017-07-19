@@ -169,5 +169,7 @@ $ccflags .= " --no-warn -Wl,--warn-once"
 $ccflags .= $B::C::Flags::extra_cflags;
 
 my $cccmd = "$Config{cc} $ccflags -I$coredir @ARGV $linkargs";
+$cccmd =~ s/\t/ /msg;
+$cccmd =~ s/\s\s+/ /msg;
 debug("Running: $cccmd");
 exec $cccmd;

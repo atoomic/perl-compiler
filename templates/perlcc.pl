@@ -119,7 +119,7 @@ sub run_code {
             $Output = "$BinPerl $Output";
         }
     }
-    if ( $extra_libs ) {
+    if ($extra_libs) {
         my $path = '';
         my $PATHSEP = $^O eq 'MSWin32' ? ';' : ':';
         for ( split / /, $extra_libs ) {
@@ -379,6 +379,7 @@ sub compile_byte {
     my $command = "$BinPerl -MO=Bytecode,$opts-o$Output $Input";
     $Input =~ s/^-e.*$/-e/;
     vprint 5, "Compiling...";
+    $command =~ s/\s\s+|\t/ /g;
     vprint 0, "Calling $command";
 
     my $t0 = [gettimeofday] if opt('time');
@@ -439,7 +440,7 @@ sub compile_cstyle {
     warn "Warning: staticxs on darwin is very experimental\n"
       if $^O eq 'darwin';
     if ( opt('check') ) {
-        $cfile    = "";
+        $cfile = "";
     }
     elsif ( opt('o') ) {
         $cfile = opt('o') . ".c";
@@ -490,6 +491,7 @@ sub compile_cstyle {
 
     my $command = "$BinPerl$taint -MO=$Backend,$options $Input";
     vprint 5, "Compiling...";
+    $command =~ s/\s\s+|\t/ /g;
     vprint 0, "Calling $command";
 
     my $t0 = [gettimeofday] if opt('time');
@@ -616,8 +618,11 @@ sub cc_harness_msvc {
 
     $link .= " perl5$Config{PERL_VERSION}.lib kernel32.lib msvcrt.lib";
     $link .= $B::C::Flags::extra_libs;
+    $compile =~ s/\s\s+|\t/ /g;
     vprint 3, "Calling $Config{cc} $compile";
     vsystem("$Config{cc} $compile");
+
+    $link =~ s/\s\s+|\t/ /g;
     vprint 3, "Calling $Config{ld} $link";
     vsystem("$Config{ld} $link");
 }
@@ -716,6 +721,7 @@ sub cc_harness {
     $command .= $B::C::Flags::extra_libs if $B::C::Flags::extra_libs;
     $command = q{-g } . $command if $Options->{'g'};
     my $gcc = get_gcc();
+    $command =~ s/\s\s+|\t/ /g;
     vprint 3, "Calling $gcc $command";
     vsystem("$gcc $command");
 }
@@ -782,6 +788,7 @@ sub yclept {
         my $command = "$BinPerl$taint -MB::Stash -c $Input";
 
         # Filename here is perfectly sanitised.
+        $command =~ s/\s\s+|\t/ /g;
         vprint 3, "Calling $command\n";
 
         my ( $stash_r, $error_r, $errcode ) = spawnit($command);
