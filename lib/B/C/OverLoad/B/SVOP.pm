@@ -23,30 +23,8 @@ sub do_save {
         $svsym = '&PL_sv_undef';                              # pad does not need to be saved
         debug( sv => "SVOP->sv aelemfast pad %d\n", $op->flags );
     }
-    elsif ( $op->name eq 'gv'
-        and $op->next
-        and $op->next->name eq 'rv2cv'
-        and $op->next->next
-        and $op->next->next->name eq 'defined' ) {
-
-        # 96 do not save a gvsv->cv if just checked for defined'ness
-        my $gv   = $op->sv;
-        $svsym = '(SV*)' . $gv->save();
-    }
     else {
-        my $sv = $op->sv;
-        $svsym = $sv->save( "svop " . $op->name );
-        if ( $svsym =~ /^(gv_|PL_.*gv)/ ) {
-            $svsym = '(SV*)' . $svsym;
-        }
-        elsif ( $svsym =~ /^\([SAHC]V\*\)\&sv_list/ ) {
-            $svsym =~ s/^\([SAHC]V\*\)//;
-        }
-        else {
-            $svsym =~ s/^\([GAPH]V\*\)/(SV*)/;
-        }
-
-        WARN( "Error: SVOP: " . $op->name . " $sv $svsym" ) if $svsym =~ /^\(SV\*\)lexwarn/;    #322
+        $svsym = $op->sv->save( "svop " . $op->name );
     }
 
     my $is_const_addr = $svsym =~ m/Null|\&/;
