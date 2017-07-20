@@ -2,7 +2,7 @@ package B::PV;
 
 use strict;
 
-use B qw/cstring SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVt_PVGV SVf_READONLY/;
+use B qw/SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVt_PVGV SVf_READONLY/;
 use B::C::Debug qw/debug/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
@@ -42,7 +42,7 @@ sub do_save {
     # static pv, do not destruct. test 13 with pv0 "3".
     if ( !$shared_hek and $flags & SVf_READONLY and !$len ) {
         $flags &= ~0x01000000;
-        debug( pv => "turn off SVf_FAKE %s %s\n", cstring($pv), $fullname );
+        debug( pv => "turn off SVf_FAKE %s %s\n", $pv, $fullname );
     }
 
     my $xpv_sym = 'NULL';
@@ -129,7 +129,7 @@ sub save_svu {
 
     $fullname = '' if !defined $fullname;
 
-    debug( pv => "Saving pv %s %s cur=%d, len=%d, %s", $savesym, cstring($pv), $cur, $len, $shared_hek ? "shared, $fullname" : $fullname );
+    debug( pv => "Saving pv %s %s cur=%d, len=%d, %s", $savesym, $pv, $cur, $len, $shared_hek ? "shared, $fullname" : $fullname );
 
     $savesym = ".svu_pv=(char*) $savesym";
     return ( $savesym, $cur, $len, $pv, $flags );
