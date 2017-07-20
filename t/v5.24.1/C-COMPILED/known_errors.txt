@@ -62,6 +62,7 @@ re/reg_eval_scope.t           PLAN      BC issue #295 - (?{}) should have its ow
 re/reg_pmod.t                 TESTS     BC issue #295 - (?{}) should have its own lexical scope
 re/rxcode.t                   TESTS     BC issue #295 - (?{}) should have its own lexical scope
 re/subst_amp.t                TESTS     BC issue #295 - (?{}) should have its own lexical scope
+uni/cache.t                   TESTS     GH #66 - We are explicitly clearing Cache to get B::C to work for now.
 uni/caller.t                  PLAN      BC issue #221 - delete is not anonymizing the returned sub
 uni/chr.t                     COMPAT    BC issue #283 - deprecated "encoding" pragma
 uni/greek.t                   COMPAT    BC issue #283 - deprecated "encoding" pragma
