@@ -37,7 +37,6 @@ op/coreamp.t                  COMPAT    unsupported experimental::lexical_topic
 op/coresubs.t                 COMPAT    uses B::walkoptree
 op/glob.t                     SKIP      Flaps because it's surprised to see perlcc files during its run.
 op/goto_xs.t                  COMPAT    needs XS::APItest
-op/lc.t                       TESTS     ???
 op/lex.t                      COMPAT    Tests trigger errors at compilation time
 op/lexsub.t                   BC        GH #60 - SEGV at compile time from B
 op/method.t                   TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
@@ -65,8 +64,6 @@ re/rxcode.t                   TESTS     BC issue #295 - (?{}) should have its ow
 re/subst_amp.t                TESTS     BC issue #295 - (?{}) should have its own lexical scope
 uni/caller.t                  PLAN      BC issue #221 - delete is not anonymizing the returned sub
 uni/chr.t                     COMPAT    BC issue #283 - deprecated "encoding" pragma
-uni/class.t                   TESTS     ???
-uni/fold.t                    TESTS     ???
 uni/greek.t                   COMPAT    BC issue #283 - deprecated "encoding" pragma
 uni/gv.t                      TESTS     ???
 uni/latin2.t                  COMPAT    BC issue #283 - deprecated "encoding" pragma
