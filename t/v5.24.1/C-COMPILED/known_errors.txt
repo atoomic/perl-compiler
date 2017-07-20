@@ -66,7 +66,7 @@ uni/cache.t                   TESTS     GH #66 - We are explicitly clearing Cach
 uni/caller.t                  PLAN      BC issue #221 - delete is not anonymizing the returned sub
 uni/chr.t                     COMPAT    BC issue #283 - deprecated "encoding" pragma
 uni/greek.t                   COMPAT    BC issue #283 - deprecated "encoding" pragma
-uni/gv.t                      TESTS     ???
+uni/gv.t                      TESTS     GH #67 - improper utf8 warnings emitted during bad sprintf
 uni/latin2.t                  COMPAT    BC issue #283 - deprecated "encoding" pragma
 uni/tr_7jis.t                 COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
 uni/tr_eucjp.t                COMPAT    BC issue #283 - unsupported deprecated "encoding" pragma
