@@ -765,10 +765,6 @@ sub yclept {
         $OINC{$_}++ for map { File::Spec->catdir( $incpre, $_ ) } split( ' ', $incver );
         $OINC{$incpre}++;
     }
-    for my $i (@INC) {
-        my $inc = $i =~ m/\s/ ? qq{"$i"} : $i;
-        $command .= " -I$inc" unless $OINC{$i};    # omit internal @INC dirs
-    }
 
     return $command;
 }
