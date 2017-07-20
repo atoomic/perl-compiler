@@ -36,22 +36,22 @@ sub run {
     if ( grep { $_ =~ qr{^--?c(onfig)?$} } @args ) {
         @args = grep { $_ !~ qr{^--?c(onfig)$} } @args;
         say '# Running: Makefile.PL + make install for B::C';
-        system('./configure.cpanel') == 0 or do { warn $!; return $?};
+        system('./configure.cpanel') == 0 or do { warn $!; return $? };
         say '# Ok: B::C is updated.';
     }
 
     if ( grep { $_ eq q{-t} } @args ) {
-        @args = grep { $_ ne q{-t}} @args;
+        @args = grep { $_ ne q{-t} } @args;
         qx{git checkout t};
         say '# git checkout t - ', $? ? 'failure !' : 'ok';
     }
 
     if ( grep { $_ eq q{-k} } @args ) {
-        @args = grep { $_ ne q{-k}} @args;
+        @args = grep { $_ ne q{-k} } @args;
         qx{git checkout t/v5.24.1/C-COMPILED/known_errors.txt};
         say '# git checkout t/v5.24.1/C-COMPILED/known_errors.txt -', $? ? 'failure !' : 'ok';
+        $ENV{PERLCC_DONT_UPDATE_TESTS} = 1;
     }
-
 
     if ( !grep { $_ =~ qr{^--state} } @args ) {
         unshift @args, '--state=save';

@@ -124,6 +124,7 @@ sub update_known_errors {
 
     # disable updates when running travis (not sure if FS support flock)
     return if $ENV{TRAVIS} && $ENV{CI};
+    return if $ENV{PERLCC_DONT_UPDATE_TESTS};
 
     # tests can be run in parallel
     open( my $fh, '+<', $self->{error_file} ) or die( "Can't open " . $self->{error_file} . ": $!" );
