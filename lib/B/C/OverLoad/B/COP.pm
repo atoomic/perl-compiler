@@ -78,8 +78,9 @@ sub save_hints {
     my $hash = $hints->HASH;
     return 'NULL' unless $hash and ref($hash) || '' eq 'HASH' and keys %$hash;
 
-    # We don't understand it but a ':' key in the hints bucket change will break tests:
-    # io/layers.t, op/goto.t
+    # $op->label sets the : hint. It's not clear why we can't do it here but doing so breaks things
+    # TODO: We need to determine why this is the case - https://github.com/CpanelInc/perl-compiler/issues/68
+    # io/layers.t, op/goto.t break for sure if these lines are removed.
     return 'NULL' if keys %$hash == 1 and exists $hash->{':'};
     delete $hash->{':'};
 
