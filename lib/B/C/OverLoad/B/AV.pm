@@ -4,7 +4,6 @@ use strict;
 
 use B::C::Flags ();
 
-use B qw/cstring SVf_IOK SVf_POK/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/init xpvavsect svsect init_static_assignments init_bootstraplink/;
 use B::C::Helpers qw/key_was_in_starting_stash/;
@@ -87,19 +86,6 @@ sub do_save {
     # We used to block save on @- and @+ by checking for magic of type D. save_magic doesn't advertize this now so we don't have the "same" blocker.
     if ( $fill > -1 and $fullname !~ m/^(main::)?[-+]$/ ) {
         my @array = $av->ARRAY;    # crashes with D magic (Getopt::Long)
-        if ( debug('av') ) {
-            my $i = 0;
-            foreach my $el (@array) {
-                my $val = '';
-
-                # if SvIOK print iv, POK pv
-                if ( $el->can('FLAGS') ) {
-                    $val = $el->IVX           if $el->FLAGS & SVf_IOK;
-                    $val = cstring( $el->PV ) if $el->FLAGS & SVf_POK;
-                }
-                debug( av => "AV %s \[%d] = %s %s", $av, $i++, ref($el), $val );
-            }
-        }
 
         #	my @names = map($_->save, @array);
         # XXX Better ways to write loop?
