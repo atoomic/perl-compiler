@@ -2,9 +2,9 @@ package B::GV;
 
 use strict;
 
-use B qw/cstring svref_2object SVt_PVGV SVf_UTF8 SVf_AMAGIC/;
-
+use B qw/svref_2object/;
 use B::C::Debug qw/debug verbose/;
+use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
 
@@ -323,7 +323,8 @@ sub save_gv_cv {
         my $origname = $gv->cv_needs_import_after_bootstrap( $cvsym, $fullname );
         if ($origname) {
             debug( gv => "bootstrap CV $fullname using $origname\n" );
-            init_bootstraplink()->sadd( 'gp_list[%d].gp_cv = GvCV( gv_fetchpv(%s, 0, SVt_PVCV) );', $gp_ix, cstring($origname) );
+            my ( $pvsym, undef, undef ) = savecowpv($origname);
+            init_bootstraplink()->sadd( 'gp_list[%d].gp_cv = GvCV( gv_fetchpv(%s, 0, SVt_PVCV) ); /* XS CV %s */', $gp_ix, $pvsym, $origname );
         }
 
     }
@@ -395,7 +396,7 @@ sub savecv {
     return if $package eq 'B::C';
 
     my $fullname = $package . "::" . $name;
-    debug( gv => "Checking GV *%s 0x%x\n", cstring($fullname), ref $gv ? $$gv : 0 ) if verbose();
+    debug( gv => "Checking GV *%s 0x%x\n", $fullname, ref $gv ? $$gv : 0 ) if verbose();
 
     # We may be looking at this package just because it is a branch in the
     # symbol table which is on the path to a package which we need to save
