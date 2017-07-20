@@ -15,10 +15,6 @@ sub do_save {
 
     my $svsym = 'Nullsv';
 
-    # STATIC HV: This might be a bug now we have a static stash.
-    # It might also be a XS op we need to be aware of and take special action beyond this.
-    #
-    # XXX moose1 crash with 5.8.5-nt, Cwd::_perl_abs_path also
     if ( $op->name eq 'aelemfast' and $op->flags & 128 ) {    #OPf_SPECIAL
         $svsym = '&PL_sv_undef';                              # pad does not need to be saved
         debug( sv => "SVOP->sv aelemfast pad %d\n", $op->flags );
@@ -27,11 +23,13 @@ sub do_save {
         $svsym = $op->sv->save( "svop " . $op->name );
     }
 
-    my $is_const_addr = $svsym =~ m/Null|\&/;
+    # PL_envgv and PL_argvgv STATIC_HV: We're probably saving those wrong.
+    if ( $svsym !~ m/^\(.V\)\s*PL_/ ) {
+        init()->add("svop_list[$ix].op_sv = (SV*) $svsym;");
+        $svsym = 'NULL';
+    }
 
-    my $svop_sv = ( $is_const_addr ? $svsym : "Nullsv /* $svsym */" );
-    svopsect()->supdate( $ix, "%s, (SV*) %s", $op->_save_common, $svop_sv );
-    init()->add("svop_list[$ix].op_sv = (SV*) $svsym;") unless $is_const_addr;
+    svopsect()->supdate( $ix, "%s, (SV*) %s", $op->_save_common, $svsym );
 
     return $sym;
 }
