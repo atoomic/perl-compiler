@@ -2,9 +2,10 @@ package B::REGEXP;
 
 use strict;
 
-use B qw/cstring RXf_EVAL_SEEN/;
+use B qw/RXf_EVAL_SEEN/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/init1 init2 svsect xpvsect/;
+use B::C::Save qw/savecowpv/;
 
 # post 5.11: When called from B::RV::save not from PMOP::save precomp
 sub do_save {
@@ -21,7 +22,7 @@ sub do_save {
     # construct original PV
     $pv =~ s/^(\(\?\^[adluimsx-]*\:)(.*)\)$/$2/;
     $cur -= length( $sv->PV ) - length($pv);
-    my $cstr = cstring($pv);
+    my ( $cstr, undef, undef ) = savecowpv($pv);
 
     my $magic_stash = $sv->save_magic_stash;
     my $magic       = $sv->save_magic($fullname);
