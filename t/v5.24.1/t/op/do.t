@@ -7,7 +7,6 @@ BEGIN {
 }
 use strict;
 no warnings 'void';
-use IO::File (); # scalar file handles require this module for B::C to work right.
 
 my $called;
 my $result = do{ ++$called; 'value';};
