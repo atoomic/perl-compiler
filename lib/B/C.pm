@@ -11,8 +11,8 @@
 
 package B::C;
 
-our $VERSION = '5.024013';
-our $caller  = caller;       # So we know how we were invoked.
+our $VERSION = '5.024014_01';
+our $caller  = caller;          # So we know how we were invoked.
 
 our @ISA = qw(Exporter);
 
@@ -65,7 +65,7 @@ sub build_c_file {
     parse_options(@configure_options);    # Parses command line options and populates $settings where necessary
     save_compile_state();
     load_heavy();                         # Loads B::C_heavy.pl
-    
+
     # After we did a require, clear the SWASH cache so it's not saved.
     utf8->can('reset_swash') and utf8->can('reset_swash')->();
 
@@ -120,7 +120,7 @@ sub save_compile_state {
 sub save_inc {
     my %compiled_INC = %INC;
     delete $compiled_INC{"$_.pm"} foreach qw{B B/C O };
-    foreach my $key (keys %compiled_INC) {
+    foreach my $key ( keys %compiled_INC ) {
         delete $compiled_INC{$key} if $key =~ m/^unicore/;
     }
     return \%compiled_INC;
