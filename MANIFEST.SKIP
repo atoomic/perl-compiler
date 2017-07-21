@@ -1,6 +1,7 @@
 ^bcdiff
 \B\.git
 \.bin$
+\.gdbinit$
 ^blib
 \.branched_from
 \B\.travis.yml\b
