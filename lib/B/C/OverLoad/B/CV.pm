@@ -95,7 +95,7 @@ sub do_save {
 }
 
 {
-    my %_const_sv_function = map { $_ => 'bc_const_sv_xsub' } qw{B::IV B::UV B::PV};
+    my %_const_sv_function = map { $_ => 'bc_const_sv_xsub' } qw{B::IV B::UV B::PV B::PVIV B::PVUV};
 
     sub can_do_const_sv {
         my ($cv) = @_;
