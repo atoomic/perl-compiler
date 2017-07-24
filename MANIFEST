@@ -107,6 +107,7 @@ t/v5.24.1/C-COMPILED/bctestc/44.Hints-refcounted-he.t
 t/v5.24.1/C-COMPILED/bctestc/51.regexp-variable.t
 t/v5.24.1/C-COMPILED/bctestc/64.backslash-p-in-RegExp.t
 t/v5.24.1/C-COMPILED/bctestc/69.Class-XSAccessor.t
+t/v5.24.1/C-COMPILED/bctestc/70.constant-as-PVIV.t
 t/v5.24.1/C-COMPILED/cmd/elsif.t
 t/v5.24.1/C-COMPILED/cmd/for.t
 t/v5.24.1/C-COMPILED/cmd/mod.t
@@ -564,6 +565,8 @@ t/v5.24.1/C-COMPILED/t/bctestc/44.Hints-refcounted-he.t
 t/v5.24.1/C-COMPILED/t/bctestc/51.regexp-variable.t
 t/v5.24.1/C-COMPILED/t/bctestc/64.backslash-p-in-RegExp.t
 t/v5.24.1/C-COMPILED/t/bctestc/69.Class-XSAccessor.t
+t/v5.24.1/C-COMPILED/t/bctestc/70.constant-as-PVIV.t
+t/v5.24.1/C-COMPILED/t/bctestc/myConstants.pm
 t/v5.24.1/C-COMPILED/t/benchmark/rt26188-speed-up-keys-on-empty-hash.t
 t/v5.24.1/C-COMPILED/t/bigmem/index.t
 t/v5.24.1/C-COMPILED/t/bigmem/pos.t
@@ -1686,6 +1689,8 @@ t/v5.24.1/t/bctestc/44.Hints-refcounted-he.t
 t/v5.24.1/t/bctestc/51.regexp-variable.t
 t/v5.24.1/t/bctestc/64.backslash-p-in-RegExp.t
 t/v5.24.1/t/bctestc/69.Class-XSAccessor.t
+t/v5.24.1/t/bctestc/70.constant-as-PVIV.t
+t/v5.24.1/t/bctestc/myConstants.pm
 t/v5.24.1/t/benchmark/rt26188-speed-up-keys-on-empty-hash.t
 t/v5.24.1/t/bigmem/index.t
 t/v5.24.1/t/bigmem/pos.t
