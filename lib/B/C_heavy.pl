@@ -51,7 +51,7 @@ BEGIN {
 use B qw(minus_c sv_undef walkoptree walkoptree_slow main_root main_start peekop
   class cchar svref_2object compile_stats comppadlist hash
   init_av end_av opnumber cstring main_cv
-  HEf_SVKEY SVf_POK SVf_ROK SVf_IOK SVf_NOK SVf_IVisUV SVf_READONLY SVf_PROTECT);
+  SVf_POK SVf_ROK SVf_IOK SVf_NOK SVf_IVisUV SVf_READONLY SVf_PROTECT);
 
 BEGIN {
     @B::NV::ISA = 'B::IV';    # add IVX to nv. This fixes test 23 for Perl 5.8

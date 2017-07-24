@@ -119,7 +119,7 @@ sub save_compile_state {
 
 sub save_inc {
     my %compiled_INC = %INC;
-    delete $compiled_INC{"$_.pm"} foreach qw{B B/C O };
+    delete $compiled_INC{"$_.pm"} foreach qw{B/C O };    #...
     foreach my $key ( keys %compiled_INC ) {
         delete $compiled_INC{$key} if $key =~ m/^unicore/;
     }
@@ -192,10 +192,11 @@ sub cleanup_stashes {
         delete $stashes->{$k};
     }
 
-    # cleanup sepcial stashes
-    foreach my $unsaved (qw{B:: O::}) {
+    # cleanup special stashes
+    foreach my $unsaved (qw{O::}) {
         delete $stashes->{$unsaved};
     }
+    delete $stashes->{'B::'}{'C::'};
 
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
@@ -215,7 +216,6 @@ sub cleanup_stashes {
     foreach my $f (
         map { q{_<} . $_ }
         qw{
-        /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/B.pm
         /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/O.pm
         /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/cpanel_lib/x86_64-linux-64int/B/C.pm
         -e
@@ -336,12 +336,18 @@ sub set_stashes_enames {
 
 sub save_xsloader_so {
     my @DL = eval '@DynaLoader::dl_shared_objects';    # Quoted eval gets rid of no warnings once issue.
-    return [ grep { $_ !~ m{/B/B\.so$} && $_ !~ qr{\QPerlIO/scalar/scalar.so\E$} } @DL ];
+    return [
+        grep {
+            #$_ !~ m{/B/B\.so$} &&
+
+            $_ !~ qr{\QPerlIO/scalar/scalar.so\E$}
+        } @DL
+    ];
 }
 
 sub save_xsloader_modules {
     my @DL = eval '@DynaLoader::dl_modules';           # Quoted eval gets rid of no warnings once issue.
-    return [ grep { $_ !~ m{^B$} && $_ ne 'PerlIO::scalar' } @DL ];
+    return [ grep { $_ !~ m{^B/$} && $_ ne 'PerlIO::scalar' } @DL ];
 }
 
 # This parses the options passed to sub compile but not until build_c_file is invoked at the end of BEGIN.

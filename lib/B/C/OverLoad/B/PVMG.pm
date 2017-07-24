@@ -3,7 +3,7 @@ package B::PVMG;
 use strict;
 
 use B::C::Debug qw/debug verbose WARN/;
-use B qw/SVf_READONLY HEf_SVKEY SVf_READONLY cchar SVp_POK svref_2object/;
+use B qw/SVf_READONLY SVf_READONLY cchar SVp_POK svref_2object/;
 use B::C::Save qw/savecowpv/;
 use B::C::Decimal qw/get_integer_value get_double_value/;
 use B::C::File qw/init init_static_assignments svsect xpvmgsect magicsect init_vtables/;
