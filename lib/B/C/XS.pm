@@ -150,8 +150,11 @@ sub perl_module_to_sofile {
 sub important_modules_first {
 
     # JSON::XS uses attributes during bootstrap.
-    $a eq 'attributes' and return -1;
-    $b eq 'attributes' and return 1;
+    # DBI is used by DBD stuff and more
+    foreach my $first (qw{attributes DBI}) {
+        $a eq $first and return -1;
+        $b eq $first and return 1;
+    }
 
     return $a cmp $b;
 }
