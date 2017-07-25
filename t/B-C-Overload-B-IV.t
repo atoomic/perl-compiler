@@ -14,6 +14,8 @@ use B::C::OverLoad::B::RV ();
 use B::C::File qw/svsect xpvivsect/;
 use B::C::Helpers::Symtable qw/getsym/;
 
+*B::C::skip_B = sub { };
+
 my $simple_int = 8675309;
 
 my $iv = svref_2object( \$simple_int );
