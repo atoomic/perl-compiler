@@ -12,8 +12,11 @@ sub do_save {
     my ( $sv, $fullname ) = @_;
     $fullname ||= "(Unknown RV)";
 
-    # constants from B [ coming from XS ] ## need a more generic way and bootstrap them
-    return 'NULL' if $fullname =~ qr{^(main::)?B::} and $sv->RV and $sv->RV->FLAGS & SVf_READONLY;
+    # constants from B [ coming from XS ]
+    # STATIC_HV need a more generic way to do not save these constants and bootstrap them correctly
+    if ( !B::C::skip_B() ) {
+        return 'NULL' if $fullname =~ qr{^(main::)?B::} and $sv->RV and $sv->RV->FLAGS & SVf_READONLY;
+    }
 
     debug( sv => "Saving RV %s (0x%x) - called from %s:%s\n", ref($sv), $$sv, @{ [ ( caller(1) )[3] ] }, @{ [ ( caller(1) )[2] ] } );
 
@@ -51,7 +54,9 @@ sub save_rv {
 
     my $rv = $sv->RV->save($fullname);
 
-    return 'NULL' if is_constant($rv) && $fullname =~ qr{^B::};
+    if ( !B::C::skip_B() ) {
+        return 'NULL' if is_constant($rv) && $fullname =~ qr{^B::};
+    }
     return "(SV*)$rv" if is_constant($rv);
 
     $sym =~ s/^&//;

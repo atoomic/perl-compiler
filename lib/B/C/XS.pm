@@ -48,8 +48,10 @@ sub found_xs_sub {
         $self->add_to_bootstrap('re');
     }
 
-    if ( $sub =~ qr{^B::} && $sub !~ qr{^B::C} ) {
-        $self->add_to_bootstrap('B');
+    if ( !B::C::skip_B() ) {
+        if ( $sub =~ qr{^B::} && $sub !~ qr{^B::C} ) {
+            $self->add_to_bootstrap('B');
+        }
     }
 
     return;

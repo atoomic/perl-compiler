@@ -80,6 +80,11 @@ sub compile {
     return \&build_c_file;
 }
 
+sub skip_B {    # wrapper around skip packages to know if we should skip B or not
+                # perlcc is going to provide us the -UB option
+    return $settings->{'skip_packages'} && $settings->{'skip_packages'}->{'B'} ? 1 : 0;
+}
+
 sub save_compile_state {
 
     # On initial start of B::C save, clear the SWASH cache so it's not saved.
@@ -118,7 +123,9 @@ sub save_compile_state {
 
 sub save_inc {
     my %compiled_INC = %INC;
-    delete $compiled_INC{"$_.pm"} foreach qw{B/C O };    #...
+    my @to_skip      = qw{B/C O};
+    push @to_skip, 'B' if skip_B();
+    delete $compiled_INC{"$_.pm"} foreach @to_skip;
     foreach my $key ( keys %compiled_INC ) {
         delete $compiled_INC{$key} if $key =~ m/^unicore/;
     }
@@ -191,11 +198,10 @@ sub cleanup_stashes {
         delete $stashes->{$k};
     }
 
-    # cleanup special stashes
-    foreach my $unsaved (qw{O::}) {
-        delete $stashes->{$unsaved};
-    }
-    delete $stashes->{'B::'}{'C::'} if exists $stashes->{'B::'};
+    # cleanup sepcial stashes
+    delete $stashes->{'O::'};
+    delete $stashes->{'B::'} if skip_B();
+    delete $stashes->{'B::'}{'C::'} if exists $stashes->{'B::'};    # always purge B::C::*
 
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
@@ -212,15 +218,19 @@ sub cleanup_stashes {
 
     # STATIC_HV - need more love to make it dynamic
     # preserve the file location but remove our bloat and the special -e to avoid a reparse
-    foreach my $f (
-        map { q{_<} . $_ }
-        qw{
-        /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/O.pm
-        /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/cpanel_lib/x86_64-linux-64int/B/C.pm
-        -e
+    {
+        my @files_to_delete = qw{
+          /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/O.pm
+          /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/cpanel_lib/x86_64-linux-64int/B/C.pm
+          -e
+        };
+        if ( skip_B() ) {
+            push @files_to_delete, '/usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/B.pm';
         }
-      ) {
-        delete $stashes->{$f};
+
+        foreach my $f ( map { q{_<} . $_ } @files_to_delete ) {
+            delete $stashes->{$f};
+        }
     }
 
     # PerlIO
@@ -334,19 +344,17 @@ sub set_stashes_enames {
 }
 
 sub save_xsloader_so {
-    my @DL = eval '@DynaLoader::dl_shared_objects';    # Quoted eval gets rid of no warnings once issue.
-    return [
-        grep {
-            #$_ !~ m{/B/B\.so$} &&
-
-            $_ !~ qr{\QPerlIO/scalar/scalar.so\E$}
-        } @DL
-    ];
+    my @DL = eval '@DynaLoader::dl_shared_objects';                    # Quoted eval gets rid of no warnings once issue.
+    my @short = grep { $_ !~ qr{\QPerlIO/scalar/scalar.so\E$} } @DL;
+    @short = grep { $_ !~ m{/B/B\.so$} } @short if skip_B();
+    return [@short];
 }
 
 sub save_xsloader_modules {
-    my @DL = eval '@DynaLoader::dl_modules';           # Quoted eval gets rid of no warnings once issue.
-    return [ grep { $_ !~ m{^B/$} && $_ ne 'PerlIO::scalar' } @DL ];
+    my @DL = eval '@DynaLoader::dl_modules';                             # Quoted eval gets rid of no warnings once issue.
+    my @short = grep { $_ !~ m{^B::C} && $_ ne 'PerlIO::scalar' } @DL;
+    @short = grep { $_ !~ m{^B$} } @short if skip_B();
+    return [@short];
 }
 
 # This parses the options passed to sub compile but not until build_c_file is invoked at the end of BEGIN.
