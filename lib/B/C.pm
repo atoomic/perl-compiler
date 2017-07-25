@@ -97,7 +97,6 @@ sub save_compile_state {
     $settings->{'starting_INC'} = save_inc();
 
     $settings->{'starting_stash'} = starting_stash( $::{"main::"}, 1 );
-
     cleanup_stashes();
 
     set_stashes_enames( $settings->{'starting_stash'} );
@@ -111,7 +110,7 @@ sub save_compile_state {
     #eval q { print STDERR Data::Dumper::Dumper($settings->{'dl_so_files'}, $settings->{'dl_modules'}) };
     #eval q { print STDERR Data::Dumper::Dumper($settings->{'starting_INC'}, $settings->{'starting_stash'}) };
     #eval q { print STDERR Data::Dumper::Dumper(\%seen) };
-    #print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} );
+    #eval q[print STDERR Data::Dumper::Dumper( $settings->{'starting_flat_stashes'} )];
     #exit;
 
     return;
@@ -196,7 +195,7 @@ sub cleanup_stashes {
     foreach my $unsaved (qw{O::}) {
         delete $stashes->{$unsaved};
     }
-    delete $stashes->{'B::'}{'C::'};
+    delete $stashes->{'B::'}{'C::'} if exists $stashes->{'B::'};
 
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
@@ -207,7 +206,7 @@ sub cleanup_stashes {
 
     # special logic for CORE::GLOBAL:: MUST exist ( PL_debstash )
 
-    if ( scalar keys %{ $stashes->{'Carp::'} } == 1 && exists $stashes->{'Carp::'}->{'croak'} ) {
+    if ( exists $stashes->{'Carp::'} && scalar keys %{ $stashes->{'Carp::'} } == 1 && exists $stashes->{'Carp::'}->{'croak'} ) {
         delete $stashes->{'Carp::'};
     }
 
