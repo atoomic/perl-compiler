@@ -1,5 +1,7 @@
 use DBI;
 
+# require DBI & DBD::SQLite patched with XSLoader instead of DynaLoader
+#
 print qq[1..2\n];
 
 my $file = q{/tmp/mytest.sqlite};
