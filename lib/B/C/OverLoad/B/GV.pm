@@ -323,8 +323,8 @@ sub save_gv_cv {
         my $origname = $gv->cv_needs_import_after_bootstrap( $cvsym, $fullname );
         my $is_exception;
 
-        # Do not bootsrap Exporter::VERSION to UNIVERSAL::VERSION - GH #74 - use Exporter 5.57 'import'
-        if ( ( $fullname // '' ) eq 'Exporter::VERSION' && ( $origname // '' ) eq 'UNIVERSAL::VERSION' ) {
+        # Do not bootsrap *::VERSION to UNIVERSAL::VERSION - GH #74 - use Exporter 5.57 'import'
+        if ( ( $fullname // '' ) =~ qr{::VERSION$} && ( $origname // '' ) eq 'UNIVERSAL::VERSION' ) {
             $is_exception = 1;
         }
         if ( $origname && !$is_exception ) {
