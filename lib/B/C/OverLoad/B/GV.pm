@@ -321,7 +321,13 @@ sub save_gv_cv {
             $cvsym = $gvcv->save($fullname);
         }
         my $origname = $gv->cv_needs_import_after_bootstrap( $cvsym, $fullname );
-        if ($origname) {
+        my $is_exception;
+
+        # Do not bootsrap Exporter::VERSION to UNIVERSAL::VERSION - GH #74 - use Exporter 5.57 'import'
+        if ( ( $fullname // '' ) eq 'Exporter::VERSION' && ( $origname // '' ) eq 'UNIVERSAL::VERSION' ) {
+            $is_exception = 1;
+        }
+        if ( $origname && !$is_exception ) {
             debug( gv => "bootstrap CV $fullname using $origname\n" );
             my ( $pvsym, undef, undef ) = savecowpv($origname);
             init_bootstraplink()->sadd( 'gp_list[%d].gp_cv = GvCV( gv_fetchpv(%s, 0, SVt_PVCV) ); /* XS CV %s */', $gp_ix, $pvsym, $origname );
