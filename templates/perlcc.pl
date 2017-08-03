@@ -49,8 +49,6 @@ use subs qw{
   gettimeofday tv_interval vsystem
 };
 sub opt(*);               # imal quoting
-sub is_win32();
-sub is_msvc();
 
 our ( $Options, $BinPerl, $Backend );
 our ( $Input => $Output );
@@ -120,19 +118,15 @@ sub run_code {
         }
     }
     if ($extra_libs) {
-        my $path = '';
-        my $PATHSEP = $^O eq 'MSWin32' ? ';' : ':';
+        my $path    = '';
+        my $PATHSEP = ':';
         for ( split / /, $extra_libs ) {
             s{/[^/]+$}{};
 
             # XXX qx quote?
             $path .= $PATHSEP . $_ if $_;
         }
-        if ( $^O =~ /^MSWin32|msys|cygwin$/ ) {
-            $ENV{PATH} .= $path;
-            vprint 0, "PATH=\$PATH$path";
-        }
-        elsif ( $^O ne 'darwin' ) {
+        if ( $^O ne 'darwin' ) {
             $ENV{LD_LIBRARY_PATH} .= $path;
             vprint 0, "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH$path";
         }
@@ -209,7 +203,7 @@ sub parse_argv {
         $Options->{stash}++;
         @ARGV = grep !/^-stash$/, @ARGV;
     }
-    $Options->{spawn} = 1 unless $^O eq 'MSWin32';
+    $Options->{spawn} = 1;
     Getopt::Long::GetOptions(
         $Options,
         'L=s',              # lib directory
@@ -297,10 +291,7 @@ sub parse_argv {
 
         # We don't use a temporary file here; why bother?
         # XXX: this is not bullet proof -- spaces or quotes in name!
-        $Input = is_win32()
-          ?    # Quotes eaten by shell
-          '-e "' . opt('e') . '"'
-          : "-e '" . opt('e') . "'";
+        $Input = "-e '" . opt('e') . "'";
     }
     else {
         $Input = shift @ARGV;    # XXX: more files?
@@ -329,16 +320,8 @@ sub parse_argv {
     else {
         $Output = opt('e') ? 'a.out' : $Input;
         $Output =~ s/\.(p[lm]|t)$//;
-        if ( is_win32() or $^O eq 'cygwin' ) {
-            if ( $Output eq 'a.out' ) {
-                $Output = 'a.exe';
-            }
-            else {
-                $Output .= 'exe';
-            }
-        }
     }
-    $Output = relativize($Output) unless is_win32();
+    $Output = relativize($Output);
     sanity_check();
 }
 
@@ -444,16 +427,10 @@ sub compile_cstyle {
     }
     elsif ( opt('o') ) {
         $cfile = opt('o') . ".c";
-        if ( ( is_win32() or $^O eq 'cygwin' ) and $Output =~ /\.exe.c$/ ) {
-            $cfile =~ s/\.exe\.c$/.c/,;
-        }
     }
     elsif ( opt('S') || opt('c') ) {    # We need to keep it
         if ( opt('e') ) {
             $cfile = $Output;
-            if ( ( is_win32() or $^O eq 'cygwin' ) and $Output =~ /\.exe$/ ) {
-                $cfile =~ s/\.exe$//,;
-            }
             $cfile .= '.c';
         }
         else {
@@ -478,11 +455,7 @@ sub compile_cstyle {
     }
 
     my $max_line_len = '';
-    if ( $^O eq 'MSWin32' && $Config{cc} =~ /^cl/i ) {
-        $max_line_len = '-l2000,';
-    }
-
-    my $options = "$addoptions$max_line_len$stash";
+    my $options      = "$addoptions$max_line_len$stash";
     $options .= "-o$cfile" unless opt('check');
     $options = substr( $options, 0, -1 ) if substr( $options, -1, 1 ) eq ",";
 
@@ -563,10 +536,7 @@ sub compile_cstyle {
     exit if opt('check');
 
     $t0 = [gettimeofday] if opt('time');
-    is_msvc
-      ? cc_harness_msvc( $cfile, $stash, $extra_libs )
-      : cc_harness( $cfile, $stash, $extra_libs )
-      unless opt('c');
+    cc_harness( $cfile, $stash, $extra_libs ) unless opt('c');
     $elapsed = tv_interval($t0) if opt('time');
     vprint -1, "cc time: $elapsed" if opt('time');
 
@@ -574,57 +544,6 @@ sub compile_cstyle {
         vprint 3, "Unlinking $cfile";
         unlink $cfile or _die("can't unlink $cfile: $!\n");
     }
-}
-
-sub cc_harness_msvc {
-    my ( $cfile, $stash, $extra_libs ) = @_;
-    use ExtUtils::Embed ();
-    my $obj     = "${Output}.obj";
-    my $compile = ExtUtils::Embed::ccopts . " -c -Fo$obj $cfile ";
-    my $link    = "-out:$Output $obj";
-    $compile .= $B::C::Flags::extra_cflags;
-    $compile .= " -I" . $_ for split /\s+/, opt('I');
-    $compile .= " " . opt('Wc') if opt('Wc');
-
-    $link .= " -libpath:" . $_ for split /\s+/, opt('L');
-
-    # TODO: -shared,-static,-sharedxs
-    if ($stash) {
-        my @mods = split /,?-?u/, $stash;    # XXX -U stashes
-        $link .= " " . ExtUtils::Embed::ldopts( "-std", \@mods );
-
-        # XXX staticxs need to check if the last mods for staticxs found a static lib.
-        # XXX only if not use the extra_libs
-    }
-    else {
-        $link .= " " . ExtUtils::Embed::ldopts("-std");
-    }
-    if ( $Config{ccversion} eq '12.0.8804' ) {
-        $link =~ s/ -opt:ref,icf//;
-    }
-    $link .= " " . opt('Wl') if opt('Wl');
-
-    # staticxs
-    $extra_libs =~ s/^\s+|\s+$//g;    # code by stengcode@gmail.com
-    foreach ( split /\.dll(?:\s+|$)/, $extra_libs ) {
-        $_ .= '.lib';
-        if ( !-e $_ ) {
-            die "--staticxs requires $_, you should copy it from build area";
-        }
-        else {
-            $link .= ' ' . $_;
-        }
-    }
-
-    $link .= " perl5$Config{PERL_VERSION}.lib kernel32.lib msvcrt.lib";
-    $link .= $B::C::Flags::extra_libs;
-    $compile =~ s/\s\s+|\t/ /g;
-    vprint 3, "Calling $Config{cc} $compile";
-    vsystem("$Config{cc} $compile");
-
-    $link =~ s/\s\s+|\t/ /g;
-    vprint 3, "Calling $Config{ld} $link";
-    vsystem("$Config{ld} $link");
 }
 
 sub cc_harness {
@@ -652,10 +571,6 @@ sub cc_harness {
 
     # gcc crashes with this duplicate -fstack-protector arg
     my $ldflags = $Config{ldflags};
-    if ( $^O eq 'cygwin' and $ccflags =~ /-fstack-protector\b/ and $ldopts =~ /-fstack-protector\b/ ) {
-        $ldopts =~ s/-fstack-protector\b//;
-        $ldflags =~ s/-fstack-protector\b// if $extra_libs;
-    }
     my $libperl = $Config{libperl};
     my $libdir  = $Config{prefix} . "/lib";
     my $coredir = $ENV{PERL_SRC} || $Config{archlib} . "/CORE";
@@ -774,7 +689,6 @@ sub yclept {
     my $_stash;
 
     sub grab_stash {
-
         warn "already called grab_stash once" if $_stash;
 
         my $taint =
@@ -841,7 +755,7 @@ sub sanity_check {
             # You fully deserve what you get now. No you *don't*. typos happen.
         }
         else {
-            my $suffix = ( is_win32() or $^O eq 'cygwin' ) ? '.exe' : '';
+            my $suffix = '';
             ( undef, $Output ) = tempfile( "plcXXXXX", SUFFIX => $suffix );
             warn "$0: Will not write output on top of input file, ", "compiling to $Output instead\n";
         }
@@ -996,7 +910,7 @@ sub interruptrun {
       if exists $SIG{HUP};
 
     my $needalarm =
-      ( $ENV{PERLCC_TIMEOUT} && exists $SIG{ALRM} && $Config{'osname'} ne 'MSWin32' && $command =~ m"(^|\s)perlcc\s" );
+      ( $ENV{PERLCC_TIMEOUT} && exists $SIG{ALRM} && $command =~ m"(^|\s)perlcc\s" );
 
     eval {
         local ( $SIG{ALRM} ) =
@@ -1015,9 +929,6 @@ sub interruptrun {
     close(FD);
     return ($text);
 }
-
-sub is_win32() { $^O =~ m/^(MSWin32|msys)/ }
-sub is_msvc() { is_win32 && $Config{cc} =~ m/^cl/i }
 
 END {
     if ( $cfile && !opt('S') && !opt('c') && -e $cfile ) {
