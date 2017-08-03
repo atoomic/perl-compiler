@@ -12,6 +12,7 @@ lib/B/C/File.pm
 lib/B/C/Helpers.pm
 lib/B/C/Helpers/Symtable.pm
 lib/B/C/InitSection.pm
+lib/B/C/IsUsingModule.pm
 lib/B/C/OP.pm
 lib/B/C/Optimizer/DowngradePVXV.pm
 lib/B/C/OverLoad.pm
@@ -108,6 +109,8 @@ t/v5.24.1/C-COMPILED/bctestc/51.regexp-variable.t
 t/v5.24.1/C-COMPILED/bctestc/64.backslash-p-in-RegExp.t
 t/v5.24.1/C-COMPILED/bctestc/69.Class-XSAccessor.t
 t/v5.24.1/C-COMPILED/bctestc/70.constant-as-PVIV.t
+t/v5.24.1/C-COMPILED/bctestc/72.DBI-DBD-bootstrap-order.t
+t/v5.24.1/C-COMPILED/bctestc/74.lazy-load-DBD-Pg.t
 t/v5.24.1/C-COMPILED/cmd/elsif.t
 t/v5.24.1/C-COMPILED/cmd/for.t
 t/v5.24.1/C-COMPILED/cmd/mod.t
@@ -142,6 +145,7 @@ t/v5.24.1/C-COMPILED/extra/backslash-zero-in-PV.t
 t/v5.24.1/C-COMPILED/extra/basic-signal.t
 t/v5.24.1/C-COMPILED/extra/class-accessor_antlers.t
 t/v5.24.1/C-COMPILED/extra/const-array.t
+t/v5.24.1/C-COMPILED/extra/DBI-SQLite.t
 t/v5.24.1/C-COMPILED/extra/file-close.t
 t/v5.24.1/C-COMPILED/extra/gv-av-main.t
 t/v5.24.1/C-COMPILED/extra/gv-av-stringify.t
@@ -566,6 +570,8 @@ t/v5.24.1/C-COMPILED/t/bctestc/51.regexp-variable.t
 t/v5.24.1/C-COMPILED/t/bctestc/64.backslash-p-in-RegExp.t
 t/v5.24.1/C-COMPILED/t/bctestc/69.Class-XSAccessor.t
 t/v5.24.1/C-COMPILED/t/bctestc/70.constant-as-PVIV.t
+t/v5.24.1/C-COMPILED/t/bctestc/72.DBI-DBD-bootstrap-order.t
+t/v5.24.1/C-COMPILED/t/bctestc/74.lazy-load-DBD-Pg.t
 t/v5.24.1/C-COMPILED/t/bctestc/myConstants.pm
 t/v5.24.1/C-COMPILED/t/benchmark/rt26188-speed-up-keys-on-empty-hash.t
 t/v5.24.1/C-COMPILED/t/bigmem/index.t
@@ -609,6 +615,7 @@ t/v5.24.1/C-COMPILED/t/extra/backslash-zero-in-PV.t
 t/v5.24.1/C-COMPILED/t/extra/basic-signal.t
 t/v5.24.1/C-COMPILED/t/extra/class-accessor_antlers.t
 t/v5.24.1/C-COMPILED/t/extra/const-array.t
+t/v5.24.1/C-COMPILED/t/extra/DBI-SQLite.t
 t/v5.24.1/C-COMPILED/t/extra/file-close.t
 t/v5.24.1/C-COMPILED/t/extra/gv-av-main.t
 t/v5.24.1/C-COMPILED/t/extra/gv-av-stringify.t
@@ -1690,6 +1697,8 @@ t/v5.24.1/t/bctestc/51.regexp-variable.t
 t/v5.24.1/t/bctestc/64.backslash-p-in-RegExp.t
 t/v5.24.1/t/bctestc/69.Class-XSAccessor.t
 t/v5.24.1/t/bctestc/70.constant-as-PVIV.t
+t/v5.24.1/t/bctestc/72.DBI-DBD-bootstrap-order.t
+t/v5.24.1/t/bctestc/74.lazy-load-DBD-Pg.t
 t/v5.24.1/t/bctestc/myConstants.pm
 t/v5.24.1/t/benchmark/rt26188-speed-up-keys-on-empty-hash.t
 t/v5.24.1/t/bigmem/index.t
@@ -1733,6 +1742,7 @@ t/v5.24.1/t/extra/backslash-zero-in-PV.t
 t/v5.24.1/t/extra/basic-signal.t
 t/v5.24.1/t/extra/class-accessor_antlers.t
 t/v5.24.1/t/extra/const-array.t
+t/v5.24.1/t/extra/DBI-SQLite.t
 t/v5.24.1/t/extra/file-close.t
 t/v5.24.1/t/extra/gv-av-main.t
 t/v5.24.1/t/extra/gv-av-stringify.t
