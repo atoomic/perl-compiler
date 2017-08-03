@@ -386,15 +386,15 @@ sub compile_byte {
 }
 
 sub compile_cstyle {
+
+    adjust_options_for_B_dependency( $Input, $Options );    # these are global variables...
+
     my $stash = opt('stash') ? grab_stash() : "";
-    $stash .= "," if $stash;    #stash can be empty
+    $stash .= "," if $stash;                                #stash can be empty
     $stash .= "-u$_," for @{ $Options->{u} };
     $stash .= "-U$_," for @{ $Options->{U} };
 
-    my $taint =
-        opt('T') ? ' -T'
-      : opt('t') ? ' -t'
-      :            '';
+    my $taint = opt('T') ? ' -T' : opt('t') ? ' -t' : '';
 
     # What are we going to call our output C file?
     my $lose = 0;
@@ -721,6 +721,55 @@ sub yclept {
         chomp $stash[0];
         return $_stash = $stash[0];
     }
+}
+
+{
+    # check if B is required or not: when B is not in the program dependencies then add -UB
+    sub adjust_options_for_B_dependency {
+        my ( $input, $opts ) = @_;    # do not use the global variables directly
+
+        # preserve custom choice when passing B as -u ot -U
+        return if grep { $_ eq 'B' } @{ $opts->{u} }, @{ $opts->{U} };
+
+        local ( $?, $! );             # if not localized this is going to fail later....
+        my $perl_program;
+
+        if ( my $opt_e_value = opt('e') ) {    # could also reparse input, but use the raw value
+            ( undef, $perl_program ) = tempfile( "tmp-bc-check-B-XXXXXXXX", SUFFIX => '.pl', UNLINK => 1 );
+            open my $tmp, '>', $perl_program or die "Cannot open $perl_program: $!";
+            print {$tmp} "#!$^X\n\n";
+            print {$tmp} $opt_e_value;
+            print {$tmp} "\n";
+            close $tmp;
+        }
+        else {                                 # -f $input
+            $perl_program = $input;
+        }
+
+        # do a first check to see if you can use our module
+        my $check = qx{$^X -c $perl_program 2>&1};
+        if ( $? != 0 ) {
+            vprint 2, "Program do not pass 'perl -c' check";
+            vprint 4, $check;
+            return;
+        }
+
+        # now check if B is used
+        $check = qx{$^X -MB::C::IsUsingModule=B -c $perl_program 2>&1};
+
+        # $? => 0 if B is used ; 1 if B is not used
+        if ( $? == 0 ) {
+            vprint 3, "B is used by the program";
+
+            #push @{ $opts->{u} }, 'B'; # not really needed
+        }
+        else {
+            vprint 3, "B is not used by the program: adding -UB to skip it";
+            push @{ $opts->{U} }, 'B';
+        }
+    }
+
+    return;
 }
 
 # Check the consistency of options if -B is selected.
