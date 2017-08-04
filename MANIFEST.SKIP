@@ -1,7 +1,8 @@
+^a.out
+^bamboo.sh$
 ^bcdiff
 \B\.git
 \.bin$
-\.gdbinit$
 ^blib
 \.branched_from
 \B\.travis.yml\b
@@ -13,6 +14,7 @@
 ^ctidy
 ^dprove
 ^.gdb/*
+\.gdbinit$
 ^lib/B/Asmdata\.pm
 ^lib/B/C/Flags\.pm
 ^Makefile$
@@ -20,13 +22,13 @@
 ^MANIFEST.bak$
 ^MYMETA\.
 \.patch$
+^.perldb$
 ^pm_to_blib
 ^README.alpha
+^rpms/
 ^script/perlcc$
 ^setup.cpanel
 \.subtest\.
 \.tar\.gz$
+^test
 \.tmp~$
-^rpms/
-^.perldb$
-^bamboo.sh$
