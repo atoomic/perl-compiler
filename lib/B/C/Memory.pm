@@ -15,9 +15,10 @@ my @SECTION_ORDER = qw{
 };
 
 my %SIZEOF = (
-    'PERL_HV_ARRAY_ALLOC_BYTES' => 8,    # 'sizeof(HE*) * size' by default
+    'PERL_HV_ARRAY_ALLOC_BYTES' => 8,     # 'sizeof(HE*) * size' by default
     'struct xpvhv_aux'          => 56,
     'void *'                    => 8,
+    'HE'                        => 24,    # need a check
 );
 
 # simple sizeof using one hardcoded value for now
@@ -169,6 +170,13 @@ sub INITPADLIST {
     consume_malloc( $init, sizeof('PAD *') * $number_of_items );
 
     return sprintf( q{INITPADLIST(%s, %d)}, $pad, $number_of_items );
+}
+
+sub HvAddEntry {
+    my ( $init, $sym, $value, $shared_he, $max ) = @_;
+    consume_malloc( $init, sizeof('HE') );
+
+    return sprintf( q{HvAddEntry(%s, (SV*) %s, %s, %d)}, $sym, $value, $shared_he, $max );
 }
 
 1;
