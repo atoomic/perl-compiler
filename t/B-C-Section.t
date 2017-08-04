@@ -5,8 +5,6 @@ use warnings;
 
 use 5.14.0;    # Inline packages
 
-use B::C ();   # Before test::warnings;
-
 use Test::More;
 use Test::Trap;
 use Test::Deep;
@@ -14,9 +12,12 @@ use Test::Deep;
 use FileHandle;
 use B::C::Section;
 
-my %symtable;
+BEGIN {
+	use B::C ();
+	B::C::load_heavy(); # need some helpers from there & bootstrap C.xs
+}
 
-B::C::load_heavy(); # need some helpers from there
+my %symtable;
 
 my $aaasect   = B::C::Section->new( 'aaa',   \%symtable, 0 );
 my $bbbsect   = B::C::Section->new( 'bbb',   \%symtable, 0 );
@@ -70,7 +71,8 @@ is( $bbbsect->debug( 'some', undef, 'lines', undef), 'some, undef, lines, undef'
 	# Start over. Let's test output now.
 	#B::C::Debug::enable_verbose();
 	#B::C::Debug::enable_debug_level('flags');
-	my $bbbsect = B::C::Section->new( 'bbb', \%symtable, 'default_value_here' );
+	my $bbbsect;
+    $bbbsect = B::C::Section->new( 'bbb', \%symtable, 'default_value_here' );
 	$bbbsect->add("first row");
 	$bbbsect->add("second row");
 	$bbbsect->debug( 'my debug comment' );
@@ -81,7 +83,7 @@ is( $bbbsect->debug( 'some', undef, 'lines', undef), 'some, undef, lines, undef'
 	is( $string, "first row\nsecond row\nthird row\n", "Simple output" );
 
 	# testing with an unresolved symbol
-	my $bbbsect = B::C::Section->new( 'bbb', \%symtable, 'default_value_here' );
+	$bbbsect = B::C::Section->new( 'bbb', \%symtable, 'default_value_here' );
 	$bbbsect->add("first", "s\\_134bcef33", 'third');
 	trap { $string = $bbbsect->output("%s,\n") };
 	is( $string, "first,\ndefault_value_here,\nthird,\n", "unresolved symbol" );

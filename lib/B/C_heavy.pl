@@ -36,16 +36,14 @@ use B::C::Helpers::Symtable qw(objsym savesym);
 use Exporter ();
 use Errno    ();                           #needed since 5.14
 
-# Caller was populated in C.pm
 BEGIN {
-    if ( $caller eq 'O' or $caller eq 'Od' ) {
-        require XSLoader;
-        no warnings;
-        XSLoader::load('B::C');
-    }
+    # always boot XS now that we have the heavy version
+    require XSLoader;
+    no warnings;
+    XSLoader::load('B::C');
 }
 
-use B::C::Memory ();       # after loading C.xs
+use B::C::Memory ();                       # after loading C.xs
 
 # for 5.6.[01] better use the native B::C
 # but 5.6.2 works fine
