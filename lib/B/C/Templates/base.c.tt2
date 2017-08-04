@@ -100,8 +100,10 @@ void *bc_alloc( MEM_SIZE size ) {
 
 #if USE_BC_NEWXZ
 #define do_Newxz bc_Newxz
+#define do_Newx bc_Newxz
 #else
 #define do_Newxz Newxz
+#define do_Newx  Newx
 #endif
 
 /* TODO: Not provided in perl core? */
@@ -438,7 +440,7 @@ Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %
 SV ** INITAv(AV * av, int number_of_items) {
     SV **svp;
 
-    Newx(svp, number_of_items, SV*);
+    do_Newx(svp, number_of_items, SV*); /* do not use newxz there - no need to zeroed out */
     AvALLOC(av) = svp;
     AvARRAY(av) = svp;
     return svp;

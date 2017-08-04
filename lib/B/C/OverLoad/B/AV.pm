@@ -223,7 +223,9 @@ sub add_malloc_line_for_array_init {
 
     $fill = $fill < 3 ? 3 : $fill + 1;
 
-    $deferred_init->sadd( "SV **svp = INITAv(%s, %d);", $sym, $fill );
+    $deferred_init->sadd( "SV **svp = %s;", B::C::Memory::INITAv( $deferred_init, $sym, $fill ) );
+
+    return;
 }
 
 1;

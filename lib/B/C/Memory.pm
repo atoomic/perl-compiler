@@ -179,4 +179,12 @@ sub HvAddEntry {
     return sprintf( q{HvAddEntry(%s, (SV*) %s, %s, %d)}, $sym, $value, $shared_he, $max );
 }
 
+sub INITAv {
+    my ( $init, $sym, $number_of_items ) = @_;
+
+    consume_malloc( $init, sizeof('SV *') * $number_of_items );
+
+    return sprintf( q{INITAv(%s, %d)}, $sym, $number_of_items );
+}
+
 1;
