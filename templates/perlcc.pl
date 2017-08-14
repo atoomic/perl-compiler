@@ -767,16 +767,8 @@ sub yclept {
             #push @{ $opts->{u} }, 'B'; # not really needed
         }
         else {
-            $check  = qx{$^X -MB::C::IsUsingModule=Moose -c $perl_program 2>&1};
-            $status = $?;
-            vprint 4, '-MB::C::IsUsingModule=Moose -c', $status;
-            if ( $status == 0 ) {
-                vprint 3, 'Moose is used by the program [cannot remove B]';
-            }
-            else {
-                vprint 3, "B is not used by the program: adding -UB to skip it";
-                push @{ $opts->{U} }, 'B';
-            }
+            vprint 3, "B is not used by the program: adding -UB to skip it";
+            push @{ $opts->{U} }, 'B';
         }
     }
 
