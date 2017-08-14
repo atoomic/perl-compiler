@@ -747,25 +747,36 @@ sub yclept {
         }
 
         # do a first check to see if you can use our module
-        my $check = qx{$^X -c $perl_program 2>&1};
-        if ( $? != 0 ) {
+        my $check  = qx{$^X -c $perl_program 2>&1};
+        my $status = $?;
+        if ( $status != 0 ) {
             vprint 2, "Program do not pass 'perl -c' check";
             vprint 4, $check;
             return;
         }
 
         # now check if B is used
-        $check = qx{$^X -MB::C::IsUsingModule=B -c $perl_program 2>&1};
+        $check  = qx{$^X -MB::C::IsUsingModule=B -c $perl_program 2>&1};
+        $status = $?;
+        vprint 4, '-MB::C::IsUsingModule=B -c', $status;
 
         # $? => 0 if B is used ; 1 if B is not used
-        if ( $? == 0 ) {
+        if ( $status == 0 ) {
             vprint 3, "B is used by the program";
 
             #push @{ $opts->{u} }, 'B'; # not really needed
         }
         else {
-            vprint 3, "B is not used by the program: adding -UB to skip it";
-            push @{ $opts->{U} }, 'B';
+            $check  = qx{$^X -MB::C::IsUsingModule=Moose -c $perl_program 2>&1};
+            $status = $?;
+            vprint 4, '-MB::C::IsUsingModule=Moose -c', $status;
+            if ( $status == 0 ) {
+                vprint 3, 'Moose is used by the program [cannot remove B]';
+            }
+            else {
+                vprint 3, "B is not used by the program: adding -UB to skip it";
+                push @{ $opts->{U} }, 'B';
+            }
         }
     }
 
