@@ -7,6 +7,7 @@ our @ISA = qw/B::C::Section/;
 
 use B::C::Debug qw(debug);
 use B qw(cstring);
+use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
 
 # All objects inject into this shared variable.
 our @all_eval_pvs;
@@ -209,8 +210,11 @@ sub output {
                    { exists($sym->{$1}) ? $sym->{$1} : $default; }ge;
 
             while ( $j =~ m{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP} ) {
-                my $sub = $1;
-                my $getcv = sprintf( q{GvCV( gv_fetchpv(%s, 0, SVt_PVCV) )}, cstring($sub) );
+                my $sub   = $1;
+                my $getcv = sprintf(
+                    q{GvCV( %s )},
+                    gv_fetchpv_to_fetchpvn_flags( $sub, 0, 'SVt_PVCV' )
+                );
                 $j =~ s{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP}{$getcv};
             }
 
