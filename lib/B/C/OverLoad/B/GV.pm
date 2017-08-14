@@ -4,6 +4,7 @@ use strict;
 
 use B qw/svref_2object/;
 use B::C::Debug qw/debug verbose/;
+use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
@@ -329,8 +330,13 @@ sub save_gv_cv {
         }
         if ( $origname && !$is_exception ) {
             debug( gv => "bootstrap CV $fullname using $origname\n" );
-            my ( $pvsym, undef, undef ) = savecowpv($origname);
-            init_bootstraplink()->sadd( 'gp_list[%d].gp_cv = GvCV( gv_fetchpv(%s, 0, SVt_PVCV) ); /* XS CV %s */', $gp_ix, $pvsym, $origname );
+
+            init_bootstraplink()->sadd(
+                'gp_list[%d].gp_cv = GvCV( %s ); /* XS CV %s */',
+                $gp_ix,
+                gv_fetchpv_to_fetchpvn_flags( $origname, 0, 'SVt_PVCV' ),
+                $origname
+            );
         }
 
     }
