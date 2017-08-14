@@ -8,12 +8,23 @@ use B qw/SVf_POK SVp_POK/;
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw/read_utf8_string
   is_constant strlen_flags cow_strlen_flags is_shared_hek
-  cstring_cow get_index key_was_in_starting_stash
+  cstring_cow get_index key_was_in_starting_stash gv_fetchpv_to_fetchpvn_flags
   /;
 
 # B/C/Helpers/Sym
 
 use B qw/cstring/;
+
+# avoid the call to gv_fetchpv and use gv_fetchpv_flags instead
+sub gv_fetchpv_to_fetchpvn_flags {
+    my ( $name, $flags, $type ) = @_;
+
+    my ( $cname, $cur, $utf8 ) = strlen_flags($name);
+    $flags //= '0';    # no add by default
+    $flags .= length($flags) ? "|$utf8" : $utf8 if $utf8;
+
+    return sprintf( "gv_fetchpvn_flags(%s, %d, %s, %s)", $cname, $cur, $flags, $type );
+}
 
 sub is_constant {
     my $s = shift;
@@ -26,7 +37,7 @@ sub is_shared_hek {
     return 0 unless $sv && $$sv;
 
     my $flags = $sv->FLAGS;
-    return 0 unless $flags & ( SVf_POK | SVp_POK );      # cannot be a shared hek if we have no PV public or private
+    return 0 unless $flags & ( SVf_POK | SVp_POK );    # cannot be a shared hek if we have no PV public or private
     return ( ( $flags & 0x09000000 ) == 0x09000000 ) || IsCOW_hek($sv);
 }
 

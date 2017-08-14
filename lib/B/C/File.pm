@@ -26,7 +26,7 @@ use Exporter ();
 
 use B::C::Debug qw/debug WARN verbose/;
 use B::C::Helpers::Symtable qw(get_symtable_ref);
-use B::C::Helpers qw/strlen_flags/;
+use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
 use B::C::Section         ();
 use B::C::Section::Meta   ();
 use B::C::InitSection     ();
@@ -161,14 +161,13 @@ sub replace_xs_bootstrap_to_init {
 
                 my $init = B::C::get_bootstrap_section($subname);
 
-                my ( $cname, $cur, $utf8 ) = strlen_flags($subname);
-                my $flags = 0;
-                $flags .= length($flags) ? "|$utf8" : $utf8 if $utf8;
-
                 # replace the cv to the one freshly loaded by XS
                 $init->sadd(
-                    '%s_list[%d].%s = (SV*) GvCV( gv_fetchpvn_flags(%s, %d, %s, SVt_PVCV) );',
-                    $section, $ix, $field, $cname, $cur, $flags
+                    '%s_list[%d].%s = (SV*) GvCV( %s );',
+                    $section, $ix, $field,
+
+                    # uses gv_fetchpvn_flags instead of gv_fetchpv to save one strlen
+                    gv_fetchpv_to_fetchpvn_flags( $subname, 0, 'SVt_PVCV' ),
                 );
 
             }
