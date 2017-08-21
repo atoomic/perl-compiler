@@ -197,7 +197,8 @@ sub do_save {
     # Setup xhv_name_u and xhv_name_count in the AUX section of the hash via hv_name_set.
     my @enames     = $hv->ENAMES;
     my $name_count = $hv->name_count;
-    warn("Found an example of a non-zero HvAUX name_count!") if $name_count;
+
+    #warn("Found an example of a non-zero HvAUX name_count!") if $name_count;
     if ( scalar @enames and !length $enames[0] and $stash_name ) {
         warn("Found empty ENAMES[0] for $stash_name");
     }
