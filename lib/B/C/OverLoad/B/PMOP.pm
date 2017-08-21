@@ -13,6 +13,8 @@ my ($swash_init);
 # FIXME really required ?
 sub PMf_ONCE() { 0x10000 };    # PMf_ONCE also not exported
 
+my %saved_re;
+
 sub do_save {
     my ($op) = @_;
 
@@ -78,11 +80,24 @@ sub do_save {
             $initpm->add('PL_hints |= HINT_RE_EVAL;');
         }
 
-        # XXX Modification of a read-only value attempted. use DateTime - threaded
-        $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
-        $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(%s)) = 0x%x;", $sym, $op->reflags );
+        my $key = sprintf( "((%s, %s, SVs_TEMP|%s), 0x%x, 0x%x)", $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags, $op->reflags );
+        my $pre_saved_sym = $saved_re{$key};
 
-        if ($eval_seen) {    # set HINT_RE_EVAL off
+        # XXX Modification of a read-only value attempted. use DateTime - threaded
+        if (
+            $pre_saved_sym &&    # If we have already seen this regex
+            !$eval_seen    &&    # and it does not have an eval
+            $qre !~ tr{()}{}     # and it does not have a capture
+          ) {                    # we can just use the reference.
+            $initpm->sadd( "PM_SETRE(%s, ReREFCNT_inc(PM_GETRE(%s))); /* %s */", $sym, $pre_saved_sym, $qre );
+        }
+        else {
+            $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
+            $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(%s)) = 0x%x;", $sym, $op->reflags );
+            $saved_re{$key} = $sym;
+        }
+
+        if ($eval_seen) {        # set HINT_RE_EVAL off
             $initpm->add('PL_hints = hints_sav;');
         }
         $initpm->close_block();
@@ -91,7 +106,7 @@ sub do_save {
     if ( $replrootfield && $replrootfield ne 'NULL' ) {
 
         my $pmsym = $sym;
-        $pmsym =~ s/^\&//;    # Strip '&' off the front.
+        $pmsym =~ s/^\&//;       # Strip '&' off the front.
 
         # XXX need that for subst
         init()->sadd( "%s.op_pmreplrootu.op_pmreplroot = (OP*)%s;", $pmsym, $replrootfield );
