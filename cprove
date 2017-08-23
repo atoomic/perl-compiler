@@ -7,7 +7,7 @@ use strict;
 
 use Cwd;
 
-use constant TEST_SUITE_VERSION => 'v5.24.1';
+use constant TEST_SUITE_VERSION => 'testsuite';
 use constant KNOWN_ERRORS       => 't/' . TEST_SUITE_VERSION . '/C-COMPILED/known_errors.txt';
 
 my @BLACKLIST = (
@@ -48,8 +48,8 @@ sub run {
 
     if ( grep { $_ eq q{-k} } @args ) {
         @args = grep { $_ ne q{-k} } @args;
-        qx{git checkout t/v5.24.1/C-COMPILED/known_errors.txt};
-        say '# git checkout t/v5.24.1/C-COMPILED/known_errors.txt -', $? ? 'failure !' : 'ok';
+        qx{git checkout t/$v/C-COMPILED/known_errors.txt};
+        say '# git checkout t/$v/C-COMPILED/known_errors.txt -', $? ? 'failure !' : 'ok';
         $ENV{PERLCC_DONT_UPDATE_TESTS} = 1;
     }
 
@@ -213,7 +213,7 @@ sub usage {
 # run 'git checkout t' before running tests
 > cprove -t extra/something.t
 
-# run 'git checkout t/v5.24.1/C-COMPILED/known_errors.txt before running tests
+# run 'git checkout t/$V/C-COMPILED/known_errors.txt before running tests
 > cprove -k extra/something.t
 
 # combo: recompile B::C and git checkout t before running one or more tests
