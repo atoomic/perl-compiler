@@ -16,6 +16,7 @@ BEGIN {
 
 use strict;
 use Config;
+use Cwd qw(getcwd);
 
 plan tests => 828;
 
@@ -28,10 +29,10 @@ BEGIN {
    $old_env_path = $ENV{'PATH'};
    $old_env_dcl_path = $ENV{'DCL$PATH'};
    $old_env_term = $ENV{'TERM'};
-  if ($^O eq 'VMS' && !defined($Config{d_setenv})) {
-      $ENV{PATH} = $ENV{PATH};
-      $ENV{TERM} = $ENV{TERM} ne ''? $ENV{TERM} : 'dummy';
-  }
+  # if ($^O eq 'VMS' && !defined($Config{d_setenv})) {
+  #     $ENV{PATH} = $ENV{PATH};
+  #     $ENV{TERM} = $ENV{TERM} ne ''? $ENV{TERM} : 'dummy';
+  # }
   if ($Config{'extensions'} =~ /\bIPC\/SysV\b/
       && ($Config{d_shm} || $Config{d_msg})) {
       eval { require IPC::SysV };
@@ -41,6 +42,9 @@ BEGIN {
       }
   }
 }
+
+my $start = getcwd;
+$start =~ /(.*)/; $start = $1;
 
 my $Is_VMS      = $^O eq 'VMS';
 my $Is_MSWin32  = $^O eq 'MSWin32';
@@ -53,6 +57,9 @@ my $Invoke_Perl = $Is_VMS      ? 'MCR Sys$Disk:[]Perl.exe' :
                   $Is_MSWin32  ? '.\perl'               :
                   $Is_NetWare  ? 'perl'                 :
                                  './perl'               ;
+ 
+( $Invoke_Perl)  = $^X =~ m/(.+)/; # untaint
+
 my @MoreEnv = qw/IFS CDPATH ENV BASH_ENV/;
 
 if ($Is_VMS) {
@@ -2151,10 +2158,13 @@ foreach my $ord (78, 163, 256) {
     # is still on the PATH.  There is however no way to determine the
     # actual path on the current system without loading the Win32
     # module, so we just restore the original $ENV{PATH} here.
-    local $ENV{PATH} = $ENV{PATH};
-    $ENV{PATH} = $old_env_path if $Is_MSWin32;
+
+    local $ENV{PATH} = $old_env_path;
+
+    chdir $start if defined $start;
 
     fresh_perl_is(<<'end', "ok", { switches => [ '-T' ] },
+    #!perl -T
     $TAINT = substr($^X, 0, 0);
     formline('@'.('<'x("2000".$TAINT)).' | @*', 'hallo', 'welt');
     print "ok";
@@ -2362,8 +2372,7 @@ is eval { eval $::x.1 }, 1, 'reset does not taint undef';
 # [perl #122669]
 {
     # See the comment above the first formline test.
-    local $ENV{PATH} = $ENV{PATH};
-    $ENV{PATH} = $old_env_path if $Is_MSWin32;
+    local $ENV{PATH} = $old_env_path;
     is runperl(
        switches => [ '-T' ],
        prog => 'use constant K=>$^X; 0 if K; BEGIN{} use strict; '

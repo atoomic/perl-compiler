@@ -106,3 +106,5 @@ BEGIN {
 BEGIN {
     one_warning_ok;
 }
+
+map { $_->() } @tests;

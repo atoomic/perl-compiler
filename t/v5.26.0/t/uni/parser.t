@@ -140,7 +140,7 @@ is ${"main::\345\225\217"}, undef, "..and using the encoded form doesn't";
            "...and nul-clean"
         );
     }
-    
+
     {
         eval qq{\$ネ+ 1; \x{1F42A}};
         $@ =~ s/eval \d+/eval 11/;
@@ -220,15 +220,10 @@ like( $@, qr/Bad name after Ｆｏｏ'/, 'Bad name after Ｆｏｏ\'' );
     # error it prints to stderr contains a wide char.)
     utf8::encode($bad);
 
+    # B::C COMPAT
     fresh_perl_like(qq{use utf8; "\$$bad"},
-        qr/
-            \A
-            ( \QWide character in print at - line 1.\E\n )?
-            \Qsyntax error at - line 1, near \E"\$.*"\n
-            \QExecution of - aborted due to compilation errors.\E\z
-        /xm,
-
-        {stderr => 1}, "RT# 124216");
+        qr/syntax error at .* line 1, near "\$.*"/m,
+        {stderr => 1, check_perlcc_output => 1,}, "RT# 124216");
 }
 
 SKIP: {   # [perl #128738]

@@ -11,7 +11,7 @@ BEGIN {
 }
 
 use utf8;
-use open qw( :utf8 :std );
+binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
 
 plan( tests => 49 );
 
@@ -54,8 +54,8 @@ plan( tests => 49 );
     SKIP: {
         eval { require B; 1 } or skip "no B", 28;
     
-        *b = \&B::svref_2object;
-        my $CVf_ANON = B::CVf_ANON();
+        *b = B->can('svref_2object');
+        my $CVf_ANON = B->CVf_ANON();
     
         my $sub = do {
             package 온ꪵ;
@@ -99,7 +99,7 @@ plan( tests => 49 );
         };
         %ꃖᚢ:: = ();
     
-        my $gv = B::svref_2object($sub)->GV;
+        my $gv = B->can('svref_2object')->($sub)->GV;
         ok($gv->isa(q/B::GV/), "cleared stash leaves anon CV with valid GV");
     
         my $st = eval { $gv->STASH->NAME };
@@ -111,7 +111,7 @@ plan( tests => 49 );
         };
         undef %fꢄᶹᵌ::;
     
-        $gv = B::svref_2object($sub)->GV;
+        $gv = B->can('svref_2object')->($sub)->GV;
         ok($gv->isa(q/B::GV/), "undefed stash leaves anon CV with valid GV");
     
         $st = eval { $gv->STASH->NAME };
@@ -127,7 +127,7 @@ plan( tests => 49 );
         my $stash_glob = delete $::{"sӥㄒ::"};
         # Now free the GV while the stash still exists (though detached)
         delete $$stash_glob{"sӥㄒ"};
-        $gv = B::svref_2object($sub)->GV;
+        $gv = B->can('svref_2object')->($sub)->GV;
         ok($gv->isa(q/B::GV/),
         'anonymised CV whose stash is detached still has a GV');
         #fails because mro_gather_and_rename isn't clean
@@ -141,7 +141,7 @@ plan( tests => 49 );
             my $rfoo = \&Ƒಓ;
             package main;
             delete $::{'ＦŌŌ::'};
-            my $cv = B::svref_2object($rfoo);
+            my $cv = B->can('svref_2object')->($rfoo);
             # (is there a better way of testing for NULL ?)
             my $stash = $cv->STASH;
             like($stash, qr/B::SPECIAL/, "NULL CvSTASH on named sub");
@@ -158,7 +158,7 @@ plan( tests => 49 );
                 *Ƒ = sub {};
             ];
             delete $ＦŌŌ௨::{Ƒ};
-            my $cv = B::svref_2object($r);
+            my $cv = B->can('svref_2object')->($r);
             my $gv = $cv->GV;
             ok($gv->isa(q/B::GV/), "orphaned CV has valid GV");
             is($gv->NAME, '__ANON__', "orphaned CV has anon GV");
@@ -176,12 +176,12 @@ plan( tests => 49 );
     
             delete $ＦŌŌ３::{__ANON__}; # whoops!
             my ($cv,$gv);
-            $cv = B::svref_2object($남えㄉ);
+            $cv = B->can('svref_2object')->($남えㄉ);
             $gv = $cv->GV;
             ok($gv->isa(q/B::GV/), "ex-named CV has valid GV");
             is($gv->NAME, '__ANON__', "ex-named CV has anon GV");
     
-            $cv = B::svref_2object($anon);
+            $cv = B->can('svref_2object')->($anon);
             $gv = $cv->GV;
             ok($gv->isa(q/B::GV/), "anon CV has valid GV");
             is($gv->NAME, '__ANON__', "anon CV has anon GV");
@@ -197,13 +197,13 @@ plan( tests => 49 );
                 }
             }
     
-            my $br = B::svref_2object($r);
+            my $br = B->can('svref_2object')->($r);
             is ($br->STASH->NAME, 'bᓙṗ',
                 'stub records the package it was compiled in');
     
             # We need to take this reference "late", after the subroutine is
             # defined.
-            $br = B::svref_2object(eval 'sub Ẃⱒcᴷ {}; \&Ẃⱒcᴷ');
+            $br = B->can('svref_2object')->(eval 'sub Ẃⱒcᴷ {}; \&Ẃⱒcᴷ');
             die $@ if $@;
     
             is ($br->STASH->NAME, 'main',

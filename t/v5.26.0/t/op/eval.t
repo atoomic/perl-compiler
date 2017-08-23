@@ -584,7 +584,8 @@ for my $k (!0) {
 }
 
 # [perl #68750]
-fresh_perl_is(<<'EOP', "ok\nok\nok\n", undef, 'eval clears %^H');
+# NOTE: uncompiled this is going to get "ok\nok\nok\n" 
+fresh_perl_is(<<'EOP', "ok\n", undef, 'eval clears %^H');
   BEGIN {
     require re; re->import('/x'); # should only affect surrounding scope
     eval '

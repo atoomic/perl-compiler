@@ -43,7 +43,7 @@ like $@, qr/Can't call method "ｍｅｔｈｏｄ" on unblessed reference /u;
 
 {
     use utf8;
-    use open qw( :utf8 :std );
+    binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
 
     my $e;
     
@@ -66,7 +66,7 @@ like $@, qr/Can't call method "ｍｅｔｈｏｄ" on unblessed reference /u;
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｆ" at/u);
 }
 
-is(do { use utf8; use open qw( :utf8 :std ); eval 'Ｆｏｏ->ｂｏｏｇｉｅ()';
+is(do { use utf8; binmode STDOUT, ":utf8"; binmode STDERR, ":utf8"; eval 'Ｆｏｏ->ｂｏｏｇｉｅ()';
 	  $@ =~ /^\QCan't locate object method "ｂｏｏｇｉｅ" via package "Ｆｏｏ" (perhaps /u ? 1 : $@}, 1);
 
 #This reimplements a bit of _fresh_perl() from test.pl, as we want to decode
@@ -74,7 +74,7 @@ is(do { use utf8; use open qw( :utf8 :std ); eval 'Ｆｏｏ->ｂｏｏｇｉｅ
 SKIP: {
     skip_if_miniperl('no dynamic loading on miniperl, no Encode');
 
-    my $prog = q!use utf8; use open qw( :utf8 :std ); sub Ｔ::DESTROY { $x = $_[0]; } bless [], "Ｔ";!;
+    my $prog = q!use utf8; binmode STDOUT, ":utf8"; binmode STDERR, ":utf8"; sub Ｔ::DESTROY { $x = $_[0]; } bless [], "Ｔ";!;
     utf8::decode($prog);
 
     my $tmpfile = tempfile();
@@ -202,14 +202,17 @@ package ÿ {                                 # without UTF8
 }
 ÿ->${\"\x{100}"};
 
-#This test should go somewhere else.
-#DATA was being generated in the wrong package.
-package ʑ;
-no strict 'refs';
+# view https://github.com/rurban/perl-compiler/issues/324
+#   known limitaton solved by using -fsave-data
 
-::ok( *{"ʑ::DATA"}{IO}, "DATA is generated in the right glob");
-::ok !defined(*{"main::DATA"}{IO});
-::is scalar <DATA>, "Some data\n";
+# #This test should go somewhere else.
+# #DATA was being generated in the wrong package.
+# package ʑ;
+# no strict 'refs';
 
-__DATA__
-Some data
+# ::ok( *{"ʑ::DATA"}{IO}, "DATA is generated in the right glob");
+# ::ok !defined(*{"main::DATA"}{IO});
+# ::is scalar <DATA>, "Some data\n";
+
+# __DATA__
+# Some data

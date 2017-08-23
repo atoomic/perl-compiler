@@ -1640,7 +1640,7 @@ SKIP: {
 		    "assign to ^A sets FmLINES";
 }
 
-fresh_perl_like(<<'EOP', qr/^Format STDOUT redefined at/, {stderr => 1}, '#64562 - Segmentation fault with redefined formats and warnings');
+fresh_perl_like(<<'EOP', qr/^Format STDOUT redefined at/, {stderr => 1, check_perlcc_output => 1}, '#64562 - Segmentation fault with redefined formats and warnings');
 #!./perl
 
 use strict;
@@ -1993,7 +1993,7 @@ dd|
 EXPECT
 	      { stderr => 1 }, '#123245 panic in sv_chop');
 
-fresh_perl_is(<<'EOP', <<'EXPECT',
+fresh_perl_like(<<'EOP',
 use warnings 'syntax' ;
 format STDOUT =
 ^*|^*
@@ -2001,10 +2001,8 @@ my $x = q/dd/
 .
 write;
 EOP
-Not enough format arguments at - line 4.
-dd|
-EXPECT
-	      { stderr => 1 }, '#123245 different panic in sv_chop');
+	qr{^Not enough format arguments at.*\ndd|},      
+    { stderr => 1 }, '#123245 different panic in sv_chop');
 
 fresh_perl_is(<<'EOP', <<'EXPECT',
 format STDOUT =

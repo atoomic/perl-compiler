@@ -91,8 +91,7 @@ is($ret, $value, 'goto &$function_ref; from a sub called without arglist');
 BEGIN {
     use Config;
     if ($Config{extensions} =~ m{XS/APItest}) {
-	eval q[use XS::APItest qw(mycroak); 1]
-	    or die "use XS::APItest: $@\n";
+	eval q[use XS::APItest qw(mycroak); 1];
     }
     else {
 	*mycroak = sub { die @_ };

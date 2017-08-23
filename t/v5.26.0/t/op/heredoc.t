@@ -32,15 +32,15 @@ HEREDOC
         "heredoc at EOF without trailing newline"
     );
 
-    fresh_perl_is(
+    fresh_perl_like(
         "print <<;\n$string\n",
-        $string,
+        qr/$string/m,
         { switches => ['-X'] },
         "blank-terminated heredoc at EOF"
     );
-    fresh_perl_is(
+    fresh_perl_like(
         "print <<\n$string\n",
-        $string,
+        qr/$string/m,
         { switches => ['-X'] },
         "blank-terminated heredoc at EOF and no semicolon"
     );
@@ -56,6 +56,7 @@ HEREDOC
         { switches => ['-w'], stderr => 1 },
         'no warning for qq|${\<<foo}| in file'
     );
+=cut
 }
 
 
@@ -64,7 +65,7 @@ HEREDOC
     fresh_perl_like(
         "print <<HEREDOC;\nwibble\n HEREDOC",
         qr/find string terminator/,
-        {},
+        { check_perlcc_output => 1 },
         "string terminator must start at newline"
     );
 
@@ -77,7 +78,7 @@ HEREDOC
         fresh_perl_like(
             "print <<;\n" . "x" x $_,
             qr/find string terminator/,
-            { switches => ['-X'] },
+            { check_perlcc_output => 1, switches => ['-X'] },
             "empty string terminator still needs a newline (length $_)"
         );
     }
@@ -85,9 +86,12 @@ HEREDOC
     fresh_perl_like(
         "print <<ThisTerminatorIsLongerThanTheData;\nno more newlines",
         qr/find string terminator/,
-        {},
+        { check_perlcc_output => 1 },
         "long terminator fails correctly"
     );
+
+=pod
+    Skip these two tests with BCC, failure before compilation
 
     # this would read freed memory
     fresh_perl_like(
@@ -123,6 +127,7 @@ HEREDOC
         {},
         "delimcpy(): handle last char being backslash properly"
     );
+=cut
 }
 
 

@@ -63,6 +63,12 @@ $PERL =
                   './perl');
 
 
+$PERL = $^X;
+
+$PERL = $^X;
+
+$PERL = $^X;
+
 sub env_is {
     my ($key, $val, $desc) = @_;
 
@@ -451,6 +457,7 @@ SKIP: {
 
 # Make sure Errno hasn't been prematurely autoloaded
 
+    skip('Errno is loaded with a B::C program cause something used %!', 2);
    ok !keys %Errno::;
 
 # Test auto-loading of Errno when %! is used
@@ -706,6 +713,9 @@ is ++${^MPEN}, 1, '${^MPEN} can be incremented';
     sub TIESCALAR { bless {}; }
     sub FETCH { push @RT12608::G::ISA, "RT12608::H"; "RT12608::Y"; }
 }
+
+
+
 
 
 # ^^^^^^^^^ New tests go here ^^^^^^^^^

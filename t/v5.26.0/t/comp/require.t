@@ -2,8 +2,8 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    @INC = '.';
-    push @INC, '../lib', '../ext/re';
+    unshift @INC, '.';
+    unshift @INC, '../lib', '../ext/re';
 }
 
 sub do_require {
@@ -346,7 +346,7 @@ if (defined &DynaLoader::boot_DynaLoader) {
     write_file('bleah.pm',"require re; re->import('/x'); 1;\n");
     my $not = eval 'use bleah; "ab" =~ /a b/' ? "" : "not ";
     $i++;
-    print "${not}ok $i - require does not localise %^H at run time\n";
+    print "${not}ok $i - require does not localise %^H at run time $TODO\n";
 }
 
 ##########################################
