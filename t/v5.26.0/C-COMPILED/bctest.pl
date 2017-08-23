@@ -1,0 +1,186 @@
+#!perl
+
+use strict;
+use warnings;
+use open ':std', ':encoding(utf8)';
+
+use IO::Scalar;
+use Cwd;
+use File::Basename;
+use Test::More;
+
+BEGIN {
+    use FindBin;
+    unshift @INC, $FindBin::Bin . "/../../../lib";
+}
+my $working_dir = $FindBin::Bin;
+
+die "Please use perl 5.24" unless $^V =~ qr{^v5.24};
+
+# Some tests need . in @INC.
+$ENV{'PERL_USE_UNSAFE_INC'} = 1;
+
+use KnownErrors qw/check_todo/;
+use TestCompile qw/compile_script/;
+
+if ( $0 =~ m{/template\.pl$} ) {
+    plan q{skip_all} => "This program is not designed to be called directly";
+    exit;
+}
+
+my $optimization = '';
+$optimization .= '-v,'     if ( $ENV{VERBOSE} );
+$optimization .= '-Dwalk,' if ( $ENV{BC_WALK} );
+
+# Setup file_to_test to be the file we actually want to test.
+my ( $file_to_test, $path ) = fileparse($0);
+my ( $before, $after ) = split( 'C-COMPILED/', $path );
+my $short_path = $path;
+$short_path =~ s{^.*C-COMPILED/+}{};
+$file_to_test = $short_path . $file_to_test;
+
+# The file that tracks acceptable failures in the compiled unit tests.
+my $known_errors_file = "known_errors.txt";
+
+my $errors = KnownErrors->new( file_to_test => $file_to_test );
+
+# The relative path our symlinks will point to.
+my $base_dir = dirname($path);
+
+my $cwd = qx{pwd};
+chomp $cwd;
+
+chdir "$working_dir/.." or die $!;
+
+my $current_t_file   = $file_to_test;
+my $todo_description = '';
+
+my $type = $errors->get_current_error_type();
+$todo_description = $errors->{todo_description} if $type;
+
+# Skip this test all together if $type is SKIP or COMPAT
+if ( $type eq 'COMPAT' || $type eq 'SKIP' ) {
+    plan skip_all => $todo_description;
+}
+
+plan tests => 6;
+
+# need to run CORE test suite in C-COMPILED
+$file_to_test =~ m{0*(\d.+)\.t} or die("$file_to_test cannot be recognized as a bc test!");
+my $bc_test = $1;
+
+my $test_code = `$working_dir/../../../bctestc.pl -X $bc_test 2>/dev/null`;
+
+### https://github.com/CpanelInc/perl-compiler/issues/33
+$test_code =~ s{^https://\S+\n\n}{};
+### Subtest 033-5:
+$test_code =~ s/^### Subtest \S+:\n//;
+### RESULT: 133
+$test_code =~ s/\n*### RESULT: (.+)//;
+my $want = $1;
+
+( my $perl_file = $file_to_test ) =~ s/\.t$/.pl/;
+( my $c_file    = $file_to_test ) =~ s/\.t$/.c/;
+( my $bin_file  = $file_to_test ) =~ s/\.t$/.bin/;
+
+eval q{ END { unlink $bin_file, $c_file, "$c_file.lst", $perl_file unless $ENV{BC_DEVELOPING} }};
+unlink $bin_file, $c_file, "$c_file.lst", $perl_file;
+
+open( my $fh, '>', $perl_file ) or die "Can't write $perl_file";
+print {$fh} $test_code;
+close $fh;
+
+my $PERL = $^X;
+my $blib = ( grep { $_ =~ m{/blib/} } @INC ) ? '-Mblib' : '';
+
+SKIP: {
+
+    my $check = qx{$PERL -I$working_dir/../../.. -c '$perl_file' 2>&1};
+    unless ( $errors->check_todo( $check =~ qr/syntax OK/, "$PERL -c $perl_file", "CHECK" ) ) {
+        skip( "Cannot compile with perl -c", 5 );
+        exit;
+    }
+
+    $ENV{HARNESS_NOTTY} = 1;
+
+    my %SIGNALS = qw( 11 SEGV 6 SIGABRT 1 SIGHUP 13 SIGPIPE);
+    $SIGNALS{0} = '';
+
+  TODO: SKIP: {
+        local $TODO;
+
+        # lazy way to count and keep the skip counter up to date
+        $errors->{to_skip} = 5;
+
+        # shared logic with testc
+        my ( $parser, $errormsg ) = compile_script(
+            $perl_file, $errors,
+            {
+                extra        => qq{-I$working_dir/../../..},
+                optimization => $optimization,
+                c_file       => $c_file,
+                bin_file     => $bin_file,
+                no_harness   => 1,
+            }
+        );
+
+        # handle error when compiling script
+        skip $errormsg, $errors->{to_skip} unless $parser;
+
+        # Parse through TAP::Harness
+        my $out     = qx{$bin_file 2>&1};
+        my $str_out = $out;
+        $str_out =~ s{\n}{\\n}g;
+        $str_out =~ s{[^A-Za-z0-9\s\\:=,;\.\(\)]}{ }g;
+        $str_out =~ s{\s+}{ }g;
+        if ( length($str_out) > 30 ) {
+            $str_out = substr( $str_out, 0, 30 );
+            $str_out =~ s{[^\s]+$}{};
+            $str_out .= '...';
+        }
+
+        $want = '' unless defined $want;
+        $out = '' unless defined $out;
+
+        # limitation... for now
+        chomp $want;
+        chomp $out;
+
+        #Strip new lines from want and out.
+        $out =~ s/\n/\\n/g;
+        $want =~ s/\n/\\n/g;
+
+        #chomp $out if $want eq 'ok';
+        unless ( $errors->check_todo( $out eq $want, qq{Output is: "$str_out" expect "$want"}, 'TESTS' ) ) {
+            skip( "TESTS failure", $errors->{to_skip} );
+        }
+
+        my $signal    = $? % 256;
+        my $exit_code = $? >> 8;
+        my $sig_name  = $SIGNALS{$signal} || '';
+
+        unless ( $errors->check_todo( $signal == 0, "Exit signal is $signal $sig_name", 'SIG' ) ) {
+            note $out if ($out);
+            skip( "Test failures irrelevant if exits premature with $sig_name", $errors->{to_skip} );
+        }
+
+        $errors->check_todo( $exit_code == 0, "Exit code is 0", 'EXIT' );
+    }
+}
+
+{
+    # add the list of files generated
+    my $root = $working_dir;
+    $root =~ s{^$cwd}{};
+    my @path = split( '/', $root );
+    pop @path;
+    $root = join '/', @path;
+    $root =~ s{^/+}{};
+
+    foreach my $f ( sort $bin_file, $c_file, $perl_file ) {
+        note "$root/$f" if -e $f;
+    }
+
+}
+
+exit;
