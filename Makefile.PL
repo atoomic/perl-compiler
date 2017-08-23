@@ -14,10 +14,10 @@ use Carp;
 $^O eq 'MSWin32' and die "Windows (threads) is unsupported.";
 my $devnull = '/dev/null';
 
-# We can't have a symlink in t/v5.24.1/t or we get a circular find from File::Find
+# We can't have a symlink in t/testsuite/t or we get a circular find from File::Find
 # https://github.com/Perl-Toolchain-Gang/ExtUtils-Manifest/issues/5
 if ( -e '.gdbinit' ) { # not shipped by the RPM - this do not belong there
-    system("cp .gdbinit t/v5.24.1/t/.gdbinit") and die;
+    system("cp .gdbinit t/testsuite/t/.gdbinit") and die;
 }
 
 my $core = grep { $_ eq 'PERL_CORE=1' } @ARGV;
