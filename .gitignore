@@ -70,7 +70,7 @@ t/*.c
 t/reports
 t/*/*/*/*.subtest.*
 t/test-*.sh
-/t/v5.24.1/t/.gdbinit
+/t/v5.*/t/.gdbinit
 /t/v5.*/C-COMPILED/*.bak
 /t/v5.*/C-COMPILED/bctestc/*.c
 /t/v5.*/C-COMPILED/bctestc/*.pl
