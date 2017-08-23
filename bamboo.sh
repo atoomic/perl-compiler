@@ -1,4 +1,4 @@
 #!/bin/sh
 
-rpm -Uv --force rpms/cpanel-perl-524-5.24.1-5.cp1168.x86_64.rpm
+rpm -Uv --force rpms/cpanel-perl-526-5.26.0-1.debuginfo.cp1170.x86_64.rpm
 
