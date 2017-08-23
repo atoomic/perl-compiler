@@ -89,7 +89,12 @@ sub do_save {
             !$eval_seen    &&    # and it does not have an eval
             $qre !~ tr{()}{}     # and it does not have a capture
           ) {                    # we can just use the reference.
-            $initpm->sadd( "PM_SETRE(%s, ReREFCNT_inc(PM_GETRE(%s))); /* %s */", $sym, $pre_saved_sym, $qre );
+
+            my $comment = $qre;
+            $comment =~ s{\Q/*\E}{??}g;
+            $comment =~ s{\Q*/\E}{??}g;
+
+            $initpm->sadd( "PM_SETRE(%s, ReREFCNT_inc(PM_GETRE(%s))); /* %s */", $sym, $pre_saved_sym, $comment );
         }
         else {
             $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
@@ -97,7 +102,7 @@ sub do_save {
             $saved_re{$key} = $sym;
         }
 
-        if ($eval_seen) {        # set HINT_RE_EVAL off
+        if ($eval_seen) {    # set HINT_RE_EVAL off
             $initpm->add('PL_hints = hints_sav;');
         }
         $initpm->close_block();
@@ -106,7 +111,7 @@ sub do_save {
     if ( $replrootfield && $replrootfield ne 'NULL' ) {
 
         my $pmsym = $sym;
-        $pmsym =~ s/^\&//;       # Strip '&' off the front.
+        $pmsym =~ s/^\&//;    # Strip '&' off the front.
 
         # XXX need that for subst
         init()->sadd( "%s.op_pmreplrootu.op_pmreplroot = (OP*)%s;", $pmsym, $replrootfield );
