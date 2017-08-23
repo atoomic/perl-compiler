@@ -17,8 +17,8 @@ our $VERSION = 1.01;
 
 use constant DEFAULT_OUTPUT => qq{ok\n};
 
-my $BC_TEST_DIR = $FindBin::Bin . "/v5.24.1/C-COMPILED/bctestc";
-my $BC_TEST_T_DIR = $FindBin::Bin . q{/v5.24.1/t/bctestc};
+my $BC_TEST_DIR = $FindBin::Bin . "/testsuite/C-COMPILED/bctestc";
+my $BC_TEST_T_DIR = $FindBin::Bin . q{/testsuite/t/bctestc};
 
 my $github_issues_base = 'https://github.com/CpanelInc/perl-compiler/issues';
 
@@ -120,7 +120,7 @@ sub find_all_tests {
         $t =~ s{^$BC_TEST_T_DIR/}{};
         if ( $t =~ qr{^([0-9]+)\.} ) {
             my $id = $1;
-            my $name = $t; 
+            my $name = $t;
             $name =~ s{\.t$}{};
 
             my $expect = DEFAULT_OUTPUT;

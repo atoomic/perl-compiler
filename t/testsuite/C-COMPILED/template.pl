@@ -12,13 +12,13 @@ BEGIN {
     unshift @INC, $FindBin::Bin . "/../../../lib";
 }
 
-die "Please use perl 5.24" unless $^V =~ qr{^v5.24};
-
 # Some tests need . in @INC.
 $ENV{'PERL_USE_UNSAFE_INC'} = 1;
 
 use KnownErrors qw/check_todo/;
-use TestCompile qw/compile_script/;
+use TestCompile qw/compile_script sanity_check/;
+
+sanity_check();
 
 if ( $0 =~ m{/template\.pl$} ) {
     plan q{skip_all} => "This program is not designed to be called directly";

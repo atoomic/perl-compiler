@@ -11,13 +11,20 @@ use TAP::Harness  ();
 use IO::Scalar;
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw/compile_script/;
+our @EXPORT_OK = qw/compile_script sanity_check/;
 
 use v5.14;
 
 use constant DEFAULT_CCFLAGS => q{-O1};
 
 my %SIGNALS = ( qw( 11 SEGV 6 SIGABRT 1 SIGHUP 13 SIGPIPE), 0 => '' );
+
+sub sanity_check {
+    # can also use testsuite/version file
+    die "Please use perl 5.26" unless $^V =~ qr{^v5.26};
+
+    return;
+}
 
 sub get_full_path {
     my ( $f, $check_file ) = @_;
