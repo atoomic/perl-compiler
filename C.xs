@@ -297,7 +297,6 @@ my_runops(pTHX)
             Copy( PL_op, op, 1, PMOP );
             /* we need just the flags */
             op->op_next = NULL;
-            op->op_sibling = NULL;
             op->op_first = NULL;
             op->op_last = NULL;
             op->op_pmregexp = 0;
