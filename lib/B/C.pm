@@ -11,7 +11,7 @@
 
 package B::C;
 
-our $VERSION = '5.024016';
+our $VERSION = '5.024017';
 our $caller  = caller;       # So we know how we were invoked.
 
 our @ISA = qw(Exporter);
