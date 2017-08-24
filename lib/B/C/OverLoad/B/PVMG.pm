@@ -145,7 +145,7 @@ sub save_magic {
 
         # Save the object if there is one.
         my $obj = '0';
-        if ( $type !~ /^[rn]$/ ) {
+        if ( $type !~ /^[rnD]$/ ) {
             my $o = $mg->OBJ;
             $obj = $o->save($fullname) if ( ref $o ne 'SCALAR' );
         }
