@@ -53,6 +53,7 @@ op/threads.t                   COMPAT    We don't support threaded perl in this 
 op/warn.t                      TESTS     GH #57 - open qw(:std :utf8) STDOUT issue
 op/yadayada.t                  COMPAT    Unimplemented does not display the correct line number
 opbasic/magic_phase.t          COMPAT    Testing BEGIN, INIT, ... phases order, not compatible with B::C
+re/anyof.t                     SIG       Exit signal is 11 SEGV
 re/overload.t                  TESTS     GH #61 - Overloading regexp issue with lexical scope
 re/pat.t                       PLAN      BC issue #295
 re/pat_advanced.t              PLAN      Recheck BC issue #317 - nested regexp
