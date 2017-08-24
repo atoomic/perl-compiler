@@ -2,6 +2,7 @@ package B::UNOP_AUX;
 
 use strict;
 
+use B qw/svref_2object/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/unopauxsect init free meta_unopaux_item/;
 use B::C::Helpers qw/is_constant/;
@@ -16,14 +17,30 @@ sub do_save {
     my ($op) = @_;
 
     _clear_stack();                 # avoid a weird B (or B::C) issue when calling aux_list_thr
-    my @aux_list = $op->name eq 'multideref' ? $op->aux_list_thr : $op->aux_list;    # GH#283, GH#341
+
+    my @aux_list;
+    if ( $op->name eq 'argelem' ) {
+        @aux_list = $op->aux_ptr;
+    }
+    elsif ( $op->name eq 'argcheck' ) {
+        @aux_list = $op->aux_list_thr;
+
+        #print STDERR join( ' ', '# ARGCHECK', @aux_list, "\n" );
+    }
+    elsif ( $op->name eq 'multideref' ) {
+        @aux_list = $op->aux_list_thr;
+    }
+    else {
+        @aux_list = $op->aux_list;    # GH#283, GH#341
+    }
+
     my $auxlen = scalar @aux_list;
 
     unopauxsect()->comment_common("first, aux");
     my ( $ix, $sym ) = unopauxsect()->reserve( $op, "OP*" );
     unopauxsect()->debug( $op->name, $op );
 
-    my @to_be_filled = map { 0 } 1 .. $auxlen;                                       #
+    my @to_be_filled = map { 0 } 1 .. $auxlen;    #
 
     my $list_size         = $auxlen + 1;
     my $unopaux_item_sect = meta_unopaux_item($list_size);
@@ -34,7 +51,7 @@ sub do_save {
     unopauxsect()->supdate( $ix, "%s, %s, &%s.aaab", $op->_save_common, $op->first->save, $symname );
 
     # This cannot be a section, as the number of elements is variable
-    my $i            = 1;                                                            # maybe rename tp field_ix
+    my $i            = 1;                         # maybe rename tp field_ix
     my $struct_field = q{aaaa};
 
     my $action = 0;
@@ -47,7 +64,7 @@ sub do_save {
         unless ( ref $item ) {
 
             # symbolize MDEREF action
-            my $cmt = $op->get_action_name($item);
+            #my $cmt = $op->get_action_name($item);
             $action = $item;
 
             #debug( hv => $op->name . " action $action $cmt" );
