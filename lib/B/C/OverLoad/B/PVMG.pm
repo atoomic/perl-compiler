@@ -144,10 +144,13 @@ sub save_magic {
         next if $type eq 'c';
 
         # Save the object if there is one.
-        my $obj = '0';
+        my $obj = '0';        
         if ( $type !~ /^[rnD]$/ ) {
             my $o = $mg->OBJ;
             $obj = $o->save($fullname) if ( ref $o ne 'SCALAR' );
+        } elsif ( $type eq 'D' ) {
+            $obj = $mg->OBJ_PTR(); # raw value this is not really an SV ??
+            # maybe if $obj > 1000 then saave the SV ??
         }
 
         my $ptrsv = '0';

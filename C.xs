@@ -612,6 +612,17 @@ U32
 RX_EXTFLAGS(rx)
 	  B::REGEXP rx
 
+MODULE = B  PACKAGE = B::MAGIC PREFIX = MG_
+
+U32
+MG_OBJ_PTR(mg)
+    B::MAGIC    mg
+    CODE:
+    RETVAL = mg ? mg->mg_obj : 0;
+    OUTPUT:
+        RETVAL
+
+
 MODULE = B     PACKAGE = B::SV        PREFIX = Sv
 
 bool
