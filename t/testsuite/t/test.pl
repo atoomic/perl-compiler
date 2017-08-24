@@ -3,9 +3,9 @@
 
 # NOTE:
 #
-# Do not rely on features found only in more modern Perls here, as some CPAN
-# distributions copy this file and must operate on older Perls. Similarly, keep
-# things, simple as this may be run under fairly broken circumstances. For
+# It's best to not features found only in more modern Perls here, as some cpan
+# distributions copy this file and operate on older Perls.  Similarly keep
+# things simple as this may be run under fairly broken circumstances.  For
 # example, increment ($x++) has a certain amount of cleverness for things like
 #
 #   $x = 'zz';
@@ -296,36 +296,34 @@ sub _q {
 
 sub _qq {
     my $x = shift;
-    return defined $x ? '"' . display ($x) . '"' : 'undef';
-};
-
-# Support pre-5.10 Perls, for the benefit of CPAN dists that copy this file.
-# Note that chr(90) exists in both ASCII ("Z") and EBCDIC ("!").
-my $chars_template = defined(eval { pack "W*", 90 }) ? "W*" : "U*";
-eval 'sub re::is_regexp { ref($_[0]) eq "Regexp" }'
-    if !defined &re::is_regexp;
+    return defined $x ? '"' . display($x) . '"' : 'undef';
+}
 
 # keys are the codes \n etc map to, values are 2 char strings such as \n
 my %backslash_escape;
-foreach my $x (split //, 'nrtfa\\\'"') {
-    $backslash_escape{ord eval "\"\\$x\""} = "\\$x";
+foreach my $x ( split //, 'nrtfa\\\'"' ) {
+    $backslash_escape{ ord eval "\"\\$x\"" } = "\\$x";
 }
+
 # A way to display scalars containing control characters and Unicode.
 # Trying to avoid setting $_, or relying on local $_ to work.
 sub display {
     my @result;
     foreach my $x (@_) {
-        if (defined $x and not ref $x) {
+        if ( defined $x and not ref $x ) {
             my $y = '';
-            foreach my $c (unpack($chars_template, $x)) {
-                if ($c > 255) {
+            foreach my $c ( unpack( "W*", $x ) ) {
+                if ( $c > 255 ) {
                     $y = $y . sprintf "\\x{%x}", $c;
-                } elsif ($backslash_escape{$c}) {
+                }
+                elsif ( $backslash_escape{$c} ) {
                     $y = $y . $backslash_escape{$c};
-                } else {
-                    my $z = chr $c; # Maybe we can get away with a literal...
+                }
+                else {
+                    my $z = chr $c;    # Maybe we can get away with a literal...
 
-                    if ($z !~ /[^[:^print:][:^ascii:]]/) {
+                    if ( $z !~ /[^[:^print:][:^ascii:]]/ ) {
+
                         # The pattern above is equivalent (by de Morgan's
                         # laws) to:
                         #     $z !~ /(?[ [:print:] & [:ascii:] ])/
@@ -650,93 +648,98 @@ USE_OK
 #   args     => [ command-line arguments to the perl program ]
 #   verbose  => print the command line
 
-my $is_mswin    = $^O eq 'MSWin32';
-my $is_netware  = $^O eq 'NetWare';
-my $is_vms      = $^O eq 'VMS';
-my $is_cygwin   = $^O eq 'cygwin';
+my $is_mswin   = $^O eq 'MSWin32';
+my $is_netware = $^O eq 'NetWare';
+my $is_vms     = $^O eq 'VMS';
+my $is_cygwin  = $^O eq 'cygwin';
 
 sub _quote_args {
-    my ($runperl, $args) = @_;
+    my ( $runperl, $args ) = @_;
 
     foreach (@$args) {
-	# In VMS protect with doublequotes because otherwise
-	# DCL will lowercase -- unless already doublequoted.
-       $_ = q(").$_.q(") if $is_vms && !/^\"/ && length($_) > 0;
-       $runperl = $runperl . ' ' . $_;
+
+        # In VMS protect with doublequotes because otherwise
+        # DCL will lowercase -- unless already doublequoted.
+        $_ = q(") . $_ . q(") if $is_vms && !/^\"/ && length($_) > 0;
+        $runperl = $runperl . ' ' . $_;
     }
     return $runperl;
 }
 
-sub _create_runperl { # Create the string to qx in runperl().
-    my %args = @_;
+sub _create_runperl {    # Create the string to qx in runperl().
+    my %args    = @_;
     my $runperl = which_perl();
-    if ($runperl =~ m/\s/) {
+    if ( $runperl =~ m/\s/ ) {
         $runperl = qq{"$runperl"};
     }
+
     #- this allows, for example, to set PERL_RUNPERL_DEBUG=/usr/bin/valgrind
-    if ($ENV{PERL_RUNPERL_DEBUG}) {
-	$runperl = "$ENV{PERL_RUNPERL_DEBUG} $runperl";
+    if ( $ENV{PERL_RUNPERL_DEBUG} ) {
+        $runperl = "$ENV{PERL_RUNPERL_DEBUG} $runperl";
     }
-    unless ($args{nolib}) {
-	$runperl = $runperl . ' "-I../lib" "-I." '; # doublequotes because of VMS
+    unless ( $args{nolib} ) {
+        $runperl = $runperl . ' "-I../lib"';    # doublequotes because of VMS
     }
-    if ($args{switches}) {
-	local $Level = 2;
-	die "test.pl:runperl(): 'switches' must be an ARRAYREF " . _where()
-	    unless ref $args{switches} eq "ARRAY";
-	$runperl = _quote_args($runperl, $args{switches});
+    if ( $args{switches} ) {
+        local $Level = 2;
+        die "test.pl:runperl(): 'switches' must be an ARRAYREF " . _where()
+          unless ref $args{switches} eq "ARRAY";
+        $runperl = _quote_args( $runperl, $args{switches} );
     }
-    if (defined $args{prog}) {
-	die "test.pl:runperl(): both 'prog' and 'progs' cannot be used " . _where()
-	    if defined $args{progs};
-        $args{progs} = [split /\n/, $args{prog}, -1]
+    if ( defined $args{prog} ) {
+        die "test.pl:runperl(): both 'prog' and 'progs' cannot be used " . _where()
+          if defined $args{progs};
+        $args{progs} = [ split /\n/, $args{prog}, -1 ];
     }
-    if (defined $args{progs}) {
-	die "test.pl:runperl(): 'progs' must be an ARRAYREF " . _where()
-	    unless ref $args{progs} eq "ARRAY";
-        foreach my $prog (@{$args{progs}}) {
-	    if (!$args{non_portable}) {
-		if ($prog =~ tr/'"//) {
-		    warn "quotes in prog >>$prog<< are not portable";
-		}
-		if ($prog =~ /^([<>|]|2>)/) {
-		    warn "Initial $1 in prog >>$prog<< is not portable";
-		}
-		if ($prog =~ /&\z/) {
-		    warn "Trailing & in prog >>$prog<< is not portable";
-		}
-	    }
-            if ($is_mswin || $is_netware || $is_vms) {
+    if ( defined $args{progs} ) {
+        die "test.pl:runperl(): 'progs' must be an ARRAYREF " . _where()
+          unless ref $args{progs} eq "ARRAY";
+        foreach my $prog ( @{ $args{progs} } ) {
+            if ( !$args{non_portable} ) {
+                if ( $prog =~ tr/'"// ) {
+                    warn "quotes in prog >>$prog<< are not portable";
+                }
+                if ( $prog =~ /^([<>|]|2>)/ ) {
+                    warn "Initial $1 in prog >>$prog<< is not portable";
+                }
+                if ( $prog =~ /&\z/ ) {
+                    warn "Trailing & in prog >>$prog<< is not portable";
+                }
+            }
+            if ( $is_mswin || $is_netware || $is_vms ) {
                 $runperl = $runperl . qq ( -e "$prog" );
             }
             else {
                 $runperl = $runperl . qq ( -e '$prog' );
             }
         }
-    } elsif (defined $args{progfile}) {
-	$runperl = $runperl . qq( "$args{progfile}");
-    } else {
-	# You probably didn't want to be sucking in from the upstream stdin
-	die "test.pl:runperl(): none of prog, progs, progfile, args, "
-	    . " switches or stdin specified"
-	    unless defined $args{args} or defined $args{switches}
-		or defined $args{stdin};
     }
-    if (defined $args{stdin}) {
-	# so we don't try to put literal newlines and crs onto the
-	# command line.
-	$args{stdin} =~ s/\n/\\n/g;
-	$args{stdin} =~ s/\r/\\r/g;
+    elsif ( defined $args{progfile} ) {
+        $runperl = $runperl . qq( "$args{progfile}");
+    }
+    else {
+        # You probably didn't want to be sucking in from the upstream stdin
+        die "test.pl:runperl(): none of prog, progs, progfile, args, " . " switches or stdin specified"
+          unless defined $args{args}
+          or defined $args{switches}
+          or defined $args{stdin};
+    }
+    if ( defined $args{stdin} ) {
 
-	if ($is_mswin || $is_netware || $is_vms) {
-	    $runperl = qq{$Perl -e "print qq(} .
-		$args{stdin} . q{)" | } . $runperl;
-	}
-	else {
-	    $runperl = qq{$Perl -e 'print qq(} .
-		$args{stdin} . q{)' | } . $runperl;
-	}
-    } elsif (exists $args{stdin}) {
+        # so we don't try to put literal newlines and crs onto the
+        # command line.
+        $args{stdin} =~ s/\n/\\n/g;
+        $args{stdin} =~ s/\r/\\r/g;
+
+        if ( $is_mswin || $is_netware || $is_vms ) {
+            $runperl = qq{$Perl -e "print qq(} . $args{stdin} . q{)" | } . $runperl;
+        }
+        else {
+            $runperl = qq{$Perl -e 'print qq(} . $args{stdin} . q{)' | } . $runperl;
+        }
+    }
+    elsif ( exists $args{stdin} ) {
+
         # Using the pipe construction above can cause fun on systems which use
         # ksh as /bin/sh, as ksh does pipes differently (with one less process)
         # With sh, for the command line 'perl -e 'print qq()' | perl -e ...'
@@ -987,61 +990,8 @@ sub register_tempfile {
     return $count;
 }
 
-# This is the temporary file for fresh_perl
+# This is the temporary file for _fresh_perl
 my $tmpfile = tempfile();
-
-sub fresh_perl {
-    my($prog, $runperl_args) = @_;
-
-    # Run 'runperl' with the complete perl program contained in '$prog', and
-    # arguments in the hash referred to by '$runperl_args'.  The results are
-    # returned, with $? set to the exit code.  Unless overridden, stderr is
-    # redirected to stdout.
-
-    die sprintf "Third argument to fresh_perl_.* must be hashref of args to fresh_perl (or {})"
-        unless !(defined $runperl_args) || ref($runperl_args) eq 'HASH';
-
-    # Given the choice of the mis-parsable {}
-    # (we want an anon hash, but a borked lexer might think that it's a block)
-    # or relying on taking a reference to a lexical
-    # (\ might be mis-parsed, and the reference counting on the pad may go
-    #  awry)
-    # it feels like the least-worse thing is to assume that auto-vivification
-    # works. At least, this is only going to be a run-time failure, so won't
-    # affect tests using this file but not this function.
-    $runperl_args->{progfile} ||= $tmpfile;
-    $runperl_args->{stderr}     = 1 unless exists $runperl_args->{stderr};
-
-    open TEST, '>', $tmpfile or die "Cannot open $tmpfile: $!";
-    binmode TEST, ':utf8' if $runperl_args->{wide_chars};
-    print TEST $prog;
-    close TEST or die "Cannot close $tmpfile: $!";
-
-    my $results = runperl(%$runperl_args);
-    my $status = $?;    # Not necessary to save this, but it makes it clear to
-                        # future maintainers.
-
-    # Clean up the results into something a bit more predictable.
-    $results  =~ s/\n+$//;
-    $results =~ s/at\s+$::tempfile_regexp\s+line/at - line/g;
-    $results =~ s/of\s+$::tempfile_regexp\s+aborted/of - aborted/g;
-
-    # bison says 'parse error' instead of 'syntax error',
-    # various yaccs may or may not capitalize 'syntax'.
-    $results =~ s/^(syntax|parse) error/syntax error/mig;
-
-    if ($is_vms) {
-        # some tests will trigger VMS messages that won't be expected
-        $results =~ s/\n?%[A-Z]+-[SIWEF]-[A-Z]+,.*//;
-
-        # pipes double these sometimes
-        $results =~ s/\n\n/\n/g;
-    }
-
-    $? = $status;
-    return $results;
-}
-
 
 sub _fresh_perl {
     my ( $prog, $action, $expect, $runperl_args, $name ) = @_;
@@ -1058,8 +1008,50 @@ sub _fresh_perl {
         unlink $tmpfile if -e $tmpfile;
     }
 
-    my $results = fresh_perl($prog, $runperl_args);
+    # Given the choice of the mis-parsable {}
+    # (we want an anon hash, but a borked lexer might think that it's a block)
+    # or relying on taking a reference to a lexical
+    # (\ might be mis-parsed, and the reference counting on the pad may go
+    #  awry)
+    # it feels like the least-worse thing is to assume that auto-vivification
+    # works. At least, this is only going to be a run-time failure, so won't
+    # affect tests using this file but not this function.
+    $runperl_args->{progfile} ||= $tmpfile;
+    $runperl_args->{stderr} = 1 unless exists $runperl_args->{stderr};
+
+    open TEST, ">$tmpfile" or die "Cannot open $tmpfile: $!";
+    print TEST $prog;
+    close TEST or die "Cannot close $tmpfile: $!";
+
+    my ( $results, $compiler_output );
+    if ($is_binary) {
+        ( $results, $compiler_output ) = runperl_binary( $tmpfile, $runperl_args );
+        # some tests are checking compile time warnings, check the compile warnings on demand
+        $results = $compiler_output . "\n". $results if $runperl_args->{check_perlcc_output};
+    }
+    else {
+        $results = runperl(%$runperl_args);
+    }
+
     my $status = $?;
+
+    # Clean up the results into something a bit more predictable.
+    $results =~ s/\n+$//;
+    $results =~ s/at\s+$::tempfile_regexp\s+line/at - line/g;
+    $results =~ s/of\s+$::tempfile_regexp\s+aborted/of - aborted/g;
+
+    # bison says 'parse error' instead of 'syntax error',
+    # various yaccs may or may not capitalize 'syntax'.
+    $results =~ s/^(syntax|parse) error/syntax error/mig;
+
+    if ($is_vms) {
+
+        # some tests will trigger VMS messages that won't be expected
+        $results =~ s/\n?%[A-Z]+-[SIWEF]-[A-Z]+,.*//;
+
+        # pipes double these sometimes
+        $results =~ s/\n\n/\n/g;
+    }
 
     # Use the first line of the program as a name if none was given
     unless ($name) {
@@ -1098,7 +1090,7 @@ sub whichperlcc {
         $perlcc_bin =~ s/\s+$//s;
         print STDERR "# Warning: using $perlcc_bin\n";
     }
-    
+
     -x $perlcc_bin or die("No perlcc found at $perlcc_bin!");
     return $perlcc_bin;
 }
@@ -1196,9 +1188,8 @@ sub fresh_perl_like {
 # Each program is source code to run followed by an "EXPECT" line, followed
 # by the expected output.
 #
-# The first line of the code to run may be a command line switch such as -wE
-# or -0777 (alphanumerics only; only one cluster, beginning with a minus is
-# allowed).  Later lines may contain (note the '# ' on each):
+# The code to run may begin with a command line switch such as -w or -0777
+# (alphanumerics only), and may contain (note the '# ' on each):
 #   # TODO reason for todo
 #   # SKIP reason for skip
 #   # SKIP ?code to test if this should be skipped
@@ -1308,226 +1299,232 @@ sub run_multiple_progs {
 
         # Not going to rely on undef in list assignment.
         my $dummy;
-        ($dummy, @prgs) = _setup_one_file(shift);
+        ( $dummy, @prgs ) = _setup_one_file(shift);
     }
 
     my $tmpfile = tempfile();
 
-    my ($file, $line);
+    my ( $file, $line );
   PROGRAM:
-    while (defined ($line = shift @prgs)) {
+    while ( defined( $line = shift @prgs ) ) {
         $_ = shift @prgs;
         unless ($line) {
             $file = $_;
-            if (defined $file) {
+            if ( defined $file ) {
                 print "# From $file\n";
             }
-	    next;
-	}
-	my $switch = "";
-	my @temps ;
-	my @temp_path;
-	if (s/^(\s*-\w+)//) {
-	    $switch = $1;
-	}
-	my ($prog, $expected) = split(/\nEXPECT(?:\n|$)/, $_, 2);
+            next;
+        }
+        my $switch = "";
+        my @temps;
+        my @temp_path;
+        if (s/^(\s*-\w+)//) {
+            $switch = $1;
+        }
+        my ( $prog, $expected ) = split( /\nEXPECT(?:\n|$)/, $_, 2 );
 
-	my %reason;
-	foreach my $what (qw(skip todo)) {
-	    $prog =~ s/^#\s*\U$what\E\s*(.*)\n//m and $reason{$what} = $1;
-	    # If the SKIP reason starts ? then it's taken as a code snippet to
-	    # evaluate. This provides the flexibility to have conditional SKIPs
-	    if ($reason{$what} && $reason{$what} =~ s/^\?//) {
-		my $temp = eval $reason{$what};
-		if ($@) {
-		    die "# In \U$what\E code reason:\n# $reason{$what}\n$@";
-		}
-		$reason{$what} = $temp;
-	    }
-	}
+        my %reason;
+        foreach my $what (qw(skip todo)) {
+            $prog =~ s/^#\s*\U$what\E\s*(.*)\n//m and $reason{$what} = $1;
 
-	my $name = '';
-	if ($prog =~ s/^#\s*NAME\s+(.+)\n//m) {
-	    $name = $1;
-	}
+            # If the SKIP reason starts ? then it's taken as a code snippet to
+            # evaluate. This provides the flexibility to have conditional SKIPs
+            if ( $reason{$what} && $reason{$what} =~ s/^\?// ) {
+                my $temp = eval $reason{$what};
+                if ($@) {
+                    die "# In \U$what\E code reason:\n# $reason{$what}\n$@";
+                }
+                $reason{$what} = $temp;
+            }
+        }
 
-	if ($reason{skip}) {
-	SKIP:
-	  {
-	    skip($name ? "$name - $reason{skip}" : $reason{skip}, 1);
-	  }
-	  next PROGRAM;
-	}
+        my $name = '';
+        if ( $prog =~ s/^#\s*NAME\s+(.+)\n//m ) {
+            $name = $1;
+        }
 
-	if ($prog =~ /--FILE--/) {
-	    my @files = split(/\n?--FILE--\s*([^\s\n]*)\s*\n/, $prog) ;
-	    shift @files ;
-	    die "Internal error: test $_ didn't split into pairs, got " .
-		scalar(@files) . "[" . join("%%%%", @files) ."]\n"
-		    if @files % 2;
-	    while (@files > 2) {
-		my $filename = shift @files;
-		my $code = shift @files;
-		push @temps, $filename;
-		if ($filename =~ m#(.*)/# && $filename !~ m#^\.\./#) {
-		    require File::Path;
-		    File::Path::mkpath($1);
-		    push(@temp_path, $1);
-		}
-		open my $fh, '>', $filename or die "Cannot open $filename: $!\n";
-		print $fh $code;
-		close $fh or die "Cannot close $filename: $!\n";
-	    }
-	    shift @files;
-	    $prog = shift @files;
-	}
+        if ( $reason{skip} ) {
+          SKIP:
+            {
+                skip( $name ? "$name - $reason{skip}" : $reason{skip}, 1 );
+            }
+            next PROGRAM;
+        }
 
-	open my $fh, '>', $tmpfile or die "Cannot open >$tmpfile: $!";
-	print $fh q{
+        if ( $prog =~ /--FILE--/ ) {
+            my @files = split( /\n?--FILE--\s*([^\s\n]*)\s*\n/, $prog );
+            shift @files;
+            die "Internal error: test $_ didn't split into pairs, got " . scalar(@files) . "[" . join( "%%%%", @files ) . "]\n"
+              if @files % 2;
+            while ( @files > 2 ) {
+                my $filename = shift @files;
+                my $code     = shift @files;
+                push @temps, $filename;
+                if ( $filename =~ m#(.*)/# && $filename !~ m#^\.\./# ) {
+                    require File::Path;
+                    File::Path::mkpath($1);
+                    push( @temp_path, $1 );
+                }
+                open my $fh, '>', $filename or die "Cannot open $filename: $!\n";
+                print $fh $code;
+                close $fh or die "Cannot close $filename: $!\n";
+            }
+            shift @files;
+            $prog = shift @files;
+        }
+
+        open my $fh, '>', $tmpfile or die "Cannot open >$tmpfile: $!";
+        print $fh q{
         BEGIN {
-            push @INC, '.';
             open STDERR, '>&', STDOUT
               or die "Can't dup STDOUT->STDERR: $!;";
         }
 	};
-	print $fh "\n#line 1\n";  # So the line numbers don't get messed up.
-	print $fh $prog,"\n";
-	close $fh or die "Cannot close $tmpfile: $!";
-	my $results = runperl( stderr => 1, progfile => $tmpfile,
-			       stdin => undef, $up
-			       ? (switches => ["-I$up/lib", $switch], nolib => 1)
-			       : (switches => [$switch])
-			        );
-	my $status = $?;
-	$results =~ s/\n+$//;
-	# allow expected output to be written as if $prog is on STDIN
-	$results =~ s/$::tempfile_regexp/-/g;
-	if ($^O eq 'VMS') {
-	    # some tests will trigger VMS messages that won't be expected
-	    $results =~ s/\n?%[A-Z]+-[SIWEF]-[A-Z]+,.*//;
+        print $fh "\n#line 1\n";    # So the line numbers don't get messed up.
+        print $fh $prog, "\n";
+        close $fh or die "Cannot close $tmpfile: $!";
+        my $results = runperl(
+            stderr => 1,     progfile => $tmpfile,
+            stdin  => undef, $up
+            ? ( switches => [ "-I$up/lib", $switch ], nolib => 1 )
+            : ( switches => [$switch] )
+        );
+        my $status = $?;
+        $results =~ s/\n+$//;
 
-	    # pipes double these sometimes
-	    $results =~ s/\n\n/\n/g;
-	}
-	# bison says 'parse error' instead of 'syntax error',
-	# various yaccs may or may not capitalize 'syntax'.
-	$results =~ s/^(syntax|parse) error/syntax error/mig;
-	# allow all tests to run when there are leaks
-	$results =~ s/Scalars leaked: \d+\n//g;
+        # allow expected output to be written as if $prog is on STDIN
+        $results =~ s/$::tempfile_regexp/-/g;
+        if ( $^O eq 'VMS' ) {
 
-	$expected =~ s/\n+$//;
-	my $prefix = ($results =~ s#^PREFIX(\n|$)##) ;
-	# any special options? (OPTIONS foo bar zap)
-	my $option_regex = 0;
-	my $option_random = 0;
-	my $fatal = $FATAL;
-	if ($expected =~ s/^OPTIONS? (.+)\n//) {
-	    foreach my $option (split(' ', $1)) {
-		if ($option eq 'regex') { # allow regular expressions
-		    $option_regex = 1;
-		}
-		elsif ($option eq 'random') { # all lines match, but in any order
-		    $option_random = 1;
-		}
-		elsif ($option eq 'fatal') { # perl should fail
-		    $fatal = 1;
-		}
-		else {
-		    die "$0: Unknown OPTION '$option'\n";
-		}
-	    }
-	}
-	die "$0: can't have OPTION regex and random\n"
-	    if $option_regex + $option_random > 1;
-	my $ok = 0;
-	if ($results =~ s/^SKIPPED\n//) {
-	    print "$results\n" ;
-	    $ok = 1;
-	}
-	else {
-	    if ($option_random) {
-	        my @got = sort split "\n", $results;
-	        my @expected = sort split "\n", $expected;
+            # some tests will trigger VMS messages that won't be expected
+            $results =~ s/\n?%[A-Z]+-[SIWEF]-[A-Z]+,.*//;
 
-	        $ok = "@got" eq "@expected";
-	    }
-	    elsif ($option_regex) {
-	        $ok = $results =~ /^$expected/;
-	    }
-	    elsif ($prefix) {
-	        $ok = $results =~ /^\Q$expected/;
-	    }
-	    else {
-	        $ok = $results eq $expected;
-	    }
+            # pipes double these sometimes
+            $results =~ s/\n\n/\n/g;
+        }
 
-	    if ($ok && $fatal && !($status >> 8)) {
-		$ok = 0;
-	    }
-	}
+        # bison says 'parse error' instead of 'syntax error',
+        # various yaccs may or may not capitalize 'syntax'.
+        $results =~ s/^(syntax|parse) error/syntax error/mig;
 
-	local $::TODO = $reason{todo};
+        # allow all tests to run when there are leaks
+        $results =~ s/Scalars leaked: \d+\n//g;
 
-	unless ($ok) {
-	    my $err_line = "PROG: $switch\n$prog\n" .
-			   "EXPECTED:\n$expected\n";
-	    $err_line   .= "EXIT STATUS: != 0\n" if $fatal;
-	    $err_line   .= "GOT:\n$results\n";
-	    $err_line   .= "EXIT STATUS: " . ($status >> 8) . "\n" if $fatal;
-	    if ($::TODO) {
-		$err_line =~ s/^/# /mg;
-		print $err_line;  # Harness can't filter it out from STDERR.
-	    }
-	    else {
-		print STDERR $err_line;
-	    }
-	}
+        $expected =~ s/\n+$//;
+        my $prefix = ( $results =~ s#^PREFIX(\n|$)## );
 
-        if (defined $file) {
-            _ok($ok, "at $file line $line", $name);
-        } else {
+        # any special options? (OPTIONS foo bar zap)
+        my $option_regex  = 0;
+        my $option_random = 0;
+        my $fatal         = $FATAL;
+        if ( $expected =~ s/^OPTIONS? (.+)\n// ) {
+            foreach my $option ( split( ' ', $1 ) ) {
+                if ( $option eq 'regex' ) {    # allow regular expressions
+                    $option_regex = 1;
+                }
+                elsif ( $option eq 'random' ) {    # all lines match, but in any order
+                    $option_random = 1;
+                }
+                elsif ( $option eq 'fatal' ) {     # perl should fail
+                    $fatal = 1;
+                }
+                else {
+                    die "$0: Unknown OPTION '$option'\n";
+                }
+            }
+        }
+        die "$0: can't have OPTION regex and random\n"
+          if $option_regex + $option_random > 1;
+        my $ok = 0;
+        if ( $results =~ s/^SKIPPED\n// ) {
+            print "$results\n";
+            $ok = 1;
+        }
+        else {
+            if ($option_random) {
+                my @got      = sort split "\n", $results;
+                my @expected = sort split "\n", $expected;
+
+                $ok = "@got" eq "@expected";
+            }
+            elsif ($option_regex) {
+                $ok = $results =~ /^$expected/;
+            }
+            elsif ($prefix) {
+                $ok = $results =~ /^\Q$expected/;
+            }
+            else {
+                $ok = $results eq $expected;
+            }
+
+            if ( $ok && $fatal && !( $status >> 8 ) ) {
+                $ok = 0;
+            }
+        }
+
+        local $::TODO = $reason{todo};
+
+        unless ($ok) {
+            my $err_line = "PROG: $switch\n$prog\n" . "EXPECTED:\n$expected\n";
+            $err_line .= "EXIT STATUS: != 0\n" if $fatal;
+            $err_line .= "GOT:\n$results\n";
+            $err_line .= "EXIT STATUS: " . ( $status >> 8 ) . "\n" if $fatal;
+            if ($::TODO) {
+                $err_line =~ s/^/# /mg;
+                print $err_line;    # Harness can't filter it out from STDERR.
+            }
+            else {
+                print STDERR $err_line;
+            }
+        }
+
+        if ( defined $file ) {
+            _ok( $ok, "at $file line $line", $name );
+        }
+        else {
             # We don't have file and line number data for the test, so report
             # errors as coming from our caller.
             local $Level = $Level + 1;
-            ok($ok, $name);
+            ok( $ok, $name );
         }
 
-	foreach (@temps) {
-	    unlink $_ if $_;
-	}
-	foreach (@temp_path) {
-	    File::Path::rmtree $_ if -d $_;
-	}
+        foreach (@temps) {
+            unlink $_ if $_;
+        }
+        foreach (@temp_path) {
+            File::Path::rmtree $_ if -d $_;
+        }
     }
 }
 
 sub can_ok ($@) {
-    my($proto, @methods) = @_;
+    my ( $proto, @methods ) = @_;
     my $class = ref $proto || $proto;
 
-    unless( @methods ) {
+    unless (@methods) {
         return _ok( 0, _where(), "$class->can(...)" );
     }
 
     my @nok = ();
     foreach my $method (@methods) {
-        local($!, $@);  # don't interfere with caller's $@
-                        # eval sometimes resets $!
+        local ( $!, $@ );    # don't interfere with caller's $@
+                             # eval sometimes resets $!
         eval { $proto->can($method) } || push @nok, $method;
     }
 
     my $name;
-    $name = @methods == 1 ? "$class->can('$methods[0]')"
-                          : "$class->can(...)";
+    $name =
+      @methods == 1
+      ? "$class->can('$methods[0]')"
+      : "$class->can(...)";
 
     _ok( !@nok, _where(), $name );
 }
 
-
 # Call $class->new( @$args ); and run the result through object_ok.
 # See Test::More::new_ok
 sub new_ok {
-    my($class, $args, $obj_name) = @_;
+    my ( $class, $args, $obj_name ) = @_;
     $args ||= [];
     $object_name = "The object" unless defined $obj_name;
 
