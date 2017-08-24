@@ -300,6 +300,7 @@ my_runops(pTHX)
             op->op_first = NULL;
             op->op_last = NULL;
             op->op_pmregexp = 0;
+            op->op_sibparent = 0;
 
             sv_setiv( key, PTR2IV( rx ) );
             sv_setref_iv( rv, "B::PMOP", PTR2IV( op ) );
