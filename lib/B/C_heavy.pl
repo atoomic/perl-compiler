@@ -398,7 +398,7 @@ sub build_template_stash {
             'main_start'  => main_start()->save,
             'dowarn'      => $^W ? 'G_WARN_ON' : 'G_WARN_OFF',
             'tainting'    => $^{TAINT} ? 'TRUE' : 'FALSE',
-            'taint_warn'  => $^{TAINT} < 1 ? 'FALSE' : 'TRUE',
+            'taint_warn'  => ( $^{TAINT} // 0 ) < 1 ? 'FALSE' : 'TRUE',
             'compad' => ( comppadlist->ARRAY )[1]->save('curpad_syms') || 'NULL',
             'warnhook' => save_sig('__WARN__'),
             'diehook'  => save_sig('__DIE__'),
