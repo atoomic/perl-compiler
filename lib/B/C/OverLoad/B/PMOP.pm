@@ -27,28 +27,17 @@ sub do_save {
     my $replstart = $op->pmreplstart;
     my $ppaddr    = $op->ppaddr;
 
-    my $replrootfield;
+    my $replrootfield      = 'NULL';
     my $replrootfield_cast = '';
-    if ( $op->name eq 'split' ) {    # maybe apply to all OPs
-        $replrootfield = 'NULL';
-        if ( defined $replroot ) {
-            if ( ref $replroot ) {
-                $replrootfield = $replroot->save;
-            }
-            elsif ( $replroot =~ qr{^[0-9]+$} ) {
-                $replrootfield_cast = '.op_pmtargetoff=';
-                $replrootfield      = $replroot;
-            }
-        }
+    if ( defined $replroot && ref $replroot ) {
+        $replrootfield = $replroot->save || 'NULL';
     }
-    else {
-        $replrootfield = ( defined $replroot && ref $replroot ) ? $replroot->save || 'NULL' : 'NULL';
+    elsif ( $replroot =~ qr{^[0-9]+$} ) {
+        $replrootfield      = $replroot;
+        $replrootfield_cast = '.op_pmtargetoff=';
     }
 
-    # FIXME - to check can probably be replaced by
-    #my $replrootfield  = ( defined $replroot  && ref $replroot )  ? $replroot->save  || 'NULL' : $replroot;
-
-    my $replstartfield = ( defined $replstart && ref $replstart ) ? $replstart->save || 'NULL' : 'NULL';
+    my $replstartfield = ( defined $replstart && ref $replstart ) ? $replstart->save || 'NULL' : $replstart || 'NULL';
 
     # pmnext handling is broken in perl itself, we think. Bad op_pmnext
     # fields aren't noticed in perl's runtime (unless you try reset) but we
