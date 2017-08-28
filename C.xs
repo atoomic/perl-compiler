@@ -119,28 +119,28 @@ cc_opclass(pTHX_ const OP *o)
 
     switch (OP_CLASS(o)) {
     case OA_BASEOP:
-	return OPc_BASEOP;
+	   return OPc_BASEOP;
 
     case OA_UNOP:
-	return OPc_UNOP;
+	   return OPc_UNOP;
 
     case OA_BINOP:
-	return OPc_BINOP;
+	   return OPc_BINOP;
 
     case OA_LOGOP:
-	return OPc_LOGOP;
+	   return OPc_LOGOP;
 
     case OA_LISTOP:
-	return OPc_LISTOP;
+	   return OPc_LISTOP;
 
     case OA_PMOP:
-	return OPc_PMOP;
+	   return OPc_PMOP;
 
     case OA_SVOP:
-	return OPc_SVOP;
+	   return OPc_SVOP;
 
     case OA_PADOP:
-	return OPc_PADOP;
+	   return OPc_PADOP;
 
     case OA_PVOP_OR_SVOP:
         /*
@@ -151,10 +151,10 @@ cc_opclass(pTHX_ const OP *o)
          * and the SV is a reference to a swash
          * (i.e., an RV pointing to an HV).
          */
-	return (!custom &&
-		   (o->op_private & (OPpTRANS_TO_UTF|OPpTRANS_FROM_UTF))
-	       )
-		? OPc_SVOP : OPc_PVOP;
+    	return (!custom &&
+    		   (o->op_private & (OPpTRANS_TO_UTF|OPpTRANS_FROM_UTF))
+    	       )
+    		? OPc_SVOP : OPc_PVOP;
 
     case OA_LOOP:
 	return OPc_LOOP;
@@ -170,7 +170,7 @@ cc_opclass(pTHX_ const OP *o)
 	 * Some other UNOPs are created later, though, so the best
 	 * test is OPf_KIDS, which is set in newUNOP.
 	 */
-	return (o->op_flags & OPf_KIDS) ? OPc_UNOP : OPc_BASEOP;
+	   return (o->op_flags & OPf_KIDS) ? OPc_UNOP : OPc_BASEOP;
 
     case OA_FILESTATOP:
 	/*
@@ -182,8 +182,8 @@ cc_opclass(pTHX_ const OP *o)
 	 * (no argument to the operator) it's an OP; with OPf_REF set it's
 	 * an SVOP (and op_sv is the GV for the filehandle argument).
 	 */
-	return ((o->op_flags & OPf_KIDS) ? OPc_UNOP :
-		(o->op_flags & OPf_REF) ? OPc_SVOP : OPc_BASEOP);
+    	return ((o->op_flags & OPf_KIDS) ? OPc_UNOP :
+    		(o->op_flags & OPf_REF) ? OPc_SVOP : OPc_BASEOP);
     case OA_LOOPEXOP:
 	/*
 	 * next, last, redo, dump and goto use OPf_SPECIAL to indicate that a
@@ -194,16 +194,16 @@ cc_opclass(pTHX_ const OP *o)
 	 * OP_REFGEN (with goto &sub) in which case OPf_STACKED also seems to
 	 * get set.
 	 */
-	if (o->op_flags & OPf_STACKED)
-	    return OPc_UNOP;
-	else if (o->op_flags & OPf_SPECIAL)
-	    return OPc_BASEOP;
-	else
-	    return OPc_PVOP;
+    	if (o->op_flags & OPf_STACKED)
+    	    return OPc_UNOP;
+    	else if (o->op_flags & OPf_SPECIAL)
+    	    return OPc_BASEOP;
+    	else
+    	    return OPc_PVOP;
     case OA_METHOP:
-	return OPc_METHOP;
+	   return OPc_METHOP;
     case OA_UNOP_AUX:
-	return OPc_UNOP_AUX;
+	   return OPc_UNOP_AUX;
     }
     warn("can't determine class of operator %s, assuming BASEOP\n",
 	 OP_NAME(o));
