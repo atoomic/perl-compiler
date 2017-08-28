@@ -13,9 +13,6 @@ my $OP_CUSTOM = opnumber('custom');
 my %OP_COP = ( opnumber('nextstate') => 1 );
 debug( cops => %OP_COP );
 
-my @save_later;
-my $deferred_saving = 0;
-
 sub do_save {
     my ($op) = @_;
 
@@ -26,20 +23,7 @@ sub do_save {
     my ( $ix, $sym ) = opsect()->reserve( $op, "OP*" );
     opsect()->debug( $op->name, $op );
 
-    # We prevent deep recursion here and in B::UNOP by not recursing until we've saved everything at our depth first.
-    if ( !$deferred_saving ) {
-        $deferred_saving = 1;
-        opsect()->update( $ix, $op->_save_common );
-        $deferred_saving = 0;
-    }
-    else {
-        push @save_later, [ $ix, $op ];
-    }
-
-    while ( !$deferred_saving && @save_later ) {
-        my $to_save = pop @save_later;
-        opsect()->update( $to_save->[0], $to_save->[1]->_save_common );
-    }
+    opsect()->update( $ix, $op->_save_common );
 
     return $sym;
 }
