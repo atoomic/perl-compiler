@@ -33,10 +33,24 @@ sub do_save {
     # pmnext handling is broken in perl itself, we think. Bad op_pmnext
     # fields aren't noticed in perl's runtime (unless you try reset) but we
     # segfault when trying to dereference it to find op->op_pmnext->op_type
-    pmopsect()->supdate(
-        $ix, "%s, %s, %s, %u, 0x%x, {%s}, {%s}",
-        $op->_save_common, $op->first->save, $op->last->save, 0,
-        $op->pmflags,      $replrootfield,   $replstartfield
+    pmopsect()->supdatel(
+        $ix,
+        '%s'   => $op->_save_common,    # BASEOP
+        '%s'   => $op->first->save,     # OP *    op_first
+        '%s'   => $op->last->save,      # OP *    op_last
+        '%u'   => 0,                    # REGEXP *    op_pmregexp
+        '0x%x' => $op->pmflags,         #  U32         op_pmflags
+        '{%s}' => $replrootfield,       # union op_pmreplrootu
+                                        # union {
+                                        # OP *    op_pmreplroot;      /* For OP_SUBST */
+                                        # PADOFFSET op_pmtargetoff;   /* For OP_SPLIT lex ary or thr GV */
+                                        # GV *    op_pmtargetgv;          /* For OP_SPLIT non-threaded GV */
+                                        # }   op_pmreplrootu;
+        '{%s}' => $replstartfield,      # union op_pmstashstartu
+                                        # union {
+                                        # OP *    op_pmreplstart; /* Only used in OP_SUBST */
+                                        # HV *    op_pmstash;
+                                        # }       op_pmstashstartu;
     );
 
     my $code_list = $op->code_list;
