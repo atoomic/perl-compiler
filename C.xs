@@ -111,18 +111,8 @@ cc_opclass(pTHX_ const OP *o)
 	return ((o->op_private & OPpASSIGN_BACKWARDS) ? OPc_UNOP : OPc_BINOP);
 
     if (o->op_type == OP_AELEMFAST) {
-#ifdef USE_ITHREADS
-	    return OPc_PADOP;
-#else
 	    return OPc_SVOP;
-#endif
     }
-
-#ifdef USE_ITHREADS
-    if (o->op_type == OP_GV || o->op_type == OP_GVSV ||
-	o->op_type == OP_RCATLINE)
-	return OPc_PADOP;
-#endif
 
     if (o->op_type == OP_CUSTOM)
         custom = 1;
@@ -164,11 +154,7 @@ cc_opclass(pTHX_ const OP *o)
 	return (!custom &&
 		   (o->op_private & (OPpTRANS_TO_UTF|OPpTRANS_FROM_UTF))
 	       )
-#if  defined(USE_ITHREADS)
-		? OPc_PADOP : OPc_PVOP;
-#else
 		? OPc_SVOP : OPc_PVOP;
-#endif
 
     case OA_LOOP:
 	return OPc_LOOP;
@@ -197,11 +183,7 @@ cc_opclass(pTHX_ const OP *o)
 	 * an SVOP (and op_sv is the GV for the filehandle argument).
 	 */
 	return ((o->op_flags & OPf_KIDS) ? OPc_UNOP :
-#ifdef USE_ITHREADS
-		(o->op_flags & OPf_REF) ? OPc_PADOP : OPc_BASEOP);
-#else
 		(o->op_flags & OPf_REF) ? OPc_SVOP : OPc_BASEOP);
-#endif
     case OA_LOOPEXOP:
 	/*
 	 * next, last, redo, dump and goto use OPf_SPECIAL to indicate that a
