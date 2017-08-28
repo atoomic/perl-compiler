@@ -27,30 +27,50 @@ sub do_save {
     my $replstart = $op->pmreplstart;
     my $ppaddr    = $op->ppaddr;
 
-    my $replrootfield  = ( $replroot  && ref $replroot )  ? $replroot->save  || 'NULL' : 'NULL';
-    my $replstartfield = ( $replstart && ref $replstart ) ? $replstart->save || 'NULL' : 'NULL';
+    my $replrootfield;
+    my $replrootfield_cast = '';
+    if ( $op->name eq 'split' ) {    # maybe apply to all OPs
+        $replrootfield = 'NULL';
+        if ( defined $replroot ) {
+            if ( ref $replroot ) {
+                $replrootfield = $replroot->save;
+            }
+            elsif ( $replroot =~ qr{^[0-9]+$} ) {
+                $replrootfield_cast = '.op_pmtargetoff=';
+                $replrootfield      = $replroot;
+            }
+        }
+    }
+    else {
+        $replrootfield = ( defined $replroot && ref $replroot ) ? $replroot->save || 'NULL' : 'NULL';
+    }
+
+    # FIXME - to check can probably be replaced by
+    #my $replrootfield  = ( defined $replroot  && ref $replroot )  ? $replroot->save  || 'NULL' : $replroot;
+
+    my $replstartfield = ( defined $replstart && ref $replstart ) ? $replstart->save || 'NULL' : 'NULL';
 
     # pmnext handling is broken in perl itself, we think. Bad op_pmnext
     # fields aren't noticed in perl's runtime (unless you try reset) but we
     # segfault when trying to dereference it to find op->op_pmnext->op_type
     pmopsect()->supdatel(
         $ix,
-        '%s'   => $op->_save_common,    # BASEOP
-        '%s'   => $op->first->save,     # OP *    op_first
-        '%s'   => $op->last->save,      # OP *    op_last
-        '%u'   => 0,                    # REGEXP *    op_pmregexp
-        '0x%x' => $op->pmflags,         #  U32         op_pmflags
-        '{%s}' => $replrootfield,       # union op_pmreplrootu
-                                        # union {
-                                        # OP *    op_pmreplroot;      /* For OP_SUBST */
-                                        # PADOFFSET op_pmtargetoff;   /* For OP_SPLIT lex ary or thr GV */
-                                        # GV *    op_pmtargetgv;          /* For OP_SPLIT non-threaded GV */
-                                        # }   op_pmreplrootu;
-        '{%s}' => $replstartfield,      # union op_pmstashstartu
-                                        # union {
-                                        # OP *    op_pmreplstart; /* Only used in OP_SUBST */
-                                        # HV *    op_pmstash;
-                                        # }       op_pmstashstartu;
+        '%s'   => $op->_save_common,                       # BASEOP
+        '%s'   => $op->first->save,                        # OP *    op_first
+        '%s'   => $op->last->save,                         # OP *    op_last
+        '%u'   => 0,                                       # REGEXP *    op_pmregexp
+        '0x%x' => $op->pmflags,                            #  U32         op_pmflags
+        '{%s}' => $replrootfield_cast . $replrootfield,    # union op_pmreplrootu
+                                                           # union {
+                                                           # OP *    op_pmreplroot;      /* For OP_SUBST */
+                                                           # PADOFFSET op_pmtargetoff;   /* For OP_SPLIT lex ary or thr GV */
+                                                           # GV *    op_pmtargetgv;          /* For OP_SPLIT non-threaded GV */
+                                                           # }   op_pmreplrootu;
+        '{%s}' => $replstartfield,                         # union op_pmstashstartu
+                                                           # union {
+                                                           # OP *    op_pmreplstart; /* Only used in OP_SUBST */
+                                                           # HV *    op_pmstash;
+                                                           # }       op_pmstashstartu;
     );
 
     my $code_list = $op->code_list;
