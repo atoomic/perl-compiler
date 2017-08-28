@@ -409,17 +409,6 @@ CODE:
 OUTPUT:
     RETVAL
 
-SV*
-aux_ptr(o)
-          B::OP o
-CODE:
-  {
-    UNOP_AUX_item *aux = cUNOP_AUXo->op_aux;
-    RETVAL = newSViv(PTR2IV(aux));
-  }
-OUTPUT:
-    RETVAL
-
 # Return the contents of the op_aux array as a list of IV/SV/GV/PADOFFSET objects.
 # This version here returns the padoffset of SV/GV under ithreads, and not the
 # SV/GV itself. It also uses simplified mPUSH macros.
@@ -433,18 +422,6 @@ aux_list_thr(o)
         switch (o->op_type) {
         default:
             XSRETURN(0); /* by default, an empty list */
-
-        case OP_ARGCHECK:
-        {
-            UNOP_AUX_item *aux = cUNOP_AUXo->op_aux;
-
-            EXTEND(SP, 3);
-            PUSHs(sv_2mortal(newSViv(aux[0].iv)));
-            PUSHs(sv_2mortal(newSViv(aux[1].iv)));
-            PUSHs(sv_2mortal(newSViv(aux[2].iv))); /* return the integer value and not a char */
-            /*PUSHs(sv_2mortal(aux[2].iv ? Perl_newSVpvf(aTHX_ "%c", (char)aux[2].iv) : &PL_sv_no));*/
-            break;
-        }
 
         case OP_MULTIDEREF:
 #  define PUSH_SV(item) PUSHs(make_sv_object(aTHX_ (item)->sv))
