@@ -68,13 +68,13 @@ sub _save_common {
         '%s' => $op->fake_ppaddr,             # OP*     (*op_ppaddr)(pTHX);
         '%u' => $op->targ,                    # PADOFFSET   op_targ;
         '%u' => $op->type,                    # PERL_BITFIELD16 op_type:9;
-        '%u' => 0, # $op->opt || 0,               # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
+        '%u' => $op->opt || 0,               # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
         '%u' => 0, # $op->slabbed || 0,            # PERL_BITFIELD16 op_slabbed:1; -- was hardcoded to 0
-        '%u' => 0, # $op->savefree || 0,           # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
+        '%u' => $op->savefree || 0,           # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
         '%u' => 1,                            # PERL_BITFIELD16 op_static:1; -- is hardcoded to 1
-        '%u' => 0, # $op->folded || 0,             # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
-        '%u' => 0, # $op->moresib || 0,            # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
-        '%u' => 0, # $op->spare || 0,              # PERL_BITFIELD16 op_spare:1; -- was hardcoded to 0
+        '%u' => $op->folded || 0,             # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
+        '%u' => $op->moresib || 0,            # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
+        '%u' => $op->spare || 0,              # PERL_BITFIELD16 op_spare:1; -- was hardcoded to 0
         '0x%x' => $op->flags || 0,            # U8      op_flags;
         '0x%x' => $op->private || 0           # U8      op_private;
     );
