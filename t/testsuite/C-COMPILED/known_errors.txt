@@ -62,6 +62,7 @@ re/pat_rt_report.t             TESTS     BC issue #317 - nested Regex
 re/qr_gc.t                     TESTS     BC issue #309 - regexp destruction
 re/reg_eval_scope.t            PLAN      BC issue #295 - (?{}) should have its own lexical scope
 re/reg_pmod.t                  TESTS     BC issue #295 - (?{}) should have its own lexical scope
+re/regexp_nonull.t             COMPAT    uses XS::APItest - for internal use only and hence no longer installed
 re/rxcode.t                    TESTS     BC issue #295 - (?{}) should have its own lexical scope
 re/subst_amp.t                 TESTS     BC issue #295 - (?{}) should have its own lexical scope
 uni/cache.t                    TESTS     GH #66 - We are explicitly clearing Cache to get B::C to work for now.
