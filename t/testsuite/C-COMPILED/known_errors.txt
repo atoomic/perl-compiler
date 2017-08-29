@@ -38,6 +38,7 @@ op/coreamp.t                   COMPAT    unsupported experimental::lexical_topic
 op/coresubs.t                  COMPAT    uses B::walkoptree
 op/glob.t                      SKIP      Flaps because it's surprised to see perlcc files during its run.
 op/goto_xs.t                   COMPAT    needs XS::APItest
+op/heredoc.t                   SKIP      this test can be compiled with B::C but uses more than 100s subtest - 10 min to run
 op/lex.t                       COMPAT    Tests trigger errors at compilation time
 op/lexsub.t                    BC        GH #60 - SEGV at compile time from B
 op/method.t                    TESTS     HV_STATIC: plan no longer fails in statch branch. Need to determine the cause of the tests now.
