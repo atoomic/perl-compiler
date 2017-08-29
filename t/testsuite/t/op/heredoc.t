@@ -9,7 +9,7 @@ BEGIN {
 }
 
 use strict;
-plan(tests => 137 - 4);
+plan(tests => 137 - 7); # skip some tests which are not COMPAT with B::C
 
 # heredoc without newline (#65838)
 {
@@ -205,6 +205,8 @@ HEREDOC
         "Embedded delimiter ignored",
     ];
 
+    # skip these tests: they are designed to fail at compile time: no meaning to run them through B::C
+=pod
     push @tests, [
         "print <<~EOF;\n\t \t$string\n\t \tTEOF",
         "Can't find string terminator \"EOF\" anywhere before EOF at - line 1.",
@@ -222,7 +224,7 @@ HEREDOC
         "Indentation on line 3 of here-doc doesn't match delimiter at - line 1.\n",
         "indented here-doc with bad indentation"
     ];
-
+=cut
     # If our delim is " EOF ", make sure other spaced version don't match
     push @tests, [
         "print <<~' EOF ';\n $string\n EOF\nEOF \n  EOF  \n EOF \n",
