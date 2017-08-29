@@ -343,7 +343,7 @@ is $line, "3000000000", "check large line numbers are preserved";
 # This was fixed with commit d4d03940c58a0177, which fixed bug #78742
 fresh_perl_is <<'END', "__ANON__::doof\n", {},
 package foo;
-BEGIN {undef %foo::}
+INIT {undef %foo::} # adjust test for B::C
 sub doof { caller(0) }
 print +(doof())[3];
 END
