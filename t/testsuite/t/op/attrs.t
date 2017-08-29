@@ -474,12 +474,15 @@ is runperl(
 # When printing error message for an attribute arg without closing ')',
 # if the buffer got reallocated during the scan of the arg, the error
 # message would try to use the old buffer
+SKIP: {
+    skip( 'B::C COMPAT: this is a compiled time error - skipping it with B::C', 1 );
 fresh_perl_like(
    'my $abc: abcdefg(' . 'x' x 195 . "\n" . 'x' x 8200 ."\n",
     qr/^Unterminated attribute parameter in attribute list at - line 1\.$/,
     { stderr => 1 },
     'RT #129086 attr(00000'
 );
+}
 
 TODO: {
     local $TODO = 'RT #3605: Attribute syntax causes parsing errors near my $var :';
