@@ -42,29 +42,34 @@ sub B::OP::fake_ppaddr {
 }
 
 sub basop_comment {
-    return "next, sibling, ppaddr, targ, type, opt, slabbed, savefree, static, folded, moresib, spare, flags, private";
+    return "next, sibparent, ppaddr, targ, type, opt, slabbed, savefree, static, folded, moresib, spare, flags, private";
 }
 
 sub save_baseop {
     my $op = shift;
 
+    my $next    = ref $op->next    ? $op->next->save    : $op->next;
+    my $sibling = ref $op->sibling ? $op->sibling->save : $op->sibling;
+
+    #my $sibling = ref $op->parent ? $op->parent->save : $op->parent;
+
     # view BASEOP in op.h
     # increase readability by using an array
     my @BASEOP = (
-        '%s' => $op->next->save    || 'NULL',    # OP*     op_next;
-        '%s' => $op->sibling->save || 'NULL',    # OP*     op_sibparent;\ # instead of op_sibling
-        '%s'   => $op->fake_ppaddr,              # OP*     (*op_ppaddr)(pTHX);
-        '%u'   => $op->targ,                     # PADOFFSET   op_targ;
-        '%u'   => $op->type,                     # PERL_BITFIELD16 op_type:9;
-        '%u'   => $op->opt || 0,                 # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
-        '%u'   => 0,                             # $op->slabbed || 0,            # PERL_BITFIELD16 op_slabbed:1; -- was hardcoded to 0
-        '%u'   => $op->savefree || 0,            # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
-        '%u'   => 1,                             # PERL_BITFIELD16 op_static:1; -- is hardcoded to 1
-        '%u'   => $op->folded || 0,              # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
-        '%u'   => $op->moresib || 0,             # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
-        '%u'   => $op->spare || 0,               # PERL_BITFIELD16 op_spare:1; -- was hardcoded to 0
-        '0x%x' => $op->flags || 0,               # U8      op_flags;
-        '0x%x' => $op->private || 0              # U8      op_private;
+        '%s' => $next    || 'NULL',    # OP*     op_next;
+        '%s' => $sibling || 'NULL',    # OP*     op_sibparent;\ # instead of op_sibling
+        '%s'   => $op->fake_ppaddr,    # OP*     (*op_ppaddr)(pTHX);
+        '%u'   => $op->targ,           # PADOFFSET   op_targ;
+        '%u'   => $op->type,           # PERL_BITFIELD16 op_type:9;
+        '%u'   => $op->opt || 0,       # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
+        '%u'   => 0,                   # $op->slabbed || 0,            # PERL_BITFIELD16 op_slabbed:1; -- was hardcoded to 0
+        '%u'   => $op->savefree || 0,  # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
+        '%u'   => 1,                   # PERL_BITFIELD16 op_static:1; -- is hardcoded to 1
+        '%u'   => $op->folded || 0,    # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
+        '%u'   => $op->moresib || 0,   # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
+        '%u'   => $op->spare || 0,     # PERL_BITFIELD16 op_spare:1; -- was hardcoded to 0
+        '0x%x' => $op->flags || 0,     # U8      op_flags;
+        '0x%x' => $op->private || 0    # U8      op_private;
     );
 
     die qq[BASEOP definition need an even number of args] if scalar @BASEOP % 2;    # sanity check
