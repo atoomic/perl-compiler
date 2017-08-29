@@ -4,8 +4,9 @@ BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
     set_up_inc( qw(../lib) );
-    plan (tests => 22); # some tests are run in BEGIN block
 }
+
+plan (tests => 20); # some tests are run in BEGIN block
 
 is __SUB__, "__SUB__", '__SUB__ is a bareword outside of use feature';
 
