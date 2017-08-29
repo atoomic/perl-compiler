@@ -7,11 +7,11 @@ use B::C::File qw/listopsect/;
 sub do_save {
     my ($op) = @_;
 
-    listopsect()->comment_common("first, last");
+    listopsect()->comment_for_op("first, last");
     my ( $ix, $sym ) = listopsect()->reserve( $op, "OP*" );
     listopsect()->debug( $op->name, $op );
 
-    listopsect()->supdate( $ix, "%s, %s, %s", $op->_save_common, $op->first->save, $op->last->save );
+    listopsect()->supdate( $ix, "%s, %s, %s", $op->save_baseop, $op->first->save, $op->last->save );
 
     return $sym;
 }

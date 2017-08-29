@@ -271,9 +271,9 @@ sub typename {
     return $typename;
 }
 
-sub comment_common {
+sub comment_for_op {
     my $self = shift;
-    return $self->comment( B::C::opsect_common(), ', ', @_ );
+    return $self->comment( B::OP::basop_comment(), ', ', @_ );
 }
 
 sub comment {

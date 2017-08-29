@@ -7,13 +7,13 @@ use B::C::File qw/logopsect/;
 sub do_save {
     my ($op) = @_;
 
-    logopsect()->comment_common("first, other");
+    logopsect()->comment_for_op("first, other");
     my ( $ix, $sym ) = logopsect()->reserve( $op, "OP*" );
     logopsect()->debug( $op->name, $op );
 
     logopsect()->supdatel(
         $ix,
-        '%s' => $op->_save_common,
+        '%s' => $op->save_baseop,
         '%s' => $op->first->save,
         '%s' => $op->other->save
     );

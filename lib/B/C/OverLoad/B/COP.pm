@@ -51,10 +51,10 @@ sub do_save {
     }
 
     # add the cop at the end
-    copsect()->comment_common("BASEOP, line_t line, HV* stash, GV* filegv, U32 hints, U32 seq, STRLEN* warn_sv, COPHH* hints_hash");
+    copsect()->comment_for_op("line_t line, HV* stash, GV* filegv, U32 hints, U32 seq, STRLEN* warn_sv, COPHH* hints_hash");
     copsect()->supdatel(
         $ix,
-        '%s'       => $op->_save_common,                    # BASEOP list
+        '%s'       => $op->save_baseop,                     # BASEOP list
         '%u'       => $op->line,                            # /* line # of this command */
         '(HV*) %s' => $stash,                               # HV *    cop_stash;  /* package line was compiled in */
         '(GV*) %s' => $filegv,                              # GV *    cop_filegv; /* file the following line # is from */

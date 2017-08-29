@@ -9,7 +9,7 @@ use B::C::Debug qw/debug WARN/;
 sub do_save {
     my ($op) = @_;
 
-    svopsect()->comment_common("sv");
+    svopsect()->comment_for_op("sv");
     my ( $ix, $sym ) = svopsect()->reserve( $op, "OP*" );
     svopsect()->debug( $op->name, $op );
 
@@ -29,7 +29,7 @@ sub do_save {
         $svsym = 'NULL';
     }
 
-    svopsect()->supdate( $ix, "%s, (SV*) %s", $op->_save_common, $svsym );
+    svopsect()->supdate( $ix, "%s, (SV*) %s", $op->save_baseop, $svsym );
 
     return $sym;
 }

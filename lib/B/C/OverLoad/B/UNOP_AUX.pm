@@ -19,7 +19,7 @@ sub do_save {
     my @aux_list = $op->name eq 'multideref' ? $op->aux_list_thr : $op->aux_list;    # GH#283, GH#341
     my $auxlen = scalar @aux_list;
 
-    unopauxsect()->comment_common("first, aux");
+    unopauxsect()->comment_for_op("first, aux");
     my ( $ix, $sym ) = unopauxsect()->reserve( $op, "OP*" );
     unopauxsect()->debug( $op->name, $op );
 
@@ -31,7 +31,7 @@ sub do_save {
     my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
 
     my $symname = sprintf( 'meta_unopaux_item%d_list[%d]', $list_size, $uaux_item_ix );
-    unopauxsect()->supdate( $ix, "%s, %s, &%s.aaab", $op->_save_common, $op->first->save, $symname );
+    unopauxsect()->supdate( $ix, "%s, %s, &%s.aaab", $op->save_baseop, $op->first->save, $symname );
 
     # This cannot be a section, as the number of elements is variable
     my $i            = 1;                                                            # maybe rename tp field_ix

@@ -19,11 +19,11 @@ sub do_save {
     my $type = $op->type;
     $B::C::nullop_count++ unless $type;
 
-    opsect()->comment( B::C::opsect_common() );
+    opsect()->comment( basop_comment() );    # could also use comment_for_op
     my ( $ix, $sym ) = opsect()->reserve( $op, "OP*" );
     opsect()->debug( $op->name, $op );
 
-    opsect()->update( $ix, $op->_save_common );
+    opsect()->update( $ix, $op->save_baseop );
 
     return $sym;
 }
@@ -41,36 +41,40 @@ sub B::OP::fake_ppaddr {
     return sprintf( "INT2PTR(void*,OP_%s)", uc( $op->name ) );
 }
 
-sub _save_common {
+sub basop_comment {
+    return "next, sibling, ppaddr, targ, type, opt, slabbed, savefree, static, folded, moresib, spare, flags, private";
+}
+
+sub save_baseop {
     my $op = shift;
 
     # view BASEOP in op.h
     # increase readability by using an array
     my @BASEOP = (
-        '%s' => $op->next->save    || 'NULL', # OP*     op_next;
-        '%s' => $op->sibling->save || 'NULL',  # OP*     op_sibparent;\ # instead of op_sibling
-        '%s' => $op->fake_ppaddr,             # OP*     (*op_ppaddr)(pTHX);
-        '%u' => $op->targ,                    # PADOFFSET   op_targ;
-        '%u' => $op->type,                    # PERL_BITFIELD16 op_type:9;
-        '%u' => $op->opt || 0,               # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
-        '%u' => 0, # $op->slabbed || 0,            # PERL_BITFIELD16 op_slabbed:1; -- was hardcoded to 0
-        '%u' => $op->savefree || 0,           # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
-        '%u' => 1,                            # PERL_BITFIELD16 op_static:1; -- is hardcoded to 1
-        '%u' => $op->folded || 0,             # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
-        '%u' => $op->moresib || 0,            # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
-        '%u' => $op->spare || 0,              # PERL_BITFIELD16 op_spare:1; -- was hardcoded to 0
-        '0x%x' => $op->flags || 0,            # U8      op_flags;
-        '0x%x' => $op->private || 0           # U8      op_private;
+        '%s' => $op->next->save    || 'NULL',    # OP*     op_next;
+        '%s' => $op->sibling->save || 'NULL',    # OP*     op_sibparent;\ # instead of op_sibling
+        '%s'   => $op->fake_ppaddr,              # OP*     (*op_ppaddr)(pTHX);
+        '%u'   => $op->targ,                     # PADOFFSET   op_targ;
+        '%u'   => $op->type,                     # PERL_BITFIELD16 op_type:9;
+        '%u'   => $op->opt || 0,                 # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
+        '%u'   => 0,                             # $op->slabbed || 0,            # PERL_BITFIELD16 op_slabbed:1; -- was hardcoded to 0
+        '%u'   => $op->savefree || 0,            # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
+        '%u'   => 1,                             # PERL_BITFIELD16 op_static:1; -- is hardcoded to 1
+        '%u'   => $op->folded || 0,              # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
+        '%u'   => $op->moresib || 0,             # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
+        '%u'   => $op->spare || 0,               # PERL_BITFIELD16 op_spare:1; -- was hardcoded to 0
+        '0x%x' => $op->flags || 0,               # U8      op_flags;
+        '0x%x' => $op->private || 0              # U8      op_private;
     );
 
-    die qq[BASEOP definition need an even number of args] if scalar @BASEOP % 2; # sanity check
+    die qq[BASEOP definition need an even number of args] if scalar @BASEOP % 2;    # sanity check
 
     # some syntactic sugar
     my ( @keys, @values );
 
     while ( scalar @BASEOP ) {
-        push @keys, shift @BASEOP; # key
-        push @values, shift @BASEOP; # value
+        push @keys,   shift @BASEOP;                                                # key
+        push @values, shift @BASEOP;                                                # value
     }
 
     my $template = join ', ', @keys;
@@ -78,7 +82,7 @@ sub _save_common {
 }
 
 # XXX HACK! duct-taping around compiler problems
-sub isa { UNIVERSAL::isa(@_) }    # walkoptree_slow misses that
+sub isa { UNIVERSAL::isa(@_) }                                                      # walkoptree_slow misses that
 sub can { UNIVERSAL::can(@_) }
 
 1;

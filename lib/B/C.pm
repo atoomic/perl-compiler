@@ -14,10 +14,6 @@ package B::C;
 our $VERSION = '5.024017';
 our $caller  = caller;       # So we know how we were invoked.
 
-our @ISA = qw(Exporter);
-
-our @EXPORT_OK = qw(save_context inc_cleanup opsect_common fixup_ppaddr);
-
 # can be improved
 our $nullop_count     = 0;
 our $unresolved_count = 0;

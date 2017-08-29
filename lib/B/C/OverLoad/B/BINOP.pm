@@ -12,11 +12,11 @@ BEGIN { $OP_CUSTOM = B::opnumber('custom') }
 sub do_save {
     my ($op) = @_;
 
-    binopsect->comment_common("first, last");
+    binopsect->comment_for_op("first, last");
     my ( $ix, $sym ) = binopsect()->reserve( $op, "OP*" );
     binopsect->debug( $op->name, $op->flagspv );
 
-    binopsect->supdate( $ix, "%s, %s, %s", $op->_save_common, $op->first->save, $op->last->save );
+    binopsect->supdate( $ix, "%s, %s, %s", $op->save_baseop, $op->first->save, $op->last->save );
 
     my $ppaddr = $op->ppaddr;
     if ( $op->type == $OP_CUSTOM ) {
