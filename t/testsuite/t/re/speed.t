@@ -120,7 +120,8 @@ sub run_tests {
         ok ($s !~ /.*?:::\s*ab/ms, 'PREGf_IMPLICIT/ms');
         ok ($s !~ /.*?:::\s*ab/msi,'PREGf_IMPLICIT/msi');
 
-
+        SKIP: {
+            skip "B::C compat with re debug tests", 32;
         for my $star ('*', '{0,}') {
             for my $greedy ('', '?') {
                 for my $flags ('', 'i', 'm', 'mi') {
@@ -140,6 +141,7 @@ PROG
                 }
             }
         }
+    } # end of SKIP
     }
 
 
