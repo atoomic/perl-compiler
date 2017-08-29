@@ -1,3 +1,5 @@
+#!./perl
+
 # tests for heredocs besides what is tested in base/lex.t
 
 BEGIN {
@@ -7,7 +9,7 @@ BEGIN {
 }
 
 use strict;
-plan(tests => 137);
+plan(tests => 137 - 4);
 
 # heredoc without newline (#65838)
 {
@@ -56,7 +58,6 @@ HEREDOC
         { switches => ['-w'], stderr => 1 },
         'no warning for qq|${\<<foo}| in file'
     );
-=cut
 }
 
 
