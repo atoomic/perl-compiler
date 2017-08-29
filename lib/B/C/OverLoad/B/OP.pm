@@ -23,6 +23,14 @@ sub do_save {
     my ( $ix, $sym ) = opsect()->reserve( $op, "OP*" );
     opsect()->debug( $op->name, $op );
 
+    # view Sub::Call::Tail perldoc for more details ( could use it )
+    local @_ = ( $ix, $sym, $op );
+    goto &do_update;                         # avoid deep recursion calls by forcing a tail call with goto
+}
+
+sub do_update {
+    my ( $ix, $sym, $op ) = @_;
+
     opsect()->update( $ix, $op->save_baseop );
 
     return $sym;
