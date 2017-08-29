@@ -27,7 +27,7 @@ sub ddebug {
     my (@what) = @_;
 
     local %ENV;         # avoid error with taint from op/taint.t
-    my $msg = join ' ', @what;
+    my $msg = join ' ', map { defined $_ ? $_ : 'undef' } @what;
 
     qx{/usr/bin/echo '$msg' >> /tmp/downgrade};
     return 1;
@@ -231,8 +231,18 @@ sub downgrade_pvnv {
 		my $sviv = B::svref_2object( \$EXTRA[-1] );
 		return B::IV::save( $sviv, $fullname, { flags => custom_flags($sv, SVt_IV() ), refcnt => $sv->REFCNT } );
 	} elsif ( $nok ) {
-		ddebug("downgrade PVNV to NV - case e", _sv_to_str($sv));
-		push @EXTRA, $sv->NV;
+
+        # need to be sure that the PV is set: checking its length
+        if ( length( $sv->PV ) && ( $sv->NV // '' ) ne ( $sv->PV // '' ) ) {
+            # for example, we do not want to convert to NV $] = PV 5.025010 , NV 5.02501 or we would lost the 0 padding
+            #   ( also true for any other similar variable 'our $X; BEGIN { $X = $] };' )
+            ddebug("Cannot downgrade PVNV to NV - case e: NV and PV differ", 'NV:', $sv->NV, 'PV: ', $sv->PV );
+            return;
+        }
+
+        ddebug("downgrade PVNV to NV - case e", _sv_to_str($sv));
+
+        push @EXTRA, $sv->NV;
 		my $svnv = B::svref_2object( \$EXTRA[-1] );
 		#debug( "Value ?? %s", )
 		do { ddebug("WARN: invalid B::NV when downgrading PVNV"); return } unless ref $svnv eq 'B::NV';

@@ -2,12 +2,12 @@
 
 eval q{use Devel::Peek};
 
-print "1..10\n";
+print "1..13\n";
 
 {
     note("a - a simple NV");
     my $A;
-    BEGIN { $A = $] + 0.01 }
+    BEGIN { $A = $] + 0.0000000001 }
 
     my $dump = mydump($A);
 
@@ -98,6 +98,36 @@ print "1..10\n";
     like( $dump, qr{PV =.+"1\.2345"}, "value" );
 
     #}
+}
+
+{
+    note("f - do not downgrade a PVNV to an NV when using extra 0 padding");
+
+    # problem this is the same case as previously
+    my $F;
+
+    BEGIN {
+        $F = '1.2345000';
+        $F *= 1;
+        $F = '1.2345000';
+
+        # This is creating a PVNV
+        #   NV = 1.2345
+        #   PV = 0x7b7660 "1.2345000"\0
+    }
+
+    my $dump = mydump($F);
+
+    if ( is_compiled() ) {
+        like( $dump, qr{\bSV = PVNV\b},      "PVNV uncompiled" );
+        like( $dump, qr{NV =.+0\b},          "NV value [not saved]" );
+        like( $dump, qr{PV =.+"1\.2345000"}, "PV value" );
+    }
+    else {
+        like( $dump, qr{\bSV = PVNV\b},      "PVNV uncompiled" );
+        like( $dump, qr{NV =.+1\.2345\b},    "NV value" );
+        like( $dump, qr{PV =.+"1\.2345000"}, "PV value" );
+    }
 }
 
 exit;
