@@ -42,4 +42,4 @@ ok( main->replaced2 eq 'meth', 'method is replaced function' );
 BEGIN { undef $main::{replaced2} }
 sub replaced2 { 'meth' }
 
-|;
+1;
