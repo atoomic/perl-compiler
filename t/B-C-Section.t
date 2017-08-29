@@ -46,7 +46,7 @@ is( $aaasect->comment,                  undef,       "comment Starts out blank" 
 is( $aaasect->comment(qw/foo bar baz/), 'foobarbaz', "comment joins all passed args and stores/returns them." );
 is( $aaasect->comment('flib'),          'flib',      "successive calls to comment overwrites/stores/returns the new stuff" );
 
-is( $aaasect->comment_common('flib'), 'next, sibling, ppaddr, targ, type, opt, slabbed, savefree, static, folded, moresib, spare, flags, private, flib', "comment_common" );
+is( $aaasect->comment_for_op('flib'), 'next, sibling, ppaddr, targ, type, opt, slabbed, savefree, static, folded, moresib, spare, flags, private, flib', "comment_for_op" );
 
 {
 	note "testing debug";

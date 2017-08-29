@@ -18,7 +18,7 @@ my %saved_re;
 sub do_save {
     my ($op) = @_;
 
-    pmopsect()->comment_common("first, last, pmoffset, pmflags, pmreplroot, pmreplstart");
+    pmopsect()->comment_for_op("first, last, pmoffset, pmflags, pmreplroot, pmreplstart");
     my ( $ix, $sym ) = pmopsect()->reserve( $op, 'OP*' );
     $sym =~ s/^\(OP\*\)//;     # Strip off the typecasting for local use but other callers will get our casting.
     pmopsect()->debug( $op->name, $op );
@@ -44,7 +44,7 @@ sub do_save {
     # segfault when trying to dereference it to find op->op_pmnext->op_type
     pmopsect()->supdatel(
         $ix,
-        '%s'   => $op->_save_common,                       # BASEOP
+        '%s'   => $op->save_baseop,                        # BASEOP
         '%s'   => $op->first->save,                        # OP *    op_first
         '%s'   => $op->last->save,                         # OP *    op_last
         '%u'   => 0,                                       # REGEXP *    op_pmregexp

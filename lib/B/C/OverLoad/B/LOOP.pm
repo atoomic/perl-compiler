@@ -7,13 +7,13 @@ use B::C::File qw/loopsect/;
 sub do_save {
     my ($op) = @_;
 
-    loopsect()->comment_common("first, last, redoop, nextop, lastop");
+    loopsect()->comment_for_op("first, last, redoop, nextop, lastop");
     my ( $ix, $sym ) = loopsect()->reserve( $op, "OP*" );
     loopsect()->debug( $op->name, $op );
 
     loopsect()->supdatel(
         $ix,
-        '%s' => $op->_save_common,
+        '%s' => $op->save_baseop,
         '%s' => $op->first->save,
         '%s' => $op->last->save,
         '%s' => $op->redoop->save,
