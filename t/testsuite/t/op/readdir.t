@@ -57,7 +57,7 @@ is(ref $fh{abc}, 'GLOB');
 isnt("$fh", "$fh[0]");
 isnt("$fh", "$fh{abc}");
 
-# See that perl does not segfault upon readdir($x="."); 
+# See that perl does not segfault upon readdir($x=".");
 # http://rt.perl.org/rt3/Ticket/Display.html?id=68182
 fresh_perl_like(<<'EOP', qr/^no crash/, {}, 'RT #68182');
   eval {
@@ -71,6 +71,11 @@ SKIP:
 { # [perl #118651]
   # test that readdir doesn't modify errno on successfully reaching the end of the list
   # in scalar context, POSIX requires that readdir() not modify errno on end-of-directory
+
+  # B::C needs to reread the dir... some extra files (.c, .bin) are created by fresh_perl
+  is(opendir(OP, "op"), 1);
+  my @D = grep(/^[^\.].*\.t$/i, readdir(OP));
+  closedir(OP);
 
   my @s;
   ok(opendir(OP, "op"), "opendir op");
