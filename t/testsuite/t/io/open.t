@@ -33,7 +33,7 @@ my $afile = tempfile();
 
     eval  { die "Message" };
     like( $@, qr/<\$f> line 1/, '       die message correct' );
-    
+
     ok( close($f),              '       close()' );
     ok( unlink($afile),         '       unlink()' );
 }
@@ -110,7 +110,7 @@ like( $@, qr/Bad filehandle:\s+some_glob/,          '       right error' );
 
 {
     use utf8;
-    use open qw( :utf8 :std );
+    binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
     ok( !eval { use utf8; *ǡﬁlḛ = 1; open my $f, '<&', *ǡﬁlḛ; 1; },    '<& on a non-filehandle glob' );
     like( $@, qr/Bad filehandle:\s+ǡﬁlḛ/u,          '       right error' );
 }
@@ -288,7 +288,7 @@ SKIP: {
     like($@, qr/<\$fh3\{...}> chunk 2\./,
 	'<...> line 1 when $/ is set to a glob');
 }
-    
+
 SKIP: {
     skip("These tests use perlio", 5) unless $Config{useperlio};
     my $w;
@@ -314,8 +314,8 @@ SKIP: {
 
 # [perl #28986] "open m" crashes Perl
 
-fresh_perl_like('open m', qr/^Search pattern not terminated at/,
-	{ stderr => 1 }, 'open m test');
+fresh_perl_like('open m', qr/^Search pattern not terminated at/m,
+	{ stderr => 1, check_perlcc_output => 1 }, 'open m test');
 
 fresh_perl_is(
     'sub f { open(my $fh, "xxx"); $fh = "f"; } f; f;print "ok"',
