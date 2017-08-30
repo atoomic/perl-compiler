@@ -491,7 +491,8 @@ like $@,
 
 # Miscellaneous
 
-{
+SKIP: {
+  skip 'Skip these two todo tests for now, no interest for B::C', 2;
   local $::TODO = ' ';
   my($x,$y);
   sub {
