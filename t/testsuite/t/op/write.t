@@ -2025,7 +2025,7 @@ format STDOUT =
 print "got here\n";
 EOP
     qr/Use of comma-less variable list is deprecated.*got here/s,
-    { stderr => 1 },
+    { stderr => 1, check_perlcc_output => 1 },
     '#128255 Assert fail in S_sublex_done');
 
 {
