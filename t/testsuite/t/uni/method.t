@@ -12,10 +12,10 @@ BEGIN {
 
 use strict;
 use utf8;
-use open qw( :utf8 :std );
+binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
 no warnings 'once';
 
-plan(tests => 62);
+plan(tests => 59);
 
 #Can't use bless yet, as it might not be clean
 
