@@ -112,6 +112,7 @@ t/testsuite/C-COMPILED/bctestc/69.Class-XSAccessor.t
 t/testsuite/C-COMPILED/bctestc/70.constant-as-PVIV.t
 t/testsuite/C-COMPILED/bctestc/72.DBI-DBD-bootstrap-order.t
 t/testsuite/C-COMPILED/bctestc/74.lazy-load-DBD-Pg.t
+t/testsuite/C-COMPILED/bctestc/75.compile-time-re-eval.t
 t/testsuite/C-COMPILED/cmd/elsif.t
 t/testsuite/C-COMPILED/cmd/for.t
 t/testsuite/C-COMPILED/cmd/mod.t
@@ -134,6 +135,7 @@ t/testsuite/C-COMPILED/comp/our.t
 t/testsuite/C-COMPILED/comp/package.t
 t/testsuite/C-COMPILED/comp/package_block.t
 t/testsuite/C-COMPILED/comp/parser.t
+t/testsuite/C-COMPILED/comp/parser_run.t
 t/testsuite/C-COMPILED/comp/proto.t
 t/testsuite/C-COMPILED/comp/redef.t
 t/testsuite/C-COMPILED/comp/require.t
@@ -320,6 +322,7 @@ t/testsuite/C-COMPILED/op/cproto.t
 t/testsuite/C-COMPILED/op/crypt.t
 t/testsuite/C-COMPILED/op/current_sub.t
 t/testsuite/C-COMPILED/op/dbm.t
+t/testsuite/C-COMPILED/op/decl-refs.t
 t/testsuite/C-COMPILED/op/defined.t
 t/testsuite/C-COMPILED/op/defins.t
 t/testsuite/C-COMPILED/op/delete.t
@@ -494,8 +497,10 @@ t/testsuite/C-COMPILED/opbasic/cmp.t
 t/testsuite/C-COMPILED/opbasic/concat.t
 t/testsuite/C-COMPILED/opbasic/magic_phase.t
 t/testsuite/C-COMPILED/opbasic/qq.t
+t/testsuite/C-COMPILED/re/anyof.t
 t/testsuite/C-COMPILED/re/charset.t
 t/testsuite/C-COMPILED/re/fold_grind.t
+t/testsuite/C-COMPILED/re/keep_tabs.t
 t/testsuite/C-COMPILED/re/no_utf8_pm.t
 t/testsuite/C-COMPILED/re/overload.t
 t/testsuite/C-COMPILED/re/pat.t
@@ -526,6 +531,7 @@ t/testsuite/C-COMPILED/re/regex_sets.t
 t/testsuite/C-COMPILED/re/regex_sets_compat.t
 t/testsuite/C-COMPILED/re/regexp.t
 t/testsuite/C-COMPILED/re/regexp_noamp.t
+t/testsuite/C-COMPILED/re/regexp_nonull.t
 t/testsuite/C-COMPILED/re/regexp_notrie.t
 t/testsuite/C-COMPILED/re/regexp_qr.t
 t/testsuite/C-COMPILED/re/regexp_qr_embed.t
@@ -539,6 +545,16 @@ t/testsuite/C-COMPILED/re/subst_amp.t
 t/testsuite/C-COMPILED/re/subst_wamp.t
 t/testsuite/C-COMPILED/re/substT.t
 t/testsuite/C-COMPILED/re/uniprops.t
+t/testsuite/C-COMPILED/re/uniprops01.t
+t/testsuite/C-COMPILED/re/uniprops02.t
+t/testsuite/C-COMPILED/re/uniprops03.t
+t/testsuite/C-COMPILED/re/uniprops04.t
+t/testsuite/C-COMPILED/re/uniprops05.t
+t/testsuite/C-COMPILED/re/uniprops06.t
+t/testsuite/C-COMPILED/re/uniprops07.t
+t/testsuite/C-COMPILED/re/uniprops08.t
+t/testsuite/C-COMPILED/re/uniprops09.t
+t/testsuite/C-COMPILED/re/uniprops10.t
 t/testsuite/C-COMPILED/t/base/cond.t
 t/testsuite/C-COMPILED/t/base/if.t
 t/testsuite/C-COMPILED/t/base/lex.t
@@ -573,6 +589,7 @@ t/testsuite/C-COMPILED/t/bctestc/69.Class-XSAccessor.t
 t/testsuite/C-COMPILED/t/bctestc/70.constant-as-PVIV.t
 t/testsuite/C-COMPILED/t/bctestc/72.DBI-DBD-bootstrap-order.t
 t/testsuite/C-COMPILED/t/bctestc/74.lazy-load-DBD-Pg.t
+t/testsuite/C-COMPILED/t/bctestc/75.compile-time-re-eval.t
 t/testsuite/C-COMPILED/t/bctestc/myConstants.pm
 t/testsuite/C-COMPILED/t/benchmark/rt26188-speed-up-keys-on-empty-hash.t
 t/testsuite/C-COMPILED/t/bigmem/index.t
@@ -604,6 +621,7 @@ t/testsuite/C-COMPILED/t/comp/our.t
 t/testsuite/C-COMPILED/t/comp/package.t
 t/testsuite/C-COMPILED/t/comp/package_block.t
 t/testsuite/C-COMPILED/t/comp/parser.t
+t/testsuite/C-COMPILED/t/comp/parser_run.t
 t/testsuite/C-COMPILED/t/comp/proto.t
 t/testsuite/C-COMPILED/t/comp/redef.t
 t/testsuite/C-COMPILED/t/comp/require.t
@@ -694,6 +712,7 @@ t/testsuite/C-COMPILED/t/lib/croak/pp_ctl
 t/testsuite/C-COMPILED/t/lib/croak/pp_hot
 t/testsuite/C-COMPILED/t/lib/croak/pp_sys
 t/testsuite/C-COMPILED/t/lib/croak/toke
+t/testsuite/C-COMPILED/t/lib/croak/toke_l1
 t/testsuite/C-COMPILED/t/lib/cygwin.t
 t/testsuite/C-COMPILED/t/lib/dbmt_common.pl
 t/testsuite/C-COMPILED/t/lib/deprecate.t
@@ -872,6 +891,7 @@ t/testsuite/C-COMPILED/t/op/cproto.t
 t/testsuite/C-COMPILED/t/op/crypt.t
 t/testsuite/C-COMPILED/t/op/current_sub.t
 t/testsuite/C-COMPILED/t/op/dbm.t
+t/testsuite/C-COMPILED/t/op/decl-refs.t
 t/testsuite/C-COMPILED/t/op/defined.t
 t/testsuite/C-COMPILED/t/op/defins.t
 t/testsuite/C-COMPILED/t/op/delete.t
@@ -1085,8 +1105,10 @@ t/testsuite/C-COMPILED/t/porting/regen.t
 t/testsuite/C-COMPILED/t/porting/ss_dup.t
 t/testsuite/C-COMPILED/t/porting/test_bootstrap.t
 t/testsuite/C-COMPILED/t/porting/utils.t
+t/testsuite/C-COMPILED/t/re/anyof.t
 t/testsuite/C-COMPILED/t/re/charset.t
 t/testsuite/C-COMPILED/t/re/fold_grind.t
+t/testsuite/C-COMPILED/t/re/keep_tabs.t
 t/testsuite/C-COMPILED/t/re/no_utf8_pm.t
 t/testsuite/C-COMPILED/t/re/overload.t
 t/testsuite/C-COMPILED/t/re/pat.t
@@ -1124,6 +1146,7 @@ t/testsuite/C-COMPILED/t/re/regex_sets.t
 t/testsuite/C-COMPILED/t/re/regex_sets_compat.t
 t/testsuite/C-COMPILED/t/re/regexp.t
 t/testsuite/C-COMPILED/t/re/regexp_noamp.t
+t/testsuite/C-COMPILED/t/re/regexp_nonull.t
 t/testsuite/C-COMPILED/t/re/regexp_notrie.t
 t/testsuite/C-COMPILED/t/re/regexp_qr.t
 t/testsuite/C-COMPILED/t/re/regexp_qr_embed.t
@@ -1140,6 +1163,16 @@ t/testsuite/C-COMPILED/t/re/subst_amp.t
 t/testsuite/C-COMPILED/t/re/subst_wamp.t
 t/testsuite/C-COMPILED/t/re/substT.t
 t/testsuite/C-COMPILED/t/re/uniprops.t
+t/testsuite/C-COMPILED/t/re/uniprops01.t
+t/testsuite/C-COMPILED/t/re/uniprops02.t
+t/testsuite/C-COMPILED/t/re/uniprops03.t
+t/testsuite/C-COMPILED/t/re/uniprops04.t
+t/testsuite/C-COMPILED/t/re/uniprops05.t
+t/testsuite/C-COMPILED/t/re/uniprops06.t
+t/testsuite/C-COMPILED/t/re/uniprops07.t
+t/testsuite/C-COMPILED/t/re/uniprops08.t
+t/testsuite/C-COMPILED/t/re/uniprops09.t
+t/testsuite/C-COMPILED/t/re/uniprops10.t
 t/testsuite/C-COMPILED/t/README
 t/testsuite/C-COMPILED/t/run/cloexec.t
 t/testsuite/C-COMPILED/t/run/dtrace.pl
@@ -1700,6 +1733,7 @@ t/testsuite/t/bctestc/69.Class-XSAccessor.t
 t/testsuite/t/bctestc/70.constant-as-PVIV.t
 t/testsuite/t/bctestc/72.DBI-DBD-bootstrap-order.t
 t/testsuite/t/bctestc/74.lazy-load-DBD-Pg.t
+t/testsuite/t/bctestc/75.compile-time-re-eval.t
 t/testsuite/t/bctestc/myConstants.pm
 t/testsuite/t/benchmark/rt26188-speed-up-keys-on-empty-hash.t
 t/testsuite/t/bigmem/index.t
@@ -1731,6 +1765,7 @@ t/testsuite/t/comp/our.t
 t/testsuite/t/comp/package.t
 t/testsuite/t/comp/package_block.t
 t/testsuite/t/comp/parser.t
+t/testsuite/t/comp/parser_run.t
 t/testsuite/t/comp/proto.t
 t/testsuite/t/comp/redef.t
 t/testsuite/t/comp/require.t
@@ -1821,6 +1856,7 @@ t/testsuite/t/lib/croak/pp_ctl
 t/testsuite/t/lib/croak/pp_hot
 t/testsuite/t/lib/croak/pp_sys
 t/testsuite/t/lib/croak/toke
+t/testsuite/t/lib/croak/toke_l1
 t/testsuite/t/lib/cygwin.t
 t/testsuite/t/lib/dbmt_common.pl
 t/testsuite/t/lib/deprecate.t
@@ -1999,6 +2035,7 @@ t/testsuite/t/op/cproto.t
 t/testsuite/t/op/crypt.t
 t/testsuite/t/op/current_sub.t
 t/testsuite/t/op/dbm.t
+t/testsuite/t/op/decl-refs.t
 t/testsuite/t/op/defined.t
 t/testsuite/t/op/defins.t
 t/testsuite/t/op/delete.t
@@ -2212,8 +2249,10 @@ t/testsuite/t/porting/regen.t
 t/testsuite/t/porting/ss_dup.t
 t/testsuite/t/porting/test_bootstrap.t
 t/testsuite/t/porting/utils.t
+t/testsuite/t/re/anyof.t
 t/testsuite/t/re/charset.t
 t/testsuite/t/re/fold_grind.t
+t/testsuite/t/re/keep_tabs.t
 t/testsuite/t/re/no_utf8_pm.t
 t/testsuite/t/re/overload.t
 t/testsuite/t/re/pat.t
@@ -2251,6 +2290,7 @@ t/testsuite/t/re/regex_sets.t
 t/testsuite/t/re/regex_sets_compat.t
 t/testsuite/t/re/regexp.t
 t/testsuite/t/re/regexp_noamp.t
+t/testsuite/t/re/regexp_nonull.t
 t/testsuite/t/re/regexp_notrie.t
 t/testsuite/t/re/regexp_qr.t
 t/testsuite/t/re/regexp_qr_embed.t
@@ -2267,6 +2307,16 @@ t/testsuite/t/re/subst_amp.t
 t/testsuite/t/re/subst_wamp.t
 t/testsuite/t/re/substT.t
 t/testsuite/t/re/uniprops.t
+t/testsuite/t/re/uniprops01.t
+t/testsuite/t/re/uniprops02.t
+t/testsuite/t/re/uniprops03.t
+t/testsuite/t/re/uniprops04.t
+t/testsuite/t/re/uniprops05.t
+t/testsuite/t/re/uniprops06.t
+t/testsuite/t/re/uniprops07.t
+t/testsuite/t/re/uniprops08.t
+t/testsuite/t/re/uniprops09.t
+t/testsuite/t/re/uniprops10.t
 t/testsuite/t/README
 t/testsuite/t/run/cloexec.t
 t/testsuite/t/run/dtrace.pl
@@ -2352,6 +2402,7 @@ t/testsuite/t/win32/system.t
 t/testsuite/t/win32/system_tests
 t/testsuite/TestInit.pm
 t/testsuite/TODO
+t/testsuite/version
 templates/perlcc.pl
 TESTS
 Todo
