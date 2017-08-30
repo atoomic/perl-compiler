@@ -13,14 +13,31 @@ sub _clear_stack {
     return join '', ( 1 .. 42 );    # large enough to do stuff & clear
 }
 
+# hardcoded would require a check to detect this is going to the correct position
+sub OP_AUX_IX { 15 }
+
 sub do_save {
     my ($op) = @_;
 
     _clear_stack();                 # avoid a weird B (or B::C) issue when calling aux_list_thr
 
+    unopauxsect()->comment_for_op("first, aux");
+    my ( $ix, $sym ) = unopauxsect()->reserve( $op, "OP*" );
+    unopauxsect()->debug( $op->name, $op );
+
+    unopauxsect()->supdate( $ix, "%s, %s, %s", $op->save_baseop, $op->first->save, 'AUX-TO-BE-FILLED' );
+
     my @aux_list;
     if ( $op->name eq 'argelem' ) {
-        @aux_list = $op->aux_ptr;
+
+        # argelem has no aux_list, it's stealing the pointer to save one integer
+        # from pp.c for PP(pp_argelem)
+        #      IV ix = PTR2IV(cUNOP_AUXo->op_aux);
+
+        my $op_aux = $op->aux_ptr2iv // 0;
+        unopauxsect()->update_field( $ix, OP_AUX_IX(), $op_aux );
+
+        return $sym;
     }
     elsif ( $op->name eq 'argcheck' ) {
         @aux_list = $op->aux_list_thr;
@@ -34,28 +51,28 @@ sub do_save {
         @aux_list = $op->aux_list;    # GH#283, GH#341
     }
 
+    #### Saving the regular AUX LIST
+
     my $auxlen = scalar @aux_list;
-
-    unopauxsect()->comment_for_op("first, aux");
-    my ( $ix, $sym ) = unopauxsect()->reserve( $op, "OP*" );
-    unopauxsect()->debug( $op->name, $op );
-
     my @to_be_filled = map { 0 } 1 .. $auxlen;    #
 
     my $list_size         = $auxlen + 1;
     my $unopaux_item_sect = meta_unopaux_item($list_size);
+
     $unopaux_item_sect->comment(q{length prefix, UNOP_AUX_item * $auxlen });
     my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
 
     my $symname = sprintf( 'meta_unopaux_item%d_list[%d]', $list_size, $uaux_item_ix );
-    unopauxsect()->supdate( $ix, "%s, %s, &%s.aaab", $op->save_baseop, $op->first->save, $symname );
+    my $op_aux = sprintf( '&%s.aaab', $symname );
+
+    unopauxsect()->update_field( $ix, OP_AUX_IX(), $op_aux );
 
     # This cannot be a section, as the number of elements is variable
-    my $i            = 1;                         # maybe rename tp field_ix
+    my $i            = 1;         # maybe rename tp field_ix
     my $struct_field = q{aaaa};
 
     my $action = 0;
-    for my $item (@aux_list) {
+    foreach my $item (@aux_list) {
         my $field;
 
         $struct_field++;

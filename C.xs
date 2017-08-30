@@ -392,7 +392,7 @@ OUTPUT:
     RETVAL
 
 SV*
-aux_ptr(o)
+aux_ptr2iv(o)
           B::OP o
 CODE:
   {
