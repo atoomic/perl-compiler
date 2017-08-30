@@ -31,6 +31,7 @@ sub do_save {
     my $replrootfield_cast = '';
     if ( defined $replroot && ref $replroot ) {
         $replrootfield = $replroot->save || 'NULL';
+        $replrootfield_cast = '.op_pmtargetgv=' if $replrootfield =~ qr{gv_list};
     }
     elsif ( $replroot =~ qr{^[0-9]+$} ) {
         $replrootfield      = $replroot;
@@ -44,22 +45,22 @@ sub do_save {
     # segfault when trying to dereference it to find op->op_pmnext->op_type
     pmopsect()->supdatel(
         $ix,
-        '%s'   => $op->save_baseop,                        # BASEOP
-        '%s'   => $op->first->save,                        # OP *    op_first
-        '%s'   => $op->last->save,                         # OP *    op_last
-        '%u'   => 0,                                       # REGEXP *    op_pmregexp
-        '0x%x' => $op->pmflags,                            #  U32         op_pmflags
-        '{%s}' => $replrootfield_cast . $replrootfield,    # union op_pmreplrootu
-                                                           # union {
-                                                           # OP *    op_pmreplroot;      /* For OP_SUBST */
-                                                           # PADOFFSET op_pmtargetoff;   /* For OP_SPLIT lex ary or thr GV */
-                                                           # GV *    op_pmtargetgv;          /* For OP_SPLIT non-threaded GV */
-                                                           # }   op_pmreplrootu;
-        '{%s}' => $replstartfield,                         # union op_pmstashstartu
-                                                           # union {
-                                                           # OP *    op_pmreplstart; /* Only used in OP_SUBST */
-                                                           # HV *    op_pmstash;
-                                                           # }       op_pmstashstartu;
+        '%s'                        => $op->save_baseop,                        # BASEOP
+        '%s /* first */'            => $op->first->save,                        # OP *    op_first
+        '%s /* last */'             => $op->last->save,                         # OP *    op_last
+        '%u'                        => 0,                                       # REGEXP *    op_pmregexp
+        '0x%x'                      => $op->pmflags,                            #  U32         op_pmflags
+        '{%s} /* op_pmreplrootu */' => $replrootfield_cast . $replrootfield,    # union op_pmreplrootu
+                                                                                # union {
+                                                                                # OP *    op_pmreplroot;      /* For OP_SUBST */
+                                                                                # PADOFFSET op_pmtargetoff;   /* For OP_SPLIT lex ary or thr GV */
+                                                                                # GV *    op_pmtargetgv;          /* For OP_SPLIT non-threaded GV */
+                                                                                # }   op_pmreplrootu;
+        '{%s}'                      => $replstartfield,                         # union op_pmstashstartu
+                                                                                # union {
+                                                                                # OP *    op_pmreplstart; /* Only used in OP_SUBST */
+                                                                                # HV *    op_pmstash;
+                                                                                # }       op_pmstashstartu;
     );
 
     my $code_list = $op->code_list;
