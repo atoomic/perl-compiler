@@ -172,7 +172,9 @@ for my $char ("٠", "٥", "٩") {
 }
 
 # RT #126481 !! with syntax error panics
-{
+SKIP: {
+    skip "These tests fail at compile time: skipping them for B::C", 2;
+
     fresh_perl_like('no warnings "experimental::regex_sets"; qr/(?[ ! ! (\w])/',
                     qr/^Unmatched \(/, {},
                     'qr/(?[ ! ! (\w])/ doesnt panic');
