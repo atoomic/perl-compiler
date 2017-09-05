@@ -49,7 +49,7 @@ sub run {
     if ( grep { $_ eq q{-k} } @args ) {
         @args = grep { $_ ne q{-k} } @args;
         qx{git checkout t/$v/C-COMPILED/known_errors.txt};
-        say '# git checkout t/$v/C-COMPILED/known_errors.txt -', $? ? 'failure !' : 'ok';
+        say qq[# git checkout t/$v/C-COMPILED/known_errors.txt -], $? ? 'failure !' : 'ok';
         $ENV{PERLCC_DONT_UPDATE_TESTS} = 1;
     }
 
