@@ -111,6 +111,9 @@ t/testsuite/C-COMPILED/bctestc/64.backslash-p-in-RegExp.t
 t/testsuite/C-COMPILED/bctestc/69.Class-XSAccessor.t
 t/testsuite/C-COMPILED/bctestc/70.constant-as-PVIV.t
 t/testsuite/C-COMPILED/bctestc/72.DBI-DBD-bootstrap-order.t
+t/testsuite/C-COMPILED/bctestc/74.lazy-load-DBD-Pg.c
+t/testsuite/C-COMPILED/bctestc/74.lazy-load-DBD-Pg.c.lst
+t/testsuite/C-COMPILED/bctestc/74.lazy-load-DBD-Pg.pl
 t/testsuite/C-COMPILED/bctestc/74.lazy-load-DBD-Pg.t
 t/testsuite/C-COMPILED/cmd/elsif.t
 t/testsuite/C-COMPILED/cmd/for.t
@@ -171,6 +174,7 @@ t/testsuite/C-COMPILED/extra/staticxs.t
 t/testsuite/C-COMPILED/extra/staticxs_hash_grow.t
 t/testsuite/C-COMPILED/extra/sub-in-re.t
 t/testsuite/C-COMPILED/extra/unop_aux.t
+t/testsuite/C-COMPILED/fullog.txt
 t/testsuite/C-COMPILED/io/argv.t
 t/testsuite/C-COMPILED/io/binmode.t
 t/testsuite/C-COMPILED/io/bom.t
@@ -1436,6 +1440,9 @@ t/testsuite/C-COMPILED/xtestc/0241.t
 t/testsuite/C-COMPILED/xtestc/0242.t
 t/testsuite/C-COMPILED/xtestc/0243.t
 t/testsuite/C-COMPILED/xtestc/0244.t
+t/testsuite/C-COMPILED/xtestc/0245.c
+t/testsuite/C-COMPILED/xtestc/0245.c.lst
+t/testsuite/C-COMPILED/xtestc/0245.pl
 t/testsuite/C-COMPILED/xtestc/0245.t
 t/testsuite/C-COMPILED/xtestc/0246.t
 t/testsuite/C-COMPILED/xtestc/0247.t
@@ -2352,6 +2359,7 @@ t/testsuite/t/win32/system.t
 t/testsuite/t/win32/system_tests
 t/testsuite/TestInit.pm
 t/testsuite/TODO
+t/testsuite/version
 templates/perlcc.pl
 TESTS
 Todo

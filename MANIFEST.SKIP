@@ -24,6 +24,7 @@
 \.patch$
 ^.perldb$
 ^pm_to_blib
+.prove
 ^README.alpha
 ^rpms/
 ^script/perlcc$
