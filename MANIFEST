@@ -544,7 +544,6 @@ t/testsuite/C-COMPILED/re/subst.t
 t/testsuite/C-COMPILED/re/subst_amp.t
 t/testsuite/C-COMPILED/re/subst_wamp.t
 t/testsuite/C-COMPILED/re/substT.t
-t/testsuite/C-COMPILED/re/uniprops.t
 t/testsuite/C-COMPILED/re/uniprops01.t
 t/testsuite/C-COMPILED/re/uniprops02.t
 t/testsuite/C-COMPILED/re/uniprops03.t
@@ -1162,7 +1161,6 @@ t/testsuite/C-COMPILED/t/re/subst.t
 t/testsuite/C-COMPILED/t/re/subst_amp.t
 t/testsuite/C-COMPILED/t/re/subst_wamp.t
 t/testsuite/C-COMPILED/t/re/substT.t
-t/testsuite/C-COMPILED/t/re/uniprops.t
 t/testsuite/C-COMPILED/t/re/uniprops01.t
 t/testsuite/C-COMPILED/t/re/uniprops02.t
 t/testsuite/C-COMPILED/t/re/uniprops03.t
@@ -1218,7 +1216,6 @@ t/testsuite/C-COMPILED/t/uni/cache.t
 t/testsuite/C-COMPILED/t/uni/caller.t
 t/testsuite/C-COMPILED/t/uni/case.pl
 t/testsuite/C-COMPILED/t/uni/chomp.t
-t/testsuite/C-COMPILED/t/uni/chr.t
 t/testsuite/C-COMPILED/t/uni/class.t
 t/testsuite/C-COMPILED/t/uni/eval.t
 t/testsuite/C-COMPILED/t/uni/fold.t
@@ -1241,9 +1238,6 @@ t/testsuite/C-COMPILED/t/uni/sprintf.t
 t/testsuite/C-COMPILED/t/uni/stash.t
 t/testsuite/C-COMPILED/t/uni/tie.t
 t/testsuite/C-COMPILED/t/uni/title.t
-t/testsuite/C-COMPILED/t/uni/tr_7jis.t
-t/testsuite/C-COMPILED/t/uni/tr_eucjp.t
-t/testsuite/C-COMPILED/t/uni/tr_sjis.t
 t/testsuite/C-COMPILED/t/uni/tr_utf8.t
 t/testsuite/C-COMPILED/t/uni/universal.t
 t/testsuite/C-COMPILED/t/uni/upper.t
@@ -1264,7 +1258,6 @@ t/testsuite/C-COMPILED/uni/cache.t
 t/testsuite/C-COMPILED/uni/caller.t
 t/testsuite/C-COMPILED/uni/case.pl
 t/testsuite/C-COMPILED/uni/chomp.t
-t/testsuite/C-COMPILED/uni/chr.t
 t/testsuite/C-COMPILED/uni/class.t
 t/testsuite/C-COMPILED/uni/eval.t
 t/testsuite/C-COMPILED/uni/fold.t
@@ -1287,9 +1280,6 @@ t/testsuite/C-COMPILED/uni/sprintf.t
 t/testsuite/C-COMPILED/uni/stash.t
 t/testsuite/C-COMPILED/uni/tie.t
 t/testsuite/C-COMPILED/uni/title.t
-t/testsuite/C-COMPILED/uni/tr_7jis.t
-t/testsuite/C-COMPILED/uni/tr_eucjp.t
-t/testsuite/C-COMPILED/uni/tr_sjis.t
 t/testsuite/C-COMPILED/uni/tr_utf8.t
 t/testsuite/C-COMPILED/uni/universal.t
 t/testsuite/C-COMPILED/uni/upper.t
@@ -1534,7 +1524,6 @@ t/testsuite/C-COMPILED/xtestc/0329.t
 t/testsuite/C-COMPILED/xtestc/0330.t
 t/testsuite/C-COMPILED/xtestc/0331.t
 t/testsuite/C-COMPILED/xtestc/0332.t
-t/testsuite/C-COMPILED/xtestc/0333.t
 t/testsuite/C-COMPILED/xtestc/0335.t
 t/testsuite/C-COMPILED/xtestc/0338.t
 t/testsuite/C-COMPILED/xtestc/0340.t
@@ -1629,18 +1618,12 @@ t/testsuite/lib/.exists
 t/testsuite/lib/AnyDBM_File.t
 t/testsuite/lib/Benchmark.t
 t/testsuite/lib/blib.t
-t/testsuite/lib/buildcustomize.pl
 t/testsuite/lib/bytes.t
-t/testsuite/lib/bytes_heavy.pl
 t/testsuite/lib/charnames.t
 t/testsuite/lib/Config.t
-t/testsuite/lib/Config_git.pl
-t/testsuite/lib/Config_heavy.pl
 t/testsuite/lib/DB.t
-t/testsuite/lib/dbm_filter_util.pl
 t/testsuite/lib/diagnostics.t
 t/testsuite/lib/DirHandle.t
-t/testsuite/lib/dumpvar.pl
 t/testsuite/lib/dumpvar.t
 t/testsuite/lib/English.t
 t/testsuite/lib/feature.t
@@ -1658,7 +1641,6 @@ t/testsuite/lib/open.t
 t/testsuite/lib/overload.t
 t/testsuite/lib/overload64.t
 t/testsuite/lib/overloading.t
-t/testsuite/lib/perl5db.pl
 t/testsuite/lib/perl5db.t
 t/testsuite/lib/SelectSaver.t
 t/testsuite/lib/sigtrap.t
@@ -1668,8 +1650,6 @@ t/testsuite/lib/subs.t
 t/testsuite/lib/Symbol.t
 t/testsuite/lib/Thread.t
 t/testsuite/lib/unicore/TestProp.pl
-t/testsuite/lib/utf8.t
-t/testsuite/lib/utf8_heavy.pl
 t/testsuite/lib/vars.t
 t/testsuite/lib/vars_carp.t
 t/testsuite/lib/vmsish.t
@@ -2306,7 +2286,6 @@ t/testsuite/t/re/subst.t
 t/testsuite/t/re/subst_amp.t
 t/testsuite/t/re/subst_wamp.t
 t/testsuite/t/re/substT.t
-t/testsuite/t/re/uniprops.t
 t/testsuite/t/re/uniprops01.t
 t/testsuite/t/re/uniprops02.t
 t/testsuite/t/re/uniprops03.t
@@ -2362,7 +2341,6 @@ t/testsuite/t/uni/cache.t
 t/testsuite/t/uni/caller.t
 t/testsuite/t/uni/case.pl
 t/testsuite/t/uni/chomp.t
-t/testsuite/t/uni/chr.t
 t/testsuite/t/uni/class.t
 t/testsuite/t/uni/eval.t
 t/testsuite/t/uni/fold.t
@@ -2385,9 +2363,6 @@ t/testsuite/t/uni/sprintf.t
 t/testsuite/t/uni/stash.t
 t/testsuite/t/uni/tie.t
 t/testsuite/t/uni/title.t
-t/testsuite/t/uni/tr_7jis.t
-t/testsuite/t/uni/tr_eucjp.t
-t/testsuite/t/uni/tr_sjis.t
 t/testsuite/t/uni/tr_utf8.t
 t/testsuite/t/uni/universal.t
 t/testsuite/t/uni/upper.t
@@ -2401,7 +2376,6 @@ t/testsuite/t/win32/signal.t
 t/testsuite/t/win32/system.t
 t/testsuite/t/win32/system_tests
 t/testsuite/TestInit.pm
-t/testsuite/TODO
 t/testsuite/version
 templates/perlcc.pl
 TESTS
