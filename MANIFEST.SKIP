@@ -1,4 +1,3 @@
-^C.bs
 ^a.out
 ^bamboo.sh$
 ^bcdiff
@@ -8,6 +7,7 @@
 \.branched_from
 \B\.travis.yml\b
 ^ByteLoader
+^C.bs
 ^C.c
 ^C.o
 ^configure\.
@@ -25,6 +25,7 @@
 \.patch$
 ^.perldb$
 ^pm_to_blib
+.prove
 ^README.alpha
 ^rpms/
 ^script/perlcc$
@@ -33,3 +34,4 @@
 \.tar\.gz$
 ^test
 \.tmp~$
+^t/testsuite/
