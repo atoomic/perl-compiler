@@ -6,6 +6,7 @@ use B qw/RXf_EVAL_SEEN PMf_EVAL SVf_UTF8/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/pmopsect init init1 init2/;
 use B::C::Helpers qw/strlen_flags/;
+use B::C::Save qw/savecowpv/;
 
 # Global to this space?
 my ($swash_init);
@@ -121,7 +122,9 @@ sub do_save {
             $initpm->sadd( "PM_SETRE(%s, ReREFCNT_inc(PM_GETRE(%s))); /* %s */", $sym, $pre_saved_sym, $comment );
         }
         else {
-            $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
+            my ( $cstr, undef, undef ) = savecowpv($re);
+
+            $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $cstr, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
             $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(%s)) = 0x%x;", $sym, $op->reflags );
             $saved_re{$key} = $sym;
         }
