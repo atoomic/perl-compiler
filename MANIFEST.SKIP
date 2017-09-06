@@ -30,6 +30,7 @@
 ^script/perlcc$
 ^setup.cpanel
 \.subtest\.
+^t/testsuite/
 \.tar\.gz$
 ^test
 \.tmp~$
