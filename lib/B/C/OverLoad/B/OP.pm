@@ -13,6 +13,8 @@ my $OP_CUSTOM = opnumber('custom');
 my %OP_COP = ( opnumber('nextstate') => 1 );
 debug( cops => %OP_COP );
 
+our @DO_UPDATE_ARGS;    # avoid a local on @_ which bloat the binary
+
 sub do_save {
     my ($op) = @_;
 
@@ -24,12 +26,12 @@ sub do_save {
     opsect()->debug( $op->name, $op );
 
     # view Sub::Call::Tail perldoc for more details ( could use it )
-    local @_ = ( $ix, $sym, $op );
+    @DO_UPDATE_ARGS = ( $ix, $sym, $op );
     goto &do_update;                         # avoid deep recursion calls by forcing a tail call with goto
 }
 
 sub do_update {
-    my ( $ix, $sym, $op ) = @_;
+    my ( $ix, $sym, $op ) = @DO_UPDATE_ARGS;
 
     opsect()->update( $ix, $op->save_baseop );
 
