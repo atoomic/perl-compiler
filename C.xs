@@ -617,6 +617,13 @@ U32
 RX_EXTFLAGS(rx)
 	  B::REGEXP rx
 
+U32 RX_NPARENS(rx)
+      B::REGEXP rx
+    CODE:
+        RETVAL = rx && ReANY(rx) ? ReANY(rx)->nparens : 0;
+    OUTPUT:
+       RETVAL
+
 MODULE = B  PACKAGE = B::MAGIC PREFIX = MG_
 
 U32
@@ -626,7 +633,6 @@ MG_OBJ_PTR(mg)
     RETVAL = mg ? mg->mg_obj : 0;
     OUTPUT:
         RETVAL
-
 
 MODULE = B     PACKAGE = B::SV        PREFIX = Sv
 

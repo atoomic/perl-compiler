@@ -2,7 +2,7 @@ package B::PMOP;
 
 use strict;
 
-use B qw/RXf_EVAL_SEEN PMf_EVAL SVf_UTF8/;
+use B qw/RXf_EVAL_SEEN PMf_EVAL SVf_UTF8 svref_2object/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/pmopsect init init1 init2/;
 use B::C::Helpers qw/strlen_flags/;
@@ -112,8 +112,8 @@ sub do_save {
         if (
             $pre_saved_sym &&    # If we have already seen this regex
             !$eval_seen    &&    # and it does not have an eval
-            !_regex_has_capture($qre)    # and it does not have a capture
-          ) {                            # we can just use the reference.
+            !_regex_has_capture($re)    # and it does not have a capture
+          ) {                           # we can just use the reference.
 
             my $comment = $qre;
             $comment =~ s{\Q/*\E}{??}g;
@@ -146,21 +146,17 @@ sub do_save {
 }
 
 sub _regex_has_capture {
-    my ($qre) = @_;
+    my ($re) = @_;
 
-    # No ()s .. has no capture
-    return 0 if $qre !~ tr{()}{};
+    # No ()s .. has no capture - pre optimization
+    return 0 if $re !~ tr{()}{};
 
-    # The number of left "("s is equal to the number of "(?:"
-    # .. has no capture
-    my $left_par_count        = $qre =~ tr{(}{};
-    my $left_par_no_cap_count = 0;
-    while ( $qre =~ /\(\?:/g ) { $left_par_no_cap_count++ }
+    # could also use Regexp::Parser with a scalar on $parser->captures
+    my $qr      = qr{$re};
+    my $re_obj  = svref_2object($qr);
+    my $nparens = $re_obj->NPARENS;     # number of captures
 
-    return 0 if $left_par_count == $left_par_no_cap_count;
-
-    # Everything else does capture because we have a "("
-    return 1;
+    return $nparens ? 1 : 0;
 }
 
 1;
