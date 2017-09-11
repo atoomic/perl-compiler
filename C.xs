@@ -594,6 +594,14 @@ U32
 RX_EXTFLAGS(rx)
 	  B::REGEXP rx
 
+U32 RX_NPARENS(rx)
+      B::REGEXP rx
+    CODE:
+        RETVAL = rx && ReANY(rx) ? ReANY(rx)->nparens : 0;
+    OUTPUT:
+       RETVAL
+
+
 MODULE = B     PACKAGE = B::SV        PREFIX = Sv
 
 bool
