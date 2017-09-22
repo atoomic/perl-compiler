@@ -112,14 +112,13 @@ sub do_save {
                     next if skip_backref_sv($elt);
                     push @new_array, $elt;
                 }
-                $fill -= scalar(@array) - scalar(@new_array);    # remove to fill the delta we removed from array
                 @array = @new_array;
 
                 if ( !scalar @array ) {
 
                     # nothing to save there
                     if ( $ix == $section->index ) {
-                        $section->remove;                        # lives dangerously but should be fine :-\
+                        $section->remove;    # lives dangerously but should be fine :-\
                     }
                     else {
                         # sanity check: we know this is a svsect here...
