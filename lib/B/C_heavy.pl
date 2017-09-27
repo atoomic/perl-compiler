@@ -247,6 +247,14 @@ sub save_pre_defstash {
         svref_2object( \%maybe::next:: )->save("maybe::next::");
     }
 
+    # avoid B::C and B symbols being stored - note B/C is not loading Exporter anymore
+    if ( $B::C::settings->{'starting_flat_stashes'}->{'Exporter'} ) {
+        my %backup_Exporter_Cache = (%Exporter::Cache);
+        %Exporter::Cache = ();
+        svref_2object( \%Exporter:: )->save("Exporter::");
+        %Exporter::Cache = (%backup_Exporter_Cache);    # restore it
+    }
+
     # do we have something else than PerlIO/scalar/scalar.so ?
     # there is something with PerlIO and PerlIO::scalar ( view in_static_core )
     if ( scalar @{ $settings->{'dl_modules'} } && scalar @{ $settings->{'dl_so_files'} } ) {    # Backup what we had in the DynaLoader arrays prior to C_Heavy
@@ -282,7 +290,6 @@ sub save_defstash {
 sub save_optree {
     verbose("Starting compile");
     verbose("Walking optree");
-    %Exporter::Cache = ();                   # avoid B::C and B symbols being stored
     _delete_macros_vendor_undefined();
 
     if ( debug('walk') ) {
