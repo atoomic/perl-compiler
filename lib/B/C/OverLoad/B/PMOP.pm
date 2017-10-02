@@ -133,8 +133,7 @@ sub do_save {
         $initpm->close_block();
     }
 
-    if ( $replrootfield && $replrootfield ne 'NULL' ) {
-
+    if ( $replrootfield && $replrootfield ne 'NULL' && $replrootfield ne '(void*)Nullsv' ) {
         my $pmsym = $sym;
         $pmsym =~ s/^\&//;    # Strip '&' off the front.
 
