@@ -9,14 +9,14 @@ find lib/B/C/ -name "*.pm" | xargs -n1 perl -Ilib -c >$LOG 2>&1
 ERRORS=$(grep -c -v 'syntax OK' $LOG)
 if [ "x$ERRORS" != "x0" ]; then
     cat $LOG
-    exit 1
+    return 1
 fi
 echo "Check: ok"
 
 LOG=/tmp/log.bc.configure
 #git clean -dxf
-perl Makefile.PL installdirs=vendor >$LOG 2>&1 || ( cat $LOG; exit $? )
+perl Makefile.PL installdirs=vendor >$LOG 2>&1 || ( cat $LOG; return $? )
 echo "Makefile.PL: ok"
-make -j4 install >>$LOG 2>&1 || ( cat $LOG; exit $? )
+make -j4 install >>$LOG 2>&1 || ( cat $LOG; return $? )
 
 echo "Make: ok"
