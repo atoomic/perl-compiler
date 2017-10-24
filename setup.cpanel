@@ -5,25 +5,25 @@
 
 ARG="$1" # --debug
 PERL=$(which perl)
-BINPERL="/usr/local/cpanel/3rdparty/perl/526/bin/"
+BINPERL="/usr/local/cpanel/3rdparty/perl/526/bin"
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
     echo "You need to source that file: 'source $0'"
     exit 1;
 fi
 
-if [ "$PERL" != "$BINPERL/perl" ]; then
+if [[ "$PERL" != "$BINPERL/perl" ]]; then
     echo "Adding $BINPERL to your path"
     export PATH=$BINPERL:$PATH:.
 fi
 
 DEBUG=0
-if [ "$ARG" == "--debug" ]; then
-    echo debug is ON
+if [[ "$ARG" == "--debug" ]]; then
+    echo "debug is ON"
     DEBUG=1
 fi
 
-if [ "$DEBUG" == "1" ]; then
+if [[ "$DEBUG" == "1" ]]; then
     export BC_CFLAGS='-g' # Optimize debugging experience.
 else
     export BC_CFLAGS='' # use default compilation option
