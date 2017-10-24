@@ -23,6 +23,10 @@ sub do_save {
     my ( $cv, $origname ) = @_;
 
     my $fullname = $cv->FULLNAME();
+
+    # do not save BEGIN and CHECK functions
+    return 'NULL' if $fullname =~ qr{::(?:BEGIN|CHECK|UNITCHECK)$};
+
     $cv->FLAGS & 2048 and die sprintf( "Unexpected SVf_ROK found in %s\n", ref $cv );
 
     if ( !$cv->CONST && $cv->XSUB ) {    # xs function

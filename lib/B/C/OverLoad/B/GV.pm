@@ -25,6 +25,21 @@ sub do_save {
 
     $gv->FLAGS & 2048 and die sprintf( "Unexpected SVf_ROK found in %s\n", ref $gv );
 
+    if ( $gv->get_fullname =~ qr{::(?:BEGIN|CHECK|UNITCHECK)$} ) {
+
+        # do not save the GV for BEGIN or CHECK if only the CV slot is used
+        if (
+               ref( $gv->AV ) eq 'B::SPECIAL'
+            && ref( $gv->HV ) eq 'B::SPECIAL'
+            && ref( $gv->SV ) eq 'B::SPECIAL'
+            && ref( $gv->FORM ) eq 'B::SPECIAL'
+            && ref( $gv->IO ) eq 'B::SPECIAL'
+
+          ) {
+            return q{NULL};
+        }
+    }
+
     # return earlier for special cases
     return $CORE_SYMS->{ $gv->get_fullname } if $gv->is_coresym();
 
