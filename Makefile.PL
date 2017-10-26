@@ -93,6 +93,17 @@ sub write_b_c_flags {
         $cfg{'SIGNAL_NAMES'} = \%signals;
     }
 
+    {
+        use POSIX ();
+
+        if ( my $f = 'POSIX'->can('LONG_MIN') ) {
+            $cfg{LONG_MIN} = $f->();
+        }
+        if ( my $f = 'POSIX'->can('LONG_MAX') ) {
+            $cfg{LONG_MAX} = $f->();
+        }
+    }
+
     # Ensure to add all used Config keys in B::C here, otherwise they will be silently empty!
     # easier hash key/value slices only came with 5.22
     for my $s (

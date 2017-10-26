@@ -15,6 +15,9 @@ my $INTMAX = ( 1 << $POW ) - 1;
 my $UL        = _ull();
 my $IVDFORMAT = _ivdformat();
 
+# values are cached in B::C::Flags::Config from POSIX
+my ( $LONG_MIN, $LONG_MAX ) = ( $B::C::Flags::Config{LONG_MIN}, $B::C::Flags::Config{LONG_MAX} );
+
 sub intmax {
     return $INTMAX;
 }
@@ -28,20 +31,14 @@ sub get_integer_value ($) {
     if ( $ivx < -$INTMAX ) {
         $sval = sprintf( "%${IVDFORMAT}%s", $ivx, 'LL' );    # DateTime
     }
-    if ( $INC{'POSIX.pm'} ) {                                # If POSIX is currently loaded.
 
-        # i262: LONG_MIN -9223372036854775808L integer constant is so large that it is unsigned
-        if ( $ivx == POSIX::LONG_MIN() ) {
-            $sval = "PERL_LONG_MIN";
-        }
-        elsif ( $ivx == POSIX::LONG_MAX() ) {
-            $sval = "PERL_LONG_MAX";
-        }
-
-        #elsif ($ivx == POSIX::HUGE_VAL()) {
-        #  $sval = "HUGE_VAL";
-        #}
+    if ( defined $LONG_MIN && $ivx == $LONG_MIN ) {
+        $sval = "PERL_LONG_MIN";
     }
+    if ( defined $LONG_MAX && $ivx == $LONG_MAX ) {
+        $sval = "PERL_LONG_MAX";
+    }
+
     $sval = '0' if $sval =~ /(NAN|inf)$/i;
     return $sval;
 }
