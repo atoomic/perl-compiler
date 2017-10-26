@@ -17,6 +17,7 @@ my $IVDFORMAT = _ivdformat();
 
 # values are cached in B::C::Flags::Config from POSIX
 my ( $LONG_MIN, $LONG_MAX ) = ( $B::C::Flags::Config{LONG_MIN}, $B::C::Flags::Config{LONG_MAX} );
+my ( $DBL_MIN,  $DBL_MAX )  = ( $B::C::Flags::Config{DBL_MIN},  $B::C::Flags::Config{DBL_MAX} );
 
 sub intmax {
     return $INTMAX;
@@ -35,7 +36,7 @@ sub get_integer_value ($) {
     if ( defined $LONG_MIN && $ivx == $LONG_MIN ) {
         $sval = "PERL_LONG_MIN";
     }
-    if ( defined $LONG_MAX && $ivx == $LONG_MAX ) {
+    elsif ( defined $LONG_MAX && $ivx == $LONG_MAX ) {
         $sval = "PERL_LONG_MAX";
     }
 
@@ -76,14 +77,13 @@ sub get_double_value ($) {
     if ( $nvx < -$DBLMAX ) {
         $sval = sprintf( "%${NVGFORMAT}%s", $nvx, $LL );
     }
-    if ( $INC{'POSIX.pm'} ) {
-        if ( $nvx == POSIX::DBL_MIN() ) {
-            $sval = "DBL_MIN";
-        }
-        elsif ( $nvx == POSIX::DBL_MAX() ) {    #1.797693134862316e+308
-            $sval = "DBL_MAX";
-        }
+    if ( defined $DBL_MIN && $nvx == $DBL_MIN ) {
+        $sval = "DBL_MIN";
     }
+    elsif ( defined $DBL_MAX && $nvx == $DBL_MAX ) {    #1.797693134862316e+308
+        $sval = "DBL_MAX";
+    }
+
     $sval = '0' if $sval =~ /(NAN|inf)$/i;
     $sval .= '.00' if $sval =~ /^-?\d+$/;
     return $sval;

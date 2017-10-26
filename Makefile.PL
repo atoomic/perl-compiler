@@ -96,11 +96,10 @@ sub write_b_c_flags {
     {
         use POSIX ();
 
-        if ( my $f = 'POSIX'->can('LONG_MIN') ) {
-            $cfg{LONG_MIN} = $f->();
-        }
-        if ( my $f = 'POSIX'->can('LONG_MAX') ) {
-            $cfg{LONG_MAX} = $f->();
+        foreach my $k ( qw{LONG_MIN LONG_MAX DBL_MIN DBL_MAX } ) {
+            if ( my $f = 'POSIX'->can($k) ) {
+                $cfg{$k} = $f->();
+            }
         }
     }
 
