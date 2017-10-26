@@ -53,7 +53,6 @@ sub u32fmt {
 # protect from warning: floating constant exceeds range of ‘double’ [-Woverflow]
 # previously known as 'sub nvx'
 
-my $DBLMAX    = "1.79769313486232e+308";
 my $NVGFORMAT = _nvgformat();
 
 my $LL = $B::C::Flags::Config{d_longdbl} ? "LL" : "L";
@@ -72,9 +71,8 @@ sub get_double_value ($) {
         # TODO NANL for long double
     }
 
-    # my $DBLMAX = "1.18973149535723176502e+4932L"
-    my $sval = sprintf( "%${NVGFORMAT}%s", $nvx, $nvx > $DBLMAX ? $LL : "" );
-    if ( $nvx < -$DBLMAX ) {
+    my $sval = sprintf( "%${NVGFORMAT}%s", $nvx, $nvx > $DBL_MAX ? $LL : "" );
+    if ( $nvx < -$DBL_MAX ) {
         $sval = sprintf( "%${NVGFORMAT}%s", $nvx, $LL );
     }
     if ( defined $DBL_MIN && $nvx == $DBL_MIN ) {
