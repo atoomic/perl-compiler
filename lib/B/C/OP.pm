@@ -9,6 +9,12 @@ my $last;
 my $count;
 my $_stack;
 
+# We need to be sure that the SV that is saved is never re-used so we're going to increase
+# its refcount by pointing to it here. This assures the SV is never freed when it goes out of scope.
+# We need this when we use temp vars to save an SV with something other than its original content.
+
+our @SAVED_OPS;
+
 sub save_constructor {
 
     # we cannot trust the OP passed to know which call we should call
@@ -46,6 +52,11 @@ sub save_constructor {
         eval { $sym = $for->can('do_save')->( $op, @args ); 1 }
           or die "$@\n:" . 'B::C::Save'->can('stack_flat')->();
         savesym( $op, $sym ) if defined $sym;
+
+        if( $sym && $sym =~ /sv_list/ && $op->isa('B::SV') ) {
+            push @SAVED_OPS, $op->object_2svref();
+        }
+
         return $sym;
     };
 
