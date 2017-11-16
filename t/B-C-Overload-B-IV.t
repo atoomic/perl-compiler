@@ -68,4 +68,5 @@ exit;
 sub clear_all {
     B::C::Helpers::Symtable::clearsym();
     B::C::File::re_initialize();
+    @B::C::OP::SAVED_OPS = ();
 }
