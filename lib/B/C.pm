@@ -13,7 +13,7 @@ package B::C;
 
 our $VERSION = '5.026006';
 
-our $caller  = caller;       # So we know how we were invoked.
+our $caller = caller;    # So we know how we were invoked.
 
 # can be improved
 our $nullop_count     = 0;
@@ -199,6 +199,9 @@ sub cleanup_stashes {
     delete $stashes->{'O::'};
     delete $stashes->{'B::'} if skip_B();
     delete $stashes->{'B::'}{'C::'} if exists $stashes->{'B::'};    # always purge B::C::*
+
+    # depends on LANG and LC_CTYPE, LC_ALL, ...
+    delete $stashes->{'POSIX::'}->{'MB_CUR_MAX'} if exists $stashes->{'POSIX::'};
 
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
