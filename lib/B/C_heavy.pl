@@ -98,6 +98,8 @@ sub start_heavy {
 
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'} );
 
+    _delete_macros_vendor_undefined();
+
     # Save some stuff we need to save early.
     save_pre_defstash();
 
@@ -290,7 +292,6 @@ sub save_defstash {
 sub save_optree {
     verbose("Starting compile");
     verbose("Walking optree");
-    _delete_macros_vendor_undefined();
 
     if ( debug('walk') ) {
         verbose("Enabling B::debug");
@@ -316,7 +317,9 @@ sub _delete_macros_vendor_undefined {
         for my $symbol ( sort keys %$symtab ) {
             next if $symbol !~ m{^[0-9A-Z_]+$} || $symbol =~ m{(?:^ISA$|^EXPORT|^DESTROY|^TIE|^VERSION|^AUTOLOAD|^BEGIN|^INIT|^__|^DELETE|^CLEAR|^STORE|^NEXTKEY|^FIRSTKEY|^FETCH|^EXISTS)};
             next if ref $symtab->{$symbol};
+
             local $@;
+
             my $code = "$class\:\:$symbol();";
             eval $code;
             if ( $@ =~ m{vendor has not defined} ) {
