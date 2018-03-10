@@ -11,7 +11,7 @@
 
 package B::C;
 
-our $VERSION = '5.026011';
+our $VERSION = '5.026012';
 
 our $caller = caller;    # So we know how we were invoked.
 
@@ -305,6 +305,10 @@ sub cleanup_macros_vendor_undefined {
         foreach my $symbol (@stash_entries) {
             next if $symbol !~ m{^[0-9A-Z_]+$};
             next if $symbol =~ m{(?:^ISA$|^EXPORT|^DESTROY|^TIE|^VERSION|^AUTOLOAD|^BEGIN|^INIT|^__|^DELETE|^CLEAR|^STORE|^NEXTKEY|^FIRSTKEY|^FETCH|^EXISTS)};
+
+            if ( $class eq 'Fcntl' ) {
+                next unless $symbol =~ qr{^[SOF]_};
+            }
 
             # dynamically check if the vendor has defined this sub or not
             # we could also use one hardcoded list
