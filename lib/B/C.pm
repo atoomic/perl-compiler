@@ -11,7 +11,7 @@
 
 package B::C;
 
-our $VERSION = '5.026009';
+our $VERSION = '5.026010';
 
 our $caller = caller;    # So we know how we were invoked.
 
@@ -296,7 +296,7 @@ sub cleanup_stashes {
 sub cleanup_macros_vendor_undefined {
     my ($stashes) = @_;
 
-    foreach my $class (qw(POSIX IO Fcntl Socket Exporter Errno)) {
+    foreach my $class (qw(POSIX IO Socket Exporter Errno)) {    # for now do not optimize Fcntl
         my $stash = $class . '::';
 
         next unless ref $stashes->{$stash};
@@ -308,12 +308,14 @@ sub cleanup_macros_vendor_undefined {
 
             # dynamically check if the vendor has defined this sub or not
             # we could also use one hardcoded list
+            # we could buuld this list in our Makefile
 
             local $@;
             eval qq[${class}::${symbol}()];
 
             if ( $@ =~ m{vendor has not defined}i ) {
 
+                #print STDERR "# --- remove ${class}::${symbol}\n";
                 # we do not delete the sub from the stash but just blacklist it
                 delete $stashes->{$symbol};
             }
