@@ -3,7 +3,7 @@
 #      Copyright (c) 1996, 1997, 1998 Malcolm Beattie
 #      Copyright (c) 2008, 2009, 2010, 2011 Reini Urban
 #      Copyright (c) 2010 Nick Koston
-#      Copyright (c) 2011-2018 cPanel Inc
+#      Copyright (c) 2011-2017 cPanel Inc
 #
 #      You may distribute under the terms of either the GNU General Public
 #      License or the Artistic License, as specified in the README file.
@@ -203,8 +203,6 @@ sub cleanup_stashes {
     # depends on LANG and LC_CTYPE, LC_ALL, ...
     delete $stashes->{'POSIX::'}->{'MB_CUR_MAX'} if exists $stashes->{'POSIX::'};
 
-    cleanup_macros_vendor_undefined($stashes);
-
     foreach my $st ( sort keys %$stashes ) {
         next unless ref $stashes->{$st} eq 'HASH';    # only stashes are hash ref
         next if $st eq 'DB::';
@@ -289,42 +287,6 @@ sub cleanup_stashes {
     #     delete $stashes->{'DynaLoader::'};
     #     delete $stashes->{'XSLoader::'};
     # }
-
-    return;
-}
-
-sub cleanup_macros_vendor_undefined {
-    my ($stashes) = @_;
-
-    foreach my $class (qw(POSIX IO Fcntl Socket Exporter Errno)) {    #-- for now do not optimize Fcntl
-        my $stash = $class . '::';
-
-        next unless ref $stashes->{$stash};
-        my @stash_entries = sort keys %{ $stashes->{$stash} };
-
-        foreach my $symbol (@stash_entries) {
-            next if $symbol !~ m{^[0-9A-Z_]+$};
-            next if $symbol =~ m{(?:^ISA$|^EXPORT|^DESTROY|^TIE|^VERSION|^AUTOLOAD|^BEGIN|^INIT|^__|^DELETE|^CLEAR|^STORE|^NEXTKEY|^FIRSTKEY|^FETCH|^EXISTS)};
-
-            if ( $class eq 'Fcntl' ) {
-                next unless $symbol =~ qr{^[SOF]_};
-            }
-
-            # dynamically check if the vendor has defined this sub or not
-            # we could also use one hardcoded list
-            # we could buuld this list in our Makefile
-
-            local $@;
-            eval qq[${class}::${symbol}()];
-
-            if ( $@ =~ m{vendor has not defined}i ) {
-
-                #print STDERR "# --- remove ${class}::${symbol}\n";
-                # we do not delete the sub from the stash but just blacklist it
-                delete $stashes->{$stash}->{$symbol};
-            }
-        }
-    }
 
     return;
 }
