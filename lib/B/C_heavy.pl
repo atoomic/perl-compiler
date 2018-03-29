@@ -98,6 +98,8 @@ sub start_heavy {
 
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'} );
 
+    _delete_macros_vendor_undefined();
+
     # Save some stuff we need to save early.
     save_pre_defstash();
 
@@ -304,6 +306,29 @@ sub save_optree {
       : walkoptree( main_root, "save" );
 
     return;
+}
+
+sub _delete_macros_vendor_undefined {
+    foreach my $class (qw(POSIX IO Fcntl Socket Exporter Errno)) {
+        no strict 'refs';
+        no strict 'subs';
+        no warnings 'uninitialized';
+        my $symtab = $class . '::';
+        for my $symbol ( sort keys %$symtab ) {
+            next if $symbol !~ m{^[0-9A-Z_]+$} || $symbol =~ m{(?:^ISA$|^EXPORT|^DESTROY|^TIE|^VERSION|^AUTOLOAD|^BEGIN|^INIT|^__|^DELETE|^CLEAR|^STORE|^NEXTKEY|^FIRSTKEY|^FETCH|^EXISTS)};
+            next if ref $symtab->{$symbol};
+
+            local $@;
+
+            my $code = "$class\:\:$symbol();";
+            eval $code;
+            if ( $@ =~ m{vendor has not defined} ) {
+                delete $symtab->{$symbol};
+                next;
+            }
+        }
+    }
+    return 1;
 }
 
 sub save_main_rest {
