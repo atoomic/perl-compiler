@@ -254,6 +254,19 @@ sub write {
     # process input template, substituting variables
     $template->process( $template_name_short, $c_file_stash, $fh ) or die $template->error();
 
+    {    # clear Template::Provider
+        local $@;
+
+        my $context = $template->context;
+        if ( ref $context && ref $context->{LOAD_TEMPLATES} ) {
+            foreach my $provider ( @{ $context->{LOAD_TEMPLATES} } ) {
+                next unless ref $provider;
+                $provider->DESTROY;
+            }
+        }
+    }
+
+    return;
 }
 
 1;
