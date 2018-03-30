@@ -254,7 +254,7 @@ sub write {
     # process input template, substituting variables
     $template->process( $template_name_short, $c_file_stash, $fh ) or die $template->error();
 
-    {    # clear Template::Provider
+    {    # clear Template::Provider, Template::Context, ...
         local $@;
 
         my $context = $template->context;
@@ -264,6 +264,8 @@ sub write {
                 $provider->DESTROY;
             }
         }
+        $context->DESTROY if ref $context;
+        $template->DESTROY;
     }
 
     return;
