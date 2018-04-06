@@ -473,7 +473,7 @@ sub compile_cstyle {
     my @output  = @$output_r;
     my @error   = @$error_r;
 
-    if ( @error && $errcode != 0 ) {
+    if ( $errcode != 0 ) {
         _die("$Input did not compile, which can't happen $errcode:\n@error\n");
     }
     else {
@@ -487,6 +487,7 @@ sub compile_cstyle {
             warn "@error" if @error and opt('v') > 4;
         }
     }
+    _die(qq[Failed to generate .c file '$cfile'\n]) unless -e $cfile && -s $cfile;
     vprint -1, "c time: $elapsed" if opt('time');
     $extra_libs = '';
     my %rpath;
@@ -639,6 +640,9 @@ sub cc_harness {
     $command =~ s/\s\s+|\t/ /g;
     vprint 3, "Calling $gcc $command";
     vsystem("$gcc $command");
+    _die(qq[Failed to run gcc: $gcc $command\n]) unless $? == 0;
+
+    return;
 }
 
 {
