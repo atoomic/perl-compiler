@@ -104,7 +104,7 @@ $extra_info"""
         room: hipchatRoom,
         sendAs: 'Jenkins',
         textFormat: false,
-        v2enabled: true])
+        v2enabled: false])
 }
 
 def _testsFailed(testResults) {
