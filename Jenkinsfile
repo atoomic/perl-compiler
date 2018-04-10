@@ -13,15 +13,20 @@ node('docker && jenkins-user') {
 
     try {
         notify.emailAtEnd {
-            docker.image("pax/bc-node:${cpVersion}").inside {
-                stage('Setup') {
-                    scmVars = checkout scm
-                    notifyHipchat(currentBuild.result, scmVars, testResults)
+            stage('Setup') {
+                scmVars = checkout scm
+                notifyHipchat(currentBuild.result, scmVars, testResults)
 
-                    // implied 'INPROGRESS' to Bitbucket
-                    notifyBitbucket commitSha1: scmVars.GIT_COMMIT
-                }
+                // implied 'INPROGRESS' to Bitbucket
+                notifyBitbucket commitSha1: scmVars.GIT_COMMIT
+            }
 
+            def bc_image
+            stage('Docker build') {
+                bc_image = docker.build("pax/bc-node:${cpVersion}")
+            }
+
+            bc_image.inside {
                 stage('Makefile.PL') { sh makefileCommands() }
 
                 // pek: the chown is so that the cleanWs() later doesn't have problems removing
