@@ -12,7 +12,7 @@ node('docker && jenkins-user') {
     def testResults
 
     try {
-        notify.emailAtEnd {
+        notify.emailAtEnd([to:'bc@cpanel.net']) {
             stage('Setup') {
                 scmVars = checkout scm
                 notifyHipchat(currentBuild.result, scmVars, testResults)
