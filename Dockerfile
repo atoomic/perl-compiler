@@ -12,10 +12,6 @@ RUN yum -y update \
     && yum clean all \
     && rm -rf /var/cache/yum
 
-## from bamboo.sh
-COPY rpms/cpanel-perl-526-5.26.0-1.debuginfo.cp1170.x86_64.rpm /
-RUN rpm -Uv --force cpanel-perl-526-5.26.0-1.debuginfo.cp1170.x86_64.rpm
-
 RUN echo -e 'Defaults:jenkins !requiretty\njenkins ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/jenkins \
     && groupadd --gid 1008 jenkins \
     && useradd --uid 1008 --gid 1008 --comment "User to match the host user id" jenkins

@@ -27,6 +27,10 @@ node('docker && jenkins-user') {
             }
 
             bc_image.inside {
+                stage('Setup sandbox') {
+                    sh 'sudo ./bamboo.sh'
+                }
+
                 stage('Makefile.PL') { sh makefileCommands() }
 
                 // pek: the chown is so that the cleanWs() later doesn't have problems removing
