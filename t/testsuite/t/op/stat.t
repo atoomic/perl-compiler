@@ -46,6 +46,7 @@ my $Is_VMS     = $^O eq 'VMS';
 my $Is_MPRAS   = $^O =~ /svr4/ && -f '/etc/.relid';
 my $Is_Android = $^O =~ /android/;
 my $Is_Dfly    = $^O eq 'dragonfly';
+my $Is_linux_container = is_linux_container();
 
 my $Is_Dosish  = $Is_Dos || $Is_OS2 || $Is_MSWin32 || $Is_NetWare;
 
@@ -357,12 +358,14 @@ SKIP: {
 # can be set to skip the tests that need a tty.
 SKIP: {
     skip "These tests require a TTY", 4 if $ENV{PERL_SKIP_TTY_TEST};
+    skip "Skipping TTY tests on linux containers", 4 if $Is_linux_container;
 
     my $TTY = "/dev/tty";
 
     SKIP: {
         skip "Test uses unixisms", 2 if $Is_MSWin32 || $Is_NetWare;
         skip "No TTY to test -t with", 2 unless -e $TTY;
+        skip "Skipping tests for linux containers", 2 if $Is_linux_container;
 
         open(TTY, $TTY) ||
           warn "Can't open $TTY--run t/TEST outside of make.\n";
@@ -646,4 +649,18 @@ SKIP: {
 END {
     chmod 0666, $tmpfile;
     unlink_all $tmpfile;
+}
+
+# Orphaned Docker or Linux containers do not necessarily attach to PID 1. They might attach to 0 instead.
+sub is_linux_container {
+
+    if ($^O eq 'linux' && open my $fh, '<', '/proc/1/cgroup') {
+        while(<$fh>) {
+            if (m{^\d+:pids:(.*)} && $1 ne '/init.scope') {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
 }
