@@ -140,11 +140,13 @@ SKIP: {
         chomp $out;
 
         #Strip new lines from want and out.
+        my $original_out = $out;
         $out =~ s/\n/\\n/g;
         $want =~ s/\n/\\n/g;
 
         #chomp $out if $want eq 'ok';
         unless ( $errors->check_todo( $out eq $want, qq{Output is: "$str_out" (len=}.length($out).qq{) expect "$want" (len=}.length($want).q{)}, 'TESTS' ) ) {
+            note $original_out if $original_out;
             skip( "TESTS failure", $errors->{to_skip} );
         }
 
