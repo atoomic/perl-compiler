@@ -27,9 +27,7 @@ node('docker && jenkins-user') {
             }
 
             bc_image.inside {
-                stage('Setup sandbox') {
-                    sh 'sudo ./bamboo.sh'
-                }
+                stage('Setup sandbox') { sh 'sudo ./pre-setup.sh' }
 
                 stage('Makefile.PL') { sh makefileCommands() }
 
