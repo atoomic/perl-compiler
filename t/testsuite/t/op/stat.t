@@ -44,6 +44,7 @@ $Is_VMS     = $^O eq 'VMS';
 $Is_MPRAS   = $^O =~ /svr4/ && -f '/etc/.relid';
 $Is_Android = $^O =~ /android/;
 $Is_Dfly    = $^O eq 'dragonfly';
+$Is_linux_container = is_linux_container();
 
 $Is_Dosish  = $Is_Dos || $Is_OS2 || $Is_MSWin32 || $Is_NetWare;
 
@@ -71,7 +72,7 @@ my($nlink, $mtime, $ctime) = (stat(FOO))[$NLINK, $MTIME, $CTIME];
 
 # The clock on a network filesystem might be different from the
 # system clock.
-my $Filesystem_Time_Offset = abs($mtime - time); 
+my $Filesystem_Time_Offset = abs($mtime - time);
 
 #nlink should if link support configured in Perl.
 SKIP: {
@@ -355,12 +356,14 @@ SKIP: {
 # can be set to skip the tests that need a tty.
 SKIP: {
     skip "These tests require a TTY", 4 if $ENV{PERL_SKIP_TTY_TEST};
+    skip "Skipping TTY tests on linux containers", 4 if $Is_linux_container;
 
     my $TTY = "/dev/tty";
 
     SKIP: {
         skip "Test uses unixisms", 2 if $Is_MSWin32 || $Is_NetWare;
         skip "No TTY to test -t with", 2 unless -e $TTY;
+        skip "Skipping tests for linux containers", 2 if $Is_linux_container;
 
         open(TTY, $TTY) ||
           warn "Can't open $TTY--run t/TEST outside of make.\n";
@@ -371,7 +374,7 @@ SKIP: {
     ok(! -t TTY,    '!-t on closed TTY filehandle');
 
     {
-        local $TODO = 'STDIN not a tty when output is to pipe' if $Is_VMS;
+        local our $TODO = 'STDIN not a tty when output is to pipe' if $Is_VMS;
         ok(-t,          '-t on STDIN');
     }
 }
@@ -485,7 +488,7 @@ like $@, qr/^The stat preceding lstat\(\) wasn't an lstat at /,
     close(FOO);
     unlink $tmpfile or print "# unlink failed: $!\n";
 }
-  
+
 SKIP: {
     skip "No lstat", 2 unless $Config{d_lstat};
 
@@ -558,8 +561,8 @@ SKIP: {
 SKIP: {
     skip "No dirfd()", 9 unless $Config{d_dirfd} || $Config{d_dir_dd_fd};
     ok(opendir(DIR, "."), 'Can open "." dir') || diag "Can't open '.':  $!";
-    ok(stat(DIR), "stat() on dirhandle works"); 
-    ok(-d -r _ , "chained -x's on dirhandle"); 
+    ok(stat(DIR), "stat() on dirhandle works");
+    ok(-d -r _ , "chained -x's on dirhandle");
     ok(-d DIR, "-d on a dirhandle works");
 
     # And now for the ambiguous bareword case
@@ -581,7 +584,7 @@ SKIP: {
     # RT #8244: *FILE{IO} does not behave like *FILE for stat() and -X() operators
     ok(open(F, ">", $tmpfile), 'can create temp file');
     my @thwap = stat *F{IO};
-    ok(@thwap, "stat(*F{IO}) works");    
+    ok(@thwap, "stat(*F{IO}) works");
     ok( -f *F{IO} , "single file tests work with *F{IO}");
     close F;
     unlink $tmpfile;
@@ -592,7 +595,7 @@ SKIP: {
         skip "No dirfd()", 9 unless $Config{d_dirfd} || $Config{d_dir_dd_fd};
         ok(opendir(DIR, "."), 'Can open "." dir') || diag "Can't open '.':  $!";
         ok(stat(*DIR{IO}), "stat() on *DIR{IO} works");
-	ok(-d _ , "The special file handle _ is set correctly"); 
+	ok(-d _ , "The special file handle _ is set correctly");
         ok(-d -r *DIR{IO} , "chained -x's on *DIR{IO}");
 
 	# And now for the ambiguous bareword case
@@ -656,4 +659,18 @@ SKIP:
 END {
     chmod 0666, $tmpfile;
     unlink_all $tmpfile;
+}
+
+# Orphaned Docker or Linux containers do not necessarily attach to PID 1. They might attach to 0 instead.
+sub is_linux_container {
+
+    if ($^O eq 'linux' && open my $fh, '<', '/proc/1/cgroup') {
+        while(<$fh>) {
+            if (m{^\d+:pids:(.*)} && $1 ne '/init.scope') {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
 }
