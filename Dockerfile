@@ -1,6 +1,8 @@
-## pek: a.k.a. ./docker-for-jenkins-nodes/cpanel-perl/build.sh -c 7 -v 11.74 -p 526
-## ensure the cPanel version is synced with the similar variable in the Jenkinsfile
-FROM cpanel-perl/centos7:11.74
+## defaults that will intentionally fail unless you pass good values in
+ARG REGISTRY_HOST=dorkus.malorkus.net
+ARG CPVERSION=11.69
+
+FROM ${REGISTRY_HOST}/cpanel-perl/centos7:${CPVERSION}
 MAINTAINER Pax Aurora <pax@cpanel.net>
 
 ## which: used in the B::C testsuite

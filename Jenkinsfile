@@ -3,13 +3,14 @@
 node('docker && jenkins-user') {
     environment.check()
 
-    // ensure these values are in sync with the Dockerfile
     def cpVersion = '11.74'
     def perlVersion = '526'
+    def productionBranch = 'bc526' // controls if we push to the Registry
     def TESTS="t/*.t t/testsuite/C-COMPILED/*/*.t"  // full run
 
     Map scmVars
     def testResults
+    def registry_info = registry.getInfo()
 
     try {
         notify.emailAtEnd([to:'bc@cpanel.net']) {
@@ -22,8 +23,10 @@ node('docker && jenkins-user') {
             }
 
             def bc_image
-            stage('Docker build') {
-                bc_image = docker.build("pax/bc-node:${cpVersion}")
+            stage('Docker image build') {
+                docker.withRegistry(registry_info.url, registry_info.credentialsId) {
+                    bc_image = docker.build("pax/bc-node:${cpVersion}", "--pull --build-arg REGISTRY_HOST=${registry_info.host} --build-arg CPVERSION=${cpVersion} .")
+                }
             }
 
             bc_image.inside {
@@ -59,6 +62,14 @@ node('docker && jenkins-user') {
                     testResults = junit testResults: 'junit.xml', keepLongStdio: false
                     if (_testsFailed(testResults)) {
                         currentBuild.result = 'UNSTABLE'
+                    }
+                }
+            }
+            // push self image to Registry ONLY IF: the work succeeds, and this is one of the fancy production branches
+            if (currentBuild.result != 'UNSTABLE' && env.BRANCH_NAME == productionBranch) {
+                stage('Docker push to internal Registry') {
+                    docker.withRegistry(registry_info.url, registry_info.credentialsId) {
+                        bc_image.push()
                     }
                 }
             }
