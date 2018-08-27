@@ -15,7 +15,7 @@ our @EXPORT_OK = qw/compile_script sanity_check/;
 
 use v5.14;
 
-use constant DEFAULT_CCFLAGS => q{-O1};
+use constant DEFAULT_CCFLAGS => q{-O3};
 
 my %SIGNALS = ( qw( 11 SEGV 6 SIGABRT 1 SIGHUP 13 SIGPIPE), 0 => '' );
 
