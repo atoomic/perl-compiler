@@ -18,7 +18,7 @@ BEGIN {
 }
 use strict;
 use warnings;
-use vars '$VALID';
+my $VALID;
 
 plan(tests => 11);
 
@@ -53,7 +53,7 @@ is($ret, $value, 'goto &$function_package_and_name; again, with dirtier stack');
 $ret = goto_name1($VALID);
 is($ret, $value, 'goto &$function_package_and_name; again, with dirtier stack');
 
-# test 
+# test
 package Fcntl;
 my $FNAME2 = 'S_IMODE';
 sub goto_name2 { goto &$FNAME2; }
@@ -91,7 +91,8 @@ is($ret, $value, 'goto &$function_ref; from a sub called without arglist');
 BEGIN {
     use Config;
     if ($Config{extensions} =~ m{XS/APItest}) {
-	eval q[use XS::APItest qw(mycroak); 1];
+	eval q[use XS::APItest qw(mycroak); 1]
+	    or die "use XS::APItest: $@\n";
     }
     else {
 	*mycroak = sub { die @_ };

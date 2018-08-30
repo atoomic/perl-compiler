@@ -4,7 +4,7 @@ BEGIN {
     set_up_inc("../lib");
 }
 
-plan 155;
+plan 156;
 
 eval '\$x = \$y';
 like $@, qr/^Experimental aliasing via reference not enabled/,
@@ -488,11 +488,14 @@ eval '$foo ? \%{"42"} : \%43 = 42';
 like $@,
     qr/^Can't modify reference to hash dereference in scalar assignment a/,
    "Can't modify ref to whatever in scalar assignment via cond expr";
+eval '\$0=~y///=0';
+like $@,
+    qr#^Can't modify transliteration \(tr///\) in scalar assignment a#,
+   "Can't modify transliteration (tr///) in scalar assignment";
 
 # Miscellaneous
 
-SKIP: {
-  skip 'Skip these two todo tests for now, no interest for B::C', 2;
+{
   local $::TODO = ' ';
   my($x,$y);
   sub {

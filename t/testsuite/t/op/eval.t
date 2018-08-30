@@ -6,7 +6,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-plan(tests => 134);
+plan(tests => 140);
 
 eval 'pass();';
 
@@ -325,7 +325,7 @@ is($r, 120);
 
 my $yyy = 2;
 
-sub fred4 { 
+sub fred4 {
     my $zzz = 3;
     is($zzz, 3);
     is(eval '$zzz', 3);
@@ -421,7 +421,7 @@ pass('#20798 (used to dump core)');
 # [perl #34682] escaping an eval with last could coredump or dup output
 
 $got = runperl (
-    prog => 
+    prog =>
     'sub A::TIEARRAY { L: { eval { last L } } } tie @a, A; warn qq(ok\n)',
 stderr => 1);
 
@@ -459,7 +459,7 @@ is($got, "ok\n", 'eval and last');
 }
 
 # [perl #51370] eval { die "\x{a10d}" } followed by eval { 1 } did not reset
-# length $@ 
+# length $@
 $@ = "";
 eval { die "\x{a10d}"; };
 $_ = length $@;
@@ -528,7 +528,7 @@ END_EVAL_TEST
 }
 
 {
-    # test that the CV compiled for the eval is freed by checking that no additional 
+    # test that the CV compiled for the eval is freed by checking that no additional
     # reference to outside lexicals are made.
     my $x;
     is(Internals::SvREFCNT($x), 1, "originally only 1 reference");
@@ -584,8 +584,7 @@ for my $k (!0) {
 }
 
 # [perl #68750]
-# NOTE: uncompiled this is going to get "ok\nok\nok\n" 
-fresh_perl_is(<<'EOP', "ok\n", undef, 'eval clears %^H');
+fresh_perl_is(<<'EOP', "ok\nok\nok\n", undef, 'eval clears %^H');
   BEGIN {
     require re; re->import('/x'); # should only affect surrounding scope
     eval '
@@ -665,4 +664,36 @@ pass("eval in freed package does not crash");
     my $s;
     sub { $s; DB::f127786}->();
     pass("RT #127786");
+}
+
+# Late calling of destructors overwriting $@.
+# When leaving an eval scope (either by falling off the end or dying),
+# we must ensure that any temps are freed before the end of the eval
+# leave: in particular before $@ is set (to either "" or the error),
+# because otherwise the tmps freeing may call a destructor which
+# will change $@ (e.g. due to a successful eval) *after* its been set.
+# Some extra nested scopes are included in the tests to ensure they don't
+# affect the tmps freeing.
+
+{
+    package TMPS;
+    sub DESTROY { eval { die "died in DESTROY"; } } # alters $@
+
+    eval { { 1; { 1; bless []; } } };
+    ::is ($@, "", "FREETMPS: normal try exit");
+
+    eval q{ { 1; { 1; bless []; } } };
+    ::is ($@, "", "FREETMPS: normal string eval exit");
+
+    eval { { 1; { 1; return bless []; } } };
+    ::is ($@, "", "FREETMPS: return try exit");
+
+    eval q{ { 1; { 1; return bless []; } } };
+    ::is ($@, "", "FREETMPS: return string eval exit");
+
+    eval { { 1; { 1; my $x = bless []; die $x = 0, "die in eval"; } } };
+    ::like ($@, qr/die in eval/, "FREETMPS: die try exit");
+
+    eval q{ { 1; { 1; my $x = bless []; die $x = 0, "die in eval"; } } };
+    ::like ($@, qr/die in eval/, "FREETMPS: die eval string exit");
 }

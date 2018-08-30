@@ -11,7 +11,7 @@ BEGIN {
     require './loc_tools.pl';
 }
 
-plan(tests => 275);
+plan(tests => 276);
 
 $_ = 'david';
 $a = s/david/rules/r;
@@ -298,12 +298,12 @@ my %MK = (
     E     => '$(F)', F=>'p $(G) q', G => 'HHHHH',	# short->long
     DIR => '$(UNDEFINEDNAME)/xxx',
 );
-sub var { 
+sub var {
     my($var,$level) = @_;
     return "\$($var)" unless exists $MK{$var};
     return exp_vars($MK{$var}, $level+1); # can recurse
 }
-sub exp_vars { 
+sub exp_vars {
     my($str,$level) = @_;
     $str =~ s/\$\((\w+)\)/var($1, $level+1)/ge; # can recurse
     #warn "exp_vars $level = '$str'\n";
@@ -389,12 +389,12 @@ $_ = 'a' x 6;
 $snum = s/a(?{})//g;
 ok( $_ eq '' && $snum == 6 );
 
-$_ = 'x' x 20; 
-$snum = s/(\d*|x)/<$1>/g; 
+$_ = 'x' x 20;
+$snum = s/(\d*|x)/<$1>/g;
 $foo = '<>' . ('<x><>' x 20) ;
 ok( $_ eq $foo && $snum == 41 );
 
-$t = 'aaaaaaaaa'; 
+$t = 'aaaaaaaaa';
 
 $_ = $t;
 pos = 6;
@@ -466,7 +466,7 @@ substr($pv2,0,1) = "\x{100}";
 is($pv1, $pv2);
 
 {
-    {   
+    {
 	# Gregor Chrupala <gregor.chrupala@star-group.net>
 	use utf8;
 	$a = 'Espa&ntilde;a';
@@ -828,7 +828,7 @@ fresh_perl_is( '$_="abcdefg123456"; s/(?<=...\G)?(\d)/($1)/; print' => 'abcdefg(
    $output, "CCCGGG<   ><  >< ><   ><  >< >",
   's/// sets PL_curpm for each iteration even when the RHS has set it'
  );
- 
+
  s/C/$a{m\G\}/;
  is(
   "$&", G =>
@@ -1163,6 +1163,16 @@ __EOF__
     pass("RT #130188");
 }
 
+# RT #131930
+# a multi-line s/// wasn't resetting the cop_line correctly
+{
+    my $l0 = __LINE__;
+    my $s = "a";
+    $s =~ s[a]
+           [b];
+    my $lines = __LINE__ - $l0;
+    is $lines, 4, "RT #131930";
+}
 
 
 

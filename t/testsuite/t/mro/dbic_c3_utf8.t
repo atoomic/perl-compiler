@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use utf8;
-binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+use open qw( :utf8 :std );
 
 require q(./test.pl); plan(tests => 1);
 

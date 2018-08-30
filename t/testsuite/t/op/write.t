@@ -98,7 +98,7 @@ for my $tref ( @NumTests ){
 my $bas_tests = 21;
 
 # number of tests in section 3
-my $bug_tests = 66 + 3 * 3 * 5 * 2 * 3 + 2 + 66 + 6 + 2 + 3 + 96 + 11 + 15;
+my $bug_tests = 66 + 3 * 3 * 5 * 2 * 3 + 2 + 66 + 6 + 2 + 3 + 96 + 11 + 14;
 
 # number of tests in section 4
 my $hmb_tests = 37;
@@ -111,7 +111,7 @@ plan $tests;
 ## Section 1
 ############
 
-use vars qw($fox $multiline $foo $good);
+our ($fox, $multiline, $foo, $good);
 
 format OUT =
 the quick brown @<<
@@ -251,8 +251,8 @@ $right = <<EOT;
 EOT
 
 my $was1 = my $was2 = '';
-use vars '$format2';
-for (0..10) {           
+our $format2;
+for (0..10) {
   # lexical picture
   $^A = '';
   my $format1 = '@' . '>' x $_;
@@ -327,6 +327,7 @@ close  OUT4a or die "Could not close: $!";
 is cat('Op_write.tmp'), "Nasdaq dropping\n", 'skipspace inside "${...}"'
     and unlink_all "Op_write.tmp";
 
+our $test1;
 eval <<'EOFORMAT';
 format OUT10 =
 @####.## @0###.##
@@ -336,7 +337,6 @@ EOFORMAT
 
 open(OUT10, '>Op_write.tmp') || die "Can't create Op_write.tmp";
 
-use vars '$test1';
 $test1 = 12.95;
 write(OUT10);
 close OUT10 or die "Could not close: $!";
@@ -346,11 +346,11 @@ is cat('Op_write.tmp'), $right and unlink_all 'Op_write.tmp';
 
 eval <<'EOFORMAT';
 format OUT11 =
-@0###.## 
+@0###.##
 $test1
 @ 0#
 $test1
-@0 # 
+@0 #
 $test1
 .
 EOFORMAT
@@ -361,7 +361,7 @@ $test1 = 12.95;
 write(OUT11);
 close OUT11 or die "Could not close: $!";
 
-$right = 
+$right =
 "00012.95
 1 0#
 10 #\n";
@@ -537,7 +537,7 @@ for my $tref ( @NumTests ){
 	    like $writeres, $expected, $writefmt;
 	} else {
 	    is $writeres, $expected, $writefmt;
-	}	
+	}
     }
 }
 
@@ -1640,7 +1640,7 @@ SKIP: {
 		    "assign to ^A sets FmLINES";
 }
 
-fresh_perl_like(<<'EOP', qr/^Format STDOUT redefined at/, {stderr => 1, check_perlcc_output => 1}, '#64562 - Segmentation fault with redefined formats and warnings');
+fresh_perl_like(<<'EOP', qr/^Format STDOUT redefined at/, {stderr => 1}, '#64562 - Segmentation fault with redefined formats and warnings');
 #!./perl
 
 use strict;
@@ -1993,7 +1993,7 @@ dd|
 EXPECT
 	      { stderr => 1 }, '#123245 panic in sv_chop');
 
-fresh_perl_like(<<'EOP',
+fresh_perl_is(<<'EOP', <<'EXPECT',
 use warnings 'syntax' ;
 format STDOUT =
 ^*|^*
@@ -2001,8 +2001,10 @@ my $x = q/dd/
 .
 write;
 EOP
-	qr{^Not enough format arguments at.*\ndd|},      
-    { stderr => 1 }, '#123245 different panic in sv_chop');
+Not enough format arguments at - line 4.
+dd|
+EXPECT
+	      { stderr => 1 }, '#123245 different panic in sv_chop');
 
 fresh_perl_is(<<'EOP', <<'EXPECT',
 format STDOUT =
@@ -2015,18 +2017,6 @@ EOP
 a    x
 EXPECT
 	      { stderr => 1 }, '#123538 crash in FF_MORE');
-
-# this used to assert fail
-fresh_perl_like(<<'EOP',
-format STDOUT =
-@
-0"$x"
-.
-print "got here\n";
-EOP
-    qr/Use of comma-less variable list is deprecated.*got here/s,
-    { stderr => 1, check_perlcc_output => 1 },
-    '#128255 Assert fail in S_sublex_done');
 
 {
     $^A = "";
@@ -2191,33 +2181,33 @@ close STDOUT;
 # That was test 48.
 
 __END__
-    
+
     1 Test1
     2 Test2
     3 Test3
-    
-    
+
+
     ----
     
     4 Test4
     5 Test5
     6 Test6
-    
-    
+
+
     ----
     
     7 Test7
     - -----
-    
-    
-    
+
+
+
     ----
     
     1 1tseT
     2 2tseT
     3 3tseT
-    
-    
+
+
     ----
     
     4 4tseT

@@ -160,20 +160,19 @@ like $@, qr/Can't declare scalar dereference in "my"/;
 
 my @code = qw(lvalue method);
 my @other = qw(shared);
-my @deprecated = qw(locked unique);
+my @deprecated = qw();
+my @invalid = qw(unique locked);
 my %valid;
 $valid{CODE} = {map {$_ => 1} @code};
 $valid{SCALAR} = {map {$_ => 1} @other};
 $valid{ARRAY} = $valid{HASH} = $valid{SCALAR};
 my %deprecated;
-$deprecated{CODE} = { locked => 1 };
-$deprecated{ARRAY} = $deprecated{HASH} = $deprecated{SCALAR} = { unique => 1 };
 
 our ($scalar, @array, %hash);
 foreach my $value (\&foo, \$scalar, \@array, \%hash) {
     my $type = ref $value;
     foreach my $negate ('', '-') {
-	foreach my $attr (@code, @other, @deprecated) {
+	foreach my $attr (@code, @other, @deprecated, @invalid) {
 	    my $attribute = $negate . $attr;
 	    eval "use attributes __PACKAGE__, \$value, '$attribute'";
 	    if ($deprecated{$type}{$attr}) {
@@ -198,7 +197,7 @@ foreach my $value (\&foo, \$scalar, \@array, \%hash) {
 sub PVBM () { 'foo' }
 { my $dummy = index 'foo', PVBM }
 
-ok !defined(eval 'attributes::get(\PVBM)'), 
+ok !defined(eval 'attributes::get(\PVBM)'),
     'PVBMs don\'t segfault attributes::get';
 
 {
@@ -474,15 +473,12 @@ is runperl(
 # When printing error message for an attribute arg without closing ')',
 # if the buffer got reallocated during the scan of the arg, the error
 # message would try to use the old buffer
-SKIP: {
-    skip( 'B::C COMPAT: this is a compiled time error - skipping it with B::C', 1 );
 fresh_perl_like(
    'my $abc: abcdefg(' . 'x' x 195 . "\n" . 'x' x 8200 ."\n",
     qr/^Unterminated attribute parameter in attribute list at - line 1\.$/,
     { stderr => 1 },
     'RT #129086 attr(00000'
 );
-}
 
 TODO: {
     local $TODO = 'RT #3605: Attribute syntax causes parsing errors near my $var :';
@@ -492,5 +488,23 @@ EOP
     unlike($out, qr/Invalid separator character/, 'RT #3605: Errors near attribute colon need a better error message');
     is($out, '', 'RT #3605: $a ? my $var : my $othervar is perfectly valid syntax');
 }
+
+fresh_perl_is('sub dummy {} our $dummy : Dummy', <<EOS, {},
+Invalid SCALAR attribute: Dummy at - line 1.
+BEGIN failed--compilation aborted at - line 1.
+EOS
+              "attribute on our scalar with sub of same name");
+
+fresh_perl_is('sub dummy {} our @dummy : Dummy', <<EOS, {},
+Invalid ARRAY attribute: Dummy at - line 1.
+BEGIN failed--compilation aborted at - line 1.
+EOS
+              "attribute on our array with sub of same name");
+
+fresh_perl_is('sub dummy {} our %dummy : Dummy', <<EOS, {},
+Invalid HASH attribute: Dummy at - line 1.
+BEGIN failed--compilation aborted at - line 1.
+EOS
+              "attribute on our hash with sub of same name");
 
 done_testing();

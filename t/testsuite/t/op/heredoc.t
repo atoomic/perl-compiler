@@ -1,5 +1,3 @@
-#!./perl
-
 # tests for heredocs besides what is tested in base/lex.t
 
 BEGIN {
@@ -9,7 +7,7 @@ BEGIN {
 }
 
 use strict;
-plan(tests => 137 - 7); # skip some tests which are not COMPAT with B::C
+plan(tests => 137);
 
 # heredoc without newline (#65838)
 {
@@ -34,15 +32,15 @@ HEREDOC
         "heredoc at EOF without trailing newline"
     );
 
-    fresh_perl_like(
-        "print <<;\n$string\n",
-        qr/$string/m,
+    fresh_perl_is(
+        qq(print <<"";\n$string\n),
+        $string,
         { switches => ['-X'] },
         "blank-terminated heredoc at EOF"
     );
-    fresh_perl_like(
-        "print <<\n$string\n",
-        qr/$string/m,
+    fresh_perl_is(
+        qq(print <<""\n$string\n),
+        $string,
         { switches => ['-X'] },
         "blank-terminated heredoc at EOF and no semicolon"
     );
@@ -66,7 +64,7 @@ HEREDOC
     fresh_perl_like(
         "print <<HEREDOC;\nwibble\n HEREDOC",
         qr/find string terminator/,
-        { check_perlcc_output => 1 },
+        {},
         "string terminator must start at newline"
     );
 
@@ -77,9 +75,9 @@ HEREDOC
     # that building with ASAN will reveal the bug and any related regressions.
     for (1..31) {
         fresh_perl_like(
-            "print <<;\n" . "x" x $_,
+            qq(print <<"";\n) . "x" x $_,
             qr/find string terminator/,
-            { check_perlcc_output => 1, switches => ['-X'] },
+            { switches => ['-X'] },
             "empty string terminator still needs a newline (length $_)"
         );
     }
@@ -87,12 +85,9 @@ HEREDOC
     fresh_perl_like(
         "print <<ThisTerminatorIsLongerThanTheData;\nno more newlines",
         qr/find string terminator/,
-        { check_perlcc_output => 1 },
+        {},
         "long terminator fails correctly"
     );
-
-=pod
-    Skip these two tests with BCC, failure before compilation
 
     # this would read freed memory
     fresh_perl_like(
@@ -105,16 +100,16 @@ HEREDOC
 
     # also read freed memory, but got an invalid oldoldbufptr in a different way
     fresh_perl_like(
-        qq(<<\n\$          \n),
+        qq(<<""\n\$          \n),
         # valgrind and asan reports an error between these two lines
-        qr/^Use of bare << to mean <<"" is deprecated\. Its use will be fatal in Perl 5\.28 at - line 1\.\s+Final \$/,
+        qr/^Final \$/,
         {},
         "don't use an invalid oldoldbufptr (some more)"
     );
 
     # [perl #125540] this asserted or crashed
     fresh_perl_like(
-	q(map d$#<<<<),
+	q(map d$#<<<<""),
 	qr/Can't find string terminator "" anywhere before EOF at - line 1\./,
 	{},
 	"Don't assert parsing a here-doc if we hit EOF early"
@@ -128,7 +123,6 @@ HEREDOC
         {},
         "delimcpy(): handle last char being backslash properly"
     );
-=cut
 }
 
 
@@ -205,8 +199,6 @@ HEREDOC
         "Embedded delimiter ignored",
     ];
 
-    # skip these tests: they are designed to fail at compile time: no meaning to run them through B::C
-=pod
     push @tests, [
         "print <<~EOF;\n\t \t$string\n\t \tTEOF",
         "Can't find string terminator \"EOF\" anywhere before EOF at - line 1.",
@@ -224,7 +216,7 @@ HEREDOC
         "Indentation on line 3 of here-doc doesn't match delimiter at - line 1.\n",
         "indented here-doc with bad indentation"
     ];
-=cut
+
     # If our delim is " EOF ", make sure other spaced version don't match
     push @tests, [
         "print <<~' EOF ';\n $string\n EOF\nEOF \n  EOF  \n EOF \n",

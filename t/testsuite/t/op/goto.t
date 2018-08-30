@@ -10,7 +10,7 @@ BEGIN {
 
 use warnings;
 use strict;
-plan tests => 100;
+plan tests => 124;
 our $TODO;
 
 my $deprecated = 0;
@@ -281,7 +281,7 @@ EOT
 close $f;
 
 $r = runperl(prog => 'BEGIN { unshift @INC, q[.] } use Op_goto01; print qq[DONE\n]');
-is($r, "OK\nDONE\n", "goto within use-d file"); 
+is($r, "OK\nDONE\n", "goto within use-d file");
 unlink_all "Op_goto01.pm";
 
 # test for [perl #24108]
@@ -400,8 +400,8 @@ moretests:
     }
 
     $z = 0;
-  L2: 
-    { 
+  L2:
+    {
 	$z += 10;
 	is($z, 10, 'prefer this scope (block body) to outer scope (block entry)');
 	goto L2 if $z == 10;
@@ -411,7 +411,7 @@ moretests:
     }
 
 
-    { 
+    {
 	$z = 0;
 	while (1) {
 	  L3: # not inner scope
@@ -426,7 +426,7 @@ moretests:
     }
 
   L4: # not outer scope
-    { 
+    {
 	$z = 0;
 	while (1) {
 	  L4: # not inner scope
@@ -442,10 +442,10 @@ moretests:
 
     {
 	my $loop = 0;
-	for my $x (0..1) { 
+	for my $x (0..1) {
 	  L2: # without this, fails 1 (middle) out of 3 iterations
 	    $z = 0;
-	  L2: 
+	  L2:
 	    $z += 10;
 	    is($z, 10,
 		"same label, multiple times in same scope (choose 1st) $loop");
@@ -504,7 +504,7 @@ is(recurse1(500), 500, 'recursive goto &foo');
 is $w, 0, 'no recursion warnings for "no warnings; goto &sub"';
 delete $SIG{__WARN__};
 
-# [perl #32039] Chained goto &sub drops data too early. 
+# [perl #32039] Chained goto &sub drops data too early.
 
 sub a32039 { @_=("foo"); goto &b32039; }
 sub b32039 { goto &c32039; }
@@ -537,7 +537,7 @@ eval 'goto &null';
 like($@, qr/Can't goto subroutine from an eval-string/, 'eval string');
 eval { goto &null };
 like($@, qr/Can't goto subroutine from an eval-block/, 'eval block');
- 
+
 # goto &foo leaves @_ alone when called from a sub
 sub returnarg { $_[0] };
 is sub {
@@ -566,7 +566,7 @@ is ${*__}[0], 'rough and tubbery', 'goto &foo leaves reified @_ alone';
 # goto &xsub when @_ itself does not exist
 undef *_;
 eval { & { sub { goto &utf8::encode } } };
-# The main thing we are testing is that it did not crash.  But make sure 
+# The main thing we are testing is that it did not crash.  But make sure
 # *_{ARRAY} was untouched, too.
 is *_{ARRAY}, undef, 'goto &xsub when @_ does not exist';
 
@@ -788,7 +788,7 @@ TODO: {
     FASTCGI_NEXT_REQUEST:
     last;
   }
-  
+
   sub that_cgi_script {
     local $SIG{__DIE__} = sub { print "die handler\n"; exit; print "exit failed?\n"; };
     print "before\n";
@@ -810,3 +810,77 @@ sub revnumcmp ($$) {
 }
 is eval { join(":", sort revnumcmp (9,5,1,3,7)) }, "9:7:5:3:1",
   "can goto at top level of multicalled sub";
+
+# A bit strange, but goingto these constructs should not cause any stack
+# problems.  Let’s test them to make sure that is the case.
+no warnings 'deprecated';
+is \sub :lvalue { goto d; ${*{scalar(do { d: \*foo })}} }->(), \$foo,
+   'goto into rv2sv, rv2gv and scalar';
+is sub { goto e; $#{; do { e: \@_ } } }->(1..7), 6,
+   'goto into $#{...}';
+is sub { goto f; prototype \&{; do { f: sub ($) {} } } }->(), '$',
+   'goto into srefgen, prototype and rv2cv';
+is sub { goto g; ref do { g: [] } }->(), 'ARRAY',
+   'goto into ref';
+is sub { goto j; defined undef ${; do { j: \(my $foo = "foo") } } }->(),'',
+   'goto into defined and undef';
+is sub { goto k; study ++${; do { k: \(my $foo = "foo") } } }->(),'1',
+   'goto into study and preincrement';
+is sub { goto l; ~-!${; do { l: \(my $foo = 0) } }++ }->(),~-1,
+   'goto into complement, not, negation and postincrement';
+like sub { goto n; sin cos exp log sqrt do { n: 1 } }->(),qr/^0\.51439/,
+   'goto into sin, cos, exp, log, and sqrt';
+ok sub { goto o; srand do { o: 0 } }->(),
+   'goto into srand';
+cmp_ok sub { goto p; rand do { p: 1 } }->(), '<', 1,
+   'goto into rand';
+is sub { goto r; chr ord length int hex oct abs do { r: -15.5 } }->(), 2,
+   'goto into chr, ord, length, int, hex, oct and abs';
+is sub { goto t; ucfirst lcfirst uc lc do { t: "q" } }->(), 'Q',
+   'goto into ucfirst, lcfirst, uc and lc';
+{ no strict;
+  is sub { goto u; \@{; quotemeta do { u: "." } } }->(), \@{'\.'},
+   'goto into rv2av and quotemeta';
+}
+is join(" ",sub { goto v; %{; do { v: +{1..2} } } }->()), '1 2',
+   'goto into rv2hv';
+is join(" ",sub { goto w; $_ || do { w: "w" } }->()), 'w',
+   'goto into rhs of or';
+is join(" ",sub { goto x; $_ && do { x: "w" } }->()), 'w',
+   'goto into rhs of and';
+is join(" ",sub { goto z; $_ ? do { z: "w" } : 0 }->()), 'w',
+   'goto into first leg of ?:';
+is join(" ",sub { goto z; $_ ? 0 : do { z: "w" } }->()), 'w',
+   'goto into second leg of ?:';
+is sub { goto z; caller do { z: 0 } }->(), 'main',
+   'goto into caller';
+is sub { goto z; exit do { z: return "foo" } }->(), 'foo',
+   'goto into exit';
+is sub { goto z; eval do { z: "'foo'" } }->(), 'foo',
+   'goto into eval';
+TODO: {
+    local $TODO = "glob() does not currently return a list on VMS" if $^O eq 'VMS';
+    is join(",",sub { goto z; glob do { z: "foo bar" } }->()), 'foo,bar',
+       'goto into glob';
+}
+# [perl #132799]
+# Erroneous inward goto warning, followed by crash.
+# The eval must be in an assignment.
+sub _routine {
+    my $e = eval {
+        goto L2;
+      L2:
+    }
+}
+_routine();
+pass("bug 132799");
+
+# [perl #132854]
+# Goto the *first* parameter of a binary expression, which is harmless.
+eval {
+    goto __GEN_2;
+    my $sent = do {
+        __GEN_2:
+    };
+};
+is $@,'', 'goto the first parameter of a binary expression [perl #132854]';

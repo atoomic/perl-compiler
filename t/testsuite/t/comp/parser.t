@@ -582,13 +582,16 @@ is $@, "", 'read into keys';
 eval 'substr keys(%h),0,=3';
 is $@, "", 'substr keys assignment';
 
-# very large utf8 char in error message was overflowing buffer
-{
-
-    no warnings;
-    eval "q" . chr(100000000064);
-    like $@, qr/Can't find string terminator "." anywhere before EOF/,
-        'RT 128952';
+{ # very large utf8 char in error message was overflowing buffer
+    if (length sprintf("%x", ~0) <= 8) {
+        is 1, 1, "skip because overflows on 32-bit machine";
+    }
+    else {
+        no warnings;
+        eval "q" . chr(100000000064);
+        like $@, qr/Can't find string terminator "." anywhere before EOF/,
+            'RT 128952';
+    }
 }
 
 # RT #130311: many parser shifts before a reduce
@@ -634,10 +637,10 @@ check($this_file, 3, "bare line");
 # line 5
 check($this_file, 5, "bare line with leading space");
 
-#line 7 
+#line 7
 check($this_file, 7, "trailing space still valid");
 
-# line 11 
+# line 11
 check($this_file, 11, "leading and trailing");
 
 #	line 13
@@ -661,7 +664,7 @@ check(qr/^CLINK CLOINK BZZT$/, 31, "filename with spaces in quotes");
 #line 37 "THOOM	THOOM"
 check(qr/^THOOM	THOOM$/, 37, "filename with tabs in quotes");
 
-#line 41 "GLINK PLINK GLUNK DINK" 
+#line 41 "GLINK PLINK GLUNK DINK"
 check(qr/^GLINK PLINK GLUNK DINK$/, 41, "a space after the quotes");
 
 #line 43 "BBFRPRAFPGHPP

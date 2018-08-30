@@ -64,16 +64,19 @@ $foo = "\x{100}" . "\xff\xfe";
 $x = substr $foo, 1;
 is(vec($x, 0, 8), 255);
 $@ = undef;
-eval { vec($foo, 1, 8) };
-ok(! $@);
-$@ = undef;
-eval { vec($foo, 1, 8) = 13 };
-ok(! $@);
-if ($::IS_EBCDIC) {
-    is($foo, "\x8c\x0d\xff\x8a\x69"); 
-}
-else {
-    is($foo, "\xc4\x0d\xc3\xbf\xc3\xbe");
+{
+    no warnings 'deprecated';
+    eval { vec($foo, 1, 8) };
+    ok(! $@);
+    $@ = undef;
+    eval { vec($foo, 1, 8) = 13 };
+    ok(! $@);
+    if ($::IS_EBCDIC) {
+        is($foo, "\x8c\x0d\xff\x8a\x69");
+    }
+    else {
+        is($foo, "\xc4\x0d\xc3\xbf\xc3\xbe");
+    }
 }
 $foo = "\x{100}" . "\xff\xfe";
 $x = substr $foo, 1;
@@ -94,7 +97,7 @@ is($foo, "\x61\x62\x63\x34\x65\x66");
     vec($s, 1, 1) = 1;
     my @r;
     $r[$_] = \ vec $s, $_, 1 for (0, 1);
-    ok(!(${ $r[0] } != 0 || ${ $r[1] } != 1)); 
+    ok(!(${ $r[0] } != 0 || ${ $r[1] } != 1));
 }
 
 

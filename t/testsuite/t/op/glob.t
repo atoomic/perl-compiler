@@ -116,7 +116,7 @@ SKIP: {
 SKIP: {
     use Config;
     skip("glob() works when cross-compiling, but this test doesn't", 1)
-        if 1 || $Config{usecrosscompile};
+        if $Config{usecrosscompile};
 
     my $switches = [qw(-lw)];
     my $expected = "ok1\nok2\n";

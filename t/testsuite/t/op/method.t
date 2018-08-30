@@ -13,7 +13,35 @@ BEGIN {
 use strict;
 no warnings 'once';
 
-plan(tests => 151);
+plan(tests => 162);
+
+{
+    # RT #126042 &{1==1} * &{1==1} would crash
+    # There are two issues here.  Method lookup yields a fake method for
+    # ->import or ->unimport if there's no actual method, for historical
+    # reasons so that "use" doesn't barf if there's no import method.
+    # The first bug, the one which caused the crash, is that the fake
+    # method was broken in scalar context, messing up the stack.  We test
+    # for that on its own.
+    foreach my $meth (qw(import unimport)) {
+	is join(",", map { $_ // "u" } "a", "b", "Unknown"->$meth, "c", "d"), "a,b,c,d", "Unknown->$meth in list context";
+	is join(",", map { $_ // "u" } "a", "b", scalar("Unknown"->$meth), "c", "d"), "a,b,u,c,d", "Unknown->$meth in scalar context";
+    }
+    # The second issue is that the fake method wasn't actually a CV or
+    # anything referencing a CV, but was &PL_sv_yes being used as a magic
+    # placeholder.  That's inconsistent with &PL_sv_yes being a string,
+    # which we'd expect to serve as a symbolic CV ref.  This test must
+    # come before AUTOLOAD gets set up below.
+    foreach my $one (1, !!1) {
+	my @res = eval { no strict "refs"; &$one() };
+	like $@, qr/\AUndefined subroutine \&main::1 called at /;
+	@res = eval { no strict "refs"; local *1 = sub { 123 }; &$one() };
+	is $@, "";
+	is "@res", "123";
+	@res = eval { &$one() };
+	like $@, qr/\ACan't use string \("1"\) as a subroutine ref while "strict refs" in use at /;
+    }
+}
 
 @A::ISA = 'BB';
 @BB::ISA = 'C';
@@ -128,14 +156,14 @@ $counter = 0;
 
 sub BB::AUTOLOAD {
   my $c = ++$counter;
-  my $method = $BB::AUTOLOAD; 
+  my $method = $BB::AUTOLOAD;
   my $msg = "B: In $method, $c";
   eval "sub $method { \$msg }";
   goto &$method;
 }
 sub C::AUTOLOAD {
   my $c = ++$counter;
-  my $method = $C::AUTOLOAD; 
+  my $method = $C::AUTOLOAD;
   my $msg = "C: In $method, $c";
   eval "sub $method { \$msg }";
   goto &$method;
@@ -160,7 +188,7 @@ no warnings 'redefine';
 *BB::AUTOLOAD = sub {
   use warnings;
   my $c = ++$counter;
-  my $method = $::AUTOLOAD; 
+  my $method = $::AUTOLOAD;
   no strict 'refs';
   *$::AUTOLOAD = sub { "new B: In $method, $c" };
   goto &$::AUTOLOAD;
@@ -198,7 +226,7 @@ my $e;
 
 eval '$e = bless {}, "E::A"; E::A->foo()';
 like ($@, qr/^\QCan't locate object method "foo" via package "E::A" at/);
-eval '$e = bless {}, "E::B"; $e->foo()';  
+eval '$e = bless {}, "E::B"; $e->foo()';
 like ($@, qr/^\QCan't locate object method "foo" via package "E::B" at/);
 eval 'E::C->foo()';
 like ($@, qr/^\QCan't locate object method "foo" via package "E::C" (perhaps /);
@@ -233,7 +261,7 @@ sub OtherSouper::method { "Isidore Ropen, Draft Manager" }
    @ret = OtherSaab->SUPER::method;
    ::is $ret[0], 'OtherSaab',
       "->SUPER::method uses current package, not invocant";
-}  
+}
 () = *SUPER::;
 {
    local our @ISA = "Souper";
@@ -685,23 +713,6 @@ SKIP: {
     sub RT123619::f { chop $_[0] }
     eval { 'RT123619'->f(); };
     like ($@, qr/Modification of a read-only value attempted/, 'RT #123619');
-}
-
-{
-    # RT #126042 &{1==1} * &{1==1} would crash
-
-    # pp_entersub and pp_method_named cooperate to prevent calls to an
-    # undefined import() or unimport() method from croaking.
-    # If pp_method_named can't find the method it pushes &PL_sv_yes, and
-    # pp_entersub checks for that specific SV to avoid croaking.
-    # Ideally they wouldn't use that hack but...
-    # Unfortunately pp_entersub's handling of that case is broken in scalar context.
-
-    # Rather than using the test case from the ticket, since &{1==1}
-    # isn't documented (and may not be supported in future perls) test
-    # calls to undefined import method, which also crashes.
-    fresh_perl_is('Unknown->import() * Unknown->unimport(); print "ok\n"', "ok\n", {},
-                  "check unknown import() methods don't corrupt the stack");
 }
 
 # RT#130496: assertion failure when looking for a method of undefined name

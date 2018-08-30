@@ -89,7 +89,7 @@ sub test_proto {
   }
   elsif ($p =~ '^;([$*]+)\z') { # ;$ ;* ;$$ etc.
     my $maxargs = length $1;
-    $tests += 1;    
+    $tests += 1;
     eval " &CORE::$o((1)x($maxargs+1)) ";
     my $desc = quotemeta op_desc($o);
     like $@, qr/^Too many arguments for $desc at /,
@@ -97,7 +97,7 @@ sub test_proto {
   }
   elsif ($p =~ '^([$*]+);?\z') { # Fixed-length $$$ or ***
     my $args = length $1;
-    $tests += 2;    
+    $tests += 2;
     my $desc = quotemeta op_desc($o);
     eval " &CORE::$o((1)x($args-1)) ";
     like $@, qr/^Not enough arguments for $desc at /, "&$o w/too few args";
@@ -107,7 +107,7 @@ sub test_proto {
   elsif ($p =~ '^([$*]+);([$*]+)\z') { # Variable-length $$$ or ***
     my $minargs = length $1;
     my $maxargs = $minargs + length $2;
-    $tests += 2;    
+    $tests += 2;
     eval " &CORE::$o((1)x($minargs-1)) ";
     like $@, qr/^Not enough arguments for $o at /, "&$o with too few args";
     eval " &CORE::$o((1)x($maxargs+1)) ";
@@ -123,7 +123,7 @@ sub test_proto {
     # Do nothing, as we cannot test for too few or too many arguments.
   }
   elsif ($p =~ '^[$*;]+@\z') {
-    $tests ++;    
+    $tests ++;
     $p =~ ';@';
     my $minargs = $-[0];
     eval " &CORE::$o((1)x($minargs-1)) ";
@@ -206,7 +206,7 @@ sub test_proto {
       like $@, qr/^Type of arg 1 to &CORE::$o must be reference to one (?x:
                   )of \[\Q$2\E\] at /,
         "&$o with coderef arg";
-    }    
+    }
   }
   elsif ($p =~ /^;?\\\@([\@;])?/) { #   ;\@   \@@   \@;$$@
     $tests += 7;
@@ -423,7 +423,7 @@ test_proto 'close';
 {
   last if is_miniperl;
   $tests += 3;
-  
+
   open my $fh, ">", \my $buffalo;
   print $fh 'an address in the outskirts of Jersey';
   ok &CORE::close($fh), '&CORE::close retval';
@@ -639,7 +639,7 @@ SKIP: {
 
   my %h = 1..2;
   &mykeys(\%h) = 1024;
-  like Hash::Util::bucket_ratio(%h), qr|/1024\z|, '&mykeys = changed number of buckets allocated';
+  like Hash::Util::bucket_ratio(%h), qr!/(?:1024|2048)\z!, '&mykeys = changed number of buckets allocated';
   eval { (&mykeys(\%h)) = 1025; };
   like $@, qr/^Can't modify keys in list assignment at /;
 }
@@ -881,7 +881,7 @@ is &myselect, select, '&select with no args';
   my $prev = select;
   is &myselect(my $fh), $prev, '&select($arg) retval';
   is lc ref $fh, 'glob', '&select autovivifies';
-  is select=~s/\*//rug, (*$fh."")=~s/\*//rug, '&select selects';
+  is select, $fh, '&select selects';
   select $prev;
 }
 eval { &myselect(1,2) };
@@ -1070,7 +1070,7 @@ is *_{ARRAY}, undef, '@_=\*_, &undef undefines *_';
 is *_{ARRAY}, undef, '&undef(\*_) undefines *_';
 (&myundef(), @_) = 1..10;
 lis \@_, [2..10], 'list assignment to &undef()';
-ok !defined undef, 'list assignment to &undef() does not affect undef'; 
+ok !defined undef, 'list assignment to &undef() does not affect undef';
 undef @_;
 
 test_proto 'unpack';
@@ -1225,7 +1225,7 @@ package main;
 CORE::__DATA__
 I wandered lonely as a cloud
 That floats on high o'er vales and hills,
-And all at once I saw a crowd, 
+And all at once I saw a crowd,
 A host of golden daffodils!
 Beside the lake, beneath the trees,
 Fluttering, dancing, in the breeze.

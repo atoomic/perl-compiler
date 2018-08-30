@@ -9,9 +9,7 @@ BEGIN {
     set_up_inc(qw '../lib ../cpan/Perl-OSType/lib');
 }
 
-$ENV{SKIP_CHECK_PERL} = 1;
-
-plan(tests => 53 + 27*14);
+plan(tests => 57 + 27*14);
 
 if ($^O =~ /MSWin32|cygwin|msys/ && !is_miniperl) {
   require Win32; # for IsAdminUser()
@@ -154,7 +152,7 @@ SKIP: {
     # (element [3] because tell also warns)
  like($warnings[3], qr/-l on filehandle at/,
   '-l $handle warning occurs for iorefs as well');
-} 
+}
 
 # test that _ is a bareword after filetest operators
 
@@ -167,11 +165,11 @@ my $over;
 {
     package OverFtest;
 
-    use overload 
+    use overload
 	fallback => 1,
-        -X => sub { 
+        -X => sub {
             $over = [qq($_[0]), $_[1]];
-            "-$_[1]"; 
+            "-$_[1]";
         };
 }
 {
@@ -193,7 +191,7 @@ my $over;
 
     # Need fallback. Previous versions of perl required 'fallback' to do
     # -X operations on an object with no "" overload.
-    use overload 
+    use overload
         '+' => sub { 1 },
         fallback => 1;
 }
@@ -224,22 +222,6 @@ for my $op (split //, "rwxoRWXOezsfdlpSbctugkTMBAC") {
     is( $rv,        "-$op",         "correct return value for overloaded -$op");
 
     my ($exp, $is) = (1, "is");
-    if (
-	(
-	  !$fcntl_not_available and
-	  (
-	    $op eq "u" and not eval { Fcntl::S_ISUID() } or
-	    $op eq "g" and not eval { Fcntl::S_ISGID() } or
-	    $op eq "k" and not eval { Fcntl::S_ISVTX() }
-	  )
-	)
-	||
-	# the Fcntl test is meaningless in miniperl and
-	# S_ISVTX isn't available on Win32
-	( $^O eq 'MSWin32' && $op eq 'k' && is_miniperl )
-    ) {
-        ($exp, $is) = (0, "not");
-    }
 
     $over = 0;
     $rv = eval "-$op \$str";
@@ -391,7 +373,15 @@ SKIP: {
     stat "test.pl";
     eval { use warnings FATAL => unopened; -r cength };
     $failed_stat2 = stat _;
-    
+
     is $failed_stat2, $failed_stat1,
 	'failed -r($gv_with_io_but_no_fp) with and w/out fatal warnings';
-} 
+}
+
+{
+    # [perl #131895] stat() doesn't fail on filenames containing \0 / NUL
+    ok(!-T "TEST\0-", '-T on name with \0');
+    ok(!-B "TEST\0-", '-B on name with \0');
+    ok(!-f "TEST\0-", '-f on name with \0');
+    ok(!-r "TEST\0-", '-r on name with \0');
+}

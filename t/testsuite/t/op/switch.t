@@ -10,7 +10,7 @@ use strict;
 use warnings;
 no warnings 'experimental::smartmatch';
 
-plan tests => 193;
+plan tests => 195;
 
 # The behaviour of the feature pragma should be tested by lib/feature.t
 # using the tests in t/lib/feature/*. This file tests the behaviour of
@@ -57,7 +57,7 @@ sub check_outside1 { is($_, "inside", "\$_ is not lexically scoped") }
 
 # Basic string/numeric comparisons and control flow
 
-{    
+{
     my $ok;
     given(3) {
 	when(2) { $ok = 'two'; }
@@ -68,7 +68,7 @@ sub check_outside1 { is($_, "inside", "\$_ is not lexically scoped") }
     is($ok, 'three', "numeric comparison");
 }
 
-{    
+{
     my $ok;
     use integer;
     given(3.14159265) {
@@ -80,7 +80,7 @@ sub check_outside1 { is($_, "inside", "\$_ is not lexically scoped") }
     is($ok, 'three', "integer comparison");
 }
 
-{    
+{
     my ($ok1, $ok2);
     given(3) {
 	when(3.1)   { $ok1 = 'n'; }
@@ -737,7 +737,7 @@ SKIP: {
 	  $self->{called} = 1;
 	  return $self->{retval};
       };
-    
+
       sub new {
 	  my ($pkg, $retval) = @_;
 	  bless {
@@ -755,7 +755,7 @@ SKIP: {
 	    when ("other arg") {$matched = 1}
 	    default {$matched = 0}
 	}
-    
+
 	is($obj->{called}, 1, "$test: called");
 	ok($matched, "$test: matched");
     }
@@ -767,7 +767,7 @@ SKIP: {
 	given($obj) {
 	    when ("other arg") {$matched = 1}
 	}
-    
+
 	is($obj->{called}, 1, "$test: called");
 	ok(!$matched, "$test: not matched");
     }
@@ -780,7 +780,7 @@ SKIP: {
 	    when ($obj) {$matched = 1}
 	    default {$matched = 0}
 	}
-    
+
 	is($obj->{called},  1, "$test: called");
 	ok($matched, "$test: matched");
 	is($obj->{left}, "topic", "$test: left");
@@ -796,7 +796,7 @@ SKIP: {
 	    when ($obj) {$matched = 1}
 	    default {$matched = 0}
 	}
-    
+
 	is($obj->{called}, 1, "$test: called");
 	ok(!$matched, "$test: not matched");
 	is($obj->{left}, "topic", "$test: left");
@@ -1348,6 +1348,15 @@ unreified_check(undef,"");
     is($i, 111, 'when in for @a');
 }
 
+given("xyz") {
+    no warnings "void";
+    my @a = (qw(a b c), do { when(/abc/) { qw(x y) } }, qw(d e f));
+    is join(",", map { $_ // "u" } @a), "a,b,c,d,e,f",
+	"list value of false when";
+    @a = (qw(a b c), scalar do { when(/abc/) { qw(x y) } }, qw(d e f));
+    is join(",", map { $_ // "u" } @a), "a,b,c,u,d,e,f",
+	"scalar value of false when";
+}
 
 # Okay, that'll do for now. The intricacies of the smartmatch
 # semantics are tested in t/op/smartmatch.t. Taintedness of

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use utf8;
-binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+use open qw( :utf8 :std );
 require q(./test.pl); plan(tests => 2);
 
 =pod
@@ -15,7 +15,7 @@ anonymous subroutine.
 
 {
     package ㅏ;
-    use mro 'c3'; 
+    use mro 'c3';
 
     sub ᕘ {
       return 'ㅏ::ᕘ';
@@ -29,8 +29,8 @@ anonymous subroutine.
 {
     package Ḃ;
     use base 'ㅏ';
-    use mro 'c3'; 
-    
+    use mro 'c3';
+
     sub ᕘ {
       my $code = sub {
         return 'Ḃ::ᕘ => ' . (shift)->next::method();

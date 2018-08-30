@@ -12,10 +12,10 @@ BEGIN {
 
 use strict;
 use utf8;
-binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+use open qw( :utf8 :std );
 no warnings 'once';
 
-plan(tests => 59);
+plan(tests => 62);
 
 #Can't use bless yet, as it might not be clean
 
@@ -43,22 +43,22 @@ like $@, qr/Can't call method "ｍｅｔｈｏｄ" on unblessed reference /u;
 
 {
     use utf8;
-    binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+    use open qw( :utf8 :std );
 
     my $e;
-    
+
     eval '$e = bless {}, "Ｅ::Ａ"; Ｅ::Ａ->ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ａ" at/u);
-    eval '$e = bless {}, "Ｅ::Ｂ"; $e->ｆｏｏ()';  
+    eval '$e = bless {}, "Ｅ::Ｂ"; $e->ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｂ" at/u);
     eval 'Ｅ::Ｃ->ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｃ" (perhaps /u);
-    
+
     eval 'UNIVERSAL->Ｅ::Ｄ::ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｄ" (perhaps /u);
     eval 'my $e = bless {}, "UNIVERSAL"; $e->Ｅ::Ｅ::ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｅ" (perhaps /u);
-    
+
     $e = bless {}, "Ｅ::Ｆ";  # force package to exist
     eval 'UNIVERSAL->Ｅ::Ｆ::ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｆ" at/u);
@@ -66,7 +66,7 @@ like $@, qr/Can't call method "ｍｅｔｈｏｄ" on unblessed reference /u;
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｆ" at/u);
 }
 
-is(do { use utf8; binmode STDOUT, ":utf8"; binmode STDERR, ":utf8"; eval 'Ｆｏｏ->ｂｏｏｇｉｅ()';
+is(do { use utf8; use open qw( :utf8 :std ); eval 'Ｆｏｏ->ｂｏｏｇｉｅ()';
 	  $@ =~ /^\QCan't locate object method "ｂｏｏｇｉｅ" via package "Ｆｏｏ" (perhaps /u ? 1 : $@}, 1);
 
 #This reimplements a bit of _fresh_perl() from test.pl, as we want to decode
@@ -74,7 +74,7 @@ is(do { use utf8; binmode STDOUT, ":utf8"; binmode STDERR, ":utf8"; eval 'Ｆｏ
 SKIP: {
     skip_if_miniperl('no dynamic loading on miniperl, no Encode');
 
-    my $prog = q!use utf8; binmode STDOUT, ":utf8"; binmode STDERR, ":utf8"; sub Ｔ::DESTROY { $x = $_[0]; } bless [], "Ｔ";!;
+    my $prog = q!use utf8; use open qw( :utf8 :std ); sub Ｔ::DESTROY { $x = $_[0]; } bless [], "Ｔ";!;
     utf8::decode($prog);
 
     my $tmpfile = tempfile();
@@ -202,17 +202,14 @@ package ÿ {                                 # without UTF8
 }
 ÿ->${\"\x{100}"};
 
-# view https://github.com/rurban/perl-compiler/issues/324
-#   known limitaton solved by using -fsave-data
+#This test should go somewhere else.
+#DATA was being generated in the wrong package.
+package ʑ;
+no strict 'refs';
 
-# #This test should go somewhere else.
-# #DATA was being generated in the wrong package.
-# package ʑ;
-# no strict 'refs';
+::ok( *{"ʑ::DATA"}{IO}, "DATA is generated in the right glob");
+::ok !defined(*{"main::DATA"}{IO});
+::is scalar <DATA>, "Some data\n";
 
-# ::ok( *{"ʑ::DATA"}{IO}, "DATA is generated in the right glob");
-# ::ok !defined(*{"main::DATA"}{IO});
-# ::is scalar <DATA>, "Some data\n";
-
-# __DATA__
-# Some data
+__DATA__
+Some data

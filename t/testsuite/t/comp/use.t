@@ -2,7 +2,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC, ('../lib', 'lib');
+    @INC = ('../lib', 'lib');
     $INC{"feature.pm"} = 1; # so we don't attempt to load feature.pm
 }
 
@@ -239,7 +239,7 @@ is("@test_use::got", "joe");
 
 
 {
-    # Regression test for patch 14937: 
+    # Regression test for patch 14937:
     #   Check that a .pm file with no package or VERSION doesn't core.
     # (git commit 2658f4d9934aba5f8b23afcc078dc12b3a40223)
     eval "use test_use_14937 3";

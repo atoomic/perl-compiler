@@ -6,7 +6,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-plan(tests => 65);
+plan(tests => 62);
 
 sub empty_sub {}
 
@@ -16,30 +16,6 @@ is(empty_sub(1,2,3),undef,"Is still empty");
 is(scalar(@test), 0, 'Didnt return anything');
 @test = empty_sub(1,2,3);
 is(scalar(@test), 0, 'Didnt return anything');
-
-# RT #63790:  calling PL_sv_yes as a sub is special-cased to silently
-# return (so Foo->import() silently fails if import() doesn't exist),
-# But make sure it correctly pops the stack and mark stack before returning.
-
-{
-    my @a;
-    push @a, 4, 5, main->import(6,7);
-    ok(eq_array(\@a, [4,5]), "import with args");
-
-    @a = ();
-    push @a, 14, 15, main->import;
-    ok(eq_array(\@a, [14,15]), "import without args");
-
-    my $x = 1;
-
-    @a = ();
-    push @a, 24, 25, &{$x == $x}(26,27);
-    ok(eq_array(\@a, [24,25]), "yes with args");
-
-    @a = ();
-    push @a, 34, 35, &{$x == $x};
-    ok(eq_array(\@a, [34,35]), "yes without args");
-}
 
 # [perl #91844] return should always copy
 {
@@ -125,7 +101,7 @@ sub b {
     push @scratch, (ref $o, $depth||b($pack,$depth+1))[0];
 }
 b('n',0);
-is "@scratch", "o n", 
+is "@scratch", "o n",
    'recursive calls do not share shared-hash-key TARGs (2)';
 
 # [perl #78194] @_ aliasing op return values
@@ -167,7 +143,7 @@ is eval {
 # &xsub when @_ itself does not exist
 undef *_;
 eval { &utf8::encode };
-# The main thing we are testing is that it did not crash.  But make sure 
+# The main thing we are testing is that it did not crash.  But make sure
 # *_{ARRAY} was untouched, too.
 is *_{ARRAY}, undef, 'goto &xsub when @_ does not exist';
 
@@ -423,8 +399,18 @@ is ref($main::{rt_129916}), 'CODE', 'simple sub stored as CV in stash (main::)';
     sub foo { 42 }
 }
 {
-    local $TODO = "CV symbol table optimization only works in main:: [perl #129916]";
+    local $::TODO = "disabled for now";
     is ref($RT129916::{foo}), 'CODE', 'simple sub stored as CV in stash (non-main::)';
+}
+
+# Calling xsub via ampersand syntax when @_ has holes
+SKIP: {
+    skip "no XS::APItest on miniperl" if is_miniperl;
+    require XS::APItest;
+    local *_;
+    $_[1] = 1;
+    &XS::APItest::unshift_and_set_defav;
+    is "@_", "42 43 1"
 }
 
 # [perl #129090] Crashes and hangs

@@ -14,10 +14,10 @@ BEGIN {
     require Win32;
     ($::os_id, $::os_major) = ( Win32::GetOSVersion() )[ 4, 1 ];
     if ($::os_id == 2 and $::os_major == 6) {    # Vista, Server 2008 (incl R2), 7
-	$::tests = 43;
+	$::tests = 45;
     }
     else {
-	$::tests = 40;
+	$::tests = 42;
     }
 
     require './test.pl';
@@ -65,16 +65,17 @@ sub runperl_and_capture {
     close $stderr_cache_fh;
     unlink $stderr_cache;
   }
-  
+
   return ($stdout, $stderr);
 }
 
 sub try {
-  my ($env, $args, $stdout, $stderr) = @_;
+  my ($env, $args, $stdout, $stderr, $name) = @_;
   my ($actual_stdout, $actual_stderr) = runperl_and_capture($env, $args);
+  $name ||= "";
   local $::Level = $::Level + 1;
-  is $actual_stdout, $stdout;
-  is $actual_stderr, $stderr;
+  is $actual_stdout, $stdout, "$name - stdout";
+  is $actual_stderr, $stderr, "$name - stderr";
 }
 
 #  PERL5OPT    Command-line options (switches).  Switches in
@@ -88,24 +89,24 @@ sub try {
 #                    subsequent options ignored.
 
 try({PERL5OPT => '-w'}, ['-e', '"print $::x"'],
-    "", 
+    "",
     qq(Name "main::x" used only once: possible typo at -e line 1.${NL}Use of uninitialized value \$x in print at -e line 1.${NL}));
 
 try({PERL5OPT => '-Mstrict'}, ['-I..\lib', '-e', '"print $::x"'],
     "", "");
 
 try({PERL5OPT => '-Mstrict'}, ['-I..\lib', '-e', '"print $x"'],
-    "", 
+    "",
     qq(Global symbol "\$x" requires explicit package name (did you forget to declare "my \$x"?) at -e line 1.${NL}Execution of -e aborted due to compilation errors.${NL}));
 
 # Fails in 5.6.0
 try({PERL5OPT => '-Mstrict -w'}, ['-I..\lib', '-e', '"print $x"'],
-    "", 
+    "",
     qq(Global symbol "\$x" requires explicit package name (did you forget to declare "my \$x"?) at -e line 1.${NL}Execution of -e aborted due to compilation errors.${NL}));
 
 # Fails in 5.6.0
 try({PERL5OPT => '-w -Mstrict'}, ['-I..\lib', '-e', '"print $::x"'],
-    "", 
+    "",
     <<ERROR
 Name "main::x" used only once: possible typo at -e line 1.
 Use of uninitialized value \$x in print at -e line 1.
@@ -114,7 +115,7 @@ ERROR
 
 # Fails in 5.6.0
 try({PERL5OPT => '-w -Mstrict'}, ['-I..\lib', '-e', '"print $::x"'],
-    "", 
+    "",
     <<ERROR
 Name "main::x" used only once: possible typo at -e line 1.
 Use of uninitialized value \$x in print at -e line 1.
@@ -122,15 +123,15 @@ ERROR
     );
 
 try({PERL5OPT => '-MExporter'}, ['-I..\lib', '-e0'],
-    "", 
+    "",
     "");
 
 # Fails in 5.6.0
 try({PERL5OPT => '-MExporter -MExporter'}, ['-I..\lib', '-e0'],
-    "", 
+    "",
     "");
 
-try({PERL5OPT => '-Mstrict -Mwarnings'}, 
+try({PERL5OPT => '-Mstrict -Mwarnings'},
     ['-I..\lib', '-e', '"print \"ok\" if $INC{\"strict.pm\"} and $INC{\"warnings.pm\"}"'],
     "ok",
     "");
@@ -140,7 +141,7 @@ print $fh "package Oooof; 1;\n";
 close $fh;
 END { 1 while unlink "Oooof.pm" }
 
-try({PERL5OPT => '-I. -MOooof'}, 
+try({PERL5OPT => '-I. -MOooof'},
     ['-e', '"print \"ok\" if $INC{\"Oooof.pm\"} eq \"Oooof.pm\""'],
     "ok",
     "");
@@ -195,6 +196,16 @@ try({PERL5LIB => "foo",
     ['-e', '"print grep { $_ eq \"bar\" } @INC"'],
     '',
     '');
+
+{
+    # 131665
+    # crashes without the fix
+    my $longname = "X" x 2048;
+    try({ $longname => 1 },
+        [ '-e', '"print q/ok/"' ],
+        'ok', '',
+        'very long env var names' );
+}
 
 # Tests for S_incpush_use_sep():
 

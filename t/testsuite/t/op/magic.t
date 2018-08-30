@@ -5,16 +5,15 @@ BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
     set_up_inc( '../lib' );
+    plan (tests => 196); # some tests are run in BEGIN block
 }
-
-plan (tests => 192);
 
 # Test that defined() returns true for magic variables created on the fly,
 # even before they have been created.
 # This must come first, even before turning on warnings or setting up
 # $SIG{__WARN__}, to avoid invalidating the tests.  warnings.pm currently
 # does not mention any special variables, but that could easily change.
-{
+BEGIN {
     # not available in miniperl
     my %non_mini = map { $_ => 1 } qw(+ - [);
     for (qw(
@@ -63,12 +62,6 @@ $PERL =
     $Is_MSWin32 ? '.\perl' :
                   './perl');
 
-
-$PERL = $^X;
-
-$PERL = $^X;
-
-$PERL = $^X;
 
 sub env_is {
     my ($key, $val, $desc) = @_;
@@ -458,7 +451,6 @@ SKIP: {
 
 # Make sure Errno hasn't been prematurely autoloaded
 
-    skip('Errno is loaded with a B::C program cause something used %!', 2);
    ok !keys %Errno::;
 
 # Test auto-loading of Errno when %! is used
@@ -651,6 +643,14 @@ is ${^LAST_FH}, \*STDIN, '${^LAST_FH} after another tell';
 # This also tests that ${^LAST_FH} is a weak reference:
 is ${^LAST_FH}, undef, '${^LAST_FH} is undef when PL_last_in_gv is NULL';
 
+# all of these would set PL_last_in_gv to a non-GV which would
+# assert when referenced by the magic for ${^LAST_FH}.
+# The approach to fixing this has changed (#128263), but it's still useful
+# to check each op.
+for my $code ('tell $0', 'sysseek $0, 0, 0', 'seek $0, 0, 0', 'eof $0') {
+    fresh_perl_is("$code; print defined \${^LAST_FH} ? qq(not ok\n) : qq(ok\n)", "ok\n",
+                  undef, "check $code doesn't define \${^LAST_FH}");
+}
 
 # $|
 fresh_perl_is 'print $| = ~$|', "1\n", {switches => ['-l']},
@@ -714,9 +714,6 @@ is ++${^MPEN}, 1, '${^MPEN} can be incremented';
     sub TIESCALAR { bless {}; }
     sub FETCH { push @RT12608::G::ISA, "RT12608::H"; "RT12608::Y"; }
 }
-
-
-
 
 
 # ^^^^^^^^^ New tests go here ^^^^^^^^^

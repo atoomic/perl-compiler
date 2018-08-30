@@ -95,7 +95,7 @@ EOEXPECT
 
 {
     use utf8;
-    binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+    use open qw( :utf8 :std );
 
     local $~ = "놋웇ʱＦᚖṀŦ";
     eval { write };
@@ -109,7 +109,7 @@ format OUT =
 
 .
     use utf8;
-    binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+    use open qw( :utf8 :std );
     open OUT, '>', 'Uni_write2.tmp';
 
     my $oldfh = select OUT;

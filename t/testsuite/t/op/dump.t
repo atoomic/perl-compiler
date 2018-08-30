@@ -28,12 +28,18 @@ skip_all("no point in dumping on $^O")
 skip_all("avoid coredump under ASan")
   if  $Config{ccflags} =~ /-fsanitize=/;
 
+# execute in a work directory so File::Temp can clean up core dumps
+my $tmp = tempdir(CLEANUP => 1);
+
 my $start = getcwd;
 
 # on systems which don't make $^X absolute which_perl() in test.pl won't
 # return an absolute path, so once we change directories it can't
 # find ./perl, resulting in test failures
 $^X = File::Spec->rel2abs($^X);
+
+chdir $tmp
+  or skip_all("Cannot chdir to work directory");
 
 plan(2);
 
@@ -96,3 +102,6 @@ else {
 }
 PROG
 
+END {
+  chdir $start if defined $start;
+}

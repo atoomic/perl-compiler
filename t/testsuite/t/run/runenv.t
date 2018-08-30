@@ -93,24 +93,24 @@ sub try {
 #                    subsequent options ignored.
 
 try({PERL5OPT => '-w'}, ['-e', 'print $::x'],
-    "", 
+    "",
     qq{Name "main::x" used only once: possible typo at -e line 1.\nUse of uninitialized value \$x in print at -e line 1.\n});
 
 try({PERL5OPT => '-Mstrict'}, ['-I../lib', '-e', 'print $::x'],
     "", "");
 
 try({PERL5OPT => '-Mstrict'}, ['-I../lib', '-e', 'print $x'],
-    "", 
+    "",
     qq{Global symbol "\$x" requires explicit package name (did you forget to declare "my \$x"?) at -e line 1.\nExecution of -e aborted due to compilation errors.\n});
 
 # Fails in 5.6.0
 try({PERL5OPT => '-Mstrict -w'}, ['-I../lib', '-e', 'print $x'],
-    "", 
+    "",
     qq{Global symbol "\$x" requires explicit package name (did you forget to declare "my \$x"?) at -e line 1.\nExecution of -e aborted due to compilation errors.\n});
 
 # Fails in 5.6.0
 try({PERL5OPT => '-w -Mstrict'}, ['-I../lib', '-e', 'print $::x'],
-    "", 
+    "",
     <<ERROR
 Name "main::x" used only once: possible typo at -e line 1.
 Use of uninitialized value \$x in print at -e line 1.
@@ -119,7 +119,7 @@ ERROR
 
 # Fails in 5.6.0
 try({PERL5OPT => '-w -Mstrict'}, ['-I../lib', '-e', 'print $::x'],
-    "", 
+    "",
     <<ERROR
 Name "main::x" used only once: possible typo at -e line 1.
 Use of uninitialized value \$x in print at -e line 1.
@@ -127,31 +127,31 @@ ERROR
     );
 
 try({PERL5OPT => '-MExporter'}, ['-I../lib', '-e0'],
-    "", 
+    "",
     "");
 
 # Fails in 5.6.0
 try({PERL5OPT => '-MExporter -MExporter'}, ['-I../lib', '-e0'],
-    "", 
+    "",
     "");
 
-try({PERL5OPT => '-Mstrict -Mwarnings'}, 
+try({PERL5OPT => '-Mstrict -Mwarnings'},
     ['-I../lib', '-e', 'print "ok" if $INC{"strict.pm"} and $INC{"warnings.pm"}'],
     "ok",
     "");
 
-open my $fh, ">", "Oooof.pm" or die "Can't write Oooof.pm: $!";
-print $fh "package Oooof; 1;\n";
+open my $fh, ">", "tmpOooof.pm" or die "Can't write tmpOooof.pm: $!";
+print $fh "package tmpOooof; 1;\n";
 close $fh;
-END { 1 while unlink "Oooof.pm" }
+END { 1 while unlink "tmpOooof.pm" }
 
-try({PERL5OPT => '-I. -MOooof'}, 
-    ['-e', 'print "ok" if $INC{"Oooof.pm"} eq "Oooof.pm"'],
+try({PERL5OPT => '-I. -MtmpOooof'},
+    ['-e', 'print "ok" if $INC{"tmpOooof.pm"} eq "tmpOooof.pm"'],
     "ok",
     "");
 
-try({PERL5OPT => '-I./ -MOooof'}, 
-    ['-e', 'print "ok" if $INC{"Oooof.pm"} eq "Oooof.pm"'],
+try({PERL5OPT => '-I./ -MtmpOooof'},
+    ['-e', 'print "ok" if $INC{"tmpOooof.pm"} eq "tmpOooof.pm"'],
     "ok",
     "");
 

@@ -9,7 +9,7 @@ BEGIN {
 
 plan (tests => 5);
 
-binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+use open qw( :utf8 :std );
 use feature 'unicode_eval';
 
 {

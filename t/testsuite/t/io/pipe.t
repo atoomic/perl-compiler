@@ -10,7 +10,7 @@ if (!$Config{'d_fork'}) {
     skip_all("fork required to pipe");
 }
 else {
-    plan(tests => 24);
+    plan(tests => 25);
 }
 
 my $Perl = which_perl();
@@ -110,7 +110,7 @@ close PIPE;
 
             open(STDOUT,">&WRITER") || die "Can't dup WRITER to STDOUT";
             close WRITER;
-            
+
             my $tnum = curr_test;
             next_test;
             exec $Perl, '-le', "print q{not ok $tnum -     with fh dup }";
@@ -119,7 +119,7 @@ close PIPE;
         # This has to be done *outside* the fork.
         next_test() for 1..2;
     }
-} 
+}
 wait;				# Collect from $pid
 
 pipe(READER,WRITER) || die "Can't open pipe";
@@ -137,6 +137,18 @@ close WRITER;
 sleep 1;
 next_test;
 pass();
+
+SKIP: {
+    skip "no fcntl", 1 unless $Config{d_fcntl};
+    my($r, $w);
+    pipe($r, $w) || die "pipe: $!";
+    my $fdr = fileno($r);
+    my $fdw = fileno($w);
+    fresh_perl_is(qq(
+	print open(F, "<&=$fdr") ? 1 : 0, "\\n";
+	print open(F, ">&=$fdw") ? 1 : 0, "\\n";
+    ), "0\n0\n", {}, "pipe endpoints not inherited across exec");
+}
 
 # VMS doesn't like spawning subprocesses that are still connected to
 # STDOUT.  Someone should modify these tests to work with VMS.
@@ -164,7 +176,7 @@ SKIP: {
     }
 
     {
-        # check that errno gets forced to 0 if the piped program exited 
+        # check that errno gets forced to 0 if the piped program exited
         # non-zero
         open NIL, qq{|$Perl -e "exit 23";} or die "fork failed: $!";
         $! = 1;

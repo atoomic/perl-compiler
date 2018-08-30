@@ -22,7 +22,7 @@ $SIG{__WARN__} = sub {
      }
 };
 
-plan(393);
+plan(400);
 
 run_tests() unless caller;
 
@@ -594,9 +594,9 @@ substr($x = "\x{100}\x{200}", 2, 0, "\xFFb");
 is($x, "\x{100}\x{200}\xFFb");
 
 # [perl #20933]
-{ 
+{
     my $s = "ab";
-    my @r; 
+    my @r;
     $r[$_] = \ substr $s, $_, 1 for (0, 1);
     is(join("", map { $$_ } @r), "ab");
 }
@@ -618,22 +618,22 @@ is($x, "\x{100}\x{200}\xFFb");
     is(substr($x, 7, 1), "7");
 }
 
-# multiple assignments to lvalue [perl #24346]   
+# multiple assignments to lvalue [perl #24346]
 {
     my $x = "abcdef";
     for (substr($x,1,3)) {
 	is($_, 'bcd');
 	$_ = 'XX';
 	is($_, 'XX');
-	is($x, 'aXXef'); 
+	is($x, 'aXXef');
 	$_ = "\xFF";
-	is($_, "\xFF"); 
+	is($_, "\xFF");
 	is($x, "a\xFFef");
 	$_ = "\xF1\xF2\xF3\xF4\xF5\xF6";
 	is($_, "\xF1\xF2\xF3\xF4\xF5\xF6");
-	is($x, "a\xF1\xF2\xF3\xF4\xF5\xF6ef"); 
+	is($x, "a\xF1\xF2\xF3\xF4\xF5\xF6ef");
 	$_ = 'YYYY';
-	is($_, 'YYYY'); 
+	is($_, 'YYYY');
 	is($x, 'aYYYYef');
     }
     $x = "abcdef";
@@ -711,14 +711,6 @@ is($x, "\x{100}\x{200}\xFFb");
 
 }
 
-# [perl #23765]
-{
-    my $a = pack("C", 0xbf);
-    no warnings 'deprecated';
-    substr($a, -1) &= chr(0xfeff);
-    is($a, "\xbf");
-}
-
 # [perl #34976] incorrect caching of utf8 substr length
 {
     my  $a = "abcd\x{100}";
@@ -773,7 +765,7 @@ ok eval {
 
 {
     use utf8;
-    binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+    use open qw( :utf8 :std );
     no warnings 'once';
 
     my $t = "";
@@ -891,4 +883,39 @@ fresh_perl_is('$0 = "/usr/bin/perl"; substr($0, 0, 0, $0)', '', {}, "(perl #1293
     is $x, "\x{100}zzzz", "RT#130624: heap-use-after-free in 4-arg substr (targ)";
 }
 
+{
+    our @ta;
+    $#ta = -1;
+    substr($#ta, 0, 2) = 23;
+    is $#ta, 23;
+    $#ta = -1;
+    substr($#ta, 0, 2) =~ s/\A..\z/23/s;
+    is $#ta, 23;
+    $#ta = -1;
+    substr($#ta, 0, 2, 23);
+    is $#ta, 23;
+    sub ta_tindex :lvalue { $#ta }
+    $#ta = -1;
+    ta_tindex() = 23;
+    is $#ta, 23;
+    $#ta = -1;
+    substr(ta_tindex(), 0, 2) = 23;
+    is $#ta, 23;
+    $#ta = -1;
+    substr(ta_tindex(), 0, 2) =~ s/\A..\z/23/s;
+    is $#ta, 23;
+    $#ta = -1;
+    substr(ta_tindex(), 0, 2, 23);
+    is $#ta, 23;
+}
 
+{ # [perl #132527]
+    use feature 'refaliasing';
+    no warnings 'experimental::refaliasing';
+    my %h;
+    \$h{foo} = \(my $bar = "baz");
+    substr delete $h{foo}, 1, 1, o=>;
+    is $bar, boz => 'first arg to 4-arg substr is loose lvalue context';
+}
+
+1;

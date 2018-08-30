@@ -12,7 +12,7 @@ BEGIN {
 
 use 5.016;
 use utf8;
-binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
+use open qw( :utf8 :std );
 no warnings qw(misc reserved);
 
 plan (tests => 66894);
@@ -335,7 +335,7 @@ EOP
     }
 }
 
-{    
+{
     # bleadperl v5.17.9-109-g3283393 breaks JEREMY/File-Signature-1.009.tar.gz
     # https://rt.perl.org/rt3/Ticket/Display.html?id=117145
     local $@;
@@ -378,8 +378,8 @@ EOP
         "*main::OIN",
         "Newlines at the start of an identifier should be skipped over"
     );
-    
-    
+
+
     SKIP: {
         skip('Is $^U on EBCDIC 1047, BC; nothing works on 0037', 1)
                                                                 if $::IS_EBCDIC;
@@ -389,7 +389,7 @@ EOP
             "  ... but \$^J is still legal"
         );
     }
-    
+
     my $ret = eval "\${\cT\n}";
     like($@, qr/\QUnrecognized character/, '${\n\cT\n} gives an error message');
 }
@@ -401,7 +401,7 @@ EOP
     my %foo = (a=>2);
     my $ret = @{ foo { "a" } };
     is($ret, $foo{a}, '@{ foo { "a" } } is parsed as @foo{a}');
-    
+
     $ret = @{
             foo { "a" }
         };
