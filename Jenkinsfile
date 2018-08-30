@@ -5,7 +5,7 @@ node('docker && jenkins-user') {
 
     def cpVersion = '11.74'
     def perlVersion = '526'
-    def productionBranch = 'bc526' // controls if we push to the Registry
+    def productionBranch = 'bc528' // controls if we push to the Registry
     def TESTS="t/*.t t/testsuite/C-COMPILED/*/*.t"  // full run
 
     Map scmVars
@@ -110,7 +110,7 @@ def notifyHipchat(String status, Map scmVars, def testResults) {
         color = 'GREEN'
     }
 
-    String message = """$icon $status &raquo; <a href="${reposURL}/browse">${ util.escapeHTML(JOB_NAME) }</a> &raquo; ${ util.escapeHTML(BUILD_DISPLAY_NAME) } for 
+    String message = """$icon $status &raquo; <a href="${reposURL}/browse">${ util.escapeHTML(JOB_NAME) }</a> &raquo; ${ util.escapeHTML(BUILD_DISPLAY_NAME) } for
 (<a href="${reposURL}/commits/${scmVars.GIT_COMMIT}">$shortSHA</a>) &rarr; <a href="${ util.escapeHTML(BUILD_URL) }">View build</a>
 $extra_info"""
 
