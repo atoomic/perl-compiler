@@ -6,6 +6,7 @@ use B qw/svref_2object/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/unopauxsect init free meta_unopaux_item/;
 use B::C::Helpers qw/is_constant/;
+use B::C::Save qw/savecowpv/;
 
 sub _clear_stack {
 
@@ -14,25 +15,38 @@ sub _clear_stack {
 }
 
 # hardcoded would require a check to detect this is going to the correct position
-sub OP_AUX_IX { 15 }
+sub OP_AUX_IX {15}
+
+sub MULTICONCAT_IX_NARGS     {0}    # number of arguments
+sub MULTICONCAT_IX_PLAIN_PV  {1}    # non-utf8 constant string
+sub MULTICONCAT_IX_PLAIN_LEN {2}    # non-utf8 constant string length
+sub MULTICONCAT_IX_UTF8_PV   {3}    # utf8 constant string
+sub MULTICONCAT_IX_UTF8_LEN  {4}    # utf8 constant string length
+sub MULTICONCAT_IX_LENGTHS   {5}    # first of nargs+1 const segment lens
+
+sub MULTICONCAT_HEADER_SIZE  {5}    # The number of fields of a multiconcat header
 
 sub do_save {
     my ($op) = @_;
 
-    _clear_stack();                 # avoid a weird B (or B::C) issue when calling aux_list_thr
+    _clear_stack()
+        ;    # avoid a weird B (or B::C) issue when calling aux_list_thr
 
     unopauxsect()->comment_for_op("first, aux");
     my ( $ix, $sym ) = unopauxsect()->reserve( $op, "OP*" );
     unopauxsect()->debug( $op->name, $op );
 
-    unopauxsect()->supdate( $ix, "%s, %s, %s", $op->save_baseop, $op->first->save, 'AUX-TO-BE-FILLED' );
+    unopauxsect()->supdate(
+        $ix, "%s, %s, %s", $op->save_baseop, $op->first->save,
+        'AUX-TO-BE-FILLED'
+    );
 
     my @aux_list;
     if ( $op->name eq 'argelem' ) {
 
-        # argelem has no aux_list, it's stealing the pointer to save one integer
-        # from pp.c for PP(pp_argelem)
-        #      IV ix = PTR2IV(cUNOP_AUXo->op_aux);
+      # argelem has no aux_list, it's stealing the pointer to save one integer
+      # from pp.c for PP(pp_argelem)
+      #      IV ix = PTR2IV(cUNOP_AUXo->op_aux);
 
         my $op_aux = $op->aux_ptr2iv // 0;
         unopauxsect()->update_field( $ix, OP_AUX_IX(), $op_aux );
@@ -47,28 +61,66 @@ sub do_save {
     elsif ( $op->name eq 'multideref' ) {
         @aux_list = $op->aux_list_thr;
     }
-    else {
+    elsif ( $op->name eq 'multiconcat' ) {
+
+        # "a=$a b=$bX"
+        # [
+        #   2,
+        #   'c= d=X',
+        #   2,
+        #   3,
+        #   1
+        # ]
+
+        my $unused_cv = bless {}, 'B::C';    # no need for multiconcat
+        my ( $nargs, $pv_as_sv, @segments )
+            = $op->aux_list($unused_cv);     # is this complete
+                                             # saving the pv as a COWPV
+        my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv);
+
+        my @header = map {0} 1 .. MULTICONCAT_HEADER_SIZE();    # initialize the multiconcat header
+
+        $header[ MULTICONCAT_IX_NARGS() ] = $nargs;
+
+        if ($utf8) {
+            $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;
+        }
+        else {
+            $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym;
+            $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $len;
+        }
+        $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;  # seems to always be set
+
+        @aux_list = ( @header, @segments );
+    }
+    else {                                            # ithread
+            # Usage: B::UNOP_AUX::aux_list(o, cv)
+        die "ithreads";
         @aux_list = $op->aux_list;    # GH#283, GH#341
     }
 
     #### Saving the regular AUX LIST
 
     my $auxlen = scalar @aux_list;
-    my @to_be_filled = map { 0 } 1 .. $auxlen;    #
+    my @to_be_filled = map {0} 1 .. $auxlen;    #
 
     my $list_size         = $auxlen + 1;
     my $unopaux_item_sect = meta_unopaux_item($list_size);
 
     $unopaux_item_sect->comment(q{length prefix, UNOP_AUX_item * $auxlen });
-    my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
+    my $uaux_item_ix = $unopaux_item_sect->add(
+        join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
 
-    my $symname = sprintf( 'meta_unopaux_item%d_list[%d]', $list_size, $uaux_item_ix );
+    my $symname = sprintf(
+        'meta_unopaux_item%d_list[%d]', $list_size,
+        $uaux_item_ix
+    );
     my $op_aux = sprintf( '&%s.aaab', $symname );
 
     unopauxsect()->update_field( $ix, OP_AUX_IX(), $op_aux );
 
     # This cannot be a section, as the number of elements is variable
-    my $i            = 1;         # maybe rename tp field_ix
+    my $i            = 1;         # maybe rename to field_ix
     my $struct_field = q{aaaa};
 
     my $action = 0;
@@ -84,19 +136,29 @@ sub do_save {
             #my $cmt = $op->get_action_name($item);
             $action = $item;
 
-            #debug( hv => $op->name . " action $action $cmt" );
-            $field = sprintf( "{.uv=0x%x}", $item );    #  \t/* %s: %u */ , $cmt, $item
+            if ( $item == -1 ) { # we should not have any other negative value
+                $field = "{.iv=-1}";
+            }
+            elsif ( $item =~ qr{COWPV} ) {
+                $field = sprintf( "{.pv= (char*) %s}", $item );
+            }
+            else {
+                #debug( hv => $op->name . " action $action $cmt" );
+                $field = sprintf( "{.uv=0x%x}", $item );            #  \t/* %s: %u */ , $cmt, $item
+            }
+
         }
         else {
-            # const and sv already at compile-time, gv deferred to init-time.
-            # testcase: $a[-1] -1 as B::IV not as -1
-            # hmm, if const ensure that candidate CONSTs have been HEKified. (pp_multideref assertion)
-            # || SvTYPE(keysv) >= SVt_PVMG
-            # || !SvOK(keysv)
-            # || SvROK(keysv)
-            # || SvIsCOW_shared_hash(keysv));
+# const and sv already at compile-time, gv deferred to init-time.
+# testcase: $a[-1] -1 as B::IV not as -1
+# hmm, if const ensure that candidate CONSTs have been HEKified. (pp_multideref assertion)
+# || SvTYPE(keysv) >= SVt_PVMG
+# || !SvOK(keysv)
+# || SvROK(keysv)
+# || SvIsCOW_shared_hash(keysv));
             my $constkey = ( $action & 0x30 ) == 0x10 ? 1 : 0;
-            my $itemsym = $item->save( "$symat" . ( $constkey ? " const" : "" ) );
+            my $itemsym
+                = $item->save( "$symat" . ( $constkey ? " const" : "" ) );
             if ( is_constant($itemsym) ) {
                 if ( ref $item eq 'B::IV' ) {
                     my $iv = $item->IVX;
