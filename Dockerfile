@@ -10,7 +10,7 @@ LABEL maintainer="Pax Aurora"
 ## libdb-devel: for '-ldb'
 RUN yum -y update \
     && yum -y groups install "Development Tools" \
-    && yum -y install sudo which gdbm-devel libdb-devel expat-devel expat \
+    && yum -y install sudo which gdbm-devel libdb-devel expat-devel expat libidn-devel libidn openssl-devel openssl \
     && yum clean all \
     && rm -rf /var/cache/yum
 

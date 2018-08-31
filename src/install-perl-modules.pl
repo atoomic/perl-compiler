@@ -26,6 +26,15 @@ my @Modules = qw{
     B::Flags
     Capture::Tiny
     Template::Toolkit
+
+    EV
+    IO::Socket::SSL
+    IO::Socket::INET6
+    JSON::XS
+    Net::SSLeay
+    Net::DNS
+    Net::LibIDN
+
 };
 
 run() unless caller;
@@ -60,14 +69,18 @@ sub run {
         $out = qx{$cmd};
 
         #next if $module eq 'Test2::Bundle::Extended';
-
-        die "*** cpanm failure for $module\n$out\n**********" unless $? == 0;
+        do { diag "*** cpanm failure for $module\n$out\n**********"; next } unless $? == 0;
 
         next if $module =~ qr{^\.};
 
-        note qx{$^X -M$module -e1};
-        die "Module failed... $^X -M$module -e1" unless $? == 0;
-        note "===> $module installed via cpanm...";
+        my $out = qx{$^X -M$module -e1 2>&1};
+
+        if ( $? == 0 ) {
+        	note "===> module $module installed via cpanm...";
+        } else {
+        	diag "installation failed for module module: :", $module, 
+        		" using cpanm # $^X -M$module -e1", "\n", $out;
+        } 
     }
 
     #install_tarball("Test2-Suite-0.000115.tar.gz");
