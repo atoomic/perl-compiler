@@ -91,3 +91,8 @@ t/test-*.sh
 /t/testsuite/t/urkkk.pm
 /t/testsuite/t/utf*
 x*.p
+src/TAP-Formatter-JUnit-*
+src/Module-Build-*/
+src/inc-latest-*/
+src/App-cpanminus-*/
+src/Test-Simple-*/

@@ -4,9 +4,11 @@ node('docker && jenkins-user') {
     environment.check()
 
     def cpVersion = '11.74'
-    def perlVersion = '526'
+    def JOBS=24
+    def perlVersion = '528'
     def productionBranch = 'bc528' // controls if we push to the Registry
     def TESTS="t/*.t t/testsuite/C-COMPILED/*/*.t"  // full run
+    //def TESTS="t/*.t" // short version
 
     Map scmVars
     def testResults
@@ -39,17 +41,21 @@ node('docker && jenkins-user') {
             }
 
             bc_image.inside {
-                stage('Setup sandbox') { sh 'sudo ./pre-setup.sh' }
+                stage('Setup sandbox') {
+                    // give it more time...
+                    timeout(time: 5, unit: 'MINUTES') { sh 'sudo ./pre-setup.sh' }
+                    // sh 'sudo ./pre-setup.sh'
+                }
 
                 stage('Makefile.PL') { sh makefileCommands() }
 
                 // pek: the chown is so that the cleanWs() later doesn't have problems removing
                 //   artifacts (that are created during the 'sudo make install')
                 stage('make install') {
-                    String commands = '''
-                        sudo make -j24 install
+                    String commands = """
+                        sudo make -j${JOBS} install
                         sudo chown -R jenkins:jenkins .
-                    '''
+                    """
                     sh commands
                 }
 
@@ -58,7 +64,7 @@ node('docker && jenkins-user') {
                         # smoke compiled tests and t/*.t
                         set +x
                         ## run as root, so we do not skip tests that check \$>
-                        sudo bash -lc "PATH=/usr/local/cpanel/3rdparty/perl/${perlVersion}/bin:\$PATH prove -v -wm -j24 --formatter TAP::Formatter::JUnit ${TESTS}" >junit.xml || /bin/true
+                        sudo bash -lc "PATH=/usr/local/cpanel/3rdparty/perl/${perlVersion}/bin:\$PATH /usr/local/cpanel/3rdparty/bin/prove -v -wm -j${JOBS} --formatter TAP::Formatter::JUnit ${TESTS}" >junit.xml || /bin/true
                     """
 
                     timeout(time: 30, unit: 'MINUTES') { sh commands }
