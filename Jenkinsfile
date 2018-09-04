@@ -13,7 +13,16 @@ node('docker && jenkins-user') {
     def registry_info = registry.getInfo()
 
     try {
-        notify.emailAtEnd([to:'bc@cpanel.net']) {
+        def email
+        // EMAIL is defined at the folder level via the Folder Properties Plugin
+        withFolderProperties {
+            if (env.EMAIL == null) {
+                error "EMAIL must be defined as a Folder Property"
+            }
+            email = env.EMAIL
+        }
+
+        notify.emailAtEnd([to:email]) {
             stage('Setup') {
                 scmVars = checkout scm
                 notifyHipchat(currentBuild.result, scmVars, testResults)
@@ -76,8 +85,12 @@ node('docker && jenkins-user') {
         }
     }
     finally {
-        notifyBitbucket commitSha1: scmVars.GIT_COMMIT
-        notifyHipchat(currentBuild.result, scmVars, testResults)
+        // scmVars will be null if we bomb out before the checkout (e.g. failure to set EMAIL in
+        //   the folder properties)
+        if (scmVars != null) {
+            notifyBitbucket commitSha1: scmVars.GIT_COMMIT
+            notifyHipchat(currentBuild.result, scmVars, testResults)
+        }
         cleanWs()
     }
 }

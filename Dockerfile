@@ -3,7 +3,7 @@ ARG REGISTRY_HOST=dorkus.malorkus.net
 ARG CPVERSION=11.69
 
 FROM ${REGISTRY_HOST}/cpanel-perl/centos7:${CPVERSION}
-MAINTAINER Pax Aurora <pax@cpanel.net>
+LABEL maintainer="Pax Aurora"
 
 ## which: used in the B::C testsuite
 ## gdbm-devel: for '-lgdbm'
