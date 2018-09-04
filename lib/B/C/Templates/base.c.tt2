@@ -282,7 +282,7 @@ static void declare_static_sections() { /* declare our static section 'blocks' t
 [% SET sname = section.$sect.name() -%]
 [% SET lname = "${sname}_list" -%]
 [% NEXT IF lines == 0 -%]
-    declare_static_memory( &[% lname %][0], &[% lname %][[% section.$sect.index %]], sizeof([% lname %][0]) );
+    declare_static_memory( &[% lname %][0], &[% lname %][[% section.$sect.index + 1 %]], sizeof([% lname %][0]) );
 [% END -%]
 
 [% IF section.cowpv.index >= 0 -%]
