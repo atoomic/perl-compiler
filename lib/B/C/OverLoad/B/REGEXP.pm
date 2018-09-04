@@ -19,10 +19,6 @@ sub do_save {
     my $pv  = $sv->PV;
     my $cur = $sv->CUR;
 
-    # this is the original PV saved in the SV.svu_pv preserve it...
-    my $re_pv = $pv;
-    my ( $re_cstr, undef, undef ) = savecowpv($re_pv);
-
     # construct original PV
     $pv =~ s/^(\(\?\^[adluimsx-]*\:)(.*)\)$/$2/;
     $cur -= length( $sv->PV ) - length($pv);
@@ -46,8 +42,7 @@ sub do_save {
         $initpm = init2();
     }
 
-    #svsect()->supdate( $ix, "%s, %Lu, 0x%x, {NULL}", $xpv_sym, $sv->REFCNT, $sv->FLAGS );
-    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {.svu_pv = (char*) %s}", $xpv_sym, $sv->REFCNT, $sv->FLAGS, $re_cstr );
+    svsect()->supdate( $ix, "%s, %Lu, 0x%x, {NULL}", $xpv_sym, $sv->REFCNT, $sv->FLAGS );
     debug( rx => "Saving RX $cstr to sv_list[$ix]" );
 
     # replace sv_any->XPV with struct regexp. need pv and extflags
@@ -55,10 +50,11 @@ sub do_save {
 
     # Re-compile into an SV.
     $initpm->add("PL_hints |= HINT_RE_EVAL;") if ( $sv->EXTFLAGS & RXf_EVAL_SEEN );
-    $initpm->sadd( 'REGEXP* regex_sv = CALLREGCOMP(newSVpvn(%s, %d), 0x%x);', $cstr, $cur, $sv->EXTFLAGS );
+    $initpm->sadd( 'REGEXP* regex_sv = CALLREGCOMP(newSVpvn( %s, %d), 0x%x);', $cstr, $cur, $sv->EXTFLAGS );
     $initpm->add("PL_hints &= ~HINT_RE_EVAL;") if ( $sv->EXTFLAGS & RXf_EVAL_SEEN );
 
-    $initpm->sadd( 'SvANY(%s) = SvANY(regex_sv);', $sym );
+    $initpm->sadd( 'SvANY(%s) = SvANY(regex_sv);', $sym ); # copy the SvAny
+    $initpm->sadd( "((SV*) %s)->sv_u.svu_pv = (char *) SvPV_nolen((SV*)regex_sv);", $sym ); # copy the pv
 
     my $without_amp = $sym;
     $without_amp =~ s/^&//;
@@ -67,13 +63,8 @@ sub do_save {
     #$initpm->sadd( "((XPV*)SvANY(%s))->xpv_len_u.xpvlenu_rx = (struct regexp*)SvANY(regex_sv);", $sym );
 
     $initpm->sadd( "ReANY(%s)->xmg_stash =  %s;",                       $sym, $magic_stash );
-    $initpm->sadd( "ReANY(%s)->xmg_u.xmg_magic =  %s;",                 $sym, $magic );
-
-    #$initpm->sadd( "((SV*) %s)->sv_u.svu_pv = (char*) %s;", $sym, $cstr ); # <--- missing svu_pv
-    # currently: do not set that value => SEGV
-    # at this point 
-    # perl set (?^:[.]) len=8
-
+    $initpm->sadd( "ReANY(%s)->xmg_u.xmg_magic =  %s;",                 $sym, $magic );    
+    
     $initpm->close_block();
 
     return $sym;
