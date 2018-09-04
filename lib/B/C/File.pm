@@ -225,7 +225,10 @@ sub write {
     # op/magic-27839.t sets SIG{WARN} in a begin block and then never releases it.
     eval q{local $SIG{__WARN__} = 'IGNORE'; require Config; require Exporter::Heavy; require Template};
     $INC{'Template.pm'} or die("Can't load Template Toolkit at run time to render the C file.");
-
+    {
+        no warnings;
+        *Template::DESTROY = sub { }; # disabled
+    }
     # some useful options (see below for full list)
     my $config = {
         INCLUDE_PATH => $template_dir,
