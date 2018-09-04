@@ -57,9 +57,13 @@ sub do_save {
 
     my $without_amp = $sym;
     $without_amp =~ s/^&//;
-    $initpm->sadd( "%s.sv_u.svu_rx = (struct regexp*)SvANY(regex_sv);", $without_amp );
+    #$initpm->sadd( "%s.sv_u.svu_rx = (struct regexp*)SvANY(regex_sv);", $without_amp );
+    #$initpm->sadd( "((XPV*)SvANY(%s))->xpv_len_u.xpvlenu_rx = (struct regexp*)SvANY(regex_sv);", $without_amp );
     $initpm->sadd( "ReANY(%s)->xmg_stash =  %s;",                       $sym, $magic_stash );
     $initpm->sadd( "ReANY(%s)->xmg_u.xmg_magic =  %s;",                 $sym, $magic );
+
+    #-           ret_x->sv_u.svu_rx = temp->sv_any;
+    #+            ((XPV*)SvANY(ret_x))->xpv_len_u.xpvlenu_rx = temp->sv_any;
 
     $initpm->close_block();
 
