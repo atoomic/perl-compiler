@@ -375,7 +375,7 @@ define dflags
         printf " SVf_UTF8|SVphv_SHAREKEYS"
     end
     if ($flags & 0x40000000)
-        printf " SVpav_REAL|SVphv_LAZYDEL|SVpbm_VALID|SVrepl_EVAL"
+        printf " SVf_SHORTPV|SVpav_REAL|SVphv_LAZYDEL|SVpbm_VALID|SVrepl_EVAL"
     end
     if ($flags & 0x80000000)
         printf " SVf_IVisUV|SVpav_REIFY|SVphv_HASKFLAGS|SVprv_WEAKREF"
@@ -410,7 +410,13 @@ define dump_defstash
 end
 
 define _show_index_for
-  set $svany = (int) $arg0
+  # reset convenience var or get 'Too many array elements'
+  set $_svany = 0
+  set $name  = 0
+  set $list  = 0
+  set $max   = 0
+
+  set $_svany = (int) $arg0
   set $name  = $arg1
   set $list  = $arg2
   set $max   = (int) $arg3
@@ -419,10 +425,8 @@ define _show_index_for
   set $size  = (int) sizeof($list[0])
   set $last = $first + $max
 
-  #printf "first:%d ; last:%d ; size:%d ; SV:%d", $first, $last, $size, $svany
-
-  if $svany && $svany >= $first && $svany <= $last
-    printf "%s[%d] = ", $name, (int) ( ($svany - $first) / $size )
+  if $_svany && $_svany >= $first && $_svany <= $last
+      printf "%s[%d] = ", $name, (int) ( ($_svany - $first) / $size )
   end
 
 end
