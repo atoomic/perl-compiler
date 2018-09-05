@@ -63,6 +63,10 @@ sub save_baseop {
 
     #my $sibling = ref $op->parent ? $op->parent->save : $op->parent;
 
+    if ( $sibling && $sibling =~ qr{Nullsv} && ref $op->parent ) {
+        $sibling = $op->parent->save;
+    }
+
     # view BASEOP in op.h
     # increase readability by using an array
     my @BASEOP = (
