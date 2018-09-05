@@ -99,15 +99,15 @@ sub do_save {
             #my $cmt = $op->get_action_name($item);
             $action = $item;
 
-            if ( $item == -1 ) { # we should not have any other negative value
-                $field = "{.iv=-1}";
+            if ( $item =~ qr{^-?[0-9]+$} && $item < 0 ) { # -1 should be the only negative known value at this point
+                $field = sprintf( '{.iv=%d}', $item );
             }
             elsif ( $item =~ qr{COWPV} ) {
-                $field = sprintf( "{.pv= (char*) %s}", $item );
+                $field = sprintf( '{.pv= (char*) %s}', $item );
             }
             else {
                 #debug( hv => $op->name . " action $action $cmt" );
-                $field = sprintf( "{.uv=0x%x}", $item );            #  \t/* %s: %u */ , $cmt, $item
+                $field = sprintf( '{.uv=0x%x}', $item );            #  \t/* %s: %u */ , $cmt, $item
             }
 
         }
@@ -239,7 +239,7 @@ sub MULTICONCAT_HEADER_SIZE  {5}    # The number of fields of a multiconcat head
 
 sub aux_list_for_multiconcat {
     my ( $op ) = @_;
-    
+
     my $unused_cv = bless {}, 'B::C';    # no need for multiconcat
     my ( $nargs, $pv_as_sv, @segments ) = $op->aux_list($unused_cv);     # is this complete
 
