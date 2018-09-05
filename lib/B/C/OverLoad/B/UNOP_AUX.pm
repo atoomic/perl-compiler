@@ -17,15 +17,6 @@ sub _clear_stack {
 # hardcoded would require a check to detect this is going to the correct position
 sub OP_AUX_IX {15}
 
-sub MULTICONCAT_IX_NARGS     {0}    # number of arguments
-sub MULTICONCAT_IX_PLAIN_PV  {1}    # non-utf8 constant string
-sub MULTICONCAT_IX_PLAIN_LEN {2}    # non-utf8 constant string length
-sub MULTICONCAT_IX_UTF8_PV   {3}    # utf8 constant string
-sub MULTICONCAT_IX_UTF8_LEN  {4}    # utf8 constant string length
-sub MULTICONCAT_IX_LENGTHS   {5}    # first of nargs+1 const segment lens
-
-sub MULTICONCAT_HEADER_SIZE  {5}    # The number of fields of a multiconcat header
-
 sub do_save {
     my ($op) = @_;
 
@@ -62,36 +53,8 @@ sub do_save {
         @aux_list = $op->aux_list_thr;
     }
     elsif ( $op->name eq 'multiconcat' ) {
-
-        # "a=$a b=$bX"
-        # [
-        #   2,
-        #   'c= d=X',
-        #   2,
-        #   3,
-        #   1
-        # ]
-
-        my $unused_cv = bless {}, 'B::C';    # no need for multiconcat
-        my ( $nargs, $pv_as_sv, @segments )
-            = $op->aux_list($unused_cv);     # is this complete
-                                             # saving the pv as a COWPV
-        my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv);
-
-        my @header = map {0} 1 .. MULTICONCAT_HEADER_SIZE();    # initialize the multiconcat header
-
-        $header[ MULTICONCAT_IX_NARGS() ] = $nargs;
-
-        if ($utf8) {
-            $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;
-        }
-        else {
-            $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym;
-            $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $len;
-        }
-        $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;  # seems to always be set
-
-        @aux_list = ( @header, @segments );
+        my $list = aux_list_for_multiconcat( $op );
+        @aux_list = @$list;
     }
     else {                                            # ithread
             # Usage: B::UNOP_AUX::aux_list(o, cv)
@@ -239,6 +202,9 @@ sub get_action_name {
         $cmt .= ' flag skip' if $idx == 0x10;
         $cmt .= ' flag ref'  if $idx == 0x20;
     }
+    elsif ( $op->name eq 'multiconcat' ) {
+        $cmt .= ' multiconcat';
+    }
     else {
         die "Unknown UNOP_AUX op {$op->name}";
     }
@@ -246,5 +212,54 @@ sub get_action_name {
     return $cmt;
 
 }
+
+sub MULTICONCAT_IX_NARGS     {0}    # number of arguments
+sub MULTICONCAT_IX_PLAIN_PV  {1}    # non-utf8 constant string
+sub MULTICONCAT_IX_PLAIN_LEN {2}    # non-utf8 constant string length
+sub MULTICONCAT_IX_UTF8_PV   {3}    # utf8 constant string
+sub MULTICONCAT_IX_UTF8_LEN  {4}    # utf8 constant string length
+sub MULTICONCAT_IX_LENGTHS   {5}    # first of nargs+1 const segment lens
+
+sub MULTICONCAT_HEADER_SIZE  {5}    # The number of fields of a multiconcat header
+
+=pod
+
+    with multiconcat the string:
+
+        "a=$a b=$bX"
+
+    will become
+        [
+            2,            # nargs
+            'c= d=X',     # string as a single pv
+            2, 3, 1       # length of segments
+        ]
+
+=cut
+
+sub aux_list_for_multiconcat {
+    my ( $op ) = @_;
+    
+    my $unused_cv = bless {}, 'B::C';    # no need for multiconcat
+    my ( $nargs, $pv_as_sv, @segments ) = $op->aux_list($unused_cv);     # is this complete
+
+    # saving the pv as a COWPV
+    my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv);
+
+    my @header = map {0} 1 .. MULTICONCAT_HEADER_SIZE();    # initialize the multiconcat header
+
+    $header[ MULTICONCAT_IX_NARGS() ] = $nargs;
+
+    if ($utf8) {
+        $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;
+    } else {
+        $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym;
+        $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $len;
+    }
+    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;  # seems to always be set
+
+     return [ @header, @segments ];
+}
+
 
 1;
