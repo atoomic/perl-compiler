@@ -71,8 +71,7 @@ sub do_save {
     my $unopaux_item_sect = meta_unopaux_item($list_size);
 
     $unopaux_item_sect->comment(q{length prefix, UNOP_AUX_item * $auxlen });
-    my $uaux_item_ix = $unopaux_item_sect->add(
-        join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
+    my $uaux_item_ix = $unopaux_item_sect->add( join( ', ', qq[{.uv=$auxlen}], @to_be_filled ) );
 
     my $symname = sprintf(
         'meta_unopaux_item%d_list[%d]', $list_size,
@@ -213,12 +212,12 @@ sub get_action_name {
 
 }
 
-sub MULTICONCAT_IX_NARGS     {0}    # number of arguments
-sub MULTICONCAT_IX_PLAIN_PV  {1}    # non-utf8 constant string
-sub MULTICONCAT_IX_PLAIN_LEN {2}    # non-utf8 constant string length
-sub MULTICONCAT_IX_UTF8_PV   {3}    # utf8 constant string
-sub MULTICONCAT_IX_UTF8_LEN  {4}    # utf8 constant string length
-sub MULTICONCAT_IX_LENGTHS   {5}    # first of nargs+1 const segment lens
+sub MULTICONCAT_IX_NARGS     { 0 }    # number of arguments
+sub MULTICONCAT_IX_PLAIN_PV  { 1 }    # non-utf8 constant string
+sub MULTICONCAT_IX_PLAIN_LEN { 2 }    # non-utf8 constant string length
+sub MULTICONCAT_IX_UTF8_PV   { 3 }    # utf8 constant string
+sub MULTICONCAT_IX_UTF8_LEN  { 4 }    # utf8 constant string length
+#sub MULTICONCAT_IX_LENGTHS   { 5 }    # first of nargs+1 const segment lens
 
 sub MULTICONCAT_HEADER_SIZE  {5}    # The number of fields of a multiconcat header
 
@@ -250,15 +249,16 @@ sub aux_list_for_multiconcat {
 
     $header[ MULTICONCAT_IX_NARGS() ] = $nargs;
 
-    if ($utf8) {
-        $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;
-    } else {
+    # always set the UTF8 values
+    $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;
+    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;
+
+    if ( ! $utf8 ) { # only set them when non utf8
         $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym;
         $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $len;
     }
-    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;  # seems to always be set
 
-     return [ @header, @segments ];
+    return [ @header, @segments ];
 }
 
 
