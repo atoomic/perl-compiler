@@ -217,9 +217,9 @@ sub MULTICONCAT_IX_PLAIN_PV  { 1 }    # non-utf8 constant string
 sub MULTICONCAT_IX_PLAIN_LEN { 2 }    # non-utf8 constant string length
 sub MULTICONCAT_IX_UTF8_PV   { 3 }    # utf8 constant string
 sub MULTICONCAT_IX_UTF8_LEN  { 4 }    # utf8 constant string length
-#sub MULTICONCAT_IX_LENGTHS   { 5 }    # first of nargs+1 const segment lens
+#sub MULTICONCAT_IX_LENGTHS   { 5 }    # first of nargs+1 const segment lens - B::C does not need this value
 
-sub MULTICONCAT_HEADER_SIZE  {5}    # The number of fields of a multiconcat header
+sub MULTICONCAT_HEADER_SIZE  { 5 }    # The number of fields of a multiconcat header
 
 =pod
 
@@ -245,18 +245,19 @@ sub aux_list_for_multiconcat {
     # saving the pv as a COWPV
     my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv);
 
-    my @header = map {0} 1 .. MULTICONCAT_HEADER_SIZE();    # initialize the multiconcat header
+    # initialize the multiconcat header: all values to 0
+    my @header = ( 0 ) x MULTICONCAT_HEADER_SIZE();
 
-    $header[ MULTICONCAT_IX_NARGS() ] = $nargs;
-
-    # always set the UTF8 values
-    $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;
-    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;
+    $header[ MULTICONCAT_IX_NARGS() ] = $nargs;           # ix=0
 
     if ( ! $utf8 ) { # only set them when non utf8
-        $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym;
-        $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $len;
+        $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym; # ix=1
+        $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $len;     # ix=2
     }
+
+    # always set the UTF8 values
+    $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;       # ix=3
+    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;          # ix=4
 
     return [ @header, @segments ];
 }
