@@ -73,7 +73,7 @@ sub run {
 
         next if $module =~ qr{^\.};
 
-        my $out = qx{$^X -M$module -e1 2>&1};
+        $out = qx{$^X -M$module -e1 2>&1};
 
         if ( $? == 0 ) {
         	note "===> module $module installed via cpanm...";
