@@ -837,18 +837,6 @@ $_ = <X>;
 print unpack("U*", $_), " ";
 print $_ if /\w/;'
 result[2900]='24610 ö'
-tests[207]='use warnings;
-sub asub { }
-asub(tests => 48);
-my $str = q{0};
-$str =~ /^[ET1]/i;
-{
-    no warnings qw<io deprecated>;
-    print "ok 1\n" if opendir(H, "/tmp");
-    print "ok 2" if open(H, "<", "/etc/passwd");
-}'
-result[207]='ok 1
-ok 2'
 tests[208]='sub MyKooh::DESTROY { print "${^GLOBAL_PHASE} MyKooh " }  my $my =bless {}, MyKooh;
 sub OurKooh::DESTROY { print "${^GLOBAL_PHASE} OurKooh" }our $our=bless {}, OurKooh;'
 if [[ `$PERL -e'print (($] < 5.014)?0:1)'` -gt 0 ]]; then
