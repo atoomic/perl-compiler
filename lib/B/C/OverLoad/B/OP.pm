@@ -58,20 +58,14 @@ sub basop_comment {
 sub save_baseop {
     my $op = shift;
 
-    my $next    = ref $op->next    ? $op->next->save    : $op->next;
-    my $sibling = ref $op->sibling ? $op->sibling->save : $op->sibling;
-
-    #my $sibling = ref $op->parent ? $op->parent->save : $op->parent;
-
-    if ( $sibling && $sibling =~ qr{Nullsv} && ref $op->parent ) {
-        $sibling = $op->parent->save;
-    }
+    my $next    = (ref $op->next    ? $op->next->save    : $op->next) || 'NULL';
+    my $parent = (ref $op->parent ? $op->parent->save : $op->parent) || 'NULL';
 
     # view BASEOP in op.h
     # increase readability by using an array
     my @BASEOP = (
-        '%s' => $next    || 'NULL',    # OP*     op_next;
-        '%s' => $sibling || 'NULL',    # OP*     op_sibparent;\ # instead of op_sibling
+        '%s' => $next,      # OP*     op_next;
+        '%s' => $parent,    # OP*     op_sibparent;\ # instead of op_sibling
         '%s'   => $op->fake_ppaddr,    # OP*     (*op_ppaddr)(pTHX);
         '%u'   => $op->targ,           # PADOFFSET   op_targ;
         '%u'   => $op->type,           # PERL_BITFIELD16 op_type:9;
