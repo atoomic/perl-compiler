@@ -58,14 +58,12 @@ sub basop_comment {
 sub save_baseop {
     my $op = shift;
 
-    my $next    = (ref $op->next    ? $op->next->save    : $op->next) || 'NULL';
-    my $parent = $op->sibparent->save; # this is using our custom C.xs function - consider submit it upstream
-
     # view BASEOP in op.h
     # increase readability by using an array
     my @BASEOP = (
-        '%s' => $next,      # OP*     op_next;
-        '%s' => $parent,    # OP*     op_sibparent; # could be previously op_sibling
+        '%s'   => $op->next->save,          # OP*     op_next;
+        # this is using 'sibparent' method from our custom C.xs function - consider submit it upstream
+        '%s'   => $op->sibparent->save,    # OP*     op_sibparent; # could be previously op_sibling
         '%s'   => $op->fake_ppaddr,    # OP*     (*op_ppaddr)(pTHX);
         '%u'   => $op->targ,           # PADOFFSET   op_targ;
         '%u'   => $op->type,           # PERL_BITFIELD16 op_type:9;

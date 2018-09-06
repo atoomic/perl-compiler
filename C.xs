@@ -747,6 +747,13 @@ op_sibparent(op)
 PPCODE:
      PUSHs(make_op_object(aTHX_ op->op_sibparent ));
 
+#/* unused for now */
+void
+op_bc_next(op)
+        B::OP        op
+PPCODE:
+     PUSHs(make_op_object(aTHX_ op->op_next ));
+
 MODULE = B__C          PACKAGE = B::C
 
 SV*
