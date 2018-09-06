@@ -83,9 +83,23 @@ sub run {
         } 
     }
 
-    #install_tarball("Test2-Suite-0.000115.tar.gz");
+    chdir($start);
+    patch_modules();
 
     return;
+}
+
+sub patch_modules {
+
+	my $session = qx{perldoc -l TAP::Formatter::JUnit::Session};
+	die "cannot find TAP::Formatter::JUnit::Session" unless length $session;
+	chomp $session;
+
+	qx{cp Session.pm $session};
+
+	note "TAP::Formatter::JUnit::Session patched: ", $? == 0 ? 'ok' : 'not ok';
+
+	return;
 }
 
 sub install_tarball {
