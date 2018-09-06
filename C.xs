@@ -402,7 +402,6 @@ CODE:
 OUTPUT:
     RETVAL
 
-
 # Return the contents of the op_aux array as a list of IV/SV/GV/PADOFFSET objects.
 # This version here returns the padoffset of SV/GV under ithreads, and not the
 # SV/GV itself. It also uses simplified mPUSH macros.
@@ -429,65 +428,6 @@ aux_list_thr(o)
             break;
         }
 
-        case OP_MULTICONCAT:
-        {
-                /* stolen from B.xs -- changed the last part for utf8 */
-
-                UNOP_AUX_item *aux = cUNOP_AUXo->op_aux;
-
-                SSize_t nargs;
-                char *p;
-                STRLEN len;
-                U32 utf8 = 0;
-                SV *sv;
-                UNOP_AUX_item *lens;
-
-                /* return (nargs, const string, segment len 0, 1, 2, ...) */
-
-                /* if this changes, this block of code probably needs fixing */
-                assert(PERL_MULTICONCAT_HEADER_SIZE == 5);
-                nargs = aux[PERL_MULTICONCAT_IX_NARGS].ssize;
-                EXTEND(SP, ((SSize_t)(2 + (nargs+1))));
-                PUSHs(sv_2mortal(newSViv((IV)nargs)));
-
-                p   = aux[PERL_MULTICONCAT_IX_PLAIN_PV].pv;
-                len = aux[PERL_MULTICONCAT_IX_PLAIN_LEN].ssize;
-                if (!p) {
-                    p   = aux[PERL_MULTICONCAT_IX_UTF8_PV].pv;
-                    len = aux[PERL_MULTICONCAT_IX_UTF8_LEN].ssize;
-                    utf8 = SVf_UTF8;
-                }
-                sv = newSVpvn(p, len);
-                SvFLAGS(sv) |= utf8;
-                PUSHs(sv_2mortal(sv));
-
-                lens = aux + PERL_MULTICONCAT_IX_LENGTHS;
-                nargs++; /* loop (nargs+1) times */
-                if (0 && utf8) { /* <---- here is the patch */
-                    U8 *p = (U8*) SvPVX(sv);
-                    while (nargs--) {
-                        SSize_t bytes = lens->ssize;
-                        SSize_t chars;
-                        if (bytes <= 0)
-                            chars = bytes;
-                        else {
-                            /* return char lengths rather than byte lengths */
-                            chars = utf8_length(p, p + bytes);
-                            p += bytes;
-                        }
-                        lens++;
-                        PUSHs(sv_2mortal(newSViv(chars)));
-                    }
-                }
-                else {
-                    while (nargs--) {
-                        PUSHs(sv_2mortal(newSViv(lens->ssize)));
-                        lens++;
-                    }
-                }
-
-            break;
-        }
         case OP_MULTIDEREF:
 #  define PUSH_SV(item) PUSHs(make_sv_object(aTHX_ (item)->sv))
             {
