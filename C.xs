@@ -733,6 +733,20 @@ op_folded(op)
 
 #endif
 
+#/*
+#*   op_sibling and op_parent from B.xs are tight but do not return what is in the slot
+#*       op_sibling returns op_sibparent only if op_moresib is set...
+#*       whereas op_parent returns the great,great... parent...
+#*   so a combination of the two could provide the same as this op_sibparent
+#*        i.e.:   op_sibling || op_oarent
+#*/
+
+void
+op_sibparent(op)
+        B::OP        op
+PPCODE:
+     PUSHs(make_op_object(aTHX_ op->op_sibparent ));
+
 MODULE = B__C          PACKAGE = B::C
 
 SV*
