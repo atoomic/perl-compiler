@@ -5,7 +5,7 @@ use strict;
 use B qw/svref_2object/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/unopauxsect init free meta_unopaux_item/;
-use B::C::Helpers qw/is_constant read_utf8_string/;
+use B::C::Helpers qw/is_constant/;
 use B::C::Save qw/savecowpv/;
 
 sub _clear_stack {
@@ -239,31 +239,13 @@ sub MULTICONCAT_HEADER_SIZE  { 5 }    # The number of fields of a multiconcat he
 sub aux_list_for_multiconcat {
     my ( $op ) = @_;
 
-    my $unused_cv = bless {}, 'B::C';    # no need for multiconcat
     # note that the B API aux_list method needs a useless CV
     #   we need to use our own custom version of aux_list for multiconcat
     #   in order to read correctly the content of AUX items when it's utf8
-    my ( $nargs, $pv_as_sv, @segments ) = $op->aux_list( $unused_cv );     # is this complete
+    my ( $nargs, $pv_as_sv, @segments ) = $op->aux_list_thr();     # is this complete
 
     # saving the pv as a COWPV
     my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv);
-
-    if ( $utf8 ) {
-        # adjust segment lengths to get byte lengths (in fact the original value
-        #   which was stored in the AUX list...)
-        #   but B returns it as char length to match the perl SvPV
-        my $ix = 0;
-        my $pos = 0;
-        foreach my $offset ( @segments ) {
-            next if $offset <= 0;
-            my $concatstr = substr( $pv_as_sv, $pos, $offset );
-            my (undef, $segment_byte_length ) = read_utf8_string( $concatstr );
-            $segments[$ix] = $segment_byte_length;
-        } continue {
-            $pos += $offset > 0 ? $offset : -$offset;
-            ++$ix;
-        }
-    }
 
     # initialize the multiconcat header: all values to 0
     my @header = ( 0 ) x MULTICONCAT_HEADER_SIZE();
