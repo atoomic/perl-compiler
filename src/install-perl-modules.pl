@@ -34,12 +34,19 @@ my @Modules = qw{
     Net::SSLeay
     Net::DNS
     Net::LibIDN
+    DBI
+    DBD::SQLite
 
 };
 
 run() unless caller;
 
 sub run {
+
+    if ( $] < 5.028 ) {
+        note "need to run using perl528";
+        exec '/usr/local/cpanel/3rdparty/perl/528/bin/perl', $0;
+    }
 
     my $start = $FindBin::Bin;
 
@@ -54,6 +61,8 @@ sub run {
         chdir($start);
     }
 
+    delete $ENV{PERL5LIB};
+
     $ENV{PATH}
         = '/usr/local/cpanel/3rdparty/perl/528/bin/:/opt/cpanel/perl5/528/bin:'
         . $ENV{PATH};
@@ -62,25 +71,33 @@ sub run {
     chomp $cpanm if $cpanm;
     die unless $cpanm && -x $cpanm;
     foreach my $module (@Modules) {
+        my $out;
+
+        if ( eval qq{require $module; 1} ) {
+            note "module $module is already available $^X";
+            next;
+        }
 
         note "==> install $module via cpanm";
         my $cmd = "$^X $cpanm -v --force --notest $module 2>&1";
-        my $out;
+
         $out = qx{$cmd};
 
         #next if $module eq 'Test2::Bundle::Extended';
-        do { diag "*** cpanm failure for $module\n$out\n**********"; next } unless $? == 0;
+        do { diag "*** cpanm failure for $module\n$out\n**********"; next }
+            unless $? == 0;
 
         next if $module =~ qr{^\.};
 
         $out = qx{$^X -M$module -e1 2>&1};
 
         if ( $? == 0 ) {
-        	note "===> module $module installed via cpanm...";
-        } else {
-        	diag "installation failed for module module: :", $module, 
-        		" using cpanm # $^X -M$module -e1", "\n", $out;
-        } 
+            note "===> module $module installed via cpanm...";
+        }
+        else {
+            diag "installation failed for module module: :", $module,
+                " using cpanm # $^X -M$module -e1", "\n", $out;
+        }
     }
 
     chdir($start);
@@ -91,15 +108,16 @@ sub run {
 
 sub patch_modules {
 
-	my $session = qx{perldoc -l TAP::Formatter::JUnit::Session};
-	die "cannot find TAP::Formatter::JUnit::Session" unless length $session;
-	chomp $session;
+    my $session = qx{perldoc -l TAP::Formatter::JUnit::Session};
+    die "cannot find TAP::Formatter::JUnit::Session" unless length $session;
+    chomp $session;
 
-	qx{cp Session.pm $session};
+    qx{cp Session.pm $session};
 
-	note "TAP::Formatter::JUnit::Session patched: ", $? == 0 ? 'ok' : 'not ok';
+    note "TAP::Formatter::JUnit::Session patched: ",
+        $? == 0 ? 'ok' : 'not ok';
 
-	return;
+    return;
 }
 
 sub install_tarball {
