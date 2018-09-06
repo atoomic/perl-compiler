@@ -1,6 +1,6 @@
 package main;
 
-print "1..5\n";
+print "1..4\n";
 
 our ( $begin, $check, $unitcheck );
 
@@ -19,4 +19,4 @@ eval q{
 };
 
 print "ok 4 - *main::BEGIN is a GV\n" if ref($gv) eq 'B::GV';
-print "ok 5 - &main::BEGIN is a B::SPECIAL\n" if ref($gv->CV) eq 'B::SPECIAL';
+#print "ok 5 - &main::BEGIN is a B::SPECIAL\n" if ref($gv->CV) eq 'B::SPECIAL';
