@@ -255,11 +255,12 @@ sub aux_list_for_multiconcat {
         my $ix = 0;
         my $pos = 0;
         foreach my $offset ( @segments ) {
+            next if $offset <= 0;
             my $concatstr = substr( $pv_as_sv, $pos, $offset );
             my (undef, $segment_byte_length ) = read_utf8_string( $concatstr );
             $segments[$ix] = $segment_byte_length;
         } continue {
-            $pos += $offset;
+            $pos += $offset > 0 ? $offset : -$offset;
             ++$ix;
         }
     }
