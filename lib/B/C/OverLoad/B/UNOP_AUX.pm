@@ -239,8 +239,10 @@ sub MULTICONCAT_HEADER_SIZE  { 5 }    # The number of fields of a multiconcat he
 sub aux_list_for_multiconcat {
     my ( $op ) = @_;
 
-    my $unused_cv = bless {}, 'B::C';    # no need for multiconcat
-    my ( $nargs, $pv_as_sv, @segments ) = $op->aux_list($unused_cv);     # is this complete
+    # note that the B API aux_list method needs a useless CV
+    #   we need to use our own custom version of aux_list for multiconcat
+    #   in order to read correctly the content of AUX items when it's utf8
+    my ( $nargs, $pv_as_sv, @segments ) = $op->aux_list_thr();     # is this complete
 
     # saving the pv as a COWPV
     my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv);
