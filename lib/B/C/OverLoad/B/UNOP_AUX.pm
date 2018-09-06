@@ -252,12 +252,12 @@ sub aux_list_for_multiconcat {
 
     if ( ! $utf8 ) { # only set them when non utf8
         $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym; # ix=1
-        $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $len;     # ix=2
+        $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $cur;     # ix=2
     }
 
     # always set the UTF8 values
     $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;       # ix=3
-    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $len;          # ix=4
+    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $cur;          # ix=4
 
     return [ @header, @segments ];
 }
