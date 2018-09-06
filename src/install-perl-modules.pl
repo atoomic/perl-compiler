@@ -6,14 +6,28 @@ use warnings;
 use FindBin ();
 use Test::More;
 
+our $CWD;
+
+BEGIN {
+    $CWD = $FindBin::Bin;
+}
+
+# list of tarballs to install
 my @TARBALLS = qw{
-    inc-latest-0.500.tar.gz
-    Module-Build-0.4224.tar.gz
     App-cpanminus-1.7044.tar.gz
-    Test-Simple-1.302140.tar.gz
 };
 
+# force to install some modules
+my $FORCE = { map { $_ => 1 } qw{Test::Simple} };
+
+# list of modules installed using cpanm
+# should move them to a cpanfile
 my @Modules = qw{
+    inc::latest
+    Module::Build
+
+    Test::Simple
+
     XML::Parser
     TAP::Formatter::JUnit
 
@@ -36,6 +50,7 @@ my @Modules = qw{
     Net::LibIDN
     DBI
     DBD::SQLite
+    Moose
 
 };
 
@@ -43,42 +58,53 @@ run() unless caller;
 
 sub run {
 
+    # make sure we are run using the perl528
     if ( $] < 5.028 ) {
-        note "need to run using perl528";
+        note "Using perl528 to rerun this script";
         exec '/usr/local/cpanel/3rdparty/perl/528/bin/perl', $0;
     }
 
-    my $start = $FindBin::Bin;
-
-    note "start: ", $start;
-
-    note explain \@TARBALLS;
-    foreach my $tarball (@TARBALLS) {
-        note $tarball;
-        die qq[Fail to install perl module $tarball\n]
-            unless install_tarball($tarball);
-
-        chdir($start);
-    }
-
+    # setup env
     delete $ENV{PERL5LIB};
 
     $ENV{PATH}
         = '/usr/local/cpanel/3rdparty/perl/528/bin/:/opt/cpanel/perl5/528/bin:'
         . $ENV{PATH};
 
+    note "== START == $0 at ", scalar localtime();
+    install_perl_modules();
+    note "== END == $0 at ", scalar localtime();
+
+    return;
+}
+
+sub install_perl_modules {
+
+    _install_tarballs();
+    _install_using_cpanm();
+
+    patch_modules();
+
+    return;
+}
+
+sub _install_using_cpanm {
+
     my $cpanm = qx{which cpanm};
+
     chomp $cpanm if $cpanm;
     die unless $cpanm && -x $cpanm;
+
     foreach my $module (@Modules) {
         my $out;
 
-        if ( eval qq{require $module; 1} ) {
-            note "module $module is already available $^X";
+        if ( !$FORCE->{$module} && eval qq{require $module; 1} ) {
+            note "==> module $module is already available";
             next;
         }
 
-        note "==> install $module via cpanm";
+        note "==> installing $module via cpanm",
+            $FORCE->{$module} ? ' [force]' : '';
         my $cmd = "$^X $cpanm -v --force --notest $module 2>&1";
 
         $out = qx{$cmd};
@@ -92,7 +118,7 @@ sub run {
         $out = qx{$^X -M$module -e1 2>&1};
 
         if ( $? == 0 ) {
-            note "===> module $module installed via cpanm...";
+            note "module $module installed via cpanm...";
         }
         else {
             diag "installation failed for module module: :", $module,
@@ -100,15 +126,27 @@ sub run {
         }
     }
 
-    chdir($start);
-    patch_modules();
+    chdir($CWD);
+
+    return;
+}
+
+sub _install_tarballs {
+
+    foreach my $tarball (@TARBALLS) {
+        note $tarball;
+        die qq[Fail to install perl module $tarball\n]
+            unless install_from_tarball($tarball);
+
+        chdir($CWD);
+    }
 
     return;
 }
 
 sub patch_modules {
 
-    my $session = qx{perldoc -l TAP::Formatter::JUnit::Session};
+    my $session = qx{$^Xdoc -l TAP::Formatter::JUnit::Session};
     die "cannot find TAP::Formatter::JUnit::Session" unless length $session;
     chomp $session;
 
@@ -120,10 +158,10 @@ sub patch_modules {
     return;
 }
 
-sub install_tarball {
+sub install_from_tarball {
     my ($tarball) = @_;
 
-    note "installing $tarball";
+    note "==> Installing $tarball from tarball";
     my $dir = $tarball;
 
     if ( -d $dir ) {
@@ -131,7 +169,7 @@ sub install_tarball {
         qx{rm -rf $dir};
     }
 
-    system(qq{tar xvzf $tarball}) == 0 or return;
+    system(qq{tar xvzf $tarball >/dev/null}) == 0 or return;
 
     $dir =~ s{\Q.tar.gz\E$}{};
 
@@ -140,7 +178,7 @@ sub install_tarball {
     my @CMDS;
 
     if ( -e 'Makefile.PL' ) {
-        note 'Makefile.PL';
+        note 'using Makefile.PL';
         @CMDS = (
             qq{$^X Makefile.PL INSTALLDIRS=vendor},
             qq{make},
@@ -150,7 +188,7 @@ sub install_tarball {
         );
     }
     elsif ( -e 'Build.PL' ) {
-        note 'Build.PL';
+        note 'using Build.PL';
         @CMDS = (
             qq{$^X Build.PL},
             qq{./Build},
@@ -165,7 +203,7 @@ sub install_tarball {
     }
 
     foreach my $cmd (@CMDS) {
-        note "RUN: $cmd";
+        note "- $cmd";
         my $out = qx{$cmd 2>&1};
         if ( $? != 0 || $out =~ qr{^ERROR} )
         {    # Build do not set the status code correctly
