@@ -14,7 +14,13 @@ BEGIN {
 
 # list of tarballs to install
 my @TARBALLS = qw{
+
+    inc-latest-0.500.tar.gz
+    Module-Build-0.4224.tar.gz
+    Test-Simple-1.302140.tar.gz
+
     App-cpanminus-1.7044.tar.gz
+
 };
 
 # force to install some modules
@@ -23,10 +29,6 @@ my $FORCE = { map { $_ => 1 } qw{Test::Simple} };
 # list of modules installed using cpanm
 # should move them to a cpanfile
 my @Modules = qw{
-    inc::latest
-    Module::Build
-
-    Test::Simple
 
     XML::Parser
     TAP::Formatter::JUnit
