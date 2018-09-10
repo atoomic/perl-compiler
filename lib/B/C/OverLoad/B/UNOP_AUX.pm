@@ -240,26 +240,28 @@ sub aux_list_for_multiconcat {
     my ( $op ) = @_;
 
     # note that the B API aux_list method needs a useless CV
-    #   we need to use our own custom version of aux_list for multiconcat
-    #   in order to read correctly the content of AUX items when it's utf8
-    my ( $nargs, $pv_as_sv, @segments ) = $op->aux_list_thr();     # is this complete
-
-    # saving the pv as a COWPV
-    my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv);
+    # we are using our own custom version of aux_list for multiconcat
+    # (required to read content correctly when the string is utf8)
+    #   - it returns the plain PV & the utf8 PV (the original B function only return one PV)
+    #   - it also returns the raw contents of the aux slots (@segments part) without converting it
+    my ( $nargs, $pv_as_sv_plain, $pv_as_sv_utf8, @segments ) = $op->aux_list_thr();     # is this complete
 
     # initialize the multiconcat header: all values to 0
     my @header = ( 0 ) x MULTICONCAT_HEADER_SIZE();
 
     $header[ MULTICONCAT_IX_NARGS() ] = $nargs;           # ix=0
 
-    if ( ! $utf8 ) { # only set them when non utf8
+    if ( defined $pv_as_sv_plain ) {
+        my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv_plain);
         $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym; # ix=1
         $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $cur;     # ix=2
     }
 
-    # always set the UTF8 values
-    $header[ MULTICONCAT_IX_UTF8_PV() ] = $savesym;       # ix=3
-    $header[ MULTICONCAT_IX_UTF8_LEN() ] = $cur;          # ix=4
+    if ( defined $pv_as_sv_utf8 ) {
+        my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv_utf8);
+        $header[ MULTICONCAT_IX_UTF8_PV() ]  = $savesym; # ix=3
+        $header[ MULTICONCAT_IX_UTF8_LEN() ] = $cur;     # ix=4
+    }
 
     return [ @header, @segments ];
 }

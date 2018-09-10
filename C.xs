@@ -431,7 +431,12 @@ aux_list_thr(o)
 
         case OP_MULTICONCAT:
         {
-                /* stolen from B.xs -- changed the last part for utf8 */
+                /* stolen from B.xs
+                    - always return the plain & the utf8 strings
+                        (do not try to be smart to return one or the other)
+                    - always return all segments as they are
+                    (view op/evalbytes.t unit test)
+                */
 
                 UNOP_AUX_item *aux = cUNOP_AUXo->op_aux;
 
@@ -450,40 +455,34 @@ aux_list_thr(o)
                 EXTEND(SP, ((SSize_t)(2 + (nargs+1))));
                 PUSHs(sv_2mortal(newSViv((IV)nargs)));
 
-                p   = aux[PERL_MULTICONCAT_IX_PLAIN_PV].pv;
-                len = aux[PERL_MULTICONCAT_IX_PLAIN_LEN].ssize;
-                if (!p) {
+                {   /* the plain string slots */
+                    p   = aux[PERL_MULTICONCAT_IX_PLAIN_PV].pv;
+                    len = aux[PERL_MULTICONCAT_IX_PLAIN_LEN].ssize;
+                    if ( p ) {
+                        PUSHs(sv_2mortal(newSVpvn(p, len)));
+                    } else {
+                        PUSHs(&PL_sv_undef);
+                    }
+                }
+
+                {   /* the utf8 slots */
                     p   = aux[PERL_MULTICONCAT_IX_UTF8_PV].pv;
                     len = aux[PERL_MULTICONCAT_IX_UTF8_LEN].ssize;
-                    utf8 = SVf_UTF8;
+                    if ( p ) {
+                        sv = newSVpvn(p, len);
+                        SvFLAGS(sv) |= utf8;
+                        PUSHs(sv_2mortal(sv));
+                    } else {
+                        PUSHs(&PL_sv_undef);
+                    }
                 }
-                sv = newSVpvn(p, len);
-                SvFLAGS(sv) |= utf8;
-                PUSHs(sv_2mortal(sv));
 
                 lens = aux + PERL_MULTICONCAT_IX_LENGTHS;
                 nargs++; /* loop (nargs+1) times */
-                if (0 && utf8) { /* <---- here is the patch */
-                    U8 *p = (U8*) SvPVX(sv);
-                    while (nargs--) {
-                        SSize_t bytes = lens->ssize;
-                        SSize_t chars;
-                        if (bytes <= 0)
-                            chars = bytes;
-                        else {
-                            /* return char lengths rather than byte lengths */
-                            chars = utf8_length(p, p + bytes);
-                            p += bytes;
-                        }
-                        lens++;
-                        PUSHs(sv_2mortal(newSViv(chars)));
-                    }
-                }
-                else {
-                    while (nargs--) {
-                        PUSHs(sv_2mortal(newSViv(lens->ssize)));
-                        lens++;
-                    }
+
+                while (nargs--) {
+                    PUSHs(sv_2mortal(newSViv(lens->ssize)));
+                    lens++;
                 }
 
             break;
