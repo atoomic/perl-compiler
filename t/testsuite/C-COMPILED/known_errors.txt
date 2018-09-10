@@ -46,7 +46,6 @@ op/method.t                        TESTS     HV_STATIC: plan no longer fails in 
 op/override.t                      COMPAT    crazy test which override CORE::GLOBAL::require @BEGIN
 op/reset.t                         TESTS     GH #52 - smartmatch ?...?
 op/sprintf2.t                      SKIP      Tests are in sequence - https://github.com/CpanelInc/perl-compiler/issues/45
-op/stash.t                         TESTS     BC issue #221 - delete is not anonymizing the returned sub
 op/sub.t                           TESTS     GH #56 - state variable
 op/sub_lval.t                      TESTS     BC issue #277 - sub declaration with :lvalue should apply it to XSUBs
 op/svleak.t                        COMPAT    This test uses XS::APItest, which we don't install during perl install?
