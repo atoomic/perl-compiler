@@ -149,6 +149,7 @@ sub _install_tarballs {
 
 sub patch_modules {
 
+    # TAP::Formatter::JUnit::Session
     my $session = qx{$^Xdoc -l TAP::Formatter::JUnit::Session};
     die "cannot find TAP::Formatter::JUnit::Session" unless length $session;
     chomp $session;
@@ -157,6 +158,24 @@ sub patch_modules {
 
     note "TAP::Formatter::JUnit::Session patched: ",
         $? == 0 ? 'ok' : 'not ok';
+
+    # DBD::SQLite
+    my $dbd_sqlite = qx{perldoc -l DBD::SQLite};
+    if ($dbd_sqlite) {
+        chomp $dbd_sqlite;
+        my $c = qx{grep -c XSLoader $dbd_sqlite};
+        chomp $c;
+        if ( $c == 0 ) {
+            my $out
+                = qx{patch -i DBD-SQLite-0002-use-XSLoader.patch $dbd_sqlite 2>&1};
+            if ( $? == 0 ) {
+                note "Patched DBD::SQLite: $dbd_sqlite";
+            }
+            else {
+                diag "Failed to patch DBD::SQLite:\n", $out;
+            }
+        }
+    }
 
     return;
 }
