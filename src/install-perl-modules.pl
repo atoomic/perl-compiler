@@ -53,6 +53,7 @@ my @Modules = qw{
     DBI
     DBD::SQLite
     Moose
+    IO::Scalar
 
 };
 
