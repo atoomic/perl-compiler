@@ -686,13 +686,11 @@ U32 RX_NPARENS(rx)
 
 MODULE = B  PACKAGE = B::MAGIC PREFIX = MG_
 
-U32
+void
 MG_OBJ_PTR(mg)
     B::MAGIC    mg
-    CODE:
-    RETVAL = mg ? mg->mg_obj : 0;
-    OUTPUT:
-        RETVAL
+    PPCODE:
+        PUSHs(sv_2mortal(newSVuv( mg ? PTR2UV(mg->mg_obj) : 0 )));
 
 MODULE = B     PACKAGE = B::SV        PREFIX = Sv
 
