@@ -58,11 +58,11 @@ my $prog =    q~
      BEGIN {
          unless (-d 'blib') {
              chdir 't' if -d 't';
-             @INC = '../lib';
+             unshift @INC,  '../lib';
          }
      }
      use utf8;
-     use open qw( :utf8 :std );
+     binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
 
      @숩cਲꩋ::ISA = "ｌㅔf";
      @ｌㅔf::ISA = "톺ĺФț";
@@ -86,7 +86,7 @@ my $prog =    q~
    ~ =~ s\__code__\$$_{code}\r; #\
 utf8::encode($prog);
  fresh_perl_is
-  $prog,
+  $prog, 
   "Bow-wow!\nBow-wow!\n",
    {},
   "replacing packages by $$_{name} updates isa caches";
@@ -120,11 +120,11 @@ for(
      BEGIN {
          unless (-d 'blib') {
              chdir 't' if -d 't';
-             @INC = '../lib';
+             unshift @INC,  '../lib';
          }
      }
      use utf8;
-     use open qw( :utf8 :std );
+     binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
      @숩cਲꩋ::ISA = "ｌㅔf::Side";
      @ｌㅔf::Side::ISA = "톺ĺФț";
 
@@ -185,11 +185,11 @@ for(
      BEGIN {
          unless (-d 'blib') {
              chdir 't' if -d 't';
-             @INC = '../lib';
+             unshift @INC,  '../lib';
          }
      }
       use utf8;
-      use open qw( :utf8 :std );
+      binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
       use Encode ();
 
       if (grep /\P{ASCII}/, @ARGV) {
@@ -221,11 +221,11 @@ for(
       BEGIN {
          unless (-d 'blib') {
              chdir 't' if -d 't';
-             @INC = '../lib';
+             unshift @INC,  '../lib';
          }
       }
       use utf8;
-      use open qw( :utf8 :std );
+      binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
       use Encode ();
 
       if (grep /\P{ASCII}/, @ARGV) {
@@ -305,25 +305,25 @@ my $prog =    q~#!perl -w
      BEGIN {
          unless (-d 'blib') {
              chdir 't' if -d 't';
-             @INC = '../lib';
+             unshift @INC,  '../lib';
          }
      }
      use utf8;
-     use open qw( :utf8 :std );
+     binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
      @펱ᑦ::ISA = "T잌ዕ";
      @T잌ዕ::ISA = "Bᛆヶṝ";
-
+     
      sub Bᛆヶṝ::Ｓᑊeಅḱ { print "Woof!\n" }
      sub lȺt랕ᚖ::Ｓᑊeಅḱ { print "Bow-wow!\n" }
-
+     
      my $pet = bless [], "펱ᑦ";
-
+     
      $pet->Ｓᑊeಅḱ;
-
+     
      sub ດƓ::Ｓᑊeಅḱ { print "Hello.\n" } # strange ດƓ!
      @ດƓ::ISA = 'lȺt랕ᚖ';
      *T잌ዕ:: = delete $::{'ດƓ::'};
-
+     
      $pet->Ｓᑊeಅḱ;
    ~;
 utf8::encode($prog);
