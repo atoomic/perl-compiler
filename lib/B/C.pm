@@ -219,13 +219,18 @@ sub cleanup_stashes {
     # STATIC_HV - need more love to make it dynamic
     # preserve the file location but remove our bloat and the special -e to avoid a reparse
     {
-        my @files_to_delete = qw{
-          /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/O.pm
-          /usr/local/cpanel/3rdparty/perl/524/lib64/perl5/cpanel_lib/x86_64-linux-64int/B/C.pm
-          -e
-        };
+        my $o_file = $INC{'O.pm'};
+        die q[Cannot find O.pm file using %INC] unless $o_file && -f $o_file;
+        my $bc_file = $INC{'B/C.pm'};
+        die qq[Cannot find B/C.pm file] unless $bc_file && -f $bc_file;
+
+        my @files_to_delete = qw{-e};
+        push @files_to_delete, $o_file, $bc_file;
+
         if ( skip_B() ) {
-            push @files_to_delete, '/usr/local/cpanel/3rdparty/perl/524/lib64/perl5/5.24.1/x86_64-linux-64int/B.pm';
+            my $b_file = $INC{'B.pm'};
+            die qq[Cannot find B.pm file] unless $b_file && -f $b_file;
+            push @files_to_delete, $b_file;
         }
 
         foreach my $f ( map { q{_<} . $_ } @files_to_delete ) {
