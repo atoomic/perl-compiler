@@ -2,7 +2,7 @@ package B::GV;
 
 use strict;
 
-use B qw/svref_2object/;
+use B qw/svref_2object SVf_UTF8/;
 use B::C::Debug qw/debug verbose/;
 use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
 use B::C::Save qw/savecowpv/;
@@ -400,7 +400,8 @@ sub save_gv_io {
             my @read_data = <$fh>;
             my $data = join '', @read_data;
 
-            return $gvio->save_io_and_data( $fullname, $data );
+            my $is_utf8 = $gv->FLAGS | SVf_UTF8; # check if the package name is using utf8 or not
+            return $gvio->save_io_and_data( $fullname, $is_utf8, $data );
         }
 
         # Houston we have a problem there ?

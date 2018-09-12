@@ -7,12 +7,14 @@ use B::C::Save qw/savecowpv/;
 use B::C::File qw/init init2 svsect xpviosect/;
 
 sub save_io_and_data {
-    my ( $io, $globname, $data ) = @_;
+    my ( $io, $globname, $is_utf8, $data ) = @_;
 
     my $ref = svref_2object( \$data )->save;
 
+    my $use_utf8 = $is_utf8 ? 'use utf8; ' : '';
+
     # force inclusion of PerlIO::scalar as it was loaded in BEGIN. ?
-    init2()->add_eval( sprintf 'open(%s, \'<:scalar\', \\\\$%s);', $globname, $globname );
+    init2()->add_eval(  sprintf( '%sopen(%s, \'<:scalar\', \\\\$%s);', $use_utf8, $globname, $globname ) );
 
     #init()->pre_destruct( sprintf 'eval_pv("close %s;", 1);', $globname );    # is this really required ?
 
