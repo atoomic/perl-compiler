@@ -18,9 +18,10 @@ cd src
 # we now whave some custom RPMs available install and use them if possible
 SRC="https://vmware-manager.dev.cpanel.net/RPM/11.78/centos/7/x86_64"
 rpm -Uv \
-    "$SRC/cpanel-perl-528-DBI-1.641-1.cp1178.x86_64.rpm" \
-    "$SRC/cpanel-perl-528-DBD-SQLite-1.58-1.cp1178.x86_64.rpm" \
-    "$SRC/cpanel-perl-528-DBD-Pg-3.7.4-1.cp1178.x86_64.rpm"
+    $SRC/cpanel-perl-528-DBI-1.641-1.cp1178.x86_64.rpm \
+    $SRC/cpanel-perl-528-DBD-SQLite-1.58-1.cp1178.x86_64.rpm \
+    $SRC/cpanel-perl-528-DBD-Pg-3.7.4-1.cp1178.x86_64.rpm \
+    $SRC/cpanel-perl-528-DBD-mysql-4.046_01-1.cp1178.x86_64.rpm
 
 #/usr/local/cpanel/3rdparty/bin/perl528 -MTAP::Formatter::JUnit -E "say q[can find TAP::Formatter::JUnit]; use Test::More; note explain \%INC"
 
