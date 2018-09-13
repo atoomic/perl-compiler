@@ -96,3 +96,4 @@ src/Module-Build-*/
 src/inc-latest-*/
 src/App-cpanminus-*/
 src/Test-Simple-*/
+known_errors_delta.txt
