@@ -870,6 +870,21 @@ static void dl_init(pTHX)
     [% END %]
 }
 
+[% IF XS.need_extra_xs_call() %]
+static void bootstrap_call_extra_CVs(pTHX);
+static void bootstrap_call_extra_CVs(pTHX)
+{
+    dSP;
+
+    PUSHMARK(SP);
+
+    [% FOREACH cvname IN XS.get_extra_CVs_boot_list() -%]
+    call_sv(MUTABLE_SV(get_cvs("[% cvname %]", 0)), G_DISCARD|G_NOARGS);
+    SPAGAIN;
+    [% END %]
+}
+[% END %]
+
 [% IF Signals.need_init -%]
 static void bc_init_signals() {
 
@@ -1038,6 +1053,11 @@ main(int argc, char **argv, char **env)
 
     /* link the CVs to the bootstrapped ones */
     perl_init_bootstraplink( aTHX );
+
+    [% IF XS.need_extra_xs_call() %]
+    /* some XS modules need to call an additional CV at boot (like Encode::onBOOT) */
+    bootstrap_call_extra_CVs( aTHX );
+    [% END %]
 
     /* We need to output evals after dl_init, in init2  */
     [% FOREACH eval_pv IN all_eval_pvs %]
