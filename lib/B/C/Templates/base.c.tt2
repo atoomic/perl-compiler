@@ -530,7 +530,7 @@ static void init_pl_strtab(pTHX) {
         HE  **oentry;
         HEK  *hek_struct;
 
-        //HvMAX(PL_strtab) = [% PL_strtab_max - 1 %];
+        HvMAX(PL_strtab) = [% PL_strtab_max - 1 %];
         HvTOTALKEYS(PL_strtab) = [% section.sharedhe.index + 1 %];
         SvREFCNT(PL_strtab) = 99999;
 
