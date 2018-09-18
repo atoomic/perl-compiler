@@ -859,6 +859,12 @@ CODE:
 OUTPUT:
     RETVAL
 
+SV*
+strtab()
+    CODE:
+        RETVAL = newRV_inc((SV*)PL_strtab);
+    OUTPUT:
+        RETVAL
 
 BOOT:
 {
