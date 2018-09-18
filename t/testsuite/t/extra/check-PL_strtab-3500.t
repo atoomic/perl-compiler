@@ -1,0 +1,1 @@
+check-PL_strtab.t
