@@ -234,16 +234,48 @@ sub do_save {
     return $sym;
 }
 
+# sub nextPowerOf2 {
+#     my ( $n ) = @_;
+
+#     my $count = 0;
+
+#     return $n if ( $n && ! ($n & ($n - 1) ) );
+
+#     while ($n != 0) {
+#         $n >>= 1;
+#         ++$count;
+#     }
+
+#     return 1 << $count;
+# }
+
+my $_cache_hmax = {};
+
 sub get_max_hash_from_keys {
     my ( $keys, $default ) = @_;
+
+    if ( defined $default ) {    # used for PL_strtab
+        return $default if !$keys || $keys <= $default;
+    }
+
     $default ||= 7;
 
-    return $default if !$keys or $keys <= $default;    # default hash max value
+    return $default if !$keys;
 
-    return 2**( int( log($keys) / log(2) ) + 1 ) - 1;
+    my $cache_key = $keys . '_' . $default;    # just there to avoid hash collision with PL_strtab
+
+    # use cache if available
+    return $_cache_hmax->{$cache_key} if $_cache_hmax->{$cache_key};
+
+    # do not try to be smart there... just use B to get the accurate value...
+    my %h   = map { $_ => 1 } 1 .. $keys;
+    my $obj = svref_2object( \%h );
+    my $max = $obj->MAX;
+    undef %h;                                  # force destruction otherwise we could recycle it
+    return $_cache_hmax->{$cache_key} = $max;
 }
 
-sub savestashpv {                                      # save a stash from a string (pv)
+sub savestashpv {                              # save a stash from a string (pv)
     my $name = shift;
     no strict 'refs';
     return svref_2object( \%{ $name . '::' } )->save;
