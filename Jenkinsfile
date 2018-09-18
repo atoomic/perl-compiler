@@ -155,6 +155,8 @@ String makefileCommands() {
     return '''
         set +x
         /usr/local/cpanel/3rdparty/bin/perl -E 'say "# using cpanel perl version ", $]'
+        rm -rf t/testsuite/t/extra/check-PL_strtab*
         /usr/local/cpanel/3rdparty/bin/perl Makefile.PL installdirs=vendor
+        git checkout t
     '''
 }
