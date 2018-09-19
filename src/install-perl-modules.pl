@@ -43,17 +43,19 @@ my @Modules = qw{
     Capture::Tiny
     Template::Toolkit
 
+
+    Class::Accessor
+    DBD::SQLite
+    DBI
     EV
-    IO::Socket::SSL
+    IO::Scalar
     IO::Socket::INET6
+    IO::Socket::SSL
     JSON::XS
-    Net::SSLeay
+    Moose
     Net::DNS
     Net::LibIDN
-    DBI
-    DBD::SQLite
-    Moose
-    IO::Scalar
+    Net::SSLeay
 
 };
 
