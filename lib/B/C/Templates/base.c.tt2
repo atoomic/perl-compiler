@@ -348,7 +348,6 @@ static void HvSETUP(HV* hv, U32 size, bool has_ook, SV* backref) {
 
     /* setting the hash array to the HV (in sv_list) in sv_any */
     HvARRAY(hv) = (HE **) array;
-    HvMAX(hv) = size - 1; /* set the max */
 
     /* set the backrefrence for HV which is stored in AUX (in magic for regular SVs) */
     /* do not check if backref is defined or not */
