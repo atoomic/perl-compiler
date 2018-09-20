@@ -85,7 +85,7 @@ static const char* const opclassnames[] = {
 
 typedef struct {
     int		x_walkoptree_debug;	/* Flag for walkoptree debug hook */
-    SV *	x_specialsv_list[7];
+    SV *	x_specialsv_list[8];
 } my_cxt_t;
 
 START_MY_CXT
@@ -219,14 +219,14 @@ make_sv_object(pTHX_ SV *sv)
     dMY_CXT;
 
     for (iv = 0; iv < (IV)(sizeof(specialsv_list)/sizeof(SV*)); iv++) {
-	if (sv == specialsv_list[iv]) {
-	    type = "B::SPECIAL";
-	    break;
-	}
+        if (sv == specialsv_list[iv]) {
+            type = "B::SPECIAL";
+            break;
+        }
     }
     if (!type) {
-	type = svclassnames[SvTYPE(sv)];
-	iv = PTR2IV(sv);
+	   type = svclassnames[SvTYPE(sv)];
+	   iv = PTR2IV(sv);
     }
     sv_setiv(newSVrv(arg, type), iv);
     return arg;
@@ -889,8 +889,9 @@ BOOT:
       specialsv_list[1] = &PL_sv_undef;
       specialsv_list[2] = &PL_sv_yes;
       specialsv_list[3] = &PL_sv_no;
-      specialsv_list[4] = (SV *) pWARN_ALL;
-      specialsv_list[5] = (SV *) pWARN_NONE;
-      specialsv_list[6] = (SV *) pWARN_STD;
+      specialsv_list[4] = &PL_sv_zero;
+      specialsv_list[5] = (SV *) pWARN_ALL;
+      specialsv_list[6] = (SV *) pWARN_NONE;
+      specialsv_list[7] = (SV *) pWARN_STD;
     }
 }
