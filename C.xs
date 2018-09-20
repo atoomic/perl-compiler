@@ -475,6 +475,19 @@ aux_list_thr(o)
                     } else {
                         PUSHs(&PL_sv_undef);
                     }
+
+     /* * If the string has different plain and utf8 representations
+     *   (e.g. "\x80"), then then aux[PERL_MULTICONCAT_IX_PLAIN_PV/LEN]]
+     *   holds the plain rep, while aux[PERL_MULTICONCAT_IX_UTF8_PV/LEN]
+     *   holds the utf8 rep, and there are 2 sets of segment lengths,
+     *   with the utf8 set following after the plain set.
+     */
+                    if (
+                        aux[PERL_MULTICONCAT_IX_PLAIN_PV].pv
+                        && aux[PERL_MULTICONCAT_IX_UTF8_PV].pv
+                        && aux[PERL_MULTICONCAT_IX_UTF8_PV].pv != aux[PERL_MULTICONCAT_IX_PLAIN_PV].pv ) {
+                            nargs += 2;
+                    }
                 }
 
                 lens = aux + PERL_MULTICONCAT_IX_LENGTHS;
