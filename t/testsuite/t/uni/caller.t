@@ -5,8 +5,9 @@ BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
     set_up_inc('../lib');
-    plan( tests => 18 );
 }
+
+plan( tests => 18 );
 
 use utf8;
 use open qw( :utf8 :std );
