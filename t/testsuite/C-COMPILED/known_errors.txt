@@ -66,7 +66,6 @@ re/regexp_nonull.t                 COMPAT    uses XS::APItest - for internal use
 re/rxcode.t                        TESTS     BC issue #295 - (?{}) should have its own lexical scope
 re/subst_amp.t                     TESTS     BC issue #295 - (?{}) should have its own lexical scope
 uni/cache.t                        TESTS     GH #66 - We are explicitly clearing Cache to get B::C to work for now.
-uni/caller.t                       PLAN      BC issue #221 - delete is not anonymizing the returned sub
 uni/chr.t                          COMPAT    BC issue #283 - deprecated "encoding" pragma
 uni/greek.t                        COMPAT    BC issue #283 - deprecated "encoding" pragma
 uni/gv.t                           TESTS     GH #67 - improper utf8 warnings emitted during bad sprintf
