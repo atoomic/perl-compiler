@@ -15,13 +15,12 @@ sub _clear_stack {
 }
 
 # hardcoded would require a check to detect this is going to the correct position
-sub OP_AUX_IX {15}
+sub OP_AUX_IX { 15 }
 
 sub do_save {
     my ($op) = @_;
 
-    _clear_stack()
-        ;    # avoid a weird B (or B::C) issue when calling aux_list_thr
+    _clear_stack();                 # avoid a weird B (or B::C) issue when calling aux_list_thr
 
     unopauxsect()->comment_for_op("first, aux");
     my ( $ix, $sym ) = unopauxsect()->reserve( $op, "OP*" );
@@ -35,9 +34,9 @@ sub do_save {
     my @aux_list;
     if ( $op->name eq 'argelem' ) {
 
-      # argelem has no aux_list, it's stealing the pointer to save one integer
-      # from pp.c for PP(pp_argelem)
-      #      IV ix = PTR2IV(cUNOP_AUXo->op_aux);
+        # argelem has no aux_list, it's stealing the pointer to save one integer
+        # from pp.c for PP(pp_argelem)
+        #      IV ix = PTR2IV(cUNOP_AUXo->op_aux);
 
         my $op_aux = $op->aux_ptr2iv // 0;
         unopauxsect()->update_field( $ix, OP_AUX_IX(), $op_aux );
@@ -53,11 +52,11 @@ sub do_save {
         @aux_list = $op->aux_list_thr;
     }
     elsif ( $op->name eq 'multiconcat' ) {
-        my $list = aux_list_for_multiconcat( $op );
+        my $list = aux_list_for_multiconcat($op);
         @aux_list = @$list;
     }
-    else {                                            # ithread
-            # Usage: B::UNOP_AUX::aux_list(o, cv)
+    else {    # ithread
+              # Usage: B::UNOP_AUX::aux_list(o, cv)
         die "ithreads";
         @aux_list = $op->aux_list;    # GH#283, GH#341
     }
@@ -65,7 +64,7 @@ sub do_save {
     #### Saving the regular AUX LIST
 
     my $auxlen = scalar @aux_list;
-    my @to_be_filled = map {0} 1 .. $auxlen;    #
+    my @to_be_filled = map { 0 } 1 .. $auxlen;    #
 
     my $list_size         = $auxlen + 1;
     my $unopaux_item_sect = meta_unopaux_item($list_size);
@@ -98,7 +97,7 @@ sub do_save {
             #my $cmt = $op->get_action_name($item);
             $action = $item;
 
-            if ( $item =~ qr{^-?[0-9]+$} && $item < 0 ) { # -1 should be the only negative known value at this point
+            if ( $item =~ qr{^-?[0-9]+$} && $item < 0 ) {    # -1 should be the only negative known value at this point
                 $field = sprintf( '{.iv=%d}', $item );
             }
             elsif ( $item =~ qr{COWPV} ) {
@@ -106,21 +105,20 @@ sub do_save {
             }
             else {
                 #debug( hv => $op->name . " action $action $cmt" );
-                $field = sprintf( '{.uv=0x%x}', $item );            #  \t/* %s: %u */ , $cmt, $item
+                $field = sprintf( '{.uv=0x%x}', $item );     #  \t/* %s: %u */ , $cmt, $item
             }
 
         }
         else {
-# const and sv already at compile-time, gv deferred to init-time.
-# testcase: $a[-1] -1 as B::IV not as -1
-# hmm, if const ensure that candidate CONSTs have been HEKified. (pp_multideref assertion)
-# || SvTYPE(keysv) >= SVt_PVMG
-# || !SvOK(keysv)
-# || SvROK(keysv)
-# || SvIsCOW_shared_hash(keysv));
+            # const and sv already at compile-time, gv deferred to init-time.
+            # testcase: $a[-1] -1 as B::IV not as -1
+            # hmm, if const ensure that candidate CONSTs have been HEKified. (pp_multideref assertion)
+            # || SvTYPE(keysv) >= SVt_PVMG
+            # || !SvOK(keysv)
+            # || SvROK(keysv)
+            # || SvIsCOW_shared_hash(keysv));
             my $constkey = ( $action & 0x30 ) == 0x10 ? 1 : 0;
-            my $itemsym
-                = $item->save( "$symat" . ( $constkey ? " const" : "" ) );
+            my $itemsym = $item->save( "$symat" . ( $constkey ? " const" : "" ) );
             if ( is_constant($itemsym) ) {
                 if ( ref $item eq 'B::IV' ) {
                     my $iv = $item->IVX;
@@ -217,9 +215,10 @@ sub MULTICONCAT_IX_PLAIN_PV  { 1 }    # non-utf8 constant string
 sub MULTICONCAT_IX_PLAIN_LEN { 2 }    # non-utf8 constant string length
 sub MULTICONCAT_IX_UTF8_PV   { 3 }    # utf8 constant string
 sub MULTICONCAT_IX_UTF8_LEN  { 4 }    # utf8 constant string length
+
 #sub MULTICONCAT_IX_LENGTHS   { 5 }    # first of nargs+1 const segment lens - B::C does not need this value
 
-sub MULTICONCAT_HEADER_SIZE  { 5 }    # The number of fields of a multiconcat header
+sub MULTICONCAT_HEADER_SIZE { 5 }     # The number of fields of a multiconcat header
 
 =pod
 
@@ -237,34 +236,33 @@ sub MULTICONCAT_HEADER_SIZE  { 5 }    # The number of fields of a multiconcat he
 =cut
 
 sub aux_list_for_multiconcat {
-    my ( $op ) = @_;
+    my ($op) = @_;
 
     # note that the B API aux_list method needs a useless CV
     # we are using our own custom version of aux_list for multiconcat
     # (required to read content correctly when the string is utf8)
     #   - it returns the plain PV & the utf8 PV (the original B function only return one PV)
     #   - it also returns the raw contents of the aux slots (@segments part) without converting it
-    my ( $nargs, $pv_as_sv_plain, $pv_as_sv_utf8, @segments ) = $op->aux_list_thr();     # is this complete
+    my ( $nargs, $pv_as_sv_plain, $pv_as_sv_utf8, @segments ) = $op->aux_list_thr();    # is this complete
 
     # initialize the multiconcat header: all values to 0
-    my @header = ( 0 ) x MULTICONCAT_HEADER_SIZE();
+    my @header = (0) x MULTICONCAT_HEADER_SIZE();
 
-    $header[ MULTICONCAT_IX_NARGS() ] = $nargs;           # ix=0
+    $header[ MULTICONCAT_IX_NARGS() ] = $nargs;                                         # ix=0
 
     if ( defined $pv_as_sv_plain ) {
         my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv_plain);
-        $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym; # ix=1
-        $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $cur;     # ix=2
+        $header[ MULTICONCAT_IX_PLAIN_PV() ]  = $savesym;                               # ix=1
+        $header[ MULTICONCAT_IX_PLAIN_LEN() ] = $cur;                                   # ix=2
     }
 
     if ( defined $pv_as_sv_utf8 ) {
         my ( $savesym, $cur, $len, $utf8 ) = savecowpv($pv_as_sv_utf8);
-        $header[ MULTICONCAT_IX_UTF8_PV() ]  = $savesym; # ix=3
-        $header[ MULTICONCAT_IX_UTF8_LEN() ] = $cur;     # ix=4
+        $header[ MULTICONCAT_IX_UTF8_PV() ]  = $savesym;                                # ix=3
+        $header[ MULTICONCAT_IX_UTF8_LEN() ] = $cur;                                    # ix=4
     }
 
     return [ @header, @segments ];
 }
-
 
 1;

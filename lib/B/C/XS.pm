@@ -100,7 +100,7 @@ sub add_to_bootstrap {
 #   rather than patching the module itself, just call the extra boot functions
 #
 sub get_extra_CVs_boot_list {
-    my ( $self ) = @_;
+    my ($self) = @_;
 
     return $self->{_extra_cvs_boot_list} if $self->{_extra_cvs_boot_list};
 
@@ -108,13 +108,14 @@ sub get_extra_CVs_boot_list {
 
     # list of extra CVs to call for every XS module (so far only one...)
     my $exception_rules = {
+
         # use a prefix for the function to call, gives flexibility
-        'Encode' => [ qw{Encode::onBOOT} ],
+        'Encode' => [qw{Encode::onBOOT}],
     };
 
     my @extra_cvs;
 
-    foreach my $m ( @$modules ) {
+    foreach my $m (@$modules) {
         if ( my $cvs = $exception_rules->{$m} ) {
             push @extra_cvs, @$cvs;
         }
@@ -126,13 +127,13 @@ sub get_extra_CVs_boot_list {
 }
 
 sub need_extra_xs_call {
-    my ( $self ) = @_;
+    my ($self) = @_;
 
     return $self->has_xs && scalar @{ $self->get_extra_CVs_boot_list };
 }
 
 sub write_lst {
-    my ( $self ) = @_;
+    my ($self) = @_;
 
     my $file = $self->{'output_file'} . '.lst';
     open( my $fh, ">", $file ) or die("Can't open $file: $!");

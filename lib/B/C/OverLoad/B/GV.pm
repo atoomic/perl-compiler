@@ -35,7 +35,7 @@ sub do_save {
             && ref( $gv->FORM ) eq 'B::SPECIAL'
             && ref( $gv->IO ) eq 'B::SPECIAL'
 
-          ) {
+        ) {
             return q{NULL};
         }
     }
@@ -400,7 +400,7 @@ sub save_gv_io {
             my @read_data = <$fh>;
             my $data = join '', @read_data;
 
-            my $is_utf8 = $gv->FLAGS | SVf_UTF8; # check if the package name is using utf8 or not
+            my $is_utf8 = $gv->FLAGS | SVf_UTF8;    # check if the package name is using utf8 or not
             return $gvio->save_io_and_data( $fullname, $is_utf8, $data );
         }
 

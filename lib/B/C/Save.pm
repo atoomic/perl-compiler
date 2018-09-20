@@ -59,7 +59,7 @@ sub savecowpv {
 
     $cowtable{$cstring} = [ $pvsym, $cur, $len, $utf8 ];
 
-    return ( $pvsym, $cur, $len, $utf8 ); # NOTE: $cur is total size of the perl string. len would be the length of the C string.
+    return ( $pvsym, $cur, $len, $utf8 );        # NOTE: $cur is total size of the perl string. len would be the length of the C string.
 }
 
 sub _caller_comment {

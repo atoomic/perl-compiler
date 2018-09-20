@@ -227,8 +227,9 @@ sub write {
     $INC{'Template.pm'} or die("Can't load Template Toolkit at run time to render the C file.");
     {
         no warnings;
-        *Template::DESTROY = sub { }; # disabled
+        *Template::DESTROY = sub { };    # disabled
     }
+
     # some useful options (see below for full list)
     my $config = {
         INCLUDE_PATH => $template_dir,

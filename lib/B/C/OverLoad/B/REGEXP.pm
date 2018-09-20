@@ -53,8 +53,8 @@ sub do_save {
     $initpm->sadd( 'REGEXP* regex_sv = CALLREGCOMP(newSVpvn( %s, %d), 0x%x);', $cstr, $cur, $sv->EXTFLAGS );
     $initpm->add("PL_hints &= ~HINT_RE_EVAL;") if ( $sv->EXTFLAGS & RXf_EVAL_SEEN );
 
-    $initpm->sadd( 'SvANY(%s) = SvANY(regex_sv);', $sym ); # copy the SvAny
-    $initpm->sadd( "((SV*) %s)->sv_u.svu_pv = (char *) SvPV_nolen((SV*)regex_sv);", $sym ); # copy the pv
+    $initpm->sadd( 'SvANY(%s) = SvANY(regex_sv);',                                  $sym );    # copy the SvAny
+    $initpm->sadd( "((SV*) %s)->sv_u.svu_pv = (char *) SvPV_nolen((SV*)regex_sv);", $sym );    # copy the pv
 
     my $without_amp = $sym;
     $without_amp =~ s/^&//;
@@ -62,9 +62,9 @@ sub do_save {
     # not set
     #$initpm->sadd( "((XPV*)SvANY(%s))->xpv_len_u.xpvlenu_rx = (struct regexp*)SvANY(regex_sv);", $sym );
 
-    $initpm->sadd( "ReANY(%s)->xmg_stash =  %s;",                       $sym, $magic_stash );
-    $initpm->sadd( "ReANY(%s)->xmg_u.xmg_magic =  %s;",                 $sym, $magic );    
-    
+    $initpm->sadd( "ReANY(%s)->xmg_stash =  %s;",       $sym, $magic_stash );
+    $initpm->sadd( "ReANY(%s)->xmg_u.xmg_magic =  %s;", $sym, $magic );
+
     $initpm->close_block();
 
     return $sym;
