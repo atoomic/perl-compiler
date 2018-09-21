@@ -114,6 +114,7 @@ my $perl_magic_vtable_map = {
     'w'    => 'utf8',             # Cached UTF-8 information
     'x'    => 'substr',           # substr() lvalue
     'y'    => 'defelem',          # Shadow "foreach" iterator variable smart parameter vivification
+    'Y'    => 'nonelem',          # Array element that does not exist - introduced in 5.28
     '\\'   => 'lvref',            # Lvalue reference constructor
     ']'    => 'checkcall',        # Inlining/mutation of call to this CV
 };
