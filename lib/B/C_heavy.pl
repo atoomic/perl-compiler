@@ -24,7 +24,7 @@ BEGIN {
 }
 
 use B::Flags;
-use B::C::Debug qw(debug verbose WARN);    # used for setting debug levels from cmdline
+use B::C::Debug qw(debug verbose WARN INFO);    # used for setting debug levels from cmdline
 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
@@ -456,6 +456,8 @@ sub build_template_stash {
     #   B::C knows the size of strtab when compiling it
     #   small programs would benefit from a smaller size
     $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, (1 << 8) - 1 ) + 1; # 1 << 11 - 1
+    # display PL_strtab sze and max when verbose is enabled
+    INFO( "PL_strtab: size=" . (sharedhe()->index() + 1) . " ; HvMAX=" . $c_file_stash->{'PL_strtab_max'} );;
 
     return $c_file_stash;
 }
