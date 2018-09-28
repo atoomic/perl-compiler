@@ -451,7 +451,11 @@ sub build_template_stash {
     # Some of the vars are only put in the stash if they meet certain coditions.
 
     # PL_strtab's hash size
-    $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, 2_047 ) + 1; # 1 << 11 - 1
+    # perl 528: 2048 = 1 << 11
+    # perl 526: 512  = 1 << 9
+    #   B::C knows the size of strtab when compiling it
+    #   small programs would benefit from a smaller size
+    $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, (1 << 8) - 1 ) + 1; # 1 << 11 - 1
 
     return $c_file_stash;
 }
