@@ -959,6 +959,13 @@ main(int argc, char **argv, char **env)
 
     assert(PL_do_undump == 0);
 
+    /* init hash seed before calling perl_construct and initializing strtab */
+    Perl_get_hash_seed(aTHX_ PL_hash_seed);
+    PERL_HASH_SEED_STATE(PERL_HASH_SEED,PL_hash_state);
+    PL_hash_seed_set = TRUE;
+    /* set the PL_internal_random_state value */
+    Perl_drand48_init_r( &PL_internal_random_state, seed() );
+
     init_pl_strtab(); /* Initialize PL_Strtab on our own before perl gets to it in perl_alloc. This allows us to use immportal constant shared HEKs */
     setup_perl_globals();
     perl_init_stash(); /* Setup the stashes */
