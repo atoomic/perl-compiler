@@ -96,7 +96,7 @@ sub start_heavy {
         }
     );
 
-    B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'} );
+    B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'}, $settings->{'enable_debug'} );
 
     # Save some stuff we need to save early.
     save_pre_defstash();

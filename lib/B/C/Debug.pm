@@ -23,6 +23,7 @@ my %debug_map = (
     's'     => 'sub',
     'S'     => 'sv',
     'u'     => 'unused',
+    'd'     => 'debug',       # special case for debug without any level
     'v'     => 'verbose',     # special case to consider verbose as a debug level
     'W'     => 'walk',
     'bench' => 'benchmark',
@@ -112,6 +113,10 @@ sub enable_verbose {
     enable_debug_level('verbose');
 }
 
+sub enable_global_debug {
+    enable_debug_level('debug');
+}
+
 sub verbose {
     return $debug{'v'} unless $debug{'v'};
     return $debug{'v'} unless scalar @_;
@@ -127,15 +132,19 @@ sub FATAL { die display_message( "[FATAL]", @_ ) }
 my $logfh;
 
 sub display_message {
-    return unless scalar @_;
-    my $txt = join( " ", map { defined $_ ? $_ : 'undef' } @_ );
+    my (@msg) = @_;
+    return unless scalar @msg;
+    my $txt = join( " ", map { defined $_ ? $_ : 'undef' } @msg );
 
-    # just safety to avoid double \n
-    chomp $txt;
-    print STDERR "$txt\n";
+    # just safety to avoid double \n and trailing spaces
+    $txt =~ s{\s+$}{}s;
+    $txt .= "\n";
+
+    print STDERR $txt;
+
     if ( $ENV{BC_DEVELOPING} ) {
         $logfh or open( $logfh, '>', 'fullog.txt' );
-        print {$logfh} "$txt\n";
+        print {$logfh} $txt;
     }
 
     return;
@@ -154,12 +163,10 @@ sub debug {
     my @levels = ref $level eq 'ARRAY' ? @$level : $level;
 
     if ( !scalar @levels || grep { !defined $debug{$_} } @levels ) {
-        my $error_msg = "One or more unknown debug level in " . ( join( ', ', sort @levels ) ) . ' - ' . "@{[(caller(1))[3]]}";
 
-        # only display the warning once
-        WARN($error_msg);
-        do { $debug{$_} //= 0 }
-          for @levels;
+        # this is a call to debug without a level, display it when -d is enabled
+        unshift @msg, $level;
+        @levels = 'debug';    # regular debug
     }
 
     my $debug_on = grep { $debug{$_} } @levels;
@@ -201,9 +208,10 @@ sub debug {
 
 # maint entry points
 sub setup_debug {
-    my ( $levels_str, $verbose ) = @_;
+    my ( $levels_str, $verbose, $debug ) = @_;
 
-    enable_verbose() if $verbose;
+    enable_verbose() if $verbose || $debug;
+    enable_global_debug() if $debug;
     return unless defined $levels_str && length $levels_str;
 
     my @levels = split( /\./, $levels_str );

@@ -390,6 +390,8 @@ sub parse_options {
             $arg ||= shift @opts;
             $arg =~ s{^=+}{};
             $settings->{'debug_options'} .= $arg;
+            $settings->{'enable_verbose'} = 1;
+            $settings->{'enable_debug'}   = 1;
         }
         elsif ( $opt eq "o" ) {
             $arg ||= shift @opts;
