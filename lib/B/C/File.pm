@@ -24,7 +24,7 @@ use warnings;
 
 use Exporter ();
 
-use B::C::Debug qw/debug WARN verbose/;
+use B::C::Debug qw/debug WARN INFO verbose/;
 use B::C::Helpers::Symtable qw(get_symtable_ref);
 use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
 use B::C::Section         ();
@@ -239,8 +239,8 @@ sub write {
     };
 
     if ( verbose() ) {
-        WARN $c_file_stash->{'compile_stats'};
-        WARN "NULLOP count: $c_file_stash->{nullop_count}";
+        INFO $c_file_stash->{'compile_stats'};
+        INFO "NULLOP count: $c_file_stash->{nullop_count}";
     }
 
     # Used to be buried in output_main_rest();

@@ -288,12 +288,12 @@ sub save_defstash {
 }
 
 sub save_optree {
-    verbose("Starting compile");
-    verbose("Walking optree");
+    debug("Starting compile");
+    debug("Walking optree");
     _delete_macros_vendor_undefined();
 
     if ( debug('walk') ) {
-        verbose("Enabling B::debug");
+        debug("Enabling B::debug");
         B->debug(1);
 
         # this is enabling
@@ -329,7 +329,7 @@ sub _delete_macros_vendor_undefined {
 }
 
 sub save_main_rest {
-    verbose("done main optree, walking symtable for extras");
+    debug("done main optree, walking symtable for extras");
 
     return if $settings->{'check'};
 
@@ -344,7 +344,7 @@ sub save_main_rest {
     fixup_ppaddr();
     do_remap_xs_symbols();
 
-    verbose("Writing output");
+    debug("Writing output");
     B::C::File::write($c_file_stash);
 
     # Can use NyTProf with B::C

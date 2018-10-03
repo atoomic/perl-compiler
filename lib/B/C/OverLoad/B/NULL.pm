@@ -9,7 +9,7 @@ sub do_save {
 
     # debug
     if ( $$sv == 0 ) {
-        verbose("NULL::save for sv = 0 called from @{[(caller(1))[3]]}");
+        debug("NULL::save for sv = 0 called from @{[(caller(1))[3]]}");
         return "(void*)Nullsv";
     }
 
