@@ -33,6 +33,8 @@ use File::Basename qw(basename dirname);
 # use Cwd;
 use Pod::Usage;
 
+use constant MINIMUM_VERBOSE_LEVEL => 1;
+
 # Time::HiRes does not work with 5.6
 # use Time::HiRes qw(gettimeofday tv_interval);
 our $VERSION = 2.20;
@@ -195,9 +197,11 @@ sub parse_argv {
         $Options->{Wb} = $Options->{Wb} ? $Options->{Wb} . ",$o1" : $o1;
         @ARGV = grep !/^-O\d$/, @ARGV;
     }
-    if ( my ($v) = grep /^-v\d$/, @ARGV ) {
-        $Options->{v} = 0 + substr( $v, 2 );
-        @ARGV = grep !/^-v\d$/, @ARGV;
+    if ( my ($v) = grep /^-v\d?$/a, @ARGV ) {
+        $v =~ s{^-v}{};
+        $v = 1 unless length $v;
+        $Options->{v} = 0 + $v;
+        @ARGV = grep !/^-v\d?$/a, @ARGV;
     }
     if ( grep /^-stash$/, @ARGV ) {
         $Options->{stash}++;
@@ -376,8 +380,8 @@ sub compile_byte {
     else {
         my @error = grep { !/^$Input syntax OK$/o } @$error_r;
         @error = grep { !/^No package specified for compilation, assuming main::$/o } @error;
-        warn "$0: Unexpected compiler output\n@error" if @error and opt('v') < 5;
-        warn "@error" if @error and opt('v') > 4;
+        warn "$0: Unexpected compiler output\n@error" if @error and opt('v') < MINIMUM_VERBOSE_LEVEL();
+        warn "@error\n" if @error and opt('v') >= MINIMUM_VERBOSE_LEVEL();
     }
 
     unless ( opt('dryrun') ) {
@@ -404,15 +408,18 @@ sub compile_cstyle {
         $addoptions .= $_[0] . ",";
     }
     $addoptions .= opt('Wb');
-    if ($addoptions) {
-        $addoptions .= ',-Dfull'  if opt('v') >= 6;
-        $addoptions .= ',-Dsp,-v' if opt('v') == 5;
-        $addoptions .= ',';
+    $addoptions .= ',' if length $addoptions && substr( $addoptions, -1, 1 ) ne ',';
+    if ( opt('v') >= 1 && opt('v') <= 4 ) {
+        $addoptions .= '-v';
     }
-    elsif ( opt('v') > 4 ) {
-        $addoptions = '-Dsp,-v,';
-        $addoptions = '-Dfull,-v,' if opt('v') >= 6;
+    elsif ( opt('v') == 5 ) {
+        $addoptions .= '-Dsp,-v';
     }
+    elsif ( opt('v') >= 6 ) {
+        $addoptions .= '-Dfull';
+    }
+    $addoptions .= ',' if length $addoptions && substr( $addoptions, -1, 1 ) ne ',';
+
     if ( opt('f') ) {
         $addoptions .= "-f$_," for @{ $Options->{f} };
     }
@@ -483,8 +490,8 @@ sub compile_cstyle {
             print "@error" if @error;
         }
         else {
-            warn "$0: Unexpected compiler output\n@error" if @error and opt('v') < 5;
-            warn "@error" if @error and opt('v') > 4;
+            warn "$0: Unexpected compiler output\n@error" if @error and opt('v') < MINIMUM_VERBOSE_LEVEL;
+            warn "@error\n" if @error and opt('v') >= MINIMUM_VERBOSE_LEVEL;
         }
     }
     _die(qq[Failed to generate .c file '$cfile'\n]) unless -e $cfile && -s $cfile;
@@ -612,7 +619,7 @@ sub cc_harness {
         for my $lib (
             $libperl,             "$coredir/$libperl", "$coredir/$libperl",
             "$coredir/libperl.a", "$libdir/libperl.a"
-          ) {
+        ) {
             if ( -e $lib ) {
                 $ldopts =~ s|-lperl |$lib |;
                 $ldopts = "$coredir/DynaLoader.o $ldopts" if -e "$coredir/DynaLoader.o";
