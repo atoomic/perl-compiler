@@ -27,7 +27,7 @@ node('docker && jenkins-user') {
         notify.emailAtEnd([to:email]) {
             stage('Setup') {
                 scmVars = checkout scm
-                notifyHipchat(currentBuild.result, scmVars, testResults)
+                //notifyHipchat(currentBuild.result, scmVars, testResults)
 
                 // implied 'INPROGRESS' to Bitbucket
                 notifyBitbucket commitSha1: scmVars.GIT_COMMIT
@@ -97,7 +97,7 @@ node('docker && jenkins-user') {
         //   the folder properties)
         if (scmVars != null) {
             notifyBitbucket commitSha1: scmVars.GIT_COMMIT
-            notifyHipchat(currentBuild.result, scmVars, testResults)
+            //notifyHipchat(currentBuild.result, scmVars, testResults)
         }
         cleanWs()
     }
