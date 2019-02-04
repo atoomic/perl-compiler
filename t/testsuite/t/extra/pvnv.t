@@ -2,7 +2,7 @@
 
 eval q{use Devel::Peek};
 
-print "1..13\n";
+print "1..14\n";
 
 {
     note("a - a simple NV");
@@ -128,6 +128,19 @@ print "1..13\n";
         like( $dump, qr{NV =.+1\.2345\b},    "NV value" );
         like( $dump, qr{PV =.+"1\.2345000"}, "PV value" );
     }
+}
+
+{
+    our $zero;
+
+    BEGIN {
+        $zero = 1.23;
+        $zero = "0" . $zero;
+    }
+
+    sub ZERO { $zero }
+
+    ok( ZERO() eq '01.23', "PVNV '0123' is not downgraded to NV" );
 }
 
 exit;

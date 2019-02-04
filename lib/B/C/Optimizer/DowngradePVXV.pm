@@ -22,6 +22,8 @@ sub SVt_MASK { 0xf }    # smallest bitmask that covers all types
 
 my $DEBUG = 0;
 
+my $REGEXP_INTEGER = qr{^(?:[1-9][0-9]*|0)\z};
+
 sub ddebug {
     return unless $DEBUG;
     my (@what) = @_;
@@ -138,6 +140,8 @@ sub downgrade_pviv {
     my $pok  = $sv->FLAGS & SVf_POK;
     my $ppok = $sv->FLAGS & SVp_POK;
 
+    return if $iok && $pok && $sv->PV ne $sv->IVX;
+
     if ( $ppok && !$pok ) {
         ddebug( "- PVIV downgrade skipped ", _sv_to_str($sv) );
         return;
@@ -145,7 +149,7 @@ sub downgrade_pviv {
 
 	#tidyoff
 	if (  !$pok && $iok
-		or $iok && $sv->PV =~ qr{^[0-9]+$}
+		or $iok && $sv->PV =~ $REGEXP_INTEGER
 		)
 		{    # PVIV used as IV let's downgrade it as an IV
 		ddebug("downgrade PVIV to IV - case a");
@@ -156,7 +160,7 @@ sub downgrade_pviv {
 
 		#return B::IV::save( $sviv, $fullname );
 	}
-	elsif ( $pok && $sv->PV =~ qr{^[0-9]+$} && length( $sv->PV ) <= 18 ) {    # use Config{...}
+	elsif ( $pok && $sv->PV =~ $REGEXP_INTEGER && length( $sv->PV ) <= 18 ) {    # use Config{...}
 		ddebug("downgrade PVIV to IV - case b");
 
 		# downgrade a PV that looks like an IV (and not too long) to a simple IV
@@ -189,6 +193,9 @@ sub downgrade_pvnv {
 
     my $ppok = $sv->FLAGS & SVp_POK;
 
+    return if $iok && $pok && $sv->PV ne $sv->IVX;
+    return if $nok && $pok && $sv->PV ne $sv->NV;
+
     # do not mess with large numbers
     if ( $ppok && $nok && ( $sv->NV > intmax() or $sv->NV < -intmax() ) ) {
 
@@ -207,7 +214,7 @@ sub downgrade_pvnv {
 
 	#tidyoff
 	if (
-		   $nok && $sv->NV =~ qr{^[0-9]+$} && length( $sv->NV ) <= 18 # !$pok && !$iok &&
+		   $nok && $sv->NV =~ $REGEXP_INTEGER && length( $sv->NV ) <= 18 # !$pok && !$iok &&
 	  ) {    # PVNV used as IV let's downgrade it as an IV
 		#return;
 		ddebug("downgrade PVNV to IV from NV - case a", _sv_to_str($sv));
@@ -218,14 +225,14 @@ sub downgrade_pvnv {
 		do { ddebug("WARN: invalid B::IV when downgrading PVNV"); return } unless ref $sviv eq 'B::IV';
 		return B::IV::save( $sviv, $fullname, { flags => custom_flags( $sv, SVt_IV() ), refcnt => $sv->REFCNT } );
 	} elsif (
-		$pok && $sv->PV =~ qr{^[0-9]+$} && length( $sv->PV ) <= 18
+		$pok && $sv->PV =~ $REGEXP_INTEGER && length( $sv->PV ) <= 18
 		) {
 		ddebug("downgrade PVNV to IV - case b");
 		push @EXTRA, int( "" . $sv->PV );
 		my $sviv = B::svref_2object( \$EXTRA[-1] );
 		do { ddebug("WARN: invalid B::IV when downgrading PVNV"); return } unless ref $sviv eq 'B::IV';
 		return B::IV::save( $sviv, $fullname, { flags => custom_flags($sv, SVt_IV() ), refcnt => $sv->REFCNT } );
-	} elsif ( $iok ) { # && $sv->IVX =~ qr{^[0-9]+$}
+	} elsif ( $iok ) { # && $sv->IVX =~ $REGEXP_INTEGER
 		ddebug("downgrade PVNV to IV - case d");
 		push @EXTRA, int( "" . $sv->IV );
 		my $sviv = B::svref_2object( \$EXTRA[-1] );
