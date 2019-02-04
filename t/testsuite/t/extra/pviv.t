@@ -2,7 +2,7 @@
 
 eval q{use Devel::Peek};
 
-print "1..14\n";
+print "1..15\n";
 
 {
     note("a - a simple IV");
@@ -144,6 +144,19 @@ print "1..14\n";
     }
 
     like( $dump, qr{\bPV =.+ "1111111111111111111"}m, "PV string" );
+}
+
+{
+    our $zero;
+
+    BEGIN {
+        $zero = 123;
+        $zero = "0" . $zero;
+    }
+
+    sub ZERO { $zero }
+
+    ok( ZERO() eq '0123', "PVIV '0123' is not downgraded to IV" );
 }
 
 exit;
