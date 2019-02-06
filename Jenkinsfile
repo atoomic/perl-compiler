@@ -14,6 +14,8 @@ node('docker && jenkins-user') {
     def testResults
     def registry_info = registry.getInfo()
 
+    def SLACK_WEBHOOK = "https://hooks.slack.com/services/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"
+
     try {
         def email
         // EMAIL is defined at the folder level via the Folder Properties Plugin
@@ -27,8 +29,7 @@ node('docker && jenkins-user') {
         notify.emailAtEnd([to:email]) {
             stage('Setup') {
                 scmVars = checkout scm
-                //notifyHipchat(currentBuild.result, scmVars, testResults)
-
+                sh notifySlack(SLACK_WEBHOOK, currentBuild.result, scmVars, testResults)
                 // implied 'INPROGRESS' to Bitbucket
                 notifyBitbucket commitSha1: scmVars.GIT_COMMIT
             }
@@ -97,53 +98,80 @@ node('docker && jenkins-user') {
         //   the folder properties)
         if (scmVars != null) {
             notifyBitbucket commitSha1: scmVars.GIT_COMMIT
-            //notifyHipchat(currentBuild.result, scmVars, testResults)
+            sh notifySlack(SLACK_WEBHOOK, currentBuild.result, scmVars, testResults)
         }
         cleanWs()
     }
 }
 
-def notifyHipchat(String status, Map scmVars, def testResults) {
-    def hipchatRoom = 'Busy Camels'
-    if (!environment.isProduction()) {
-        hipchatRoom = 'Brian Baxter'
-    }
+String notifySlack(String webhook, String status, Map scmVars, def testResults) {    
     String reposURL = util.escapeHTML(bitbucket.getWebURL(scmVars.GIT_URL))
     String shortSHA = scmVars.GIT_COMMIT.substring(0,10)
 
+    String color      = '#2eb886'
+    String icon       = ''
     String extra_info = ''
-    String color
-    String icon
+    
+    String buildname = """'${ scmVars.GIT_BRANCH }' ${ util.escapeHTML(BUILD_DISPLAY_NAME) }"""
+    String message
+    String subject
+
     if (null == status) {
         status = 'Pending'
-        icon = '&#x023F1;'  // stopwatch
-        color = 'GRAY'
+        icon   = ':stopwatch:'
+        color  = '#2b3bd9' // blue
+        subject  = "Start smoking build ${buildname}"
     } else if (('FAILURE' == status) || (null == testResults)) {
-        icon = '&#x1F6D1'  // stop sign
-        color = 'RED'
+        icon = ':red_circle:'
+        color = '#cc0000' // red
+        subject = "Failure when smoking build ${buildname}"
     }
     else if (_testsFailed(testResults)) {
-        icon = '&#x1f44e;'  // thumbs down
-        color = 'YELLOW'
-        extra_info = """<br>${testResults.failCount} failed. ${testResults.passCount} passed. ${testResults.totalCount} total."""
+        icon = ':warning:'
+        color = '#f5ca46' // yellowish
+        extra_info = """\\n${testResults.failCount} failed. ${testResults.passCount} passed. ${testResults.totalCount} total."""
+        subject = "Test failure from build ${buildname}"
     } else {
-        icon = '&#x2705;' // check box
-        color = 'GREEN'
+        icon = ':white_check_mark:' // check box
+        color = '#2eb886' // green
+        subject = "Build Success ${buildname}"
     }
 
-    String message = """$icon $status &raquo; <a href="${reposURL}/browse">${ util.escapeHTML(JOB_NAME) }</a> &raquo; ${ util.escapeHTML(BUILD_DISPLAY_NAME) } for
-(<a href="${reposURL}/commits/${scmVars.GIT_COMMIT}">$shortSHA</a>) &rarr; <a href="${ util.escapeHTML(BUILD_URL) }">View build</a>
-$extra_info"""
+    String title   = """${icon} ${subject} """
+    message = """
+    Branch <${reposURL}/browse|${ scmVars.GIT_BRANCH }> ; Commit <${reposURL}/commits/${scmVars.GIT_COMMIT}|${ shortSHA }>\\n
+<${ util.escapeHTML(BUILD_URL) }|View Jenkins build ${ util.escapeHTML(BUILD_DISPLAY_NAME) }>
+$extra_info
+"""    
 
-    hipchatSend([
-        color: color,
-        failOnError: true,
-        message: message,
-        notify: true,
-        room: hipchatRoom,
-        sendAs: 'Jenkins',
-        textFormat: false,
-        v2enabled: false])
+    return slack( webhook, title, message, color )
+}
+
+
+String slack(String webhook, String title, String message, String color) {
+    String data = """
+{
+    "attachments": [
+        {
+            "title": "$title",
+            "color": "$color",
+            "text": "$message",
+            "mrkdwn_in": [
+                "text",
+                "title"
+            ]
+        }
+    ]
+}
+"""    
+    data = data.replaceAll(/\n/, "")
+    data = data.replaceAll(/\t/, " ")
+
+    String commands = """
+curl -X POST -H 'Content-type: application/json' --data '${data}' ${webhook}
+"""
+
+    return commands
 }
 
 def _testsFailed(testResults) {
