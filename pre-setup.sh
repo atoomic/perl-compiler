@@ -23,8 +23,21 @@ rpm -Uv \
     $SRC/cpanel-perl-528-DBD-Pg-3.7.4-1.cp1178.x86_64.rpm \
     $SRC/cpanel-perl-528-DBD-mysql-4.046_01-1.cp1178.x86_64.rpm
 
+echo "Installing Test2 & co"
+
+# Test2::Suite
 rpm -Uv \
-    $SRC/cpanel-perl-528-Test2-Suite-0.000115-1.cp1178.noarch.rpm
+    $SRC/cpanel-perl-528-Test-Simple-1.302140-1.cp1178.noarch.rpm \
+    $SRC/cpanel-perl-528-Test2-Suite-0.000115-1.cp1178.noarch.rpm \
+    $SRC/cpanel-perl-528-Importer-0.025-1.cp1178.noarch.rpm \
+	$SRC/cpanel-perl-528-Module-Pluggable-5.2-1.cp1178.noarch.rpm \
+	$SRC/cpanel-perl-528-Scope-Guard-0.21-1.cp1178.noarch.rpm \
+	$SRC/cpanel-perl-528-Sub-Info-0.002-1.cp1178.noarch.rpm \
+	$SRC/cpanel-perl-528-Term-Table-0.012-1.cp1178.noarch.rpm
+
+# Test2::Tools::Explain
+rpm -Uv \
+	$SRC/cpanel-perl-528-Test2-Tools-Explain-0.02-1.cp1178.noarch.rpm
 
 #/usr/local/cpanel/3rdparty/bin/perl528 -MTAP::Formatter::JUnit -E "say q[can find TAP::Formatter::JUnit]; use Test::More; note explain \%INC"
 

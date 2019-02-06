@@ -129,11 +129,12 @@ String notifySlack(String webhook, String status, Map scmVars, def testResults) 
     else if (_testsFailed(testResults)) {
         icon = ':warning:'
         color = '#f5ca46' // yellowish
-        extra_info = """\\n${testResults.failCount} failed. ${testResults.passCount} passed. ${testResults.totalCount} total."""
+        extra_info = """\\ntests result: ${testResults.failCount} failed. ${testResults.passCount} passed. ${testResults.totalCount} total."""
         subject = "Test failure from build ${buildname}"
     } else {
         icon = ':white_check_mark:' // check box
         color = '#2eb886' // green
+        extra_info = """\\ntests result: ${testResults.failCount} failed. ${testResults.passCount} passed. ${testResults.totalCount} total."""
         subject = "Build Success ${buildname}"
     }
 
