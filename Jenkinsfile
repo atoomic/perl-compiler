@@ -1,5 +1,6 @@
 #!groovy
 @Library('cpanel-pipeline-library@master') _
+
 node('docker && jenkins-user') {
     environment.check()
 
@@ -16,6 +17,11 @@ node('docker && jenkins-user') {
 
     def SLACK_WEBHOOK = "https://hooks.slack.com/services/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"
 
+    String startAt = sh (
+                script: 'perl -e "print time()"',
+                returnStdout: true
+    ).trim()
+
     try {
         def email
         // EMAIL is defined at the folder level via the Folder Properties Plugin
@@ -29,7 +35,7 @@ node('docker && jenkins-user') {
         notify.emailAtEnd([to:email]) {
             stage('Setup') {
                 scmVars = checkout scm
-                sh notifySlack(SLACK_WEBHOOK, currentBuild.result, scmVars, testResults)
+                sh notifySlack(SLACK_WEBHOOK, currentBuild.result, scmVars, testResults, null)
                 // implied 'INPROGRESS' to Bitbucket
                 notifyBitbucket commitSha1: scmVars.GIT_COMMIT
             }
@@ -98,13 +104,21 @@ node('docker && jenkins-user') {
         //   the folder properties)
         if (scmVars != null) {
             notifyBitbucket commitSha1: scmVars.GIT_COMMIT
-            sh notifySlack(SLACK_WEBHOOK, currentBuild.result, scmVars, testResults)
+
+            String out = sh (
+                script: 'perl -E \'my $d = time() - '+ startAt +'; my $h = int( $d / 3600); printf("%02d h ", $h) if $h; printf( "%02d min %02d sec", int( ( $d % 3600 ) / 60 ), int( $d % 60 ) );\'',
+                returnStdout: true
+            ).trim()
+
+            String elapsedTime = """runtime ${out}"""
+
+            sh notifySlack(SLACK_WEBHOOK, currentBuild.result, scmVars, testResults, elapsedTime)
         }
         cleanWs()
     }
 }
 
-String notifySlack(String webhook, String status, Map scmVars, def testResults) {    
+String notifySlack(String webhook, String status, Map scmVars, def testResults, String elapsedTime) {
     String reposURL = util.escapeHTML(bitbucket.getWebURL(scmVars.GIT_URL))
     String shortSHA = scmVars.GIT_COMMIT.substring(0,10)
 
@@ -140,10 +154,15 @@ String notifySlack(String webhook, String status, Map scmVars, def testResults) 
 
     String title   = """${icon} ${subject} """
     message = """
-    Branch <${reposURL}/browse|${ scmVars.GIT_BRANCH }> ; Commit <${reposURL}/commits/${scmVars.GIT_COMMIT}|${ shortSHA }>\\n
-<${ util.escapeHTML(BUILD_URL) }|View Jenkins build ${ util.escapeHTML(BUILD_DISPLAY_NAME) }>
+    Branch <${reposURL}/browse|${ scmVars.GIT_BRANCH }> ; Commit <${reposURL}/commits/${scmVars.GIT_COMMIT}|${ shortSHA }>
 $extra_info
 """    
+
+    if ( elapsedTime != null ) {
+        message += """\\n${elapsedTime}"""
+    }
+
+    message += """\\n<${ util.escapeHTML(BUILD_URL) }|view Jenkins build ${ util.escapeHTML(BUILD_DISPLAY_NAME) }>"""
 
     return slack( webhook, title, message, color )
 }
