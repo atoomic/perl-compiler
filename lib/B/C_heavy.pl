@@ -551,13 +551,16 @@ sub init_op_addr {
     my ( $op_type, $num ) = @_;
     my $op_list = $op_type . "_list";
 
+    if ( ! init0()->{_OP_ADDR} ) {
+        init0()->add_initav( 'register int i;' ); # declare it once per function
+        init0()->add_initav( '' );
+        init0()->{_OP_ADDR} = 1;
+    }
+
     init0()->add( split /\n/, <<_EOT3 );
-{
-    register int i;
     for( i = 0; i < ${num}; ++i ) {
         ${op_list}\[i].op_ppaddr = PL_ppaddr[PTR2IV(${op_list}\[i].op_ppaddr)];
     }
-}
 _EOT3
 
 }
