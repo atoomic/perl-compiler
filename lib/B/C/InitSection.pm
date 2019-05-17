@@ -12,6 +12,17 @@ use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
 # All objects inject into this shared variable.
 our @all_eval_pvs;
 
+sub BUILD { # ~factory
+    my ( $pkg, $name, @args ) = @_;
+
+    if ( $name && $name eq 'init_vtables' ) {
+        require B::C::InitSection::Vtables;
+        return B::C::InitSection::Vtables->new( $name, @args );
+    }
+
+    return $pkg->new( $name, @args );
+}
+
 sub new {
     my $class = shift;
     my $self  = $class->SUPER::new(@_);
@@ -198,11 +209,19 @@ sub fixup_assignments {
 
 }
 
+sub flush { # by default do nothing
+    my ( $self ) = @_;
+
+    return $self; # can chain like flush.output
+}
+
 sub output {
     my ( $self, $format, $init_name ) = @_;
 
     $format    //= "    %s\n";
     $init_name //= 'perl_' . $self->name;
+
+    $self->flush(); # autoflush
 
     my $sym = $self->symtable || {};
     my $default = $self->default;

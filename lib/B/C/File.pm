@@ -101,7 +101,7 @@ sub new {
     }
 
     foreach my $section_name ( init_section_names() ) {
-        $self->{$section_name} = B::C::InitSection->new( $section_name, get_symtable_ref(), 0 );
+        $self->{$section_name} = B::C::InitSection->BUILD( $section_name, get_symtable_ref(), 0 );
     }
 
     # our meta sections
