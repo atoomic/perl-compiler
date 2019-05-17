@@ -475,8 +475,9 @@ sub save_sig {
 sub do_remap_xs_symbols {
     my %xs_pkgs;
 
+    my @xs_modules = @{ $settings->{'XS'}->modules() };
     for my $pkg ( sort keys %remap_xs_symbols ) {
-        next unless grep { $pkg eq $_ } @{ $settings->{'XS'}->modules() };
+        next unless grep { $pkg eq $_ } @xs_modules;
         $xs_pkgs{$pkg} = 1;    # maybe store the so file thre ?
     }
 
