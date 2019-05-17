@@ -5,7 +5,8 @@ use strict;
 use B qw/opnumber/;
 
 use B::C::Debug qw/debug verbose/;
-use B::C::File qw/opsect/;
+use B::C::File qw/opsect init_xops/;
+use B::C::Helpers::Symtable qw/objsym/;
 
 my $OP_CUSTOM = opnumber('custom');
 
@@ -46,7 +47,10 @@ sub B::OP::fake_ppaddr {
     my $op = shift;
     return "NULL" unless $op->can('name');
     if ( $op->type == $OP_CUSTOM ) {
-        return ( verbose() ? sprintf( "/*XOP %s*/NULL", $op->name ) : "NULL" );
+        # filled at run time with the correct addr from PL_custom_ops
+        init_xops()->sadd( qq[bc_setup_xop_ppaddr(%s, "%s"); /* custom op */], objsym($op), $op->name );
+
+        return sprintf( "/* XOP %s */ NULL", $op->name );
     }
     return sprintf( "INT2PTR(void*,OP_%s)", uc( $op->name ) );
 }

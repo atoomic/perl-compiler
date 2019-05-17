@@ -71,7 +71,7 @@ sub meta_sections {
 }
 
 # These populate the init sections and have a special header.
-sub init_section_names { return qw /init init_regexp init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink/ }
+sub init_section_names { return qw /init init_regexp init_xops init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink/ }
 
 sub op_sections {
     return qw { binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};
