@@ -210,7 +210,7 @@ sub has_xs {
     my $self = shift or die;
     ref $self eq __PACKAGE__ or die;
 
-    return keys @{ $self->{'dl_modules'} } ? 1 : 0;
+    return scalar @{ $self->{'dl_modules'} } ? 1 : 0;
 }
 
 1;
