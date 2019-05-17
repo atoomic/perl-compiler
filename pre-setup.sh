@@ -33,7 +33,8 @@ rpm -Uv \
 	$SRC/cpanel-perl-528-Module-Pluggable-5.2-1.cp1178.noarch.rpm \
 	$SRC/cpanel-perl-528-Scope-Guard-0.21-1.cp1178.noarch.rpm \
 	$SRC/cpanel-perl-528-Sub-Info-0.002-1.cp1178.noarch.rpm \
-	$SRC/cpanel-perl-528-Term-Table-0.012-1.cp1178.noarch.rpm
+	$SRC/cpanel-perl-528-Term-Table-0.012-1.cp1178.noarch.rpm \
+    $SRC/cpanel-perl-528-Ref-Util-XS-0.117-1.cp1178.x86_64.rpm
 
 # Test2::Tools::Explain
 rpm -Uv \

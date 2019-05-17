@@ -879,6 +879,39 @@ strtab()
     OUTPUT:
         RETVAL
 
+SV*
+custom_ops()
+    CODE:
+//    { PTR2IV(ppaddr) => PTR2IV(xop) }
+        if (PL_custom_ops)
+            RETVAL = newRV_inc((SV*)PL_custom_ops);
+        else
+            RETVAL = &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+
+SV*
+custom_op_names()
+    CODE:
+        if (PL_custom_op_names)
+            RETVAL = newRV_inc((SV*)PL_custom_op_names);
+        else
+            RETVAL = &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+SV*
+custom_op_descs()
+    CODE:
+        if (PL_custom_op_descs)
+            RETVAL = newRV_inc((SV*)PL_custom_op_descs);
+        else
+            RETVAL = &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+
 BOOT:
 {
     MY_CXT_INIT;

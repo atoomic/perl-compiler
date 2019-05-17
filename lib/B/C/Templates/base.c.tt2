@@ -462,14 +462,52 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
     return svp;
 }
 
+static void bc_setup_xop_ppaddr(OP* op, const char* name) {
+    HE *he;
+    SV *sv;
+
+    /* lookup for the custom op with name and replace it there */
+    op->op_ppaddr = NULL;
+
+    if ( PL_custom_ops ) {
+        hv_iterinit(PL_custom_ops);
+        while (he = hv_iternext(PL_custom_ops)) {
+            sv = HeVAL(he);
+            /* { PTR2IV(ppaddr) => PTR2IV(xop) } */
+            //PerlIO_printf(Perl_debug_log, " - got a key value... %x\n", SvIV(sv) );
+            XOP *xop = (XOP*) SvIV(sv);
+
+            if ( strEQ(xop->xop_name, name) ) {
+                //PerlIO_printf(Perl_debug_log, "found xOP %s\n", name);
+                //SV *key = HeSVKEY_force(he);
+                long ppaddr = strtol( (char *) HeKEY(he), NULL, 10 );
+
+                /* setup the address of the custom OP */
+                op->op_ppaddr = (OP* (*)()) ppaddr;
+                break;
+            }
+
+        }
+    }
+
+    /* sanity check that we found the Custom OP */
+    if (!op->op_ppaddr)
+        Perl_croak_nocontext("Failed to find Custom OP for '%s'", name);
+
+}
+
 /* end of handy helpers */
 
+/* FIXME use something similar to section_list above */
 
 [% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
 
 [% section.init_static_assignments.output( "    %s\n", 'perl_init_static_assignments' ) %]
 
 [% section.init_vtables.output( "    %s\n", 'perl_init_vtables' ) %]
+
+/* FIXME only add if not empty */
+[% section.init_xops.output( "    %s\n", 'perl_init_xops' ) %]
 
 [% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
 [% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
@@ -1065,6 +1103,9 @@ main(int argc, char **argv, char **env)
     /* some XS modules need to call an additional CV at boot (like Encode::onBOOT) */
     bootstrap_call_extra_CVs( aTHX );
     [% END %]
+
+    /* need to occurs after the XS bootstrap to have PL_custom_ops initialized */
+    perl_init_xops( aTHX ); /* FIXME only when required */
 
     /* We need to output evals after dl_init, in init2  */
     [% FOREACH eval_pv IN all_eval_pvs %]
