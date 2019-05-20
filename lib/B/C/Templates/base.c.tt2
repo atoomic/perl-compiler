@@ -465,13 +465,12 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
 /* end of handy helpers */
 
 [% IF section.init_xops.has_values %]
-/* only render the init_xops section if needed */
-static void bc_setup_xop_ppaddr(OP* op, const char* name) {
+static void *bc_xop_ppaddr_from_name(const char* name) {
     HE *he;
     SV *sv;
+    void *op_ppaddr = 0;
 
-    /* lookup for the custom op with name and replace it there */
-    op->op_ppaddr = NULL;
+    /* lookup for the custom op with name */
 
     if ( PL_custom_ops ) {
         hv_iterinit(PL_custom_ops);
@@ -484,10 +483,7 @@ static void bc_setup_xop_ppaddr(OP* op, const char* name) {
             if ( strEQ(xop->xop_name, name) ) {
                 //PerlIO_printf(Perl_debug_log, "found xOP %s\n", name);
                 //SV *key = HeSVKEY_force(he);
-                long ppaddr = strtol( (char *) HeKEY(he), NULL, 10 );
-
-                /* setup the address of the custom OP */
-                op->op_ppaddr = (OP* (*)()) ppaddr;
+                op_ppaddr = (void *) strtol( (char *) HeKEY(he), NULL, 10 );
                 break;
             }
 
@@ -495,9 +491,18 @@ static void bc_setup_xop_ppaddr(OP* op, const char* name) {
     }
 
     /* sanity check that we found the Custom OP */
-    if (!op->op_ppaddr)
+    if (!op_ppaddr)
         Perl_croak_nocontext("Failed to find Custom OP for '%s'", name);
 
+    return op_ppaddr;
+}
+
+/* only render the init_xops section if needed */
+static void bc_setup_xop_ppaddr(OP* op, const char* name) {
+
+    op->op_ppaddr = (OP* (*)()) bc_xop_ppaddr_from_name(name);
+
+    return;
 }
 
 /* end of init_xops section */
