@@ -462,6 +462,10 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
     return svp;
 }
 
+/* end of handy helpers */
+
+[% IF section.init_xops.has_values %]
+/* only render the init_xops section if needed */
 static void bc_setup_xop_ppaddr(OP* op, const char* name) {
     HE *he;
     SV *sv;
@@ -496,19 +500,15 @@ static void bc_setup_xop_ppaddr(OP* op, const char* name) {
 
 }
 
-/* end of handy helpers */
-
-/* FIXME use something similar to section_list above */
-
-[% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
-
-[% section.init_static_assignments.output( "    %s\n", 'perl_init_static_assignments' ) %]
-
-[% section.init_vtables.output( "    %s\n", 'perl_init_vtables' ) %]
-
-/* FIXME only add if not empty */
 [% section.init_xops.output( "    %s\n", 'perl_init_xops' ) %]
 
+/* end of init_xops section */
+[% END %]
+
+/* FIXME use something similar to section_list above */
+[% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
+[% section.init_static_assignments.output( "    %s\n", 'perl_init_static_assignments' ) %]
+[% section.init_vtables.output( "    %s\n", 'perl_init_vtables' ) %]
 [% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
 [% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
 
@@ -1104,8 +1104,10 @@ main(int argc, char **argv, char **env)
     bootstrap_call_extra_CVs( aTHX );
     [% END %]
 
+    [% IF section.init_xops.has_values %]
     /* need to occurs after the XS bootstrap to have PL_custom_ops initialized */
-    perl_init_xops( aTHX ); /* FIXME only when required */
+    perl_init_xops( aTHX );
+    [% END %]
 
     /* We need to output evals after dl_init, in init2  */
     [% FOREACH eval_pv IN all_eval_pvs %]
