@@ -71,7 +71,7 @@ sub meta_sections {
 }
 
 # These populate the init sections and have a special header.
-sub init_section_names { return qw /init init_regexp init_xops init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink/ }
+sub init_section_names { return qw /init0 init init_regexp init_xops init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink/ }
 
 sub op_sections {
     return qw { binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};
@@ -187,11 +187,15 @@ sub write {
 
     # TODO: refactor move section group logic outside of the 'write' which is the main purpose of File
     # Controls the rendering order of the sections.
+    $c_file_stash->{init_section_list} = [
+        init_section_names()
+    ];
+
+
     $c_file_stash->{section_list} = [
         struct_names(),
         op_sections(),
     ];
-
     $c_file_stash->{meta_section_list} = [ meta_sections() ];
 
     $self->{'sharedhestructs'}->sort();    # sort them for human readability
