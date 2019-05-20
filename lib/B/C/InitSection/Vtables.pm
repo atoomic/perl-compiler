@@ -3,8 +3,20 @@ package B::C::InitSection::Vtables;
 use strict;
 use warnings;
 
-# avoid use vars
-our @ISA = qw/B::C::InitSection/;
+use base 'B::C::InitSection';
+
+=pod
+
+add_pvmg:
+
+Provide an abstraction to setup a the mg_virtual attribute
+from a magic_list entry.
+
+The idea is to use a for loop for the following pattern
+
+    '%s.mg_virtual = (MGVTBL*) &PL_vtbl_%s;', $last_magic, $vtable
+
+=cut
 
 sub add_pvmg {
     my ( $self, $ix, $vtable ) = @_;
@@ -42,6 +54,15 @@ sub add_pvmg {
     return;
 }
 
+=pod
+
+_add_pvmg_group:
+
+used by flush to render the C lines and for loop
+from all previous calls to 'add_pvmg'
+
+=cut
+
 sub _add_pvmg_group {
     my ($self) = @_;
 
@@ -57,7 +78,7 @@ sub _add_pvmg_group {
     else {
         $self->sadd( <<'EOS', $group->{from}, $group->{to}, $group->{vtable} );
 
-	for ( i = %d; i <= %d; ++i ) {
+	for (i=%d; i<=%d; ++i) {
 		magic_list[i].mg_virtual = (MGVTBL*) &PL_vtbl_%s;
 	}
 EOS
@@ -69,6 +90,10 @@ EOS
 # flush the last group
 sub flush {
     my ($self) = @_;
+
+    # only flush once
+    return $self if $self->{_flushed};
+    $self->{_flushed} = 1;
 
     $self->_add_pvmg_group();
 
