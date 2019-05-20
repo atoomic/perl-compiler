@@ -500,17 +500,14 @@ static void bc_setup_xop_ppaddr(OP* op, const char* name) {
 
 }
 
-[% section.init_xops.output( "    %s\n", 'perl_init_xops' ) %]
-
 /* end of init_xops section */
 [% END %]
 
-/* FIXME use something similar to section_list above */
-[% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
-[% section.init_static_assignments.output( "    %s\n", 'perl_init_static_assignments' ) %]
-[% section.init_vtables.output( "    %s\n", 'perl_init_vtables' ) %]
-[% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
-[% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
+[% FOREACH name IN init_section_list %]
+[% NEXT IF name == 'init_xops' && !section.$name.has_values  %]
+/* setup init section: [%= name %] [% section.$name.name %] */
+[% section.$name.output() %]
+[% END %]
 
 #define SIG_SIZE [% Config.sig_size %]
 
@@ -588,22 +585,6 @@ static void init_pl_strtab(pTHX) {
 
 [% END %]
 }
-
-static void perl_init0(pTHX) { /* fixup_ppaddr */
-[% section.init0.output( "    %s\n" ) %]
-};
-
-
-[% section.init.output( "    %s\n", init_name ) %]
-
-/* deferred init1 of regexp */
-[% section.init1.output( "    %s\n", "perl_init1" ) %]
-
-/* deferred init of XS/Dyna loaded modules */
-
-[% section.init2.output( "    %s\n", 'perl_init2' ) %]
-
-[% section.init_regexp.output( "    %s\n", 'perl_init_regexp' ) %]
 
 /*
     COMPILE STATS:  [% compile_stats %]

@@ -200,6 +200,10 @@ sub fixup_assignments {
 
 sub output {
     my ( $self, $format, $init_name ) = @_;
+
+    $format    //= "    %s\n";
+    $init_name //= 'perl_' . $self->name;
+
     my $sym = $self->symtable || {};
     my $default = $self->default;
 
