@@ -30,6 +30,19 @@ sub new {
     return $self;
 }
 
+sub has_values {
+    my ( $self ) = @_;
+
+    # we cannot use the 'count' value has it's reset when adding chunks..
+
+    # either we already have a chunk
+    return 1 if scalar @{ $self->{'chunks'} };
+    # or we have some values in current
+    return 1 if scalar @{ $self->{'current'} };
+
+    return;
+}
+
 {
     my $status;
     my %blacklist;    # disable benchmark inside some specific sections
@@ -111,6 +124,7 @@ sub inc_count {
 
 sub add {
     my ( $self, @lines ) = @_;
+
     my $current = $self->{'current'};
     my $nosplit = $self->{'nosplit'};
 

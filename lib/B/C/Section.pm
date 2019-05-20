@@ -31,6 +31,12 @@ sub new {
     return $self;
 }
 
+sub has_values {
+    my ( $self ) = @_;
+
+    return scalar @{$self->{values}} >= 1 ? 1 : 0;
+}
+
 sub add {
     my $self      = shift;
     my @list      = @_;
