@@ -345,6 +345,11 @@ sub add_initav {
 
 sub output {
     my ( $self, $format ) = @_;
+
+    # weird things would occur if we call the output more than once
+    die ref($self)." output should only be called once" if $self->{_output_called};
+    $self->{_output_called} = 1;
+
     my $sym     = $self->symtable;    # This should always be defined. see new
     my $default = $self->default;
 
