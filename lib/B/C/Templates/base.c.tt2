@@ -474,7 +474,7 @@ static void *bc_xop_ppaddr_from_name(const char* name) {
 
     if ( PL_custom_ops ) {
         hv_iterinit(PL_custom_ops);
-        while (he = hv_iternext(PL_custom_ops)) {
+        while ( (he = hv_iternext(PL_custom_ops)) ) {
             sv = HeVAL(he);
             /* { PTR2IV(ppaddr) => PTR2IV(xop) } */
             //PerlIO_printf(Perl_debug_log, " - got a key value... %x\n", SvIV(sv) );
@@ -495,14 +495,6 @@ static void *bc_xop_ppaddr_from_name(const char* name) {
         Perl_croak_nocontext("Failed to find Custom OP for '%s'", name);
 
     return op_ppaddr;
-}
-
-/* only render the init_xops section if needed */
-static void bc_setup_xop_ppaddr(OP* op, const char* name) {
-
-    op->op_ppaddr = (OP* (*)()) bc_xop_ppaddr_from_name(name);
-
-    return;
 }
 
 /* end of init_xops section */
