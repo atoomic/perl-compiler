@@ -18,6 +18,7 @@ sub new {
         'symtable' => $symtable,
         'default'  => $default,
         'values'   => [],
+        'initav'   => [],
     }, $class;
     $sections{$section} = $self;
 
@@ -331,6 +332,11 @@ sub debug {
     return $self->{'dbg'}->[$ix];
 }
 
+sub add_initav {
+    my $self = shift;
+    push @{ $self->{'initav'} }, @_;
+}
+
 sub output {
     my ( $self, $format ) = @_;
     my $sym     = $self->symtable;    # This should always be defined. see new
@@ -349,6 +355,10 @@ sub output {
 
     # check if the format already provide a closing comment
     my $wrap_debug_with_comment = $format =~ qr{\Q*/\E\s+$} ? 0 : 1;
+
+    foreach my $i ( @{ $self->{'initav'} } ) {
+        $output .= "    $i\n";
+    }
 
     foreach ( @{ $self->{'values'} } ) {
         my $val = $_;    # Copy so we don't overwrite on successive calls.

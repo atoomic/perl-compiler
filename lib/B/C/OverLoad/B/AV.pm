@@ -209,7 +209,13 @@ sub add_to_init {
 
     $deferred_init->open_block( sprintf( "Initialize array %s", $fullname ) );
 
-    $deferred_init->add("register int gcount;") if $acc =~ m/\(gcount=/m;
+    if ( !$deferred_init->{_AV} ) {
+
+        # declare it once at beginning of the function
+        $deferred_init->add_initav("register int gcount;");
+        $deferred_init->{_AV} = 1;
+    }
+
     $av->add_malloc_line_for_array_init( $deferred_init, $sym, $fill );
     $deferred_init->add( substr( $acc, 0, -2 ) );    # AvFILLp already in XPVAV
 
