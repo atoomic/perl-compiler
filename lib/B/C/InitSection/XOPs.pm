@@ -3,10 +3,10 @@ package B::C::InitSection::XOPs;
 use strict;
 use warnings;
 
-# avoid use vars
-our @ISA = qw/B::C::InitSection/;
-
 use B qw/cstring/;
+
+# avoid use vars
+use base 'B::C::InitSection';
 
 sub has_values {
     my ($self) = @_;
@@ -55,31 +55,28 @@ sub flush {
 
     return unless defined $self->{xops};
 
-    $self->add_initav('int i;');
-    $self->add_initav('OP *op;'); # we can avoid it, keep it for readability
+    $self->add_initav('register int i;');
 
     foreach my $name ( sort keys %{ $self->{xops} } ) {
         my $xop    = $self->{xops}->{$name};
-        my @ids    = sort @{ $xop->{ids} };
+        my @ids    = sort { $a <=> $b } @{ $xop->{ids} };
         my $optype = $xop->{optype};
 
         my $cids = join( ', ', @ids );
         my $size = scalar @ids;
 
-        my $cname = cstring( $name ); # name should already be c-friendly
+        my $cname = cstring($name);    # name should already be c-friendly
 
         # note we could also optimize list we single elements
         #   but have probably more to win with ranges if OPs are consecutive
-        #   - probability of having consecutive OPs id is low...        
+        #   - probability of having consecutive OPs id is low...
         $self->add( <<"EOS" );
         {
             void *ppaddr   = bc_xop_ppaddr_from_name($cname);
             int idx[$size] = { $cids };
 
-            /* for now a very basic for loop, can be optimized using range */
             for ( i = 0; i < $size; ++i ) {
-                op = (OP*) &${optype}[ idx[i] ];
-                op->op_ppaddr = (OP* (*)()) ppaddr;
+                ( (OP*) &${optype}[ idx[i] ] )->op_ppaddr = (OP* (*)()) ppaddr;
             }
         }
 EOS

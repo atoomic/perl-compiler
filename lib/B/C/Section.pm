@@ -348,6 +348,10 @@ sub output {
     my $sym     = $self->symtable;    # This should always be defined. see new
     my $default = $self->default;
 
+    # weird things would occur if we call the output more than once
+    die ref($self)." output should only be called once" if $self->{_output_called};
+    $self->{_output_called} = 1;
+
     my $i = 0;
 
     if ( $self->name eq 'sv' ) {      # fixup arenaroot refcnt
