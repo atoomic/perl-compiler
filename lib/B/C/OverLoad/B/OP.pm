@@ -48,8 +48,7 @@ sub B::OP::fake_ppaddr {
     return "NULL" unless $op->can('name');
     if ( $op->type == $OP_CUSTOM ) {
         # filled at run time with the correct addr from PL_custom_ops
-        init_xops()->sadd( qq[bc_setup_xop_ppaddr(%s, "%s"); /* custom op */], objsym($op), $op->name );
-
+        init_xops()->xop_used_by( $op->name, objsym($op) );
         return sprintf( "/* XOP %s */ NULL", $op->name );
     }
     return sprintf( "INT2PTR(void*,OP_%s)", uc( $op->name ) );

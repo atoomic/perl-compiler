@@ -20,6 +20,11 @@ sub BUILD { # ~factory
         return B::C::InitSection::Vtables->new( $name, @args );
     }
 
+    if ( $name && $name eq 'init_xops' ) {
+        require B::C::InitSection::XOPs;
+        return B::C::InitSection::XOPs->new( $name, @args );
+    }
+
     return $pkg->new( $name, @args );
 }
 
