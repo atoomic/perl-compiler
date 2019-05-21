@@ -60,7 +60,7 @@ lib/B/C/Templates/base.c.tt2
 lib/B/C/XS.pm
 lib/B/C_heavy.pl
 Makefile.PL
-MANIFEST			This list of files
+MANIFEST
 MANIFEST.SKIP
 NOTES
 parse_benchmark.pl
@@ -75,11 +75,17 @@ STATUS
 status_upd
 store_rpt
 t/B-C-Helpers_key_was_in_starting_stash.t
+t/B-C-Overload-B-GV_begin_cv_only.t
+t/B-C-Overload-B-HV_get_max_hash_from_keys.t
+t/B-C-Overload-B-HV_next_power.t
 t/B-C-Overload-B-IV.t
+t/B-C-POSIX-locale.t
 t/B-C-Section.t
 t/bctestc.pl
+t/ccode1.pl
 t/Ccode354i.pm
 t/lib/KnownErrors.pm
+t/lib/PL_strtab.pm
 t/lib/TestCompile.pm
 t/qr_loaded_module.pm
 t/testc.sh

@@ -35,4 +35,11 @@
 \.tar\.gz$
 ^test
 \.tmp~$
-^t/testsuite/
+.c.lst$
+.tmp$
+^src/
+Dockerfile
+Jenkinsfile
+fullog.txt
+ccode194.pl
+pre-setup.sh
