@@ -308,6 +308,10 @@ sub output {
         ++$name;
     }
 
+    # clear initav so we are not leaking to the main caller
+    # this is only required inside the 'chunks' functions 'aaaa', 'aaab', ....
+    local $self->{'initav'} = [];
+
     $output .= "\nPERL_STATIC_INLINE int ${init_name}(pTHX)\n{\n";
 
     if ( $self->name eq 'init' ) {

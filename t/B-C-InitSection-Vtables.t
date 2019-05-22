@@ -68,7 +68,6 @@ static void perl_my_init_vtable_aaaa(pTHX)
 
 PERL_STATIC_INLINE int perl_my_init_vtable(pTHX)
 {
-    register int i;
     perl_my_init_vtable_aaaa(aTHX);
     return 0;
 }

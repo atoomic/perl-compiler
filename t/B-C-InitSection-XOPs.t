@@ -72,7 +72,6 @@ static void perl_my_init_xops_aaaa(pTHX)
 
 PERL_STATIC_INLINE int perl_my_init_xops(pTHX)
 {
-	register int i;
     perl_my_init_xops_aaaa(aTHX);
     return 0;
 }
@@ -122,7 +121,6 @@ static void perl_my_init_xops_aaaa(pTHX)
 
 PERL_STATIC_INLINE int perl_my_init_xops(pTHX)
 {
-	register int i;
     perl_my_init_xops_aaaa(aTHX);
     return 0;
 }
