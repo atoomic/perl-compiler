@@ -120,6 +120,20 @@ void *bc_alloc( MEM_SIZE size ) {
 EXTERN_C void boot_[% xsub %] (pTHX_ CV* cv);
 [% END %]
 
+/*
+*   This is our `customOP` to setup one OP.op_ppaddr on demand
+*      it's only called once per OP, as we replace the op_ppaddr
+*/
+static PP(pp_bc_goto_op) {
+    /* this protection is moved to OP.pm in fake_ppaddr */
+    /* if ( PL_op->op_type < OP_max ) */
+    /* setup the OP addr for next call */
+    PL_op->op_ppaddr = PL_ppaddr[PL_op->op_type];
+
+    /* call the real OP */
+    return (* ( PL_op->op_ppaddr ) )(aTHX);
+}
+
 /************************************************************************************************************
 *
 *       Static shared HE

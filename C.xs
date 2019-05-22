@@ -803,6 +803,12 @@ op_folded(op)
 
 #endif
 
+I32
+op_max()
+    PPCODE:
+    PUSHi(OP_max);
+
+
 #/*
 #*   op_sibling and op_parent from B.xs are tight but do not return what is in the slot
 #*       op_sibling returns op_sibparent only if op_moresib is set...
