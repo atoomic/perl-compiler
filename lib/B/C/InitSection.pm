@@ -29,7 +29,7 @@ be generated.
 The function 'perl_init_XXXX' is a wrapper around these
 sub functions to call all of them.
 
-Every function can have its own 'header' aka initav
+Every function can have its own 'header' aka c_header
 which will be displayed inside each sub function.
 
 =cut
@@ -56,7 +56,7 @@ sub new {
     # one InitSection is sharing the helpers/methods from Section
     my $self  = $class->SUPER::new(@_);
 
-    $self->{'initav'}       = [];
+    $self->{'c_header'}       = [];
     $self->{'chunks'}       = [];
     $self->{'nosplit'}      = 0;
     $self->{'current'}      = [];
@@ -234,9 +234,9 @@ sub pre_destruct {
     push @{ $self->{'pre_destruct'} }, @_;
 }
 
-sub add_initav {
+sub add_c_header {
     my $self = shift;
-    push @{ $self->{'initav'} }, @_;
+    push @{ $self->{'c_header'} }, @_;
 }
 
 sub fixup_assignments {
@@ -283,7 +283,7 @@ sub output {
         # dTARG and dSP unused -nt
         $output .= "static void ${init_name}_${name}(pTHX)\n{\n";
 
-        foreach my $i ( @{ $self->{'initav'} } ) {
+        foreach my $i ( @{ $self->{'c_header'} } ) {
             $output .= "    $i\n";
         }
         foreach my $j (@$i) {
@@ -308,9 +308,9 @@ sub output {
         ++$name;
     }
 
-    # clear initav so we are not leaking to the main caller
+    # clear c_header so we are not leaking to the main caller
     # this is only required inside the 'chunks' functions 'aaaa', 'aaab', ....
-    local $self->{'initav'} = [];
+    local $self->{'c_header'} = [];
 
     $output .= "\nPERL_STATIC_INLINE int ${init_name}(pTHX)\n{\n";
 

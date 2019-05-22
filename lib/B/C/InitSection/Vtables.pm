@@ -26,7 +26,7 @@ sub add_pvmg {
     if ( !defined $self->{group} ) {
         $self->{group} = {};
         # only declar the variable once per function
-        $self->add_initav('register int i;');
+        $self->add_c_header('register int i;');
     }
 
     $self->{group} //= {};

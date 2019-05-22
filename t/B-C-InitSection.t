@@ -37,7 +37,7 @@ EOS
 my $another_section = B::C::InitSection->new( 'another', \%symtable, 0 );
 ok !$another_section->has_values(), "no values added to the section";
 
-$another_section->add_initav("register int i;");
+$another_section->add_c_header("register int i;");
 
 ok !$another_section->has_values(), "section has no values: only header set";
 

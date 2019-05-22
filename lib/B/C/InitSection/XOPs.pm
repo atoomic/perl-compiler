@@ -68,7 +68,7 @@ sub flush {
 
     return unless defined $self->{xops};
 
-    $self->add_initav('register int i;');
+    $self->add_c_header('register int i;');
 
     foreach my $name ( sort keys %{ $self->{xops} } ) {
         my $xop    = $self->{xops}->{$name};

@@ -18,7 +18,7 @@ sub new {
         'symtable' => $symtable,
         'default'  => $default,
         'values'   => [],
-        'initav'   => [],
+        'c_header'   => [],
     }, $class;
     $sections{$section} = $self;
 
@@ -338,9 +338,9 @@ sub debug {
     return $self->{'dbg'}->[$ix];
 }
 
-sub add_initav {
+sub add_c_header {
     my $self = shift;
-    push @{ $self->{'initav'} }, @_;
+    push @{ $self->{'c_header'} }, @_;
 }
 
 sub output {
@@ -367,7 +367,7 @@ sub output {
     # check if the format already provide a closing comment
     my $wrap_debug_with_comment = $format =~ qr{\Q*/\E\s+$} ? 0 : 1;
 
-    foreach my $i ( @{ $self->{'initav'} } ) {
+    foreach my $i ( @{ $self->{'c_header'} } ) {
         $output .= "    $i\n";
     }
 
