@@ -8,8 +8,9 @@ LOG=/tmp/log.bc.configure
 find lib/B/C/ -name "*.pm" | xargs -n1 perl -Ilib -c >$LOG 2>&1
 ERRORS=$(grep -c -v 'syntax OK' $LOG)
 if [ "x$ERRORS" != "x0" ]; then
+    echo "!!! Syntax Errors:"
     cat $LOG
-    return 1
+    exit 1
 fi
 echo "Check: ok"
 
