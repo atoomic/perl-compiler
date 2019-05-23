@@ -274,6 +274,32 @@ XS(XS_DynaLoader_dl_load_file);
 XS(XS_DynaLoader_dl_find_symbol);
 [% END %]
 
+[% IF SETUP_ALL_OPS -%]
+/*
+*   This is an 'on demand' (de)optimization where we would preset every OPs
+*       to their address at startup. Useful for daemons forking kids for example.
+*/
+
+#define SetupOPList(oplist,s) for (i=0; i<s; ++i) { \
+    if ( oplist[i].op_ppaddr == &Perl_pp_bc_goto_op ) { \
+        oplist[i].op_ppaddr = PL_ppaddr[ oplist[i].op_type ]; \
+    } }
+
+static void setup_all_ops() {
+    /* helper to setup all OPs.op_ppaddr */
+    register int i;
+
+[% FOREACH name IN op_section_list -%]
+[% size = section.$name.index + 1 -%]
+[% NEXT IF size == 0 -%]
+[% SET oplist = "${name}_list" -%]
+    SetupOPList( [% oplist %], [% size %] );
+[% END -%]
+
+}
+[% END -%]
+
+
 /************************************************************************************************************
 *
 *       start COWPVs
@@ -398,7 +424,7 @@ static void HvAddEntry(HV* hv, SV* value, SHARED_HE* hek, I32 max) {
     return;
 }
 
-[% IF devel_peek_needed %]
+[% IF devel_peek_needed -%]
 static void
 S_do_dump(pTHX_ SV *const sv, I32 lim)
 {
@@ -421,7 +447,7 @@ S_pp_dump(pTHX)
     S_do_dump(aTHX_ sv, lim);
     RETPUSHUNDEF;
 }
-[% END %]
+[% END -%]
 
 /*
     cop_list - array of cops in the code. for debugging, line number info. State/Context op. "Every ; is a cop."
@@ -439,15 +465,13 @@ S_pp_dump(pTHX)
     xpvio_list - iosect - initial state of all file handles
 */
 
-[% FOREACH sect IN section_list %]
-[% lines = section.$sect.index + 1 %]
-[% NEXT IF lines == 0 %]
+[% FOREACH sect IN section_list -%]
+[% lines = section.$sect.index + 1 -%]
+[% NEXT IF lines == 0 -%]
 Static [% section.$sect.typename() %] [% section.$sect.name() %]_list[[% lines %]] = {
 [% section.$sect.output("    { %s }, /* %s_list[%d] %s %s */\n") %]
 };
-
-
-[% END %]
+[% END -%]
 
 /* handy helpers for B::C */
 
@@ -478,7 +502,7 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
 
 /* end of handy helpers */
 
-[% IF section.init_xops.has_values %]
+[% IF section.init_xops.has_values -%]
 static void *bc_xop_ppaddr_from_name(const char* name) {
     HE *he;
     SV *sv;
@@ -512,13 +536,13 @@ static void *bc_xop_ppaddr_from_name(const char* name) {
 }
 
 /* end of init_xops section */
-[% END %]
+[% END -%]
 
-[% FOREACH name IN init_section_list %]
-[% NEXT IF name == 'init_xops' && !section.$name.has_values  %]
+[% FOREACH name IN init_section_list -%]
+[% NEXT IF name == 'init_xops' && !section.$name.has_values  -%]
 /* setup init section: [%= name %] [% section.$name.name %] */
 [% section.$name.output() %]
-[% END %]
+[% END -%]
 
 #define SIG_SIZE [% Config.sig_size %]
 
@@ -1091,10 +1115,14 @@ main(int argc, char **argv, char **env)
     /* link the CVs to the bootstrapped ones */
     perl_init_bootstraplink( aTHX );
 
-    [% IF XS.need_extra_xs_call() %]
+    [% IF XS.need_extra_xs_call() -%]
     /* some XS modules need to call an additional CV at boot (like Encode::onBOOT) */
     bootstrap_call_extra_CVs( aTHX );
-    [% END %]
+    [% END -%]
+
+    [% IF SETUP_ALL_OPS -%]
+    setup_all_ops();
+    [% END -%]
 
     [% IF section.init_xops.has_values %]
     /* need to occurs after the XS bootstrap to have PL_custom_ops initialized */
