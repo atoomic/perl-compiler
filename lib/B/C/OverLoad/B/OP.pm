@@ -92,8 +92,4 @@ sub save_baseop {
     return sprintf( $template, @values );
 }
 
-# XXX HACK! duct-taping around compiler problems
-sub isa { UNIVERSAL::isa(@_) }                                                      # walkoptree_slow misses that
-sub can { UNIVERSAL::can(@_) }
-
 1;
