@@ -12,6 +12,8 @@ lib/B/C/File.pm
 lib/B/C/Helpers.pm
 lib/B/C/Helpers/Symtable.pm
 lib/B/C/InitSection.pm
+lib/B/C/InitSection/Vtables.pm
+lib/B/C/InitSection/XOPs.pm
 lib/B/C/IsUsingModule.pm
 lib/B/C/Memory.pm
 lib/B/C/OP.pm
