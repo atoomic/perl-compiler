@@ -341,7 +341,6 @@ sub save_main_rest {
     $settings->{'XS'}->write_lst();
     my $c_file_stash = build_template_stash();
 
-    fixup_ppaddr();
     do_remap_xs_symbols();
 
     debug("Writing output");
@@ -534,36 +533,6 @@ sub is_bootstrapped_cv {
 
     return $1 if $str =~ m{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP};
     return;
-}
-
-# This code sets all op_ppaddr addresses on startup from PL_ppaddr[] which
-# I guess is dynamic so has to be set on startup every time?
-# This means ALL ops have to have been saved before calling this sub.
-sub fixup_ppaddr {
-    foreach my $op_section_name ( B::C::File::op_sections() ) {
-        my $section = B::C::File::get_sect($op_section_name);
-        my $num     = $section->index;
-        next unless $num >= 0;
-        init_op_addr( $section->name, $num + 1 );
-    }
-}
-
-sub init_op_addr {
-    my ( $op_type, $num ) = @_;
-    my $op_list = $op_type . "_list";
-
-    if ( ! init0()->{_OP_ADDR} ) {
-        init0()->add_c_header( 'register int i;' ); # declare it once per function
-        init0()->add_c_header( '' );
-        init0()->{_OP_ADDR} = 1;
-    }
-
-    init0()->add( split /\n/, <<_EOT3 );
-    for( i = 0; i < ${num}; ++i ) {
-        ${op_list}\[i].op_ppaddr = PL_ppaddr[PTR2IV(${op_list}\[i].op_ppaddr)];
-    }
-_EOT3
-
 }
 
 # 5.15.3 workaround [perl #101336], without .bs support

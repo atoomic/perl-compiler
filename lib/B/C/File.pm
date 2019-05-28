@@ -52,13 +52,15 @@ sub re_initialize {    # only for unit tests purpose
 
 # The objects in quotes do not have any special logic.
 sub code_section_names {
-    return qw{cowpv const typedef decl init0 free sym hek sharedhe sharedhestructs}, struct_names(), op_sections();
+    return qw{cowpv const typedef decl init0 free sym hek sharedhe sharedhestructs},
+      struct_names(), op_sections();
 }
 
 # These objects will end up in an array of structs in the template and be auto-declared.
 sub struct_names {
     return qw( malloc xpv xpvav xpvhv xpvcv padlist padname padnamelist magic
-      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv gv gp xpvgv lexwarn refcounted_he), assign_sections();
+      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv gv gp xpvgv lexwarn refcounted_he),
+      assign_sections();
 }
 
 sub assign_sections {
@@ -71,10 +73,13 @@ sub meta_sections {
 }
 
 # These populate the init sections and have a special header.
-sub init_section_names { return qw /init0 init init_regexp init_xops init1 init2 init_stash init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink/ }
+sub init_section_names {
+    return qw{ init0 init init_regexp init_xops init1 init2 init_stash
+      init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink };
+}
 
 sub op_sections {
-    return qw { binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};
+    return qw{ binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};
 }
 
 BEGIN {
@@ -193,9 +198,21 @@ sub write {
         struct_names(),
         op_sections(),
     ];
+
+    # perl -e 'use Cpanel::Internals; BEGIN { B::C::setup_all_ops() }'
+    # perl -e 'BEGIN { *B::C::SETUP_ALL_OPS = sub { 1 } }'
+    $c_file_stash->{SETUP_ALL_OPS} = 0;
+    if ( my $f = B::C->can('SETUP_ALL_OPS') ) {    # define in Cpanel/Internals.pm
+        $c_file_stash->{SETUP_ALL_OPS} = $f->() // 0;
+    }
+
+    #$c_file_stash->{SETUP_ALL_OPS} = 1; # testing...
+
+    $c_file_stash->{op_section_list} = [ op_sections() ];
+
     $c_file_stash->{meta_section_list} = [ meta_sections() ];
 
-    $self->{'sharedhestructs'}->sort();    # sort them for human readability
+    $self->{'sharedhestructs'}->sort();            # sort them for human readability
 
     foreach my $section ( code_section_names(), init_section_names() ) {
         $c_file_stash->{'section'}->{$section} = $self->{$section};

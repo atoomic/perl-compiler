@@ -46,17 +46,31 @@ sub do_update {
 sub B::OP::fake_ppaddr {
     my $op = shift;
     return "NULL" unless $op->can('name');
-    if ( $op->type == $OP_CUSTOM ) {
+
+    my $type = $op->type;
+    my $name = $op->name;
+
+    if ( $type == $OP_CUSTOM ) {
 
         # filled at run time with the correct addr from PL_custom_ops
-        init_xops()->xop_used_by( $op->name, objsym($op) );
-        return sprintf( "/* XOP %s */ NULL", $op->name );
+        init_xops()->xop_used_by( $name, objsym($op) );
+        return sprintf( "/* XOP %s */ NULL", $name );
     }
 
     # we are using this slot to store the OP TYPE
     #   which is going to be replaced at init time by init0
     #   maybe we could try a lazy init of the OP by using a fake OP
-    return sprintf( "INT2PTR(void*,OP_%s)", uc( $op->name ) );
+
+    # use a lazy OP to determine on demand the addr
+    if ( 0 <= $type && $type < B::OP::max() ) {
+        return '&Perl_pp_bc_goto_op';
+    }
+
+    # sanity check to see if this occurs
+    #   we might want to return the Perl_pp_bc_goto_op also...
+    die "Unknown OP type: $type / name: $name\n";
+
+    return 'NULL';
 }
 
 sub basop_comment {
