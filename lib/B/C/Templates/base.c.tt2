@@ -464,15 +464,47 @@ PAD ** INITPADLIST(PADLIST *pad, int number_of_items) {
 
 /* end of handy helpers */
 
+[% IF section.init_xops.has_values %]
+static void *bc_xop_ppaddr_from_name(const char* name) {
+    HE *he;
+    SV *sv;
+    void *op_ppaddr = 0;
 
-[% section.init_stash.output( "    %s\n", 'perl_init_stash' ) %]
+    /* lookup for the custom op with name */
 
-[% section.init_static_assignments.output( "    %s\n", 'perl_init_static_assignments' ) %]
+    if ( PL_custom_ops ) {
+        hv_iterinit(PL_custom_ops);
+        while ( (he = hv_iternext(PL_custom_ops)) ) {
+            sv = HeVAL(he);
+            /* { PTR2IV(ppaddr) => PTR2IV(xop) } */
+            //PerlIO_printf(Perl_debug_log, " - got a key value... %x\n", SvIV(sv) );
+            XOP *xop = (XOP*) SvIV(sv);
 
-[% section.init_vtables.output( "    %s\n", 'perl_init_vtables' ) %]
+            if ( strEQ(xop->xop_name, name) ) {
+                //PerlIO_printf(Perl_debug_log, "found xOP %s\n", name);
+                //SV *key = HeSVKEY_force(he);
+                op_ppaddr = (void *) strtol( (char *) HeKEY(he), NULL, 10 );
+                break;
+            }
 
-[% section.init_COREbootstraplink.output( "    %s\n", 'perl_init_COREbootstraplink' ) %]
-[% section.init_bootstraplink.output( "    %s\n", 'perl_init_bootstraplink' ) %]
+        }
+    }
+
+    /* sanity check that we found the Custom OP */
+    if (!op_ppaddr)
+        Perl_croak_nocontext("Failed to find Custom OP for '%s'", name);
+
+    return op_ppaddr;
+}
+
+/* end of init_xops section */
+[% END %]
+
+[% FOREACH name IN init_section_list %]
+[% NEXT IF name == 'init_xops' && !section.$name.has_values  %]
+/* setup init section: [%= name %] [% section.$name.name %] */
+[% section.$name.output() %]
+[% END %]
 
 #define SIG_SIZE [% Config.sig_size %]
 
@@ -550,22 +582,6 @@ static void init_pl_strtab(pTHX) {
 
 [% END %]
 }
-
-static void perl_init0(pTHX) { /* fixup_ppaddr */
-[% section.init0.output( "    %s\n" ) %]
-};
-
-
-[% section.init.output( "    %s\n", init_name ) %]
-
-/* deferred init1 of regexp */
-[% section.init1.output( "    %s\n", "perl_init1" ) %]
-
-/* deferred init of XS/Dyna loaded modules */
-
-[% section.init2.output( "    %s\n", 'perl_init2' ) %]
-
-[% section.init_regexp.output( "    %s\n", 'perl_init_regexp' ) %]
 
 /*
     COMPILE STATS:  [% compile_stats %]
@@ -1064,6 +1080,11 @@ main(int argc, char **argv, char **env)
     [% IF XS.need_extra_xs_call() %]
     /* some XS modules need to call an additional CV at boot (like Encode::onBOOT) */
     bootstrap_call_extra_CVs( aTHX );
+    [% END %]
+
+    [% IF section.init_xops.has_values %]
+    /* need to occurs after the XS bootstrap to have PL_custom_ops initialized */
+    perl_init_xops( aTHX );
     [% END %]
 
     /* We need to output evals after dl_init, in init2  */

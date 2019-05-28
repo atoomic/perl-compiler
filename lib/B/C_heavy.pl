@@ -553,8 +553,8 @@ sub init_op_addr {
     my $op_list = $op_type . "_list";
 
     if ( ! init0()->{_OP_ADDR} ) {
-        init0()->add_initav( 'register int i;' ); # declare it once per function
-        init0()->add_initav( '' );
+        init0()->add_c_header( 'register int i;' ); # declare it once per function
+        init0()->add_c_header( '' );
         init0()->{_OP_ADDR} = 1;
     }
 

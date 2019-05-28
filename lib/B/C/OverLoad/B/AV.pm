@@ -212,7 +212,7 @@ sub add_to_init {
     if ( !$deferred_init->{_AV} ) {
 
         # declare it once at beginning of the function
-        $deferred_init->add_initav("register int gcount;");
+        $deferred_init->add_c_header("register int gcount;");
         $deferred_init->{_AV} = 1;
     }
 

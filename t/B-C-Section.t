@@ -32,10 +32,19 @@ my $expect = "NULL, 1, SVTYPEMASK|0x01000000, {0}\n";
 is( $svsect->output("%s\n"), $expect, "svsect initializes with something automatically?" );
 is( $svsect->index(),        0,       "Indext for svsect is right" );
 
+{
+	eval { $svsect->output(); 1 }, undef, "cannot call output twice";
+	like $@, qr{B::C::Section output should only be called once}, 'B::C::Section output should only be called once';		
+	ok $svsect->{_output_called}, "_output_called is set";
+	$svsect->{_output_called} = undef; # disable the protection for the test
+}
+
 $svsect->add("yabba dabba doo");
 $expect .= "yabba dabba doo\n";
 is( $svsect->output("%s\n"), $expect, "svsect retains what was added. with something automatically?" );
 is( $svsect->index(),        1,       "Index for svsect is right" );
+
+$svsect->{_output_called} = undef; # disable the protection for the test
 
 $svsect->remove;
 $expect = "NULL, 1, SVTYPEMASK|0x01000000, {0}\n";
@@ -82,16 +91,22 @@ is( $bbbsect->debug( 'some', undef, 'lines', undef), 'some, undef, lines, undef'
 	trap { $string = $bbbsect->output("%s\n") };
 	is( $string, "first row\nsecond row\nthird row\n", "Simple output" );
 
+	$bbbsect->{_output_called} = undef; # disable the protection for the test
+
 	# testing with an unresolved symbol
 	$bbbsect = B::C::Section->new( 'bbb', \%symtable, 'default_value_here' );
 	$bbbsect->add("first", "s\\_134bcef33", 'third');
 	trap { $string = $bbbsect->output("%s,\n") };
 	is( $string, "first,\ndefault_value_here,\nthird,\n", "unresolved symbol" );
 
+	$bbbsect->{_output_called} = undef; # disable the protection for the test
+
 	# testing with a resolved symbol now
 	$symtable{'s\_134bcef33'} = "resolved";
 	trap { $string = $bbbsect->output("%s,\n") };
 	is( $string, "first,\nresolved,\nthird,\n", "resolved symbol" );
+
+	$bbbsect->{_output_called} = undef; # disable the protection for the test
 
 	# testing get
 	is $bbbsect->get( 0 ), 'first', 'get the first row';

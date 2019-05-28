@@ -18,7 +18,7 @@ sub new {
         'symtable' => $symtable,
         'default'  => $default,
         'values'   => [],
-        'initav'   => [],
+        'c_header'   => [],
     }, $class;
     $sections{$section} = $self;
 
@@ -29,6 +29,12 @@ sub new {
     }
 
     return $self;
+}
+
+sub has_values {
+    my ( $self ) = @_;
+
+    return scalar @{$self->{values}} >= 1 ? 1 : 0;
 }
 
 sub add {
@@ -332,13 +338,18 @@ sub debug {
     return $self->{'dbg'}->[$ix];
 }
 
-sub add_initav {
+sub add_c_header {
     my $self = shift;
-    push @{ $self->{'initav'} }, @_;
+    push @{ $self->{'c_header'} }, @_;
 }
 
 sub output {
     my ( $self, $format ) = @_;
+
+    # weird things would occur if we call the output more than once
+    die ref($self)." output should only be called once" if $self->{_output_called};
+    $self->{_output_called} = 1;
+
     my $sym     = $self->symtable;    # This should always be defined. see new
     my $default = $self->default;
 
@@ -356,7 +367,7 @@ sub output {
     # check if the format already provide a closing comment
     my $wrap_debug_with_comment = $format =~ qr{\Q*/\E\s+$} ? 0 : 1;
 
-    foreach my $i ( @{ $self->{'initav'} } ) {
+    foreach my $i ( @{ $self->{'c_header'} } ) {
         $output .= "    $i\n";
     }
 

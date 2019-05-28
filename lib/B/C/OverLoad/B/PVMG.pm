@@ -45,7 +45,7 @@ sub do_save {
         ( ( $fullname and $fullname =~ /^svop const|^padop|^Encode::Encoding| :pad\[1\]/ ) )
         and $ivx > LOWEST_IMAGEBASE    # some crazy heuristic for a sharedlibrary ptr in .data (> image_base)
         and ref( $sv->SvSTASH ) ne 'B::SPECIAL'
-      ) {
+    ) {
         # restore the old _patch_dlsym which is updating pointer to C functions
         $ivx = _patch_dlsym( $sv, $fullname, $ivx );
     }
@@ -211,7 +211,13 @@ sub save_magic {
             init_static_assignments()->sadd( q{%s.mg_ptr = (char*) %s;}, $last_magic, $init_ptrsv );
         }
 
-        init_vtables()->sadd( '%s.mg_virtual = (MGVTBL*) &PL_vtbl_%s;', $last_magic, $vtable ) if $vtable;
+        if ($vtable) {
+
+            # simplified version
+            #init_vtables()->sadd( 'magic_list[%d].mg_virtual = (MGVTBL*) &PL_vtbl_%s;', $last_magic_ix, $vtable );
+            # taking care of the group
+            init_vtables()->add_pvmg( $last_magic_ix, $vtable );
+        }
         $last_magic = "&" . $last_magic;
     }
 

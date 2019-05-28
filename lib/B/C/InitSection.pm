@@ -1,22 +1,62 @@
 package B::C::InitSection;
+
 use strict;
 use warnings;
 
-# avoid use vars
-our @ISA = qw/B::C::Section/;
+use base 'B::C::Section';
 
-use B::C::Debug qw(debug);
 use B qw(cstring);
+use B::C::Debug qw(debug);
 use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
 
 # All objects inject into this shared variable.
 our @all_eval_pvs;
 
+=pod
+
+One InitSection is used to generate C code inside
+a function which is going to be called at 'init' time
+before running the Perl Program.
+
+By Default, one initsections is a list of 'C code' lines
+When rendering the C code, one or several 'chunks' are going to
+be generated.
+
+    perl_init_XXXX_aaaa();
+    perl_init_XXXX_aaab();
+    ....
+
+The function 'perl_init_XXXX' is a wrapper around these
+sub functions to call all of them.
+
+Every function can have its own 'header' aka c_header
+which will be displayed inside each sub function.
+
+=cut
+
+sub BUILD { # ~factory
+    my ( $pkg, $name, @args ) = @_;
+
+    if ( $name && $name eq 'init_vtables' ) {
+        require B::C::InitSection::Vtables;
+        return B::C::InitSection::Vtables->new( $name, @args );
+    }
+
+    if ( $name && $name eq 'init_xops' ) {
+        require B::C::InitSection::XOPs;
+        return B::C::InitSection::XOPs->new( $name, @args );
+    }
+
+    return $pkg->new( $name, @args );
+}
+
 sub new {
     my $class = shift;
+
+    # one InitSection is sharing the helpers/methods from Section
     my $self  = $class->SUPER::new(@_);
 
-    $self->{'initav'}       = [];
+    $self->{'c_header'}       = [];
     $self->{'chunks'}       = [];
     $self->{'nosplit'}      = 0;
     $self->{'current'}      = [];
@@ -30,6 +70,24 @@ sub new {
     return $self;
 }
 
+=pod
+
+has_values: does that init section contains any lines?
+
+=cut
+sub has_values {
+    my ( $self ) = @_;
+
+    # we cannot use the 'count' value has it's reset when adding chunks..
+
+    # either we already have a chunk
+    return 1 if scalar @{ $self->{'chunks'} };
+    # or we have some values in current
+    return 1 if scalar @{ $self->{'current'} };
+
+    return;
+}
+
 {
     my $status;
     my %blacklist;    # disable benchmark inside some specific sections
@@ -39,7 +97,8 @@ sub new {
         my $self = shift;
 
         unless ($init_benchmark) {
-            my $assign_sections = B::C::File->can('assign_sections') or die;
+            require B::C::File;
+            my $assign_sections = B::C::File->can('assign_sections') or die "missing assign_sections";
             $blacklist{$_} = 1 for $assign_sections->();
             $init_benchmark = 1;
         }
@@ -111,6 +170,7 @@ sub inc_count {
 
 sub add {
     my ( $self, @lines ) = @_;
+
     my $current = $self->{'current'};
     my $nosplit = $self->{'nosplit'};
 
@@ -174,9 +234,9 @@ sub pre_destruct {
     push @{ $self->{'pre_destruct'} }, @_;
 }
 
-sub add_initav {
+sub add_c_header {
     my $self = shift;
-    push @{ $self->{'initav'} }, @_;
+    push @{ $self->{'c_header'} }, @_;
 }
 
 sub fixup_assignments {
@@ -184,8 +244,29 @@ sub fixup_assignments {
 
 }
 
+=pod
+
+flush:
+
+Make sure any internal content stored in the InitSection
+object is processed before rendering as a 'C string' code.
+
+=cut
+
+sub flush { # by default do nothing
+    my ( $self ) = @_;
+
+    return $self; # can chain like flush.output
+}
+
 sub output {
     my ( $self, $format, $init_name ) = @_;
+
+    $format    //= "    %s\n";
+    $init_name //= 'perl_' . $self->name;
+
+    $self->flush(); # autoflush
+
     my $sym = $self->symtable || {};
     my $default = $self->default;
 
@@ -202,7 +283,7 @@ sub output {
         # dTARG and dSP unused -nt
         $output .= "static void ${init_name}_${name}(pTHX)\n{\n";
 
-        foreach my $i ( @{ $self->{'initav'} } ) {
+        foreach my $i ( @{ $self->{'c_header'} } ) {
             $output .= "    $i\n";
         }
         foreach my $j (@$i) {
@@ -227,6 +308,10 @@ sub output {
         ++$name;
     }
 
+    # clear c_header so we are not leaking to the main caller
+    # this is only required inside the 'chunks' functions 'aaaa', 'aaab', ....
+    local $self->{'c_header'} = [];
+
     $output .= "\nPERL_STATIC_INLINE int ${init_name}(pTHX)\n{\n";
 
     if ( $self->name eq 'init' ) {
@@ -234,6 +319,8 @@ sub output {
     }
     $output .= $self->SUPER::output($format);
     $output .= "    return 0;\n}\n";
+
+    return $output;
 }
 
 1;

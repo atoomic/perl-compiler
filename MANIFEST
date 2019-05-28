@@ -12,6 +12,8 @@ lib/B/C/File.pm
 lib/B/C/Helpers.pm
 lib/B/C/Helpers/Symtable.pm
 lib/B/C/InitSection.pm
+lib/B/C/InitSection/Vtables.pm
+lib/B/C/InitSection/XOPs.pm
 lib/B/C/IsUsingModule.pm
 lib/B/C/Memory.pm
 lib/B/C/OP.pm
@@ -75,6 +77,9 @@ STATUS
 status_upd
 store_rpt
 t/B-C-Helpers_key_was_in_starting_stash.t
+t/B-C-InitSection-Vtables.t
+t/B-C-InitSection-XOPs.t
+t/B-C-InitSection.t
 t/B-C-Overload-B-GV_begin_cv_only.t
 t/B-C-Overload-B-HV_get_max_hash_from_keys.t
 t/B-C-Overload-B-HV_next_power.t
