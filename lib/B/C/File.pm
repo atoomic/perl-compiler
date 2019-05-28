@@ -52,7 +52,7 @@ sub re_initialize {    # only for unit tests purpose
 
 # The objects in quotes do not have any special logic.
 sub code_section_names {
-    return qw{cowpv const typedef decl init0 free sym hek sharedhe sharedhestructs},
+    return qw{cowpv const typedef decl init0 free sym hek lazyregex sharedhe sharedhestructs},
       struct_names(), op_sections();
 }
 

@@ -4,21 +4,25 @@ use strict;
 
 use B qw/RXf_EVAL_SEEN PMf_EVAL PMf_KEEP SVf_UTF8 svref_2object/;
 use B::C::Debug qw/debug/;
-use B::C::File qw/pmopsect init init1 init2/;
+use B::C::File qw/pmopsect init init1 init2 lazyregex/;
 use B::C::Helpers qw/strlen_flags/;
 use B::C::Save qw/savecowpv/;
 
 # Global to this space?
 my ($swash_init);
 
-my %saved_re;
+my %CACHE_SAVED_RX;    # all previously saved RegExp
+
+use constant IX_PPADDR   => 2;     # where is stored ppaddr in the PMOP struct
+use constant IX_REGEXP   => 16;    # where is stored pmfflags in the PMOP struct
+use constant IX_PMFFLAGS => 17;    # where is stored pmregexp in the PMOP struct
 
 sub do_save {
     my ($op) = @_;
 
-    pmopsect()->comment_for_op("first, last, pmoffset, pmflags, pmreplroot, pmreplstart");
+    pmopsect()->comment_for_op("first, last, pmregexp, pmflags, pmreplroot, pmreplstart");
     my ( $ix, $sym ) = pmopsect()->reserve( $op, 'OP*' );
-    $sym =~ s/^\(OP\*\)//;     # Strip off the typecasting for local use but other callers will get our casting.
+    $sym =~ s/^\(OP\*\)//;         # Strip off the typecasting for local use but other callers will get our casting.
     pmopsect()->debug( $op->name, $op );
 
     my $replroot  = $op->pmreplroot;
@@ -86,52 +90,84 @@ sub do_save {
         # some pm need early init (242), SWASHNEW needs some late GVs (GH#273)
         # esp with 5.22 multideref init. i.e. all \p{} \N{}, \U, /i, ...
         # But XSLoader and utf8::SWASHNEW itself needs to be early.
-        my $initpm = init1();
+        my $initpm    = init1();
+        my $can_defer = 1;
 
         if (   $qre =~ m/\\[pNx]\{/
             || $qre =~ m/\\U/
             || ( $op->reflags & SVf_UTF8 || $utf8 ) ) {
             $initpm = init2();
+
+            # If these are deferred the error message will change
+            # because the sequence will not be inited soon enough
+            $can_defer = 0;
         }
 
         my $eval_seen = $op->reflags & RXf_EVAL_SEEN;
-        $initpm->open_block();
-        if ($eval_seen) {    # set HINT_RE_EVAL on
-            $pmflags |= PMf_EVAL;
-            $initpm->add('U32 hints_sav = PL_hints;');
-            $initpm->add('PL_hints |= HINT_RE_EVAL;');
+        $can_defer = 0 if $eval_seen;
+
+        if ( !$can_defer ) {
+            $initpm->open_block();    # make sure everything is in a single block - not cut over two functions
+            if ($eval_seen) {         # we cannot compile RegExp with eval at runtime
+                                      # set HINT_RE_EVAL on
+                $pmflags |= PMf_EVAL;
+                $initpm->add('U32 hints_sav = PL_hints;');
+                $initpm->add('PL_hints |= HINT_RE_EVAL;');
+            }
+            $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
+            $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(%s)) = 0x%x;", $sym, $op->reflags );
+            if ($eval_seen) {
+                $initpm->add('PL_hints = hints_sav;');    # set HINT_RE_EVAL off
+            }
+            $initpm->close_block();
         }
 
-        my $key = sprintf( "((%s, %s, SVs_TEMP|%s), 0x%x, 0x%x)", $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags, $op->reflags );
-        my $pre_saved_sym = $saved_re{$key};
+        # not a /o regexp and regexp was already seen at compile time [bind_match]
+        elsif ( !( $pmflags & PMf_KEEP ) && ref $op->last eq 'B::LOGOP' ) {
+            1;                                            # ignored
+        }
+        else {
+            my $key = sprintf( "((%s, %s, SVs_TEMP|%s), 0x%x, 0x%x)", $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags, $op->reflags );
+            my $saved_rx = $CACHE_SAVED_RX{$key};
 
-        # XXX Modification of a read-only value attempted. use DateTime - threaded
-        if (
-            $pre_saved_sym &&    # If we have already seen this regex
-            !$eval_seen    &&    # and it does not have an eval
-            !_regex_has_capture($re)    # and it does not have a capture
-          ) {                           # we can just use the reference.
+            my $ix_bcrx;                                  # point to one index in rx_list
 
             my $comment = $qre;
             $comment =~ s{\Q/*\E}{??}g;
             $comment =~ s{\Q*/\E}{??}g;
 
-            $initpm->sadd( "PM_SETRE(%s, ReREFCNT_inc(PM_GETRE(%s))); /* %s */", $sym, $pre_saved_sym, $comment );
-        }
-        # not a /o regexp and regexp was already seen at compile time [bind_match]
-        elsif ( ! ($pmflags & PMf_KEEP) && ref $op->last eq 'B::LOGOP' ) {
-            1;
-        }
-        else {
-            $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
-            $initpm->sadd( "RX_EXTFLAGS(PM_GETRE(%s)) = 0x%x;", $sym, $op->reflags );
-            $saved_re{$key} = $sym;
-        }
+            if (
+                $saved_rx                                 # If we have already seen this regex
+                && !_regex_has_capture($re)               # and it does not have a capture
+              ) {                                         # we can just use the reference.
+                $ix_bcrx = $saved_rx->{ix};
+                ++$saved_rx->{refcnt};                    # increase the refcnt
 
-        if ($eval_seen) {    # set HINT_RE_EVAL off
-            $initpm->add('PL_hints = hints_sav;');
+                my $IX_REFCNT = 6;                        # where is stored our RefCNT in the struct
+                lazyregex()->supdate_field( $ix_bcrx, $IX_REFCNT, ' %u', $saved_rx->{refcnt} );
+            }
+            else {
+                # ix where we store all informations in the rx_list
+                $ix_bcrx = lazyregex()->sadd(             #
+                    "%s, %s, %s, SVs_TEMP|%s, 0x%x, 0x%x, %d /* RefCNT */",    #
+                    'NULL', $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags, $op->reflags
+                );
+
+                $CACHE_SAVED_RX{$key} = {
+                    ix     => $ix_bcrx,
+                    refcnt => 1,
+                };
+            }
+
+            # update the op to use our custom lazy RegExp OP
+            pmopsect()->supdate_field( $ix, IX_PPADDR, ' %s', '&Perl_pp_bc_init_pmop' );
+
+            # we are stealing the pmflags to store our index in the list
+            # We shift it PMf_BASE_SHIFT to the left so that the
+            # PMf flags are always unset in the event this is a regex with
+            # a variable
+            pmopsect()->supdate_field( $ix, IX_PMFFLAGS, ' %u << PMf_BASE_SHIFT /* fake_pmflags */', $ix_bcrx );
         }
-        $initpm->close_block();
     }
 
     if ( $replrootfield && $replrootfield ne 'NULL' && $replrootfield ne '(void*)Nullsv' ) {
