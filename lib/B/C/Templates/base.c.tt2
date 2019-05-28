@@ -126,6 +126,7 @@ static PP(pp_bc_goto_op) {
     return (* ( PL_op->op_ppaddr ) )(aTHX);
 }
 
+
 /************************************************************************************************************
 *
 *       Static shared HE
@@ -158,6 +159,29 @@ Static SHARED_HE* sharedhe_list[[% section.sharedhe.index + 1 %]] =  {
     (SHARED_HE*) &sHe[% num %], /* sharedhe_list[[%num%]] */
 [%- END %]
 };
+
+
+/************************************************************************************************************
+*
+*    Lazy Regxp
+*
+*************************************************************************************************************/
+
+typedef struct lazy_regexp_s {
+    REGEXP *   regex; /* pointer to a RegExp object, NULL at startup */
+    char *     qre;
+    STRLEN     qrelen;
+    U32        flags;
+    U32        pmflags;
+    U32        reflags;
+    U32        refcnt;
+} LazyRegExp;
+
+
+Static LazyRegExp rx_list[[% section.lazyregex.index + 1 %]] =  {
+[% section.lazyregex.output("    { %s }, /* %s_list[%d] %s %s */\n") %]
+};
+
 
 /************************************************************************************************************
 *
@@ -440,6 +464,65 @@ S_pp_dump(pTHX)
     RETPUSHUNDEF;
 }
 [% END -%]
+
+[% # Start PMOP Lazy RegExp -%]
+[% IF section.pmop.index >= 0 -%]
+/*
+*   This is our `customOP` to initialize a RegExp inside a PMOP
+*      it's only called once per PMOP,
+*      we can reuse the same RegExp for multiple PMOPs [compiled once]
+*/
+
+static PP(pp_bc_init_pmop) {
+  /* The op_pmflags is the position of the uncompiled regex in the rx_list */
+  /* We will reset op_pmflags to the actual value below 
+    When we stored the fake op_pmflags we shifted it to the left
+    PMf_BASE_SHIFT bits to avoid it being seen as a PMf flag
+  */
+  LazyRegExp rx;
+  int slot = (int) ( (PMOP*) PL_op)->op_pmflags >> PMf_BASE_SHIFT;
+
+  /* sanity check to detect OP which are using a RegExp */
+  if (slot >= [% section.lazyregex.index + 1 %]) {
+    Perl_croak_nocontext("PMOP has a RegExp already set... %d", PTR2IV(PL_op));
+  }
+
+  rx = rx_list[slot];
+
+  /* always restore the original pmflags to its original value */
+  ( (PMOP*) PL_op)->op_pmflags = rx.pmflags;
+   /* If the regex has a variable in it, op_pmregexp will
+      already be filled for us so we continue on and do not
+      compile or store the regex */
+    if ( rx.regex == NULL ) {
+      /* first time that RegExp is triggered initialize it */
+      int i;
+
+      /* compile the RegExp once */
+      rx.regex = CALLREGCOMP(newSVpvn_flags(rx.qre, rx.qrelen, rx.flags), rx.pmflags);
+
+      /* setup the flags */
+      RX_EXTFLAGS(rx.regex) = rx.reflags;
+
+      /* adjust the RefCnt ... we can optimize this but no alternate macro at this time */
+      for (i=1; i<rx.refcnt; ++i) {
+        ReREFCNT_inc(rx.regex);
+      }
+    }
+
+    /* at this stage we have one RX* we can reuse */
+
+    /* assign the regexp to the current OP */
+    PM_SETRE( (PMOP*) PL_op, rx.regex);
+
+  /* setup the OP addr for next call */
+  PL_op->op_ppaddr = PL_ppaddr[PL_op->op_type];
+
+  /* call the real OP */
+  return (* ( PL_op->op_ppaddr ) )(aTHX);
+}
+
+[% END # PMOP Lazy RegExp -%]
 
 /*
     cop_list - array of cops in the code. for debugging, line number info. State/Context op. "Every ; is a cop."

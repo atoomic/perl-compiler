@@ -296,7 +296,7 @@ sub output {
                 my $sub   = $1;
                 my $getcv = sprintf(
                     q{GvCV( %s )},
-                    gv_fetchpv_to_fetchpvn_flags( $sub, 0, 'SVt_PVCV' )
+                    gv_fetchpv_to_fetchpvn_flags( $sub, 0, 'SVt_PVCV|GV_NOEXPAND' )
                 );
                 $j =~ s{BOOTSTRAP_XS_\Q[[\E(.+?)\Q]]\E_XS_BOOTSTRAP}{$getcv};
             }

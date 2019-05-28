@@ -349,7 +349,7 @@ sub save_gv_cv {
             init_bootstraplink()->sadd(
                 'gp_list[%d].gp_cv = GvCV( %s ); /* XS CV %s */',
                 $gp_ix,
-                gv_fetchpv_to_fetchpvn_flags( $origname, 0, 'SVt_PVCV' ),
+                gv_fetchpv_to_fetchpvn_flags( $origname, 0, 'SVt_PVCV|GV_NOEXPAND' ),
                 $origname
             );
         }
