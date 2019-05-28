@@ -179,6 +179,7 @@ sub perl_module_to_sofile {
 
     my @module_parts = split( '/', $inc_key );
 
+    %B::C::Flags::Config or die;    # Fix for no warnings 'once'
     my $sofile = $inc_path . 'auto/' . $inc_key . '/' . $module_parts[-1] . '.' . $B::C::Flags::Config{'dlext'};
     -e $sofile or die("Could not find so file for $module at $sofile");
 
