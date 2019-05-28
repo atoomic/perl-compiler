@@ -25,14 +25,6 @@ PerlIO * PIO_stdout;
 #define benchmark_time(msg)
 #endif /* end of DEBUG_BENCHMARK */
 
-/* Workaround for mapstart: the only op which needs a different ppaddr */
-#undef Perl_pp_mapstart
-#define Perl_pp_mapstart Perl_pp_grepstart
-#undef OP_MAPSTART
-#define OP_MAPSTART OP_GREPSTART
-
-
-
 #ifdef BROKEN_STATIC_REDECL
 #define Static extern
 #else
