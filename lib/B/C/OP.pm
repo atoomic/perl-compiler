@@ -53,7 +53,7 @@ sub save_constructor {
           or die "$@\n:" . 'B::C::Save'->can('stack_flat')->();
         savesym( $op, $sym ) if defined $sym;
 
-        if( $sym && $sym =~ /sv_list/ && $op->isa('B::SV') ) {
+        if ( $sym && $sym =~ /sv_list/ && $op->isa('B::SV') ) {
             push @SAVED_OPS, $op->object_2svref();
         }
 

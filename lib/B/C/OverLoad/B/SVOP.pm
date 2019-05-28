@@ -24,7 +24,7 @@ sub do_save {
     }
 
     # PL_envgv and PL_argvgv STATIC_HV: We're probably saving those wrong.
-    unless ( $svsym =~ m/[sg]v_list|Nullsv/ ) { # PL_sv_yes, PL_sv_no, PL_sv_zero...
+    unless ( $svsym =~ m/[sg]v_list|Nullsv/ ) {               # PL_sv_yes, PL_sv_no, PL_sv_zero...
         init()->add("svop_list[$ix].op_sv = (SV*) $svsym;");
         $svsym = 'NULL';
     }

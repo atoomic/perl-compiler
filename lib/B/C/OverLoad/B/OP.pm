@@ -47,10 +47,12 @@ sub B::OP::fake_ppaddr {
     my $op = shift;
     return "NULL" unless $op->can('name');
     if ( $op->type == $OP_CUSTOM ) {
+
         # filled at run time with the correct addr from PL_custom_ops
         init_xops()->xop_used_by( $op->name, objsym($op) );
         return sprintf( "/* XOP %s */ NULL", $op->name );
     }
+
     # we are using this slot to store the OP TYPE
     #   which is going to be replaced at init time by init0
     #   maybe we could try a lazy init of the OP by using a fake OP

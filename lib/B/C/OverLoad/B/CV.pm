@@ -234,7 +234,7 @@ sub get_ROOT {
     my ($cv) = @_;
 
     my $root = $cv->ROOT;
-    return ref $root eq 'B::NULL' ? undef : $root,
+    return ref $root eq 'B::NULL' ? undef : $root;
 }
 
 sub save_optree {
