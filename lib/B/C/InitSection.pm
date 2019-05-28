@@ -34,7 +34,7 @@ which will be displayed inside each sub function.
 
 =cut
 
-sub BUILD { # ~factory
+sub CREATE {    # ~factory
     my ( $pkg, $name, @args ) = @_;
 
     if ( $name && $name eq 'init_vtables' ) {
@@ -54,9 +54,9 @@ sub new {
     my $class = shift;
 
     # one InitSection is sharing the helpers/methods from Section
-    my $self  = $class->SUPER::new(@_);
+    my $self = $class->SUPER::new(@_);
 
-    $self->{'c_header'}       = [];
+    $self->{'c_header'}     = [];
     $self->{'chunks'}       = [];
     $self->{'nosplit'}      = 0;
     $self->{'current'}      = [];
@@ -75,13 +75,15 @@ sub new {
 has_values: does that init section contains any lines?
 
 =cut
+
 sub has_values {
-    my ( $self ) = @_;
+    my ($self) = @_;
 
     # we cannot use the 'count' value has it's reset when adding chunks..
 
     # either we already have a chunk
     return 1 if scalar @{ $self->{'chunks'} };
+
     # or we have some values in current
     return 1 if scalar @{ $self->{'current'} };
 
@@ -253,19 +255,19 @@ object is processed before rendering as a 'C string' code.
 
 =cut
 
-sub flush { # by default do nothing
-    my ( $self ) = @_;
+sub flush {    # by default do nothing
+    my ($self) = @_;
 
-    return $self; # can chain like flush.output
+    return $self;    # can chain like flush.output
 }
 
 sub output {
     my ( $self, $format, $init_name ) = @_;
 
-    $format    //= "    %s\n";
+    $format //= "    %s\n";
     $init_name //= 'perl_' . $self->name;
 
-    $self->flush(); # autoflush
+    $self->flush();    # autoflush
 
     my $sym = $self->symtable || {};
     my $default = $self->default;

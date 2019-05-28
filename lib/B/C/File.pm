@@ -101,7 +101,7 @@ sub new {
     }
 
     foreach my $section_name ( init_section_names() ) {
-        $self->{$section_name} = B::C::InitSection->BUILD( $section_name, get_symtable_ref(), 0 );
+        $self->{$section_name} = B::C::InitSection->CREATE( $section_name, get_symtable_ref(), 0 );
     }
 
     # our meta sections
@@ -187,10 +187,7 @@ sub write {
 
     # TODO: refactor move section group logic outside of the 'write' which is the main purpose of File
     # Controls the rendering order of the sections.
-    $c_file_stash->{init_section_list} = [
-        init_section_names()
-    ];
-
+    $c_file_stash->{init_section_list} = [ init_section_names() ];
 
     $c_file_stash->{section_list} = [
         struct_names(),
