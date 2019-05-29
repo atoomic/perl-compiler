@@ -177,6 +177,7 @@ typedef struct lazy_regexp_s {
     U32        refcnt;
 } LazyRegExp;
 
+typedef struct pmopaux_s { U32 ix; } PMOPAUX;
 
 Static LazyRegExp rx_list[[% section.lazyregex.index + 1 %]] =  {
 [% section.lazyregex.output("    { %s }, /* %s_list[%d] %s %s */\n") %]
@@ -306,6 +307,7 @@ static void setup_all_ops() {
     register int i;
 
 [% FOREACH name IN op_section_list -%]
+[% NEXT IF "$name" == "pmopaux" -%]
 [% size = section.$name.index + 1 -%]
 [% NEXT IF size == 0 -%]
 [% SET oplist = "${name}_list" -%]
@@ -473,6 +475,10 @@ S_pp_dump(pTHX)
 *      we can reuse the same RegExp for multiple PMOPs [compiled once]
 */
 
+/* use a constant for sizeof(PMOP) with a sanity check at compile time */
+#define SIZEOF_PMOP 96
+typedef char p__LINE__[ (sizeof(PMOP) == SIZEOF_PMOP) ? 1 : -1];
+
 static PP(pp_bc_init_pmop) {
   /* The op_pmflags is the position of the uncompiled regex in the rx_list */
   /* We will reset op_pmflags to the actual value below 
@@ -480,40 +486,40 @@ static PP(pp_bc_init_pmop) {
     PMf_BASE_SHIFT bits to avoid it being seen as a PMf flag
   */
   LazyRegExp rx;
-  int slot = (int) ( (PMOP*) PL_op)->op_pmflags >> PMf_BASE_SHIFT;
+  int pos, slot;
 
+  pos = ( PTR2IV((PMOP*)PL_op) - PTR2IV(pmop_list) ) / SIZEOF_PMOP;
   /* sanity check to detect OP which are using a RegExp */
-  if (slot >= [% section.lazyregex.index + 1 %]) {
-    Perl_croak_nocontext("PMOP has a RegExp already set... %d", PTR2IV(PL_op));
-  }
+  if (pos >= [% section.pmopaux.index + 1 %])
+    Perl_croak_nocontext("PMOP: invalid position %d", pos);
+
+  slot = pmopaux_list[pos].ix;
+  /* sanity check to detect OP which are using a RegExp */
+  if (slot >= [% section.lazyregex.index + 1 %])
+    Perl_croak_nocontext("PMOP: invalid slot %d", slot);
 
   rx = rx_list[slot];
 
-  /* always restore the original pmflags to its original value */
-  ( (PMOP*) PL_op)->op_pmflags = rx.pmflags;
-   /* If the regex has a variable in it, op_pmregexp will
-      already be filled for us so we continue on and do not
-      compile or store the regex */
-    if ( rx.regex == NULL ) {
-      /* first time that RegExp is triggered initialize it */
-      int i;
+  if ( rx.regex == NULL ) {
+    /* first time that RegExp is triggered initialize it */
+    int i;
 
-      /* compile the RegExp once */
-      rx.regex = CALLREGCOMP(newSVpvn_flags(rx.qre, rx.qrelen, rx.flags), rx.pmflags);
+    /* compile the RegExp once */
+    rx.regex = CALLREGCOMP(newSVpvn_flags(rx.qre, rx.qrelen, rx.flags), rx.pmflags);
 
-      /* setup the flags */
-      RX_EXTFLAGS(rx.regex) = rx.reflags;
+    /* setup the flags */
+    RX_EXTFLAGS(rx.regex) = rx.reflags;
 
-      /* adjust the RefCnt ... we can optimize this but no alternate macro at this time */
-      for (i=1; i<rx.refcnt; ++i) {
-        ReREFCNT_inc(rx.regex);
-      }
+    /* adjust the RefCnt ... we can optimize this but no alternate macro at this time */
+    for (i=1; i<rx.refcnt; ++i) {
+      ReREFCNT_inc(rx.regex);
     }
+  }
 
-    /* at this stage we have one RX* we can reuse */
+  /* at this stage we have one RX* we can reuse */
 
-    /* assign the regexp to the current OP */
-    PM_SETRE( (PMOP*) PL_op, rx.regex);
+  /* assign the regexp to the current OP */
+  PM_SETRE( (PMOP*) PL_op, rx.regex);
 
   /* setup the OP addr for next call */
   PL_op->op_ppaddr = PL_ppaddr[PL_op->op_type];

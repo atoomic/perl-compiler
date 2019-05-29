@@ -4,7 +4,7 @@ use strict;
 
 use B qw/RXf_EVAL_SEEN PMf_EVAL PMf_KEEP SVf_UTF8 svref_2object/;
 use B::C::Debug qw/debug/;
-use B::C::File qw/pmopsect init init1 init2 lazyregex/;
+use B::C::File qw/pmopsect pmopauxsect init init1 init2 lazyregex/;
 use B::C::Helpers qw/strlen_flags/;
 use B::C::Save qw/savecowpv/;
 
@@ -13,16 +13,21 @@ my ($swash_init);
 
 my %CACHE_SAVED_RX;    # all previously saved RegExp
 
-use constant IX_PPADDR   => 2;     # where is stored ppaddr in the PMOP struct
-use constant IX_REGEXP   => 16;    # where is stored pmfflags in the PMOP struct
-use constant IX_PMFFLAGS => 17;    # where is stored pmregexp in the PMOP struct
+use constant IX_PPADDR => 2;    # where is stored ppaddr in the PMOP struct
 
 sub do_save {
     my ($op) = @_;
 
     pmopsect()->comment_for_op("first, last, pmregexp, pmflags, pmreplroot, pmreplstart");
+
     my ( $ix, $sym ) = pmopsect()->reserve( $op, 'OP*' );
-    $sym =~ s/^\(OP\*\)//;         # Strip off the typecasting for local use but other callers will get our casting.
+    my $aux_ix = pmopauxsect()->add('0');
+
+    if ( $ix != $aux_ix ) {
+        die "pmopsect_aux should always stay in sync with pmop";
+    }
+
+    $sym =~ s/^\(OP\*\)//;    # Strip off the typecasting for local use but other callers will get our casting.
     pmopsect()->debug( $op->name, $op );
 
     my $replroot  = $op->pmreplroot;
@@ -162,11 +167,8 @@ sub do_save {
             # update the op to use our custom lazy RegExp OP
             pmopsect()->supdate_field( $ix, IX_PPADDR, ' %s', '&Perl_pp_bc_init_pmop' );
 
-            # we are stealing the pmflags to store our index in the list
-            # We shift it PMf_BASE_SHIFT to the left so that the
-            # PMf flags are always unset in the event this is a regex with
-            # a variable
-            pmopsect()->supdate_field( $ix, IX_PMFFLAGS, ' %u << PMf_BASE_SHIFT /* fake_pmflags */', $ix_bcrx );
+            # store the position of the bcregex in a struct side/side so we do not have to update/corrupt the PMOP itself
+            pmopauxsect()->supdate( $ix, '%d /* rx_list[%d] - %s */', $ix_bcrx, $ix_bcrx, $comment );
         }
     }
 

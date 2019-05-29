@@ -79,7 +79,7 @@ sub init_section_names {
 }
 
 sub op_sections {
-    return qw{ binop condop cop padop loop listop logop op pmop pvop svop unop unopaux methop};
+    return qw{ binop condop cop padop loop listop logop op pmop pmopaux pvop svop unop unopaux methop};
 }
 
 BEGIN {
