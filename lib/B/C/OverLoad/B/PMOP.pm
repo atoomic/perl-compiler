@@ -2,7 +2,7 @@ package B::PMOP;
 
 use strict;
 
-use B qw/RXf_EVAL_SEEN PMf_EVAL SVf_UTF8 svref_2object/;
+use B qw/RXf_EVAL_SEEN PMf_EVAL PMf_KEEP SVf_UTF8 svref_2object/;
 use B::C::Debug qw/debug/;
 use B::C::File qw/pmopsect init init1 init2/;
 use B::C::Helpers qw/strlen_flags/;
@@ -10,9 +10,6 @@ use B::C::Save qw/savecowpv/;
 
 # Global to this space?
 my ($swash_init);
-
-# FIXME really required ?
-sub PMf_ONCE() { 0x10000 };    # PMf_ONCE also not exported
 
 my %saved_re;
 
@@ -120,6 +117,10 @@ sub do_save {
             $comment =~ s{\Q*/\E}{??}g;
 
             $initpm->sadd( "PM_SETRE(%s, ReREFCNT_inc(PM_GETRE(%s))); /* %s */", $sym, $pre_saved_sym, $comment );
+        }
+        # not a /o regexp and regexp was already seen at compile time [bind_match]
+        elsif ( ! ($pmflags & PMf_KEEP) && ref $op->last eq 'B::LOGOP' ) {
+            1;
         }
         else {
             $initpm->sadd( "PM_SETRE(%s, CALLREGCOMP(newSVpvn_flags(%s, %s, SVs_TEMP|%s), 0x%x));", $sym, $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags );
