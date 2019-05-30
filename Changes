@@ -1,3 +1,9 @@
+5.028003 2019-05-30
+
+    Custom OPs support
+    Lazy OPs
+    Lazy RegExp
+
 -*- change-log -*-
 	Started on CPAN with B-C-1.04_12
 	The Perl compiler was in CORE from alpha4 until Perl 5.9.4
