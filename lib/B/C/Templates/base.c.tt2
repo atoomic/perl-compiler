@@ -502,7 +502,6 @@ static PP(pp_bc_init_pmop) {
 
   if ( rx.regex == NULL ) {
     /* first time that RegExp is triggered initialize it */
-    int i;
 
     /* compile the RegExp once */
     rx.regex = CALLREGCOMP(newSVpvn_flags(rx.qre, rx.qrelen, rx.flags), rx.pmflags);
@@ -510,10 +509,11 @@ static PP(pp_bc_init_pmop) {
     /* setup the flags */
     RX_EXTFLAGS(rx.regex) = rx.reflags;
 
-    /* adjust the RefCnt ... we can optimize this but no alternate macro at this time */
-    for (i=1; i<rx.refcnt; ++i) {
-      ReREFCNT_inc(rx.regex);
-    }
+    /* adjust the RefCnt (add extra bonus for every other PMOP)
+    * this should be similar to the for loop:
+    *     for (i=1; i<rx.refcnt; ++i) { ReREFCNT_inc(rx.regex); }
+    */
+    SvREFCNT(rx.regex) += rx.refcnt;
   }
 
   /* at this stage we have one RX* we can reuse */
