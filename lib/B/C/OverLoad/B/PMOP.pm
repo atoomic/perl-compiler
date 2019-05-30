@@ -158,9 +158,10 @@ sub do_save {
                     'NULL', $qre, $relen, $utf8 ? 'SVf_UTF8' : '0', $pmflags, $op->reflags
                 );
 
+                # start refcnt at 0 as we want to add +1 for each additional PMOP
                 $CACHE_SAVED_RX{$key} = {
                     ix     => $ix_bcrx,
-                    refcnt => 1,
+                    refcnt => 0,
                 };
             }
 
