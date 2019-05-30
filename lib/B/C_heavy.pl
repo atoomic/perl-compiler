@@ -28,9 +28,9 @@ use B::C::Debug qw(debug verbose WARN INFO);    # used for setting debug levels 
 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
-  opsect pmopsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
+  opsect pmopsect pmopauxsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
   xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect lexwarnsect refcounted_he padlistsect loopsect
-  sharedhe init_stash init_COREbootstraplink init_bootstraplink
+  lazyregex sharedhe init_stash init_COREbootstraplink init_bootstraplink
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
 use Exporter ();
