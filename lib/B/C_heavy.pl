@@ -29,12 +29,12 @@ use B::C::Debug qw(debug verbose WARN INFO);    # used for setting debug levels 
 use B::C::File qw( init2 init1 init0 init decl free
   heksect binopsect condopsect copsect padopsect listopsect logopsect magicsect
   opsect pmopsect pmopauxsect pvopsect svopsect unopsect svsect xpvsect xpvavsect xpvhvsect xpvcvsect xpvivsect xpvuvsect
-  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect lexwarnsect refcounted_he padlistsect loopsect
-  lazyregex sharedhe init_stash init_COREbootstraplink init_bootstraplink
+  xpvnvsect xpvmgsect xpvlvsect xrvsect xpvbmsect xpviosect xsaccessorsect lexwarnsect refcounted_he padlistsect loopsect
+  lazyregex sharedhe init_stash init_COREbootstraplink init_bootstraplink init_xsaccessor
 );
 use B::C::Helpers::Symtable qw(objsym savesym);
 use Exporter ();
-use Errno    ();                           #needed since 5.14
+use Errno    ();                                #needed since 5.14
 
 BEGIN {
     # always boot XS now that we have the heavy version
@@ -43,7 +43,7 @@ BEGIN {
     XSLoader::load('B::C');
 }
 
-use B::C::Memory ();                       # after loading C.xs
+use B::C::Memory ();                            # after loading C.xs
 
 # for 5.6.[01] better use the native B::C
 # but 5.6.2 works fine
@@ -97,6 +97,8 @@ sub start_heavy {
     );
 
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'}, $settings->{'enable_debug'} );
+
+    die q[Class::XSAccessor::Array is not supported] if $INC{'Class/XSAccessor/Array.pm'};
 
     # Save some stuff we need to save early.
     save_pre_defstash();
@@ -361,19 +363,19 @@ sub build_template_stash {
     no strict 'refs';
 
     my $c_file_stash = {
-        'verbose'            => verbose(),
-        'debug'              => B::C::Debug::save(),
-        'creator'            => "created at " . scalar localtime() . " with B::C $VERSION for $^X",
-        'init_name'          => $settings->{'init_name'} || "perl_init",
-        'gv_index'           => $gv_index,
-        'remap_xs_symbols'   => \%remap_xs_symbols,
-        'compile_stats'      => compile_stats(),
-        'nullop_count'       => $nullop_count,
-        'all_eval_pvs'       => \@B::C::InitSection::all_eval_pvs,
-        'TAINT'              => ( ${^TAINT} ? 1 : 0 ),
-        'devel_peek_needed'  => $devel_peek_needed,
-        'MAX_PADNAME_LENGTH' => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
-        'longest_warnings_string' => longest_warnings_string() || 17,
+        'verbose'                     => verbose(),
+        'debug'                       => B::C::Debug::save(),
+        'creator'                     => "created at " . scalar localtime() . " with B::C $VERSION for $^X",
+        'init_name'                   => $settings->{'init_name'} || "perl_init",
+        'gv_index'                    => $gv_index,
+        'remap_xs_symbols'            => \%remap_xs_symbols,
+        'compile_stats'               => compile_stats(),
+        'nullop_count'                => $nullop_count,
+        'all_eval_pvs'                => \@B::C::InitSection::all_eval_pvs,
+        'TAINT'                       => ( ${^TAINT} ? 1 : 0 ),
+        'devel_peek_needed'           => $devel_peek_needed,
+        'MAX_PADNAME_LENGTH'          => $B::PADNAME::MAX_PADNAME_LENGTH + 1,                                  # Null byte at the end?
+        'longest_warnings_string'     => longest_warnings_string() || 17,
         'longest_refcounted_he_value' => longest_refcounted_he_value(),
         'PL'                          => {
             'defstash'    => save_defstash(),                                                                                   # Re-uses the cache.
@@ -394,9 +396,9 @@ sub build_template_stash {
             'dowarn'      => $^W ? 'G_WARN_ON' : 'G_WARN_OFF',
             'tainting'    => $^{TAINT} ? 'TRUE' : 'FALSE',
             'taint_warn'  => ( $^{TAINT} // 0 ) < 1 ? 'FALSE' : 'TRUE',
-            'compad' => ( comppadlist->ARRAY )[1]->save('curpad_syms') || 'NULL',
-            'warnhook' => save_sig('__WARN__'),
-            'diehook'  => save_sig('__DIE__'),
+            'compad'      => ( comppadlist->ARRAY )[1]->save('curpad_syms') || 'NULL',
+            'warnhook'    => save_sig('__WARN__'),
+            'diehook'     => save_sig('__DIE__'),
         },
         'IO' => {
             'STDIN'  => svref_2object( \*::STDIN )->save("STDIN"),
@@ -454,9 +456,9 @@ sub build_template_stash {
     # perl 526: 512  = 1 << 9
     #   B::C knows the size of strtab when compiling it
     #   small programs would benefit from a smaller size
-    $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, (1 << 8) - 1 ) + 1; # 1 << 11 - 1
-    # display PL_strtab sze and max when verbose is enabled
-    INFO( "PL_strtab: size=" . (sharedhe()->index() + 1) . " ; HvMAX=" . $c_file_stash->{'PL_strtab_max'} );;
+    $c_file_stash->{'PL_strtab_max'} = B::HV::get_max_hash_from_keys( sharedhe()->index() + 1, ( 1 << 8 ) - 1 ) + 1;    # 1 << 11 - 1
+                                                                                                                        # display PL_strtab sze and max when verbose is enabled
+    INFO( "PL_strtab: size=" . ( sharedhe()->index() + 1 ) . " ; HvMAX=" . $c_file_stash->{'PL_strtab_max'} );
 
     return $c_file_stash;
 }

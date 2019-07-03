@@ -59,7 +59,8 @@ sub code_section_names {
 # These objects will end up in an array of structs in the template and be auto-declared.
 sub struct_names {
     return qw( malloc xpv xpvav xpvhv xpvcv padlist padname padnamelist magic
-      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv gv gp xpvgv lexwarn refcounted_he),
+      xpviv xpvuv xpvnv xpvmg xpvlv xrv xpvbm xpvio sv gv gp xpvgv lexwarn refcounted_he
+      xsaccessor),
       assign_sections();
 }
 
@@ -75,7 +76,7 @@ sub meta_sections {
 # These populate the init sections and have a special header.
 sub init_section_names {
     return qw{ init0 init init_regexp init_xops init1 init2 init_stash
-      init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink };
+      init_vtables init_static_assignments init_bootstraplink init_COREbootstraplink init_xsaccessor };
 }
 
 sub op_sections {

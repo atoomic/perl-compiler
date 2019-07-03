@@ -183,6 +183,13 @@ Static LazyRegExp rx_list[[% section.lazyregex.index + 1 %]] =  {
 [% section.lazyregex.output("    { %s }, /* %s_list[%d] %s %s */\n") %]
 };
 
+/* struct for Class::XSAccessor CV data */
+typedef struct {
+    U32 hash;
+    char* key;
+    I32 len;
+    /* NOTE, a void* to next was removed from the end of this struct since we can't determine any need for it in a B::C program. */
+} XSACCESSOR;
 
 /************************************************************************************************************
 *
@@ -1195,6 +1202,9 @@ main(int argc, char **argv, char **env)
 
     /* link the CVs to the bootstrapped ones */
     perl_init_bootstraplink( aTHX );
+
+    /* Link Class::XSAccessor methods embedded in the stash to their XS friend */
+    perl_init_xsaccessor( aTHX );
 
     [% IF XS.need_extra_xs_call() -%]
     /* some XS modules need to call an additional CV at boot (like Encode::onBOOT) */

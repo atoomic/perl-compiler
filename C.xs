@@ -17,11 +17,18 @@ typedef PADLIST       *B__PADLIST;
 typedef PADNAMELIST   *B__PADNAMELIST;
 typedef struct p5rx  *B__REGEXP;
 typedef COP  *B__COP;
+typedef CV   *B__CV;
 typedef OP   *B__OP;
 typedef HV   *B__HV;
 typedef SV   *B__SV;
 
 STATIC U32 a_hash = 0;
+
+typedef struct {
+  U32 hash;
+  char* key; /* This is the only thing we really care about. */
+  I32 len;
+} xsaccessor_any;
 
 typedef struct {
   U32 bits;
@@ -917,6 +924,25 @@ custom_op_descs()
     OUTPUT:
         RETVAL
 
+MODULE = B__CV	PACKAGE = B::CV		PREFIX = cv_
+
+SV*
+cv_get_xs_accessor_key(cv)
+      B::CV cv;
+  CODE:
+        SV *sv;
+        xsaccessor_any *xsa;
+
+        xsa = XSANY.any_ptr;
+        if (xsa) {
+            RETVAL = newSVpvn(xsa->key, xsa->len);
+        } else {
+            RETVAL = &PL_sv_undef;
+        }
+    OUTPUT:
+        RETVAL
+
+MODULE = B__C          PACKAGE = B::C
 
 BOOT:
 {
