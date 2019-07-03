@@ -16,15 +16,10 @@ BEGIN {
 my @TARBALLS = qw{
 
     inc-latest-0.500.tar.gz
-    Module-Build-0.4224.tar.gz
-    Test-Simple-1.302140.tar.gz
-
-    App-cpanminus-1.7044.tar.gz
-
 };
 
 # force to install some modules
-my $FORCE = { map { $_ => 1 } qw{Test::Simple} };
+my $FORCE = { map { $_ => 1 } qw{} };
 
 # list of modules installed using cpanm
 # should move them to a cpanfile
@@ -57,6 +52,7 @@ my @Modules = qw{
     Net::LibIDN
     Net::SSLeay
 
+    Moo
 };
 
 run() unless caller;
@@ -110,7 +106,7 @@ sub _install_using_cpanm {
 
         note "==> installing $module via cpanm",
             $FORCE->{$module} ? ' [force]' : '';
-        my $cmd = "$^X $cpanm -v --force --notest $module 2>&1";
+        my $cmd = "$^X $cpanm -v --notest $module 2>&1";
 
         $out = qx{$cmd};
 
