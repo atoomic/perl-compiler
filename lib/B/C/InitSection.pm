@@ -37,14 +37,16 @@ which will be displayed inside each sub function.
 sub CREATE {    # ~factory
     my ( $pkg, $name, @args ) = @_;
 
-    if ( $name && $name eq 'init_vtables' ) {
-        require B::C::InitSection::Vtables;
-        return B::C::InitSection::Vtables->new( $name, @args );
-    }
+    my $custom_sections = {
+        init_vtables => q[B::C::InitSection::Vtables],
+        init_xops    => q[B::C::InitSection::XOPs],
+        init_xsaccessor => q[B::C::InitSection::XSAccessor]
+    };
 
-    if ( $name && $name eq 'init_xops' ) {
-        require B::C::InitSection::XOPs;
-        return B::C::InitSection::XOPs->new( $name, @args );
+    if ( $name && $custom_sections->{ $name } ) {
+        my $pkg = $custom_sections->{ $name };
+        eval qq/require $pkg; 1/ or die $@;
+        return $pkg->can('new')->( $pkg, $name, @args );
     }
 
     return $pkg->new( $name, @args );

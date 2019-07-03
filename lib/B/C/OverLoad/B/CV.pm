@@ -33,9 +33,9 @@ sub do_save {
     $cv->FLAGS & 2048 and die sprintf( "Unexpected SVf_ROK found in %s\n", ref $cv );
 
     my $is_xs_accessor_constructor = $cv->is_xs_accessor_constructor;
-    my ( $xsaccessor_any, $xsaccessor_function, $xsaccessor_key, $xsaccessor_key_len ) = $cv->save_xs_accessor($is_xs_accessor_constructor);
+    my ( $xsaccessor_list, $xsaccessor_function, $xsaccessor_key, $xsaccessor_key_len ) = $cv->save_xs_accessor($is_xs_accessor_constructor);
 
-    if ( !$is_xs_accessor_constructor && !$xsaccessor_any && !$cv->CONST && $cv->XSUB ) {    # xs function
+    if ( !$is_xs_accessor_constructor && !$xsaccessor_list && !$cv->CONST && $cv->XSUB ) {    # xs function
         $fullname =~ s{^main::}{};
 
         B::C::found_xs_sub($fullname);
@@ -76,9 +76,9 @@ sub do_save {
         $xcv_root   = 'NULL';
         $startfield = "0";
     }
-    elsif ($xsaccessor_any) {
+    elsif ($xsaccessor_list) {
         $xcv_root = 'NULL';
-        $startfield = sprintf( '.xcv_xsubany= {(void*) %s /* xsubany */}', $xsaccessor_any );    # xcv_xsubany
+        $startfield = sprintf( '.xcv_xsubany= {(void*) %s /* xsubany */}', $xsaccessor_list );    # xcv_xsubany
     }
     elsif ( my $c_function = $cv->can_do_const_sv() ) {
         $xcv_root = sprintf( '.xcv_xsub=&%s', $c_function );
@@ -111,19 +111,23 @@ sub do_save {
     svsect->supdate( $ix, "(XPVCV*)&xpvcv_list[%u], %Lu, 0x%x, {%s}", $xpvcv_ix, $cv->REFCNT, $flags, $pv );
 
     if ($is_xs_accessor_constructor) {
-
-        my ( $xs_sub, undef, undef ) = savecowpv("Class::XSAccessor::constructor");
-
-        # Set the pointer to the XSAccessor function this method needs to jump to. WE ARE SETTING $cv->XSUB here.
-        init_xsaccessor->sadd( "xpvcv_list[%u].xcv_root_u.xcv_xsub = CvXSUB(GvCV(gv_fetchpv( %s, GV_NOADD_NOINIT, SVt_PVCV))); /* Setup a constructor for %s */", $xpvcv_ix, $xs_sub, $fullname );
+        init_xsaccessor->setup_method_for(
+            xpvcv_ix => $xpvcv_ix,                                 #.
+            xs_sub   => "Class::XSAccessor::constructor",          #.
+            fullname => $fullname                                  #.
+        );
     }
-    elsif ($xsaccessor_any) {
+    elsif ($xsaccessor_list) {
 
-        # Set the pointer to the XSAccessor function this method needs to jump to. WE ARE SETTING $cv->XSUB here.
-        init_xsaccessor->sadd( "xpvcv_list[%u].xcv_root_u.xcv_xsub = CvXSUB(GvCV(gv_fetchpv( %s, GV_NOADD_NOINIT, SVt_PVCV))); /* key name here? */", $xpvcv_ix, $xsaccessor_function );
+        init_xsaccessor->setup_method_for(
+            xpvcv_ix => $xpvcv_ix,
+            xs_sub   => $xsaccessor_function,
+            fullname => $fullname,
 
-        # Store the hash value for this given key inside the XSAccessor's special struct.
-        init_xsaccessor->sadd( "PERL_HASH( (%s)->hash, %s, %d); /* key name here? */", $xsaccessor_any, $xsaccessor_key, $xsaccessor_key_len );
+            xsaccessor_entry   => $xsaccessor_list,                # bad name
+            xsaccessor_key     => $xsaccessor_key,
+            xsaccessor_key_len => $xsaccessor_key_len,
+        );
     }
 
     return $sym;
@@ -188,9 +192,7 @@ sub save_xs_accessor {
         "%d", $key_cur,
     );
 
-    my ( $xs_sub, undef, undef ) = savecowpv("Class::XSAccessor::$method_found");
-
-    return ( "&xsaccessor_list[$xsa_ix]", $xs_sub, $key, $key_cur );
+    return ( "&xsaccessor_list[$xsa_ix]", "Class::XSAccessor::$method_found", $key, $key_cur );
 }
 
 sub save_stash {
