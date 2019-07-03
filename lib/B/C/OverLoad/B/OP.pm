@@ -112,24 +112,30 @@ sub optype_id2enum {
 sub save_baseop {
     my $op = shift;
 
+    my $op_type = optype_id2enum( $op->type );
+
+    # was set to $op->spare but this de-optimizes Class::XSAccessors and we can't
+    # find evidence anyone uses it So for OP_ENTERSUB, we're going to always set it to 0 always on OP_ENTERSUB
+    my $spare = $op_type eq 'OP_ENTERSUB' ? 0 : ( $op->spare || 0 );
+
     # view BASEOP in op.h
     # increase readability by using an array
     my @BASEOP = (
-        '%s'   => $op->next->save,                # OP*     op_next;
-                                                  # this is using 'sibparent' method from our custom C.xs function - consider submit it upstream
-        '%s'   => $op->sibparent->save,           # OP*     op_sibparent; # could be previously op_sibling
-        '%s'   => $op->fake_ppaddr,               # OP*     (*op_ppaddr)(pTHX);
-        '%u'   => $op->targ,                      # PADOFFSET   op_targ;
-        '%s'   => optype_id2enum( $op->type ),    # PERL_BITFIELD16 op_type:9;
-        '%u'   => $op->opt || 0,                  # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
-        '%u'   => 0,                              # $op->slabbed || 0,            # PERL_BITFIELD16 op_slabbed:1; -- was hardcoded to 0
-        '%u'   => $op->savefree || 0,             # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
-        '%u'   => 1,                              # PERL_BITFIELD16 op_static:1; -- is hardcoded to 1
-        '%u'   => $op->folded || 0,               # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
-        '%u'   => $op->moresib || 0,              # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
-        '%u'   => $op->spare || 0,                # PERL_BITFIELD16 op_spare:1; -- was hardcoded to 0
-        '0x%x' => $op->flags || 0,                # U8      op_flags;
-        '0x%x' => $op->private || 0               # U8      op_private;
+        '%s'   => $op->next->save,         # OP*     op_next;
+                                           # this is using 'sibparent' method from our custom C.xs function - consider submit it upstream
+        '%s'   => $op->sibparent->save,    # OP*     op_sibparent; # could be previously op_sibling
+        '%s'   => $op->fake_ppaddr,        # OP*     (*op_ppaddr)(pTHX);
+        '%u'   => $op->targ,               # PADOFFSET   op_targ;
+        '%s'   => $op_type,                # PERL_BITFIELD16 op_type:9;
+        '%u'   => $op->opt || 0,           # PERL_BITFIELD16 op_opt:1; -- was hardcoded to 0
+        '%u'   => 0,                       # $op->slabbed || 0,            # PERL_BITFIELD16 op_slabbed:1; -- was hardcoded to 0
+        '%u'   => $op->savefree || 0,      # PERL_BITFIELD16 op_savefree:1; -- was hardcoded to 0
+        '%u'   => 1,                       # PERL_BITFIELD16 op_static:1; -- is hardcoded to 1
+        '%u'   => $op->folded || 0,        # PERL_BITFIELD16 op_folded:1; -- was hardcoded to 0
+        '%u'   => $op->moresib || 0,       # PERL_BITFIELD16 op_moresib:1; -- was hardcoded to 0
+        '%u'   => $spare,                  # PERL_BITFIELD16 op_spare:1;
+        '0x%x' => $op->flags || 0,         # U8      op_flags;
+        '0x%x' => $op->private || 0        # U8      op_private;
     );
 
     die qq[BASEOP definition need an even number of args] if scalar @BASEOP % 2;    # sanity check
