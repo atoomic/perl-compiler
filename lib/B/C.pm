@@ -87,6 +87,9 @@ sub save_compile_state {
     # On initial start of B::C save, clear the SWASH cache so it's not saved.
     utf8->can('reset_swash') and utf8->can('reset_swash')->();
 
+    # make sure Sub::Defer functions are all flushed before we compile the program
+    eval q/Sub::Defer::undefer_all(); %Sub::Defer::DEFERRED = ();/ if $INC{'Sub/Defer.pm'};
+
     $settings->{'dl_so_files'} = save_xsloader_so();
     $settings->{'dl_modules'}  = save_xsloader_modules();
     $settings->{'needs_xs'}    = scalar @{ $settings->{'dl_so_files'} };
