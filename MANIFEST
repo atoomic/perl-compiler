@@ -14,6 +14,7 @@ lib/B/C/Helpers/Symtable.pm
 lib/B/C/InitSection.pm
 lib/B/C/InitSection/Vtables.pm
 lib/B/C/InitSection/XOPs.pm
+lib/B/C/InitSection/XSAccessor.pm
 lib/B/C/IsUsingModule.pm
 lib/B/C/Memory.pm
 lib/B/C/OP.pm
@@ -76,6 +77,7 @@ script/pl2exe.pl
 STATUS
 status_upd
 store_rpt
+t/B-C-Class-XSAccessor.t
 t/B-C-Helpers_key_was_in_starting_stash.t
 t/B-C-InitSection-Vtables.t
 t/B-C-InitSection-XOPs.t
