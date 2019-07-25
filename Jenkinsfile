@@ -75,7 +75,7 @@ node('docker && jenkins-user') {
                         git diff t/testsuite/C-COMPILED/known_errors.txt > known_errors_delta.txt
                     """
 
-                    timeout(time: 30, unit: 'MINUTES') { sh commands }
+                    timeout(time: 60, unit: 'MINUTES') { sh commands }
                 }
 
                 stage('Process results') {
