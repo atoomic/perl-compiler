@@ -2,6 +2,7 @@ package B::C::Section;
 use strict;
 
 # use warnings
+use B qw/SVf_FAKE/;
 
 use B::C::Helpers::Symtable ();
 my %sections;
@@ -24,7 +25,7 @@ sub new {
 
     # if sv add a dummy sv_arenaroot to support global destruction
     if ( $section eq 'sv' ) {
-        $self->add("NULL, 0, SVTYPEMASK|0x01000000, {0}");    # SVf_FAKE
+        $self->add("NULL, 0, SVTYPEMASK|".SVf_FAKE.", {0}");
         $self->debug("PL_sv_arenaroot");
     }
 

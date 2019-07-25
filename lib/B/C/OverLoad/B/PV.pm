@@ -2,7 +2,7 @@ package B::PV;
 
 use strict;
 
-use B qw/SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVt_PVGV SVf_READONLY/;
+use B qw/SVf_IsCOW SVf_ROK SVf_POK SVp_POK SVs_GMG SVt_PVGV SVf_READONLY SVf_FAKE/;
 use B::C::Debug qw/debug/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
@@ -41,7 +41,7 @@ sub do_save {
 
     # static pv, do not destruct. test 13 with pv0 "3".
     if ( !$shared_hek and $flags & SVf_READONLY and !$len ) {
-        $flags &= ~0x01000000;
+        $flags ^= SVf_FAKE; # turn off SVf_FAKE
         debug( pv => "turn off SVf_FAKE %s %s\n", $pv, $fullname );
     }
 
