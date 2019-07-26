@@ -1,11 +1,11 @@
 #!groovy
 @Library('cpanel-pipeline-library@master') _
 
-node('docker && jenkins-user') {
+node('docker && jenkins-user && j16') {
     environment.check()
 
     def cpVersion = '11.74'
-    def JOBS=24
+    def JOBS=16
     def perlVersion = '528'
     def productionBranch = 'bc528' // controls if we push to the Registry
     def TESTS="t/*.t t/testsuite/C-COMPILED/*/*.t"  // full run
