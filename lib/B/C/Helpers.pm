@@ -6,7 +6,7 @@ use Exporter ();
 
 use B qw/SVf_POK SVp_POK/;
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw/read_utf8_string
+our @EXPORT_OK = qw/read_utf8_string memorizegv find_memorized_gv
   is_constant strlen_flags cow_strlen_flags is_shared_hek
   cstring_cow get_index key_was_in_starting_stash gv_fetchpv_to_fetchpvn_flags
   /;
@@ -15,6 +15,21 @@ our @EXPORT_OK = qw/read_utf8_string
 
 use B qw/cstring/;
 
+my %gvtable;
+
+sub find_memorized_gv {
+    my ($name) = @_;
+    return $gvtable{$name};
+}
+
+sub memorizegv {
+    my ( $name, $sym ) = @_;
+
+    $gvtable{$name} = $sym;
+
+    return 1;
+}
+
 # avoid the call to gv_fetchpv and use gv_fetchpv_flags instead
 sub gv_fetchpv_to_fetchpvn_flags {
     my ( $name, $flags, $type ) = @_;
@@ -22,6 +37,9 @@ sub gv_fetchpv_to_fetchpvn_flags {
     my ( $cname, $cur, $utf8 ) = strlen_flags($name);
     $flags //= '0';    # no add by default
     $flags .= length($flags) ? "|$utf8" : $utf8 if $utf8;
+
+    my $sym = find_memorized_gv($name);
+    return $sym if $sym;
 
     return sprintf( "gv_fetchpvn_flags(%s, %d, %s, %s)", $cname, $cur, $flags, $type );
 }
