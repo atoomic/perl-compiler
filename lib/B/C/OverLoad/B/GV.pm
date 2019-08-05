@@ -4,7 +4,7 @@ use strict;
 
 use B qw/svref_2object SVf_UTF8/;
 use B::C::Debug qw/debug verbose/;
-use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags/;
+use B::C::Helpers qw/gv_fetchpv_to_fetchpvn_flags memorizegv/;
 use B::C::Save qw/savecowpv/;
 use B::C::Save::Hek qw/save_shared_he get_sHe_HEK/;
 use B::C::File qw/init init_static_assignments gvsect gpsect xpvgvsect init_bootstraplink/;
@@ -78,6 +78,8 @@ sub do_save {
         "0x%x"              => $gv->FLAGS,                             # sv_flags
         "{.svu_gp=(GP*)%s}" => $gpsym,                                 # GP* sv_u - plug the gp in our sv_u slot
     );
+
+    memorizegv( $gv->get_fullname(), $sym );
 
     return $sym;
 }
