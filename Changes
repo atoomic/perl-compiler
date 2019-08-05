@@ -1,3 +1,7 @@
+5.028006 2019-08-05
+
+    Avoid GV lookup for XS modules
+
 5.028005 2019-07-05
 
     Add support for Sub::Defer used by Moo
