@@ -104,7 +104,9 @@ rpm -Uv --force \
     $SRC/cpanel-perl-528-Types-Serialiser-1.0-1.cp1178.noarch.rpm \
     $SRC/cpanel-perl-528-Net-DNS-1.17-4.cp1178.noarch.rpm \
     $SRC/cpanel-perl-528-Digest-HMAC-1.03-1.cp1178.noarch.rpm \
-    $SRC/cpanel-perl-528-Net-LibIDN-0.12-1.cp1178.x86_64.rpm
+    $SRC/cpanel-perl-528-Net-LibIDN-0.12-1.cp1178.x86_64.rpm \
+    $SRC/cpanel-perl-528-XString-0.001-1.cp1178.x86_64.rpm \
+    $SRC/cpanel-perl-528-Sub-Quote-2.006003-2.cp1178.noarch.rpm
 
 cd src
 /usr/local/cpanel/3rdparty/bin/perl528 install-perl-modules.pl

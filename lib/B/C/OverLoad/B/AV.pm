@@ -58,8 +58,13 @@ sub skip_backref_sv {
     my ($sv) = @_;
 
     return 0 unless $sv->can('FULLNAME');
+
     my $name = $sv->FULLNAME();
-    return 1 if $name =~ m/::(?:bootstrap)$/;    # BEGIN
+
+    my $sv_isa = ref $sv;
+    return 1 if $sv_isa =~ m{^B::(?:CV|GV)$} && $name =~ m/::(?:BEGIN|CHECK|UNITCHECK|__ANON__)$/;
+
+    return 1 if $name =~ m/::(?:bootstrap)$/;
     return 1 unless key_was_in_starting_stash($name);
 
     return;
