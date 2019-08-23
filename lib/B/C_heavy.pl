@@ -96,6 +96,19 @@ sub start_heavy {
         }
     );
 
+    {
+        no warnings 'redefine';
+        # do not store the patches
+        my ($bincompat, $non_bincompat, $date, @patches) = Internals::V();
+        # Config_heavy and other could require these internal informations
+        #   use an eval to clear the references and convert the PVs to constant
+        # examples:
+        # bincompat:      HAS_TIMES PERLIO_LAYERS USE_64_BIT_INT USE_LARGE_FILES USE_LOCALE_COLLATE USE_LOCALE_NUMERIC USE_LOCALE_TIME USE_PERLIO
+        # non_bincompat:  PERL_COPY_ON_WRITE PERL_DISABLE_PMC PERL_DONT_CREATE_GVSV PERL_MALLOC_WRAP PERL_OP_PARENT PERL_PRESERVE_IVUV PERL_USE_DEVEL USE_LOCALE USE_LOCALE_CTYPE USE_PERL_ATOF
+        # date:           Compiled at Feb 15 2019 18:58:02
+        *Internals::V = eval qq[sub { return ( "$bincompat", "$non_bincompat", "$date" ) }];
+    }
+
     B::C::Debug::setup_debug( $settings->{'debug_options'}, $settings->{'enable_verbose'}, $settings->{'enable_debug'} );
 
     die q[Class::XSAccessor::Array is not supported] if $INC{'Class/XSAccessor/Array.pm'};
