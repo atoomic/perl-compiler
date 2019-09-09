@@ -1,7 +1,7 @@
 #!groovy
 @Library('cpanel-pipeline-library@master') _
 
-node('docker && jenkins-user && j16') {
+node('j16') {
     environment.check()
 
     def cpVersion = '11.74'
