@@ -6,8 +6,8 @@ node('j16') {
 
     def cpVersion = '11.74'
     def JOBS=16
-    def perlVersion = '528'
-    def productionBranch = 'bc528' // controls if we push to the Registry
+    def perlVersion = '530'
+    def productionBranch = 'bc530' // controls if we push to the Registry
     def TESTS="t/*.t t/testsuite/C-COMPILED/*/*.t"  // full run
     //def TESTS="t/*.t" // short version
 

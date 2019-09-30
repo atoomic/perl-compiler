@@ -21,7 +21,7 @@ my %SIGNALS = ( qw( 11 SEGV 6 SIGABRT 1 SIGHUP 13 SIGPIPE), 0 => '' );
 
 sub sanity_check {
     # can also use testsuite/version file
-    die "Please use perl 5.28" unless $^V =~ qr{^v5.28};
+    die "Please use perl 5.30" unless $^V =~ qr{^v5.30};
 
     return;
 }

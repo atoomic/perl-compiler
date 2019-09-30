@@ -31,9 +31,11 @@ v518=`$PERL -e'print (($] < 5.018)?0:1)'`
 v524=`$PERL -e'print (($] < 5.024)?0:1)'`
 v526=`$PERL -e'print (($] < 5.026)?0:1)'`
 v528=`$PERL -e'print (($] < 5.028)?0:1)'`
+v530=`$PERL -e'print (($] < 5.030)?0:1)'`
+
 PERLV=$(perl -e 'print $^V')
 
-TESTSUITEV='v5.28.0'
+TESTSUITEV='v5.30.0'
 #TESTSUITEV=$(cat t/testsuite/version)
 [ "$PERLV" != "$TESTSUITEV" ] && ( echo "Using an incorrect version of perl '$PERLV' [ expecting '$TESTSUITEV' ]"; exit 1 )
 

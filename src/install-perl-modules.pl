@@ -59,17 +59,17 @@ run() unless caller;
 
 sub run {
 
-    # make sure we are run using the perl528
-    if ( $] < 5.028 ) {
-        note "Using perl528 to rerun this script";
-        exec '/usr/local/cpanel/3rdparty/perl/528/bin/perl', $0;
+    # make sure we are run using the perl530
+    if ( $] < 5.030 ) {
+        note "Using perl530 to rerun this script";
+        exec '/usr/local/cpanel/3rdparty/perl/530/bin/perl', $0;
     }
 
     # setup env
     delete $ENV{PERL5LIB};
 
     $ENV{PATH}
-        = '/usr/local/cpanel/3rdparty/perl/528/bin/:/opt/cpanel/perl5/528/bin:'
+        = '/usr/local/cpanel/3rdparty/perl/530/bin/:/opt/cpanel/perl5/530/bin:'
         . $ENV{PATH};
 
     note "== START == $0 at ", scalar localtime();
