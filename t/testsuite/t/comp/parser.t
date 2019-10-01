@@ -637,10 +637,10 @@ check($this_file, 3, "bare line");
 # line 5
 check($this_file, 5, "bare line with leading space");
 
-#line 7
+#line 7 
 check($this_file, 7, "trailing space still valid");
 
-# line 11
+# line 11 
 check($this_file, 11, "leading and trailing");
 
 #	line 13
@@ -664,7 +664,7 @@ check(qr/^CLINK CLOINK BZZT$/, 31, "filename with spaces in quotes");
 #line 37 "THOOM	THOOM"
 check(qr/^THOOM	THOOM$/, 37, "filename with tabs in quotes");
 
-#line 41 "GLINK PLINK GLUNK DINK"
+#line 41 "GLINK PLINK GLUNK DINK" 
 check(qr/^GLINK PLINK GLUNK DINK$/, 41, "a space after the quotes");
 
 #line 43 "BBFRPRAFPGHPP

@@ -13,7 +13,6 @@ BEGIN {
 use strict;
 use utf8;
 use open qw( :utf8 :std );
-binmode STDOUT, ":utf8"; binmode STDERR, ":utf8";
 no warnings 'once';
 
 plan(tests => 62);
@@ -47,19 +46,19 @@ like $@, qr/Can't call method "ｍｅｔｈｏｄ" on unblessed reference /u;
     use open qw( :utf8 :std );
 
     my $e;
-
+    
     eval '$e = bless {}, "Ｅ::Ａ"; Ｅ::Ａ->ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ａ" at/u);
-    eval '$e = bless {}, "Ｅ::Ｂ"; $e->ｆｏｏ()';
+    eval '$e = bless {}, "Ｅ::Ｂ"; $e->ｆｏｏ()';  
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｂ" at/u);
     eval 'Ｅ::Ｃ->ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｃ" (perhaps /u);
-
+    
     eval 'UNIVERSAL->Ｅ::Ｄ::ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｄ" (perhaps /u);
     eval 'my $e = bless {}, "UNIVERSAL"; $e->Ｅ::Ｅ::ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｅ" (perhaps /u);
-
+    
     $e = bless {}, "Ｅ::Ｆ";  # force package to exist
     eval 'UNIVERSAL->Ｅ::Ｆ::ｆｏｏ()';
     like ($@, qr/^\QCan't locate object method "ｆｏｏ" via package "Ｅ::Ｆ" at/u);

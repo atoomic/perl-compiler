@@ -4,17 +4,16 @@
 
 BEGIN {
      chdir 't' if -d 't';
+     @INC = '../lib';
      require './test.pl';
-     set_up_inc('../lib');
      $| = 1;
 
      require Config;
      skip_all_without_config('useithreads');
      skip_all_if_miniperl("no dynamic loading on miniperl, no threads");
 
+     plan(6);
 }
-
-plan(6);
 
 use strict;
 use warnings;
@@ -117,7 +116,7 @@ SKIP: {
    my $pos = telldir $dirh;
    my $fn = readdir($dirh);
    if(!defined $fn) { fail($test_name); last SKIP; }
-   if($fn =~ 'lagoio') {
+   if($fn =~ 'lagoio') { 
     seekdir $dirh, $pos;
     last;
    }

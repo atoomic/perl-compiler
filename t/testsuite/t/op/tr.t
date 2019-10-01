@@ -13,7 +13,7 @@ BEGIN {
 
 use utf8;
 
-plan tests => 300;
+plan tests => 301;
 
 # Test this first before we extend the stack with other operations.
 # This caused an asan failure due to a bad write past the end of the stack.
@@ -649,7 +649,7 @@ else {
     my $l = chr(300); my $r = chr(400);
     $x = 200.300.400;
     $x =~ tr/\x{12c}/\x{190}/;
-    is($x, 200.400.400,
+    is($x, 200.400.400,     
                         'changing UTF8 chars in a UTF8 string, same length');
     is(length $x, 3);
 
@@ -826,7 +826,7 @@ is($a, "X");
 
 ($a = "\x{0100}") =~ tr/\x{0000}-\x{00ff}\x{0101}/X/c;
 is($a, "X");
-
+ 
 ($a = v256) =~ tr/\x{0000}-\x{00ff}\x{0101}/X/c;
 is($a, "X");
 
@@ -857,7 +857,7 @@ SKIP: {
     $c = ($a = "\x89\x8a\x8b\x8c\x8d\x8f\x90\x91") =~ tr/i-j/X/;
     is($c, 2);
     is($a, "X\x8a\x8b\x8c\x8d\x8f\x90X");
-
+   
     $c = ($a = "\xc9\xca\xcb\xcc\xcd\xcf\xd0\xd1") =~ tr/I-J/X/;
     is($c, 2);
     is($a, "X\xca\xcb\xcc\xcd\xcf\xd0X");
@@ -1137,6 +1137,12 @@ for ("", nullrocow) {
     [\x{E5CD}-\x{E5DF}\x{EA80}-\x{EAFA}\x{EB0E}-\x{EB8E}\x{EAFB}-\x{EB0D}\x{E5B5}-\x{E5CC}];
 
     is $x, "\x{E5CE}", '[perl #130656]';
+
+}
+
+{
+    fresh_perl_like('y/\x{a00}0-\N{}//', qr/Unknown charname/, { },
+                    'RT #133880 illegal \N{}');
 }
 
 1;

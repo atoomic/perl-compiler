@@ -5,16 +5,15 @@ BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
     set_up_inc( '../lib' );
+    plan (tests => 195); # some tests are run in BEGIN block
 }
-
-plan (tests => 196); # some tests are run in BEGIN block
 
 # Test that defined() returns true for magic variables created on the fly,
 # even before they have been created.
 # This must come first, even before turning on warnings or setting up
 # $SIG{__WARN__}, to avoid invalidating the tests.  warnings.pm currently
 # does not mention any special variables, but that could easily change.
-{
+BEGIN {
     # not available in miniperl
     my %non_mini = map { $_ => 1 } qw(+ - [);
     for (qw(
@@ -63,8 +62,6 @@ $PERL =
     $Is_MSWin32 ? '.\perl' :
                   './perl');
 
-
-$PERL = $^X;
 
 sub env_is {
     my ($key, $val, $desc) = @_;
@@ -454,7 +451,6 @@ SKIP: {
 
 # Make sure Errno hasn't been prematurely autoloaded
 
-   skip('Errno is loaded with a B::C program cause something used %!', 2);
    ok !keys %Errno::;
 
 # Test auto-loading of Errno when %! is used
@@ -617,9 +613,9 @@ SKIP: {
 }
 
 SKIP: {
-    skip_if_miniperl("No XS in miniperl", 3);
+    skip_if_miniperl("No XS in miniperl", 2);
 
-    for ( [qw( %- Tie::Hash::NamedCapture )], [qw( $[ arybase )],
+    for ( [qw( %- Tie::Hash::NamedCapture )],
           [qw( %! Errno )] ) {
 	my ($var, $mod) = @$_;
 	my $modfile = $mod =~ s|::|/|gr . ".pm";

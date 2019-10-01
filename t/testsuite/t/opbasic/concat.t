@@ -2,7 +2,7 @@
 
 BEGIN {
     chdir 't' if -d 't';
-    unshift @INC, '../lib';
+    @INC = '../lib';
 }
 
 # ok()/is() functions from other sources (e.g., t/test.pl) may use
@@ -39,7 +39,7 @@ sub is {
     return $ok;
 }
 
-print "1..253\n";
+print "1..254\n";
 
 ($a, $b, $c) = qw(foo bar);
 
@@ -50,7 +50,7 @@ ok("$c$a$c" eq "foo",    "concatenate undef, fore and aft");
 # Okay, so that wasn't very challenging.  Let's go Unicode.
 
 {
-    # bug id 20000819.004 (#3761)
+    # bug id 20000819.004 (#3761) 
 
     $_ = $dx = "\x{10f2}";
     s/($dx)/$dx$1/;
@@ -852,4 +852,12 @@ package RT132595 {
     tie $t, "RT132595";
     my $res = $a.$t.$a.$t;
     ::is($res, "b1c1b1c2", "RT #132595");
+}
+
+# RT #133441
+# multiconcat wasn't seeing a mutator as a mutator
+{
+    my ($a, $b)  = qw(a b);
+    ($a = 'A'.$b) .= 'c';
+    is($a, "Abc", "RT #133441");
 }

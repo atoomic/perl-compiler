@@ -6,7 +6,6 @@
 BEGIN {
     chdir 't' if -d 't';
     require './test.pl';
-    skip_all_if_miniperl("miniperl, no arybase");
     skip_all_without_unicode_tables();
 }
 
@@ -15,7 +14,7 @@ use utf8;
 use open qw( :utf8 :std );
 no warnings qw(misc reserved);
 
-plan (tests => 66894);
+plan (tests => 66880);
 
 # ${single:colon} should not be treated as a simple variable, but as a
 # block with a label inside.
@@ -56,9 +55,8 @@ plan (tests => 66894);
 }
 
 # Checking that at least some of the special variables work
-for my $v (qw( ^V ; < > ( ) {^GLOBAL_PHASE} ^W _ 1 4 0 [ ] ! @ / \ = )) {
+for my $v (qw( ^V ; < > ( ) {^GLOBAL_PHASE} ^W _ 1 4 0 ] ! @ / \ = )) {
   SKIP: {
-    skip_if_miniperl('No $[ under miniperl', 2) if $v eq '[';
     local $@;
     evalbytes "\$$v;";
     is $@, '', "No syntax error for \$$v";
@@ -136,6 +134,7 @@ for ( 0x0 .. 0xff ) {
             $tests++;
         }
         elsif ($chr =~ /[[:punct:][:digit:]]/a) {
+            next if ($chr eq '#' or $chr eq '*'); # RT 133583
 
             # Unlike other variables, we dare not try setting the length-1
             # variables that are ASCII punctuation and digits.  This is
@@ -335,7 +334,7 @@ EOP
     }
 }
 
-{
+{    
     # bleadperl v5.17.9-109-g3283393 breaks JEREMY/File-Signature-1.009.tar.gz
     # https://rt.perl.org/rt3/Ticket/Display.html?id=117145
     local $@;
@@ -378,8 +377,8 @@ EOP
         "*main::OIN",
         "Newlines at the start of an identifier should be skipped over"
     );
-
-
+    
+    
     SKIP: {
         skip('Is $^U on EBCDIC 1047, BC; nothing works on 0037', 1)
                                                                 if $::IS_EBCDIC;
@@ -389,7 +388,7 @@ EOP
             "  ... but \$^J is still legal"
         );
     }
-
+    
     my $ret = eval "\${\cT\n}";
     like($@, qr/\QUnrecognized character/, '${\n\cT\n} gives an error message');
 }
@@ -401,7 +400,7 @@ EOP
     my %foo = (a=>2);
     my $ret = @{ foo { "a" } };
     is($ret, $foo{a}, '@{ foo { "a" } } is parsed as @foo{a}');
-
+    
     $ret = @{
             foo { "a" }
         };

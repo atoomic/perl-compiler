@@ -1,4 +1,10 @@
 # Grind out a lot of combinatoric tests for folding.
+# It uses various charset modifiers, passed in via $::TEST_CHUNK.  The caller
+# will also have set the locale to use if /l is the modifier.
+#   L is a pseudo-modifier that indicates to use the modifier /l instead, and
+#     the locale set by the caller is known to be UTF-8,
+#   T is a pseudo-modifier that indicates to use the pseudo modifier /L
+#     instead, and the locale set by the caller is known to be Turkic UTF-8,
 
 binmode STDOUT, ":utf8";
 
@@ -28,6 +34,14 @@ no warnings 'locale';   # Plenty of these would otherwise get generated
 use Encode;
 use POSIX;
 
+my $charset = $::TEST_CHUNK;
+my $use_turkic_rules = 0;
+
+if ($charset eq 'T') {
+    $charset = 'L';
+    $use_turkic_rules = 1;
+}
+
 # Special-cased characters in the .c's that we want to make sure get tested.
 my %be_sure_to_test = (
         chr utf8::unicode_to_native(0xDF) => 1, # LATIN_SMALL_LETTER_SHARP_S
@@ -36,8 +50,8 @@ my %be_sure_to_test = (
         "\x{3B0}" => 1, # GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA_AND_TONOS
         "\x{1FD3}" => 1, # GREEK SMALL LETTER IOTA WITH DIALYTIKA AND OXIA
         "\x{1FE3}" => 1, # GREEK SMALL LETTER UPSILON WITH DIALYTIKA AND OXIA
-    );
-
+        "I" => 1,
+);
 
 # Tests both unicode and not, so make sure not implicitly testing unicode
 no feature 'unicode_strings';
@@ -121,7 +135,7 @@ my %has_test_by_participants;   # Makes sure has tests for each range and each
 my %has_test_by_byte_count; # Makes sure has tests for each combination of
                             # n bytes folds to m bytes
 
-my %tests; # The set of tests.
+my %tests; # The set of tests we expect to pass.
 # Each key is a code point that folds to something else.
 # Each value is a list of things that the key folds to.  If the 'thing' is a
 # single code point, it is that ordinal.  If it is a multi-char fold, it is an
@@ -145,16 +159,54 @@ my %tests; # The set of tests.
 #          7838 # LATIN_CAPITAL_LETTER_SHARP_S
 #        ],
 
-my %folds;          # keys are code points that fold;
-                    # values are each a list of code points the key folds to
-my %inverse_folds;  # keys are strings of the folded-to;
-                    # values are lists of characters that fold to them
+my %neg_tests;  # Same format, but we expect these tests to fail
 
-sub add_test($@) {
-    my ($to, @from) = @_;
+my %folds; # keys are code points that fold; values are either 0 or 1 which
+           # in turn are keys with their values each a list of code points the
+           # code point key folds to.  The folds under 1 are the ones that are
+           # valid in this run; the ones under 0 are ones valid under other
+           # circumstances.
 
-    # Called to cause the input to be tested by adding to %tests.  @from is
-    # the list of characters that fold to the string $to.  @from should be
+my %inverse_folds;  # keys are strings of the folded-to; then come a layer of
+                    # 0 or 1, like %folds.  The lowest values are lists of
+                    # characters that fold to them
+
+# Here's a portion of an %inverse_folds in a run where Turkic folds are not
+# legal, so \x{130} doesn't fold to 'i' in this run.
+#         'h' => {
+#                  '1' => [
+#                           'H'
+#                         ]
+#                },
+#         "h\x{331}" => {
+#                         '1' => [
+#                                  "\x{1e96}"
+#                                ]
+#                       },
+#         'i' => {
+#                  '0' => [
+#                           "\x{130}"
+#                         ],
+#                  '1' => [
+#                           'I'
+#                         ]
+#                },
+#         "i\x{307}" => {
+#                         '1' => [
+#                                  "\x{130}"
+#                                ]
+#                       },
+#         'j' => {
+#                  '1' => [
+#                           'J'
+#                         ]
+#                },
+
+sub add_test($$@) {
+    my ($tests_ref, $to, @from) = @_;
+
+    # Called to cause the input to be tested by adding to $%tests_ref.  @from
+    # is the list of characters that fold to the string $to.  @from should be
     # sorted so the lowest code point is first....
     # The input is in string form; %tests uses code points, so have to
     # convert.
@@ -183,8 +235,8 @@ sub add_test($@) {
 
         for (my $i = 0; $i < $to_chars; $i++) {
             my $to_char = substr($to, $i, 1);
-            if (exists $inverse_folds{$to_char}) {
-                $folds_to_count[$i] = scalar @{$inverse_folds{$to_char}};
+            if (exists $inverse_folds{$to_char}{1}) {
+                $folds_to_count[$i] = scalar @{$inverse_folds{$to_char}{1}};
                 $max_folds_to = $folds_to_count[$i] if $max_folds_to < $folds_to_count[$i];
             }
             else {
@@ -210,8 +262,10 @@ sub add_test($@) {
                 my $this_char = substr($to, $j, 1);
 
                 # Use its corresponding inverse fold, if available.
-                if ($i < $folds_to_count[$j]) {
-                    push @this_test_to, ord $inverse_folds{$this_char}[$i];
+                if (   $i < $folds_to_count[$j]
+                    && exists $inverse_folds{$this_char}{1})
+                  {
+                    push @this_test_to, ord $inverse_folds{$this_char}{1}[$i];
                 }
                 else {  # Or else itself.
                     push @this_test_to, ord $this_char;
@@ -244,15 +298,15 @@ sub add_test($@) {
     no bytes;
 
     my $ord_smallest_from = ord shift @from;
-    if (exists $tests{$ord_smallest_from}) {
+    if (exists $tests_ref->{$ord_smallest_from}) {
         die "There are already tests for $ord_smallest_from"
     };
 
     # Add in the fold tests,
-    push @{$tests{$ord_smallest_from}}, @test_to;
+    push @{$tests_ref->{$ord_smallest_from}}, @test_to;
 
     # Then any remaining froms in the equivalence class.
-    push @{$tests{$ord_smallest_from}}, map { ord $_ } @from;
+    push @{$tests_ref->{$ord_smallest_from}}, map { ord $_ } @from;
 }
 
 # Get the Unicode rules and construct inverse mappings from them
@@ -268,7 +322,12 @@ if ($::IS_ASCII
     && pack("C*", split /\./, Unicode::UCD::UnicodeVersion()) ge v3.1.0
     && open my $fh, "<", $file)
 {
-    while (<$fh>) {
+    # We process the file in reverse order because its easier to see the T
+    # entry first and then know that the next line we process is the
+    # corresponding one for non-T.
+    my @rules = <$fh>;
+    my $prev_was_turkic = 0;
+    while (defined ($_ = pop @rules)) {
         chomp;
 
         # Lines look like (though without the initial '#')
@@ -279,20 +338,37 @@ if ($::IS_ASCII
         next unless length $line;
         my ($hex_from, $fold_type, @hex_folded) = split /[\s;]+/, $line;
 
-        next if $fold_type =~ / ^ [IT] $/x; # Perl doesn't do Turkish folding
         next if $fold_type eq 'S';  # If Unicode's tables are correct, the F
                                     # should be a superset of S
+        next if $fold_type eq 'I';  # Perl doesn't do old Turkish folding
+
+        my $test_type;
+        if ($fold_type eq 'T') {
+            $test_type = 0 + $use_turkic_rules;
+            $prev_was_turkic = 1;
+        }
+        elsif ($prev_was_turkic) {
+            $test_type = 0 + ! $use_turkic_rules;
+            $prev_was_turkic = 0;
+        }
+        else {
+            $test_type = 1;
+            $prev_was_turkic = 0;
+        }
 
         my $from = hex $hex_from;
         my @to = map { hex $_ } @hex_folded;
-        @{$folds{$from}} = @to;
+        push @{$folds{$from}{$test_type}}, @to;
+
         my $folded_str = pack ("U0U*", @to);
-        push @{$inverse_folds{$folded_str}}, chr $from;
+        push @{$inverse_folds{$folded_str}{$test_type}}, chr $from;
     }
 }
 else {  # Here, can't use the .txt file: read the Unicode rules file and
         # construct inverse mappings from it
 
+    skip_all "Don't know how to generate turkic rules on this platform"
+                                                            if $use_turkic_rules;
     my ($invlist_ref, $invmap_ref, undef, $default)
                                     = Unicode::UCD::prop_invmap('Case_Folding');
     for my $i (0 .. @$invlist_ref - 1 - 1) {
@@ -307,32 +383,33 @@ else {  # Here, can't use the .txt file: read the Unicode rules file and
         for my $j ($invlist_ref->[$i] .. $invlist_ref->[$i+1] -1) {
             $adjust++;
             my @to = map { $_ + $adjust } @{$invmap_ref->[$i]};
-            push @{$folds{$j}}, @to;
+            push @{$folds{$j}{1}}, @to;
             my $folded_str = join "", map { chr } @to;
             utf8::upgrade($folded_str);
             #note (sprintf "%d: %04X: %s", __LINE__, $j, join " ",
             #    map { sprintf "%04X", $_  + $adjust } @{$invmap_ref->[$i]});
-            push @{$inverse_folds{$folded_str}}, chr $j;
+            push @{$inverse_folds{$folded_str}{1}}, chr $j;
         }
     }
 }
 
 # Analyze the data and generate tests to get adequate test coverage.  We sort
 # things so that smallest code points are done first.
-TO:
-foreach my $to (sort { (length $a == length $b)
-                        ? $a cmp $b
-                        : length $a <=> length $b
-                    } keys %inverse_folds)
+foreach my $to (sort { $a cmp $b } keys %inverse_folds)
 {
+TO:
+  foreach my $tests_ref (\%tests, \%neg_tests) {
+    my $test_type = ($tests_ref == \%tests) ? 1 : 0;
+
+    next unless exists $inverse_folds{$to}{$test_type};
 
     # Within each fold, sort so that the smallest code points are done first
-    @{$inverse_folds{$to}} = sort { $a cmp $b } @{$inverse_folds{$to}};
-    my @from = @{$inverse_folds{$to}};
+    @{$inverse_folds{$to}{$test_type}} = sort { $a cmp $b } @{$inverse_folds{$to}{$test_type}};
+    my @from = @{$inverse_folds{$to}{$test_type}};
 
     # Just add it to the tests if doing complete coverage
     if (! $skip_apparently_redundant) {
-        add_test($to, @from);
+        add_test($tests_ref, $to, @from);
         next TO;
     }
 
@@ -344,7 +421,7 @@ foreach my $to (sort { (length $a == length $b)
     # would have to have other tests to get.
     foreach my $from_map (@from) {
         if (exists $be_sure_to_test{$from_map}) {
-            add_test($to, @from);
+            add_test($tests_ref, $to, @from);
             next TO;
         }
     }
@@ -354,7 +431,7 @@ foreach my $to (sort { (length $a == length $b)
     if ($to_chars > 1) {
         foreach my $char (split "", $to) {
             if (range_type($char) != $to_range_type) {
-                add_test($to, @from);
+                add_test($tests_ref, $to, @from);
                 next TO;
             }
         }
@@ -363,7 +440,7 @@ foreach my $to (sort { (length $a == length $b)
     # If the mapping crosses range types, is suspect and should be tested
     foreach my $from_map (@from) {
         if (range_type($from_map) != $to_range_type) {
-            add_test($to, @from);
+            add_test($tests_ref, $to, @from);
             next TO;
         }
     }
@@ -373,7 +450,7 @@ foreach my $to (sort { (length $a == length $b)
     # particpants, 3 particpants, etc.
     if ($to_chars == 1) {
         if (! exists $has_test_by_participants{scalar @from}{$to_range_type}) {
-            add_test($to, @from);
+            add_test($tests_ref, $to, @from);
             $has_test_by_participants{scalar @from}{$to_range_type} = $to;
             next TO;
         }
@@ -387,16 +464,17 @@ foreach my $to (sort { (length $a == length $b)
     my $to_bytes = length $to;
     foreach my $from_map (@from) {
         if (! exists $has_test_by_byte_count{length $from_map}{$to_bytes}) {
-            add_test($to, @from);
+            add_test($tests_ref, $to, @from);
             next TO;
         }
     }
+  }
 }
 
 # For each range type, test additionally a character that folds to itself
-add_test(":", ":");
-add_test(chr utf8::unicode_to_native(0xF7), chr utf8::unicode_to_native(0xF7));
-add_test(chr 0x2C7, chr 0x2C7);
+add_test(\%tests, ":", ":");
+add_test(\%tests, chr utf8::unicode_to_native(0xF7), chr utf8::unicode_to_native(0xF7));
+add_test(\%tests, chr 0x2C7, chr 0x2C7);
 
 # To cut down on the number of tests
 my $has_tested_aa_above_latin1;
@@ -426,39 +504,13 @@ sub pairs (@) {
     map { prefix $_[$_], @_[0..$_-1, $_+1..$#_] } 0..$#_
 }
 
-my $utf8_locale;
-
-my @charsets = qw(d u a aa);
-if (locales_enabled('LC_CTYPE')) {
-    my $current_locale = POSIX::setlocale( &POSIX::LC_CTYPE, "C") // "";
-    if ($current_locale eq 'C') {
-        use locale;
-
-        # Some implementations don't have the 128-255 range characters all
-        # mean nothing under the C locale (an example being VMS).  This is
-        # legal, but since we don't know what the right answers should be,
-        # skip the locale tests in that situation.
-        for my $i (128 .. 255) {
-            my $char = chr(utf8::unicode_to_native($i));
-            goto skip_C_locale_tests if uc($char) ne $char || lc($char) ne $char;
-        }
-        push @charsets, 'l';
-
-      skip_C_locale_tests:
-
-        # Look for utf8 locale.  We use the pseudo-modifier 'L' to indicate
-        # that we really want /l, but change to a UTF-8 locale.
-        $utf8_locale = find_utf8_ctype_locale();
-        push @charsets, 'L' if defined $utf8_locale;
-    }
-}
-
 # Finally ready to do the tests
-foreach my $test (sort { numerically } keys %tests) {
+foreach my $tests_ref (\%neg_tests, \%tests) {
+foreach my $test (sort { numerically } keys %{$tests_ref}) {
 
   my $previous_target;
   my $previous_pattern;
-  my @pairs = pairs(sort numerically $test, @{$tests{$test}});
+  my @pairs = pairs(sort numerically $test, @{$tests_ref->{$test}});
 
   # Each fold can be viewed as a closure of all the characters that
   # participate in it.  Look at each possible pairing from a closure, with the
@@ -515,16 +567,10 @@ foreach my $test (sort { numerically } keys %tests) {
     #note $progress;
 
     # Now grind out tests, using various combinations.
-    foreach my $charset (@charsets) {
+    {
       my $charset_mod = lc $charset;
-      my $current_locale = "";
-      if ($charset_mod eq 'l') {
-        $current_locale = POSIX::setlocale(&POSIX::LC_CTYPE,
-                          ($charset eq 'L')
-                           ? $utf8_locale
-                           : 'C');
-        $current_locale = 'C locale' if $current_locale eq 'C';
-      }
+      my $current_locale = setlocale(&POSIX::LC_CTYPE);
+      $current_locale = 'C locale' if $current_locale eq 'C';
       $okays = 0;
       $this_iteration = 0;
 
@@ -547,8 +593,8 @@ foreach my $test (sort { numerically } keys %tests) {
           my $pattern_has_ascii = $pattern_has_ascii;
           if (! $target_has_ascii) {
             foreach my $cp (@target) {
-              if (exists $folds{$cp}
-                  && grep { utf8::native_to_unicode($_) < 128 } @{$folds{$cp}} )
+              if (exists $folds{$cp}{1}
+                  && grep { utf8::native_to_unicode($_) < 128 } @{$folds{$cp}{1}} )
               {
                   $target_has_ascii = 1;
                   last;
@@ -557,8 +603,8 @@ foreach my $test (sort { numerically } keys %tests) {
           }
           if (! $pattern_has_ascii) {
             foreach my $cp (@pattern) {
-              if (exists $folds{$cp}
-                  && grep { utf8::native_to_unicode($_) < 128 } @{$folds{$cp}} )
+              if (exists $folds{$cp}{1}
+                  && grep { utf8::native_to_unicode($_) < 128 } @{$folds{$cp}}{1} )
               {
                   $pattern_has_ascii = 1;
                   last;
@@ -599,8 +645,8 @@ foreach my $test (sort { numerically } keys %tests) {
           my $pattern_has_latin1 = $pattern_has_latin1;
           if (! $target_has_latin1) {
             foreach my $cp (@target) {
-              if (exists $folds{$cp}
-                  && grep { $_ < 256 } @{$folds{$cp}} )
+              if (exists $folds{$cp}{1}
+                  && grep { $_ < 256 } @{$folds{$cp}{1}} )
               {
                 $target_has_latin1 = 1;
                 last;
@@ -609,8 +655,8 @@ foreach my $test (sort { numerically } keys %tests) {
           }
           if (! $pattern_has_latin1) {
             foreach my $cp (@pattern) {
-              if (exists $folds{$cp}
-                  && grep { $_ < 256 } @{$folds{$cp}} )
+              if (exists $folds{$cp}{1}
+                  && grep { $_ < 256 } @{$folds{$cp}{1}} )
               {
                 $pattern_has_latin1 = 1;
                 last;
@@ -694,7 +740,11 @@ foreach my $test (sort { numerically } keys %tests) {
           next if $pattern_above_latin1 && ! $utf8_pattern;
 
           # Our testing of 'l' uses the POSIX locale, which is ASCII-only
-          my $uni_semantics = $charset ne 'l' && ($utf8_target || $charset eq 'u' || $charset eq 'L' || ($charset eq 'd' && $utf8_pattern) || $charset =~ /a/);
+          my $uni_semantics = $charset ne 'l' && (    $utf8_target
+                                                  ||  $charset eq 'u'
+                                                  ||  $charset eq 'L'
+                                                  || ($charset eq 'd' && $utf8_pattern)
+                                                  ||  $charset =~ /a/);
           my $upgrade_pattern = "";
           $upgrade_pattern = ' utf8::upgrade($p);' if ! $pattern_above_latin1 && $utf8_pattern;
 
@@ -702,9 +752,63 @@ foreach my $test (sort { numerically } keys %tests) {
           my $lhs_str = eval qq{"$lhs"}; fail($@) if $@;
           my @rhs = @x_pattern;
           my $rhs = join "", @rhs;
+
+          # Unicode created a folding rule that partially emulates what
+          # happens in a Turkish locale, by using combining characters.  The
+          # result is close enough to what really should happen, that it can
+          # pass many of the tests, but not all.  So, if we have a rule that
+          # is expecting failure, it may pass instead.  The code in the block
+          # below is good enough for skipping the tests, and khw tried to make
+          # it general, but should the rules be revised (unlikely at this
+          # point), this might need to be tweaked.
+          if ($tests_ref == \%neg_tests) {
+            my ($shorter_ref, $longer_ref);
+
+            # Convert the $rhs to a string, like we already did for the lhs
+            my $rhs_str = eval qq{"$rhs"}; fail($@) if $@;
+
+            # If the lengths of the two sides are equal, we don't want to do
+            # this; this is only to bypass the combining characters affecting
+            # things
+            if (length $lhs_str != length $rhs_str) {
+
+              # Find the shorter and longer of the pair
+              if (length $lhs_str < length $rhs_str) {
+                  $shorter_ref = \$lhs_str;
+                  $longer_ref = \$rhs_str;
+              }
+              else {
+                  $shorter_ref = \$rhs_str;
+                  $longer_ref = \$lhs_str;
+              }
+
+              # If the shorter string is entirely contained in the longer, we
+              # have generated a test that is likely to succeed, and the
+              # reasons it would fail have nothing to do with folding.  But we
+              # are expecting it to fail, and so our test is invalid.  Skip
+              # it.
+              next if index($$longer_ref, $$shorter_ref) >= 0;
+
+
+              # The above eliminates about half the failure cases.  This gets
+              # the rest.  If the shorter string is a single character and has
+              # a fold legal in this run to a character that is in the longer
+              # string, it is also likely to succeed under /i.  So again our
+              # computed test is bogus.
+              if (   length $$shorter_ref == 1
+                  && exists $folds{ord $$shorter_ref}{1})
+              {
+                my @folded_to = @{$folds{ord $$shorter_ref}{1}};
+                next if   @folded_to == 1
+                       && index($$longer_ref, chr $folded_to[0]) >= 0;
+              }
+            }
+          }
+
           my $should_fail = (! $uni_semantics && $ord < 256 && ! $is_self && utf8::native_to_unicode($ord) >= 128)
                             || ($charset eq 'aa' && $target_has_ascii != $pattern_has_ascii)
-                            || ($charset eq 'l' && $target_has_latin1 != $pattern_has_latin1);
+                            || ($charset eq 'l' && $target_has_latin1 != $pattern_has_latin1)
+                            || $tests_ref == \%neg_tests;
 
           # Do simple tests of referencing capture buffers, named and
           # numbered.
@@ -946,6 +1050,7 @@ foreach my $test (sort { numerically } keys %tests) {
       }
     }
   }
+}
 }
 
 plan($count);

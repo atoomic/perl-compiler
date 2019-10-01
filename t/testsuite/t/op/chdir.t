@@ -3,7 +3,7 @@
 BEGIN {
     # We really want to know if chdir is working, as the build process will
     # all go wrong if it is not.  So avoid clearing @INC under miniperl.
-    #@INC = () if defined &DynaLoader::boot_DynaLoader;
+    @INC = () if defined &DynaLoader::boot_DynaLoader;
 
     # We're not going to chdir() into 't' because we don't know if
     # chdir() works!  Instead, we'll hedge our bets and put both
@@ -44,7 +44,7 @@ SKIP: {
 
     # VMS is case insensitive but will preserve case in EFS mode.
     # So we must normalize the case for the compare.
-
+ 
     $compare_dir = lc($compare_dir) if $IsVMS;
     skip("Already in t/", 2) if $compare_dir eq $test_dir;
 
@@ -162,7 +162,7 @@ sub clean_env {
     }
 
     # The following means we won't really be testing for non-existence,
-    # but in Perl we can only delete from the process table, not the job
+    # but in Perl we can only delete from the process table, not the job 
     # table.
     $ENV{'SYS$LOGIN'} = '' if $IsVMS;
 }

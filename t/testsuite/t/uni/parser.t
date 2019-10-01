@@ -10,7 +10,7 @@ BEGIN {
     skip_all_without_unicode_tables();
 }
 
-plan (tests => 57);
+plan (tests => 58);
 
 use utf8;
 use open qw( :utf8 :std );
@@ -141,7 +141,7 @@ is ${"main::\345\225\217"}, undef, "..and using the encoded form doesn't";
            "...and nul-clean"
         );
     }
-
+    
     {
         eval qq{\$ネ+ 1; \x{1F42A}};
         $@ =~ s/eval \d+/eval 11/;
@@ -261,6 +261,13 @@ SKIP: {
     }
 }
 
+fresh_perl_is(<<'EOS', <<'EXPECT', {}, 'no panic in pad_findmy_pvn (#134061)');
+use utf8;
+eval "sort \x{100}%";
+die $@;
+EOS
+syntax error at (eval 1) line 1, at EOF
+EXPECT
 
 # New tests go here ^^^^^
 

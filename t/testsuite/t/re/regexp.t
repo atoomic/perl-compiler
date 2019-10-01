@@ -66,7 +66,7 @@ BEGIN {
     }
 
     chdir 't' if -d 't';
-    unshift @INC, qw '../lib ../ext/re';
+    @INC = qw '../lib ../ext/re';
     if (!defined &DynaLoader::boot_DynaLoader) { # miniperl
 	print("1..0 # Skip Unicode tables not built yet\n"), exit
 	    unless eval 'require "unicore/Heavy.pl"';
@@ -105,6 +105,7 @@ sub convert_from_ascii {
 
 use strict;
 use warnings FATAL=>"all";
+no warnings 'experimental::vlb';
 our ($bang, $ffff, $nulnul); # used by the tests
 our ($qr, $skip_amp, $qr_embed, $qr_embed_thr, $regex_sets, $alpha_assertions, $no_null); # set by our callers
 
@@ -145,10 +146,10 @@ foreach (@tests) {
         die "Bad test definition on line $test: $_\n";
     }
     $reason = '' unless defined $reason;
-    my $input = join(':', map { defined $_ ? $_ : '' } ( $pat,$subject,$result,$repl,$expect ) );
+    my $input = join(':',$pat,$subject,$result,$repl,$expect);
 
     # the double '' below keeps simple syntax highlighters from going crazy
-    $pat = "'$pat'" unless $pat =~ /^[:''\/]/;
+    $pat = "'$pat'" unless $pat =~ /^[:''\/]/; 
     $pat =~ s/(\$\{\w+\})/$1/eeg;
     $pat =~ s/\\n/\n/g unless $regex_sets;
     $pat = convert_from_ascii($pat) if ord("A") != 65;
@@ -162,7 +163,7 @@ foreach (@tests) {
     $subject = eval qq("$subject"); die $@ if $@;
 
     $expect = convert_from_ascii($expect) if ord("A") != 65;
-    $expect  = eval qq("$expect") if defined $expect; die $@ if $@;
+    $expect  = eval qq("$expect"); die $@ if $@;
     $expect = $repl = '-' if $skip_amp and $input =~ /\$[&\`\']/;
 
     my $todo_qr = $qr_embed_thr && ($result =~ s/t//);
@@ -412,8 +413,7 @@ foreach (@tests) {
 	$subject = XS::APItest::string_without_null($subject) if $no_null;
 	my $c = $iters;
 	my ($code, $match, $got);
-    $repl //= '';
-        if ( $repl eq 'pos') {
+        if ($repl eq 'pos') {
             my $patcode = defined $no_null_pat ? '/$no_null_pat/g'
                                                : "m${pat}g";
             $code= <<EOFCODE;
@@ -470,7 +470,6 @@ EOFCODE
 	    eval $code;
 	}
 	chomp( my $err = $@ );
-    $expect //= '';
 	if ( $skip ) {
 	    print "ok $testname # skipped", length($reason) ? ".  $reason" : '', "\n";
 	    next TEST;

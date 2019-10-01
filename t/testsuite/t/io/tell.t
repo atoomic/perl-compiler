@@ -6,7 +6,7 @@ BEGIN {
     set_up_inc('../lib');
 }
 
-plan(35);
+plan(36);
 
 $TST = 'TST';
 
@@ -124,9 +124,9 @@ close($tst);
 open($tst,"+>>$written")  || die "Cannot open $written:$!";
 binmode $tst if $Is_Dosish;
 
-if (0)
+if (0) 
 {
- # :stdio does not pass these so ignore them for now
+ # :stdio does not pass these so ignore them for now 
 
 is(tell($tst), 0, 'tell() for open mode "+>>" returns 0');
 
@@ -187,3 +187,10 @@ seek $fh,0,0;
 is(tell, 0, "argless tell after seek \$coercible...");
 seek *$fh,0,0;
 is(tell, 0, "argless tell after seek *\$coercible...");
+
+{
+    # [perl #133721]
+    fresh_perl_is(<<'EOI', 'ok', {}, 'eof with no ${^LAST_FH}');
+print "ok" if eof;
+EOI
+}

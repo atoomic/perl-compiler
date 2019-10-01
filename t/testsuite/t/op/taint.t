@@ -17,7 +17,7 @@ BEGIN {
 use strict;
 use Config;
 
-plan tests => 1041;
+plan tests => 1042;
 
 $| = 1;
 
@@ -53,9 +53,6 @@ my $Invoke_Perl = $Is_VMS      ? 'MCR Sys$Disk:[]Perl.exe' :
                   $Is_MSWin32  ? '.\perl'               :
                   $Is_NetWare  ? 'perl'                 :
                                  './perl'               ;
-
-( $Invoke_Perl)  = $^X =~ m/(.+)/; # untaint
-
 my @MoreEnv = qw/IFS CDPATH ENV BASH_ENV/;
 
 if ($Is_VMS) {
@@ -1340,7 +1337,7 @@ violates_taint(sub { link $TAINT, '' }, 'link');
     SKIP: {
         # wildcard expansion doesn't invoke shell on VMS, so is safe
         skip "This is not VMS", 2 unless $Is_VMS;
-
+    
 	isnt(join('', eval { glob $foo } ), '', 'globbing');
 	is($@, '');
     }
@@ -1464,7 +1461,7 @@ violates_taint(sub { link $TAINT, '' }, 'link');
 {
     # No reliable %Config check for getpw*
     SKIP: {
-        skip "getpwent() is not available", 9 unless
+        skip "getpwent() is not available", 9 unless 
           eval { setpwent(); getpwent() };
 
 	setpwent();
@@ -1493,7 +1490,7 @@ violates_taint(sub { link $TAINT, '' }, 'link');
     }
 
     SKIP: {
-        skip "readlink() or symlink() is not available" unless
+        skip "readlink() or symlink() is not available" unless 
           $Config{d_readlink} && $Config{d_symlink};
 
 	my $symlink = "sl$$";
@@ -1565,7 +1562,7 @@ SKIP: {
             warn "# shmget failed: $!\n";
         }
 
-        skip "SysV shared memory operation failed", 1 unless
+        skip "SysV shared memory operation failed", 1 unless 
           $rcvd eq $sent;
 
         is_tainted($rcvd, "shmread");
@@ -1736,9 +1733,9 @@ SKIP: {
         ${$_ [0]}
     }
 
-
+ 
     package main;
-
+ 
     my $bar = "The Big Bright Green Pleasure Machine";
     taint_these $bar;
     tie my ($foo), Tie => $bar;
@@ -1771,13 +1768,13 @@ like($@, qr/^Modification of a read-only value attempted/,
 
 {
     # bug 20011111.105 (#7897)
-
+    
     my $re1 = qr/x$TAINT/;
     is_tainted($re1);
-
+    
     my $re2 = qr/^$re1\z/;
     is_tainted($re2);
-
+    
     my $re3 = "$re2";
     is_tainted($re3);
 }
@@ -1808,15 +1805,15 @@ TODO: {
     violates_taint(sub { system $TAINT 'notaint' }, 'system');
     violates_taint(sub { system {'notaint'} $TAINT }, 'system');
 
-    eval {
+    eval { 
         no warnings;
-        system("lskdfj does not exist","with","args");
+        system("lskdfj does not exist","with","args"); 
     };
     is($@, "");
 
     eval {
 	no warnings;
-	exec("lskdfj does not exist","with","args");
+	exec("lskdfj does not exist","with","args"); 
     };
     is($@, "");
 
@@ -2381,8 +2378,28 @@ end
     ok("A" =~ /\p{$prop}/, "user-defined property: non-tainted case");
     $prop = "IsA$TAINT";
     eval { "A" =~ /\p{$prop}/};
-    like($@, qr/Insecure user-defined property \\p\{main::IsA\}/,
+    like($@, qr/Insecure user-defined property "IsA" in regex/,
 	    "user-defined property: tainted case");
+
+}
+
+{
+    SKIP: {
+        skip "Environment tainting tests skipped", 1
+          if $Is_MSWin32 || $Is_NetWare || $Is_VMS || $Is_Dos;
+
+        local $ENV{XX} = '\p{IsB}';   # Making it an environment variable taints it
+
+        fresh_perl_like(<<'EOF',
+            BEGIN { $re = qr/$ENV{XX}/; }
+
+            sub IsB { "42" };
+            "B" =~ $re
+EOF
+        qr/Insecure user-defined property \\p\{main::IsB\}/,
+        { switches => [ "-T" ] },
+        "user-defined property; defn not known until runtime, tainted case");
+    }
 }
 
 {

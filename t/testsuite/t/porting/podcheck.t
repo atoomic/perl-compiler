@@ -1602,7 +1602,7 @@ sub is_pod_file {
         note("Not considering $_") if DEBUG;
         return;
     }
-
+               
     my $filename = $File::Find::name;
 
     # $filename is relative, like './path'.  Strip that initial part away.
@@ -2142,7 +2142,7 @@ foreach my $filename (@files) {
             next if ! $known_problems{$canonical}{$message};
             next if $known_problems{$canonical}{$message} < 0; # Preserve negs
 
-            next if !$pedantic and $message =~
+            next if !$pedantic and $message =~ 
                 /^(?:\Q$line_length\E|\Q$C_not_linked\E|\Q$C_with_slash\E)/;
 
             my $diagnostic = output_thanks($filename, $known_problems{$canonical}{$message}, 0, $message);

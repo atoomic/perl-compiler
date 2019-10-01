@@ -609,8 +609,8 @@ while (/(o.+?),/gc) {
     sub STORE { die "write \$_ forbidden" }
     tie $_, __PACKAGE__;
     my @tests = (
-	"Nesting"     => sub { print '#'; for (1..3) { print }
-			       print "\n" },			1,
+	"Nesting"     => sub { my $x = '#'; for (1..3) { $x .= $_ }
+			       print "$x\n" },			1,
 	"Reading"     => sub { print },				0,
 	"Matching"    => sub { $x = /badness/ },		0,
 	"Concat"      => sub { $_ .= "a" },			0,
@@ -764,7 +764,7 @@ is($@, "");
     sub X39012::DESTROY { $x++ }
     sub { local $_[0]; shift }->($y);
     ok(!$x,  '[perl #39012]');
-
+    
 }
 
 # when localising a hash element, the key should be copied, not referenced
