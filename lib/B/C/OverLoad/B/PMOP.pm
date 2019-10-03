@@ -98,7 +98,7 @@ sub do_save {
         my $initpm    = init1();
         my $can_defer = 1;
 
-        if (   $qre =~ m/\\[pNx]\{/
+        if (   $qre =~ m/\\[Nx]\{/
             || $qre =~ m/\\U/
             || ( $op->reflags & SVf_UTF8 || $utf8 ) ) {
             $initpm = init2();
