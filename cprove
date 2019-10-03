@@ -10,6 +10,7 @@ use Cwd;
 use constant TEST_SUITE_VERSION => 'testsuite';
 use constant KNOWN_ERRORS       => 't/' . TEST_SUITE_VERSION . '/C-COMPILED/known_errors.txt';
 
+# blacklist_rules
 my @BLACKLIST = (
     qw{benchmark perf porting bigmem lib win32 japh porting run test_pl op/threads.t},
     qr{_thr\.t$},         # do not care about threads
@@ -102,6 +103,8 @@ sub run {
       }
       ->();
 
+    my @blacklist_tests = load_blacklisted_tests();
+
     my @tests;
     while ( $args[-1] && $args[-1] =~ m/\.t$/ ) {
         my $t = pop @args;
@@ -121,8 +124,13 @@ sub run {
             $t = $after;           # need to chdir for the uncompiled version
         }
 
+        if ( grep { $t eq $_ } @blacklist_tests ) {
+            say "Test '$t' is blacklisted by known_errors.txt file";
+            next;
+        }
+
         # remove blacklisted tests
-        do { say "Test '$t' is blacklisted."; next } if grep { ref $_ ? ( $t =~ $_ ) : ( $t =~ qr{^$_/} or $t =~ qr{$_$} ) } @BLACKLIST;
+        do { say "Test '$t' is blacklisted by a rule."; next } if grep { ref $_ ? ( $t =~ $_ ) : ( $t =~ qr{^$_/} or $t =~ qr{$_$} ) } @BLACKLIST;
 
         #die "Cannot find a test file" unless -e $t;
         unshift @tests, $t;
@@ -169,7 +177,22 @@ sub load_error_tests {
 
     open( my $fh, '<', KNOWN_ERRORS ) or die;
     while ( my $line = <$fh> ) {
-        next if $line =~ qr{^\s*#};
+        next if $line =~ qr/^\s*#/;
+        if ( $line =~ qr{^([^\s]+\.t)\s} ) {
+            push @tests, $1;
+        }
+    }
+
+    return @tests;
+}
+
+sub load_blacklisted_tests {
+    my @tests;
+
+    open( my $fh, '<', KNOWN_ERRORS ) or die;
+    while ( my $line = <$fh> ) {
+        next if $line =~ qr/^\s*#/;
+        next unless $line =~ m{\b(?:COMPAT|SKIP)\b};
         if ( $line =~ qr{^([^\s]+\.t)\s} ) {
             push @tests, $1;
         }
