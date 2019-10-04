@@ -1,3 +1,8 @@
+5.030001 2019-09-04
+
+    Support for Perl 5.30
+    Use Lazy Regexp for \p
+
 5.028008 2019-08-26
 
     Clear Internals::V patches list
