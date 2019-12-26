@@ -129,6 +129,19 @@ sub save_svu {
 
     $fullname = '' if !defined $fullname;
 
+    if ( $fullname =~ m{^(.+)::AUTOLOAD$} ) {
+        my $pkg = $1;
+        if ( $pkg->can( 'AUTOLOAD' ) ) {
+            # clear AUTOLOAD PV when used at compile time
+            #print STDERR "## $fullname has AUTOLOAD sub\n";
+            $savesym = 'NULL';
+            $cur = 0;
+            $len = 0;
+            $pv  = '';
+            $flags = 0;
+        }
+    }
+
     debug( pv => "Saving pv %s %s cur=%d, len=%d, %s", $savesym, $pv, $cur, $len, $shared_hek ? "shared, $fullname" : $fullname );
 
     $savesym = ".svu_pv=(char*) $savesym";
