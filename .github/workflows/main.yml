@@ -1,0 +1,79 @@
+name: main
+
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-a-docker-container-action
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  cprove:
+    env:
+      PERL_USE_UNSAFE_INC: 0
+      AUTHOR_TESTING: 1
+      AUTOMATED_TESTING: 1
+      RELEASE_TESTING: 1
+      VERBOSE: 0
+      BC_DEVELOPING: 0
+      WARNINGS: 0
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        test_dir:
+          - 'base'
+          - 'bctestc'
+          - 'comp'
+          - 'extra'
+          - 'io'
+          - 'mro'
+          - 'op'
+          - 're'
+          - 'uni'
+
+    container:
+      image: at00mic/perl-compiler:perl-v5.30.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: perl -V
+        run: perl -V
+      - name: which perl
+        run: ls -l $(which perl)
+      - name: ls
+        run: ls -l
+      - name: make
+        run: perl Makefile.PL installdirs=vendor
+      - name: make install
+        run: make -j4 install
+      - name: setup PATH
+        run: echo "::add-path::/usr/local/cpanel/3rdparty/perl/530/bin/"
+      - name: which perlcc
+        run: which perlcc
+      - name: 'running test ${{ matrix.test_dir }}/*.t'
+        run: ./cprove -j4 ${{ matrix.test_dir }}/*.t
+
+      # - name: My first step
+      #   # Use an action (`my-action`) in your repository
+      #   uses: ./.github/actions/test
+      #   with:
+      #     who-to-greet: 'Mona the Octocat'
+      # - name: My backup step
+      #   if: failure()
+      #   run: echo "we had a failure"
+        #uses: actions/heroku@master
+      # - uses: ./ # Uses an action in the root directory
+      # - name: Hello world action step
+      #   id: hello
+      #   uses: actions/hello-world-docker-action@v1
+      #   with:
+      #     who-to-greet: 'Mona the Octocat'
+      # - name: Get the output time
+      #   run: echo "The time was ${{ steps.hello.outputs.time }}"
