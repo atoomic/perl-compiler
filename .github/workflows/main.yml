@@ -25,17 +25,26 @@ jobs:
 
     strategy:
       fail-fast: false
+
+      # Limit: 20 total concurrent jobs for 'Free' GitHub plan
+      #   https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
       matrix:
         test_dir:
-          - 'base'
-          - 'bctestc'
-          - 'comp'
-          - 'extra'
-          - 'io'
-          - 'mro'
-          - 'op'
-          - 're'
-          - 'uni'
+          - 'base/*.t'
+          - 'bctestc/*.t'
+          - 'comp/*.t'
+          - 'extra/*.t'
+          - 'io/*.t'
+          - 'mro/*.t'
+          - 'op/[0-9a-e]*.t'
+          - 'op/[f-m]*.t'
+          - 'op/[n-s]*.t'
+          - 'op/[t-z]*.t'
+          - 're/[a-f]*.t'
+          - 're/[g-q]*.t'
+          - 're/r*.t'
+          - 're/[s-z]*.t'
+          - 'uni/*.t'
 
     container:
       image: at00mic/perl-compiler:perl-v5.30.0
@@ -57,23 +66,5 @@ jobs:
         run: echo "::add-path::/usr/local/cpanel/3rdparty/perl/530/bin/"
       - name: which perlcc
         run: which perlcc
-      - name: 'running test ${{ matrix.test_dir }}/*.t'
-        run: ./cprove -j4 ${{ matrix.test_dir }}/*.t
-
-      # - name: My first step
-      #   # Use an action (`my-action`) in your repository
-      #   uses: ./.github/actions/test
-      #   with:
-      #     who-to-greet: 'Mona the Octocat'
-      # - name: My backup step
-      #   if: failure()
-      #   run: echo "we had a failure"
-        #uses: actions/heroku@master
-      # - uses: ./ # Uses an action in the root directory
-      # - name: Hello world action step
-      #   id: hello
-      #   uses: actions/hello-world-docker-action@v1
-      #   with:
-      #     who-to-greet: 'Mona the Octocat'
-      # - name: Get the output time
-      #   run: echo "The time was ${{ steps.hello.outputs.time }}"
+      - name: 'running test ${{ matrix.test_dir }}'
+        run: ./cprove -j4 ${{ matrix.test_dir }}
