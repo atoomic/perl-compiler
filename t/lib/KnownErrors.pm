@@ -49,8 +49,27 @@ sub get_current_error_type {
 
     return $self->{type} || '' if exists $self->{type};
 
-    my ( $file_in_error, $type, $description ) = ( '', '' );
     my $file_to_test = $self->{file_to_test} or die;
+
+    {  # check if the file itself is tagged with BC_* ( like TEST_HARNESS )
+        my $unit_test = '../t/' . $file_to_test;
+        if ( open( my $fh, '<', $unit_test ) ) {
+            while ( my $line = <$fh> ) {
+                next if $line =~ m{^\s*$}; # skip empty lines
+                last unless $line =~ m{^\s*#}; # not a comment let's abort
+                if ( $line =~ m{^\s*#\s*(BC_\w+)} ) {
+                    my $tag = $1;
+                    if ( $tag eq 'BC_SKIP_ON_AUTOMATED_TESTING' && $ENV{AUTOMATED_TESTING} ) {
+                        note "skipping test $file_to_test when AUTOMATED_TESTING is set";
+                        return 'COMPAT';
+                    }
+                }
+            }
+        }
+    }
+
+    my ( $file_in_error, $type, $description ) = ( '', '' );
+
 
     open( my $errors_fh, '<', $self->{error_file} ) or die;
     lock($errors_fh);

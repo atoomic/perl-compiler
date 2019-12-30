@@ -1,3 +1,5 @@
+# BC_SKIP_ON_AUTOMATED_TESTING
+
 use DBI;
 
 # require DBI & DBD::SQLite patched with XSLoader instead of DynaLoader
