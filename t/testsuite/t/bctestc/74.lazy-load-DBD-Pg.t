@@ -1,5 +1,3 @@
-# BC_SKIP_ON_AUTOMATED_TESTING
-
 use Exporter 5.57 'import';    # removing the Exporter version make it succeeds
 use DBD::mysql ();             # require to make it fails
 
