@@ -47,7 +47,7 @@ jobs:
           - 'uni/*.t'
 
     container:
-      image: at00mic/perl-compiler:perl-v5.30.0
+      image: cpanelos/perl-compiler:perl-v5.30.0
 
     steps:
       - name: Checkout
